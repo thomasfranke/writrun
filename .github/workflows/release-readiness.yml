@@ -1,0 +1,42 @@
+name: release readiness
+
+# This repository's own CI — never shipped to adopters. `main` is the
+# branch releases are cut from, so every push to it — including one that
+# lands without a pull request — gets a releasability verdict here.
+#
+# The cut itself deliberately stays local (`make release`): the stamp
+# commit cannot be pushed to a protected main by GITHUB_TOKEN, and the
+# tokens that could are the dependency this project rejects. The script
+# re-runs these same guards before tagging.
+#
+# YAML here is wiring only; both jobs execute things the suite already
+# owns.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  template:
+    # The named gate: regenerating the template must change nothing. A
+    # divergence breaks this pipeline by name, before any release — the
+    # same drift `make release` refuses locally. This is the suite's own
+    # mirror case run alone, for a fast signal; the full suite below
+    # runs it again with everything else.
+    name: template in sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Template mirrors the root byte for byte
+        run: bash tests/unit/template/mirrors_root_test.sh
+
+  suite:
+    name: script suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run tests
+        run: bash tests/run.sh

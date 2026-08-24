@@ -1,0 +1,24 @@
+name: tests
+
+# This repository's own CI — never shipped to adopters. The adoption kit
+# is template/, and only the writrun-*.yml workflows are part of it; an
+# adopting project has no tests/run.sh for this job to run.
+#
+# Pull requests only — main has a pipeline of its own
+# (release-readiness.yml), re-verifying the branch releases are cut from
+# on every push to it.
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  suite:
+    name: script suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run tests
+        run: bash tests/run.sh

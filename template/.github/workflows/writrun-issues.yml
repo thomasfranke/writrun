@@ -1,0 +1,53 @@
+name: writrun issues
+
+# Mirrors the task queue into GitHub Issues. The file under work/tasks/ is
+# the authority — the Issue is a projection of it, for people who read the
+# queue in a browser rather than in a diff.
+#
+# Every step's logic lives in .writrun/scripts/, where the test suite's
+# integration tier executes it — YAML here only wires events onto scripts.
+# The reasoning (one-direction sync, reconciliation over per-event
+# handlers, ownership, deferral for unrecognized authors) is documented in
+# mirror_issues.sh itself.
+#
+# Runs on pull_request_target so it holds `issues: write` even for a fork
+# PR. That trigger is safe here because the PR's code is never checked out
+# or executed: the checkout below takes the BASE branch — which is what
+# actions/checkout does by default on pull_request_target — and only to
+# obtain the script; the PR's files are read out of the API's own patch
+# text and parsed as data.
+
+# `ready_for_review` is here because drafts are skipped by the script: a
+# draft PR is derivation still under review in the working session — its
+# tasks are not public queue entries yet, and mirroring them would
+# announce work nobody has agreed to track.
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review, closed]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      # Base branch only — never the PR's code (see the header note).
+      - uses: actions/checkout@v4
+
+      - name: Reconcile the mirror
+        # The PR's fields go through env, never inline interpolation —
+        # a fork controls some of them.
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_STATE: ${{ github.event.pull_request.state }}
+          PR_DRAFT: ${{ github.event.pull_request.draft }}
+          PR_MERGED: ${{ github.event.pull_request.merged }}
+          PR_AUTHOR_ASSOCIATION: ${{ github.event.pull_request.author_association }}
+          PR_HTML_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          bash .writrun/scripts/mirror_issues.sh \
+            "${{ github.repository }}" \
+            "${{ github.event.pull_request.number }}"

@@ -1,0 +1,11 @@
+# Build output
+/bin/
+/dist/
+/swoop
+
+# AI agent tooling — machine-local only. Nothing tool-specific is versioned;
+# the agent-agnostic content lives in AGENTS.md and .writrun/skills/.
+.claude/
+
+# macOS
+.DS_Store

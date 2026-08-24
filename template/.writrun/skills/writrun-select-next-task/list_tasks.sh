@@ -1,0 +1,237 @@
+#!/usr/bin/env bash
+# list_tasks.sh — prints the tasks eligible for work, and what holds the
+# rest back.
+#
+#   bash .writrun/skills/writrun-select-next-task/list_tasks.sh
+#
+# Eligibility is steps 2–4 of the selection algorithm
+# (docs/technical/README.md#task-selection-algorithm): `pending`, every
+# `depends_on` completed, every `spec_ref` approved or implemented. Those
+# are the gates, and they bind everyone.
+#
+# The order printed is steps 5–6 — priority, then `created`, then `id`. For
+# an agent that order is binding. For a person it is a suggestion: any task
+# in the Available list may be taken, and taking a lower one bypasses
+# nothing. That is the whole reason this prints a list instead of an answer.
+#
+# Exit codes: 0 something is available; 1 nothing is; 3 no work/tasks/.
+#
+# Portable awk/sed only — no gawk extensions.
+
+set -uo pipefail
+
+TASK_DIR="${1:-work/tasks}"
+SPEC_DIR="${2:-work/specs}"
+
+[ -d "$TASK_DIR" ] || { echo "No such directory: $TASK_DIR" >&2; exit 3; }
+
+field() { sed -n "s/^$2: *//p" "$1" | head -n1; }
+title() { sed -n 's/^# *//p' "$1" | head -n1; }
+
+# list_field <file> <name> — a [a, b] front-matter list as bare words.
+list_field() {
+  field "$1" "$2" | tr -d '[]' | tr ',' ' '
+}
+
+spec_status() {
+  local f
+  f=$(find "$SPEC_DIR" -iname "$1.md" 2>/dev/null | head -n1)
+  [ -n "$f" ] || { echo "missing"; return; }
+  field "$f" status
+}
+
+task_status() {
+  local f
+  f=$(find "$TASK_DIR" -iname "$1.md" 2>/dev/null | head -n1)
+  [ -n "$f" ] || { echo "missing"; return; }
+  field "$f" status
+}
+
+rank() {
+  case "$1" in high) echo 1 ;; medium) echo 2 ;; low) echo 3 ;; *) echo 4 ;; esac
+}
+
+# --- what is already in flight -------------------------------------------
+#
+# The queue files cannot answer this. A task someone started an hour ago is
+# still `pending` in `main` until their pull request merges, so a lister
+# that reads only files hands the same task to the next person who asks.
+#
+# This is not a claim and WritRun has no claim mechanism — reserving work is
+# a tracker's job (see docs/about.md's non-goals). It is the one real-time
+# signal a forge can be asked for: an open pull request means somebody is
+# already working on that task.
+#
+# Set WRITRUN_PR_LIST to bypass `gh` — lines of "number<TAB>branch<TAB>author".
+# Absent `gh`, a remote, or authentication, this degrades to files only and
+# says so rather than implying nobody is working.
+
+taken=""       # id|#number|author
+pr_source="none"
+
+pr_lines=""
+PR_FETCH_LIMIT=200
+if [ -n "${WRITRUN_PR_LIST:-}" ]; then
+  pr_lines="$WRITRUN_PR_LIST"
+  pr_source="supplied"
+elif command -v gh >/dev/null 2>&1; then
+  # gh defaults to 30, and a silently truncated list reports a taken task
+  # as free — the exact lie this section exists to prevent. The limit is
+  # raised, and *hitting* it is reported at the end rather than passed
+  # off as a complete answer.
+  if pr_lines=$(gh pr list --state open --limit "$PR_FETCH_LIMIT" \
+        --json number,headRefName,author \
+        --jq '.[] | "\(.number)\t\(.headRefName)\t\(.author.login)"' 2>/dev/null); then
+    pr_source="gh"
+  fi
+fi
+
+if [ "$pr_source" != "none" ]; then
+  while IFS="$(printf '\t')" read -r num branch author; do
+    [ -n "$branch" ] || continue
+    # A branch is named after the spec it implements, or the task when there
+    # is none — so a spec has to be resolved back to its task_ref.
+    ref=$(printf '%s' "$branch" | sed -n 's|^[a-z]*/\{0,1\}\(task-[0-9][0-9]*\).*|\1|p')
+    if [ -z "$ref" ]; then
+      sref=$(printf '%s' "$branch" | sed -n 's|^[a-z]*/\{0,1\}\(spec-[0-9][0-9]*\).*|\1|p')
+      if [ -z "$sref" ]; then
+        # `spec/003-name` — the bare number form the branch convention uses.
+        n=$(printf '%s' "$branch" | sed -n 's|^spec/0*\([0-9][0-9]*\).*|\1|p')
+        [ -n "$n" ] && sref=$(printf 'spec-%03d' "$n")
+      fi
+      if [ -n "$sref" ]; then
+        sf=$(find "$SPEC_DIR" -iname "$sref.md" 2>/dev/null | head -n1)
+        [ -n "$sf" ] && ref=$(field "$sf" task_ref)
+      fi
+      if [ -z "$ref" ]; then
+        n=$(printf '%s' "$branch" | sed -n 's|^task/0*\([0-9][0-9]*\).*|\1|p')
+        [ -n "$n" ] && ref=$(printf 'task-%03d' "$n")
+      fi
+    fi
+    [ -n "$ref" ] && taken="${taken}$(printf '%s' "$ref" | tr '[:upper:]' '[:lower:]')|#${num}|${author}"$'\n'
+  done <<EOF
+$pr_lines
+EOF
+fi
+
+taken_by() {
+  printf '%s' "$taken" | while IFS='|' read -r id num who; do
+    [ "$id" = "$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')" ] && {
+      printf '%s by @%s' "$num" "$who"; break
+    }
+  done
+}
+
+available=""
+held=""
+resumable=""
+inflight=""
+
+for f in "$TASK_DIR"/*.md; do
+  [ -f "$f" ] || continue
+  case "$(basename "$f")" in README.md|readme.md) continue ;; esac
+
+  id=$(field "$f" id)
+  [ -n "$id" ] || continue
+  st=$(field "$f" status)
+  pr=$(field "$f" priority)
+  cr=$(field "$f" created)
+  tt=$(title "$f")
+
+  # Step 0 — an unfinished task outranks anything selectable.
+  if [ "$st" = "in-progress" ]; then
+    resumable="${resumable}${id}|${tt}"$'\n'
+    continue
+  fi
+
+  # Done is not held back — it is out of the running entirely, and listing
+  # it as an obstacle would grow with the project until it buried the part
+  # that needs attention.
+  [ "$st" = "completed" ] && continue
+
+  if [ "$st" != "pending" ]; then
+    reason="$st"
+    [ "$st" = "blocked" ] && reason="blocked: $(field "$f" blocked_reason)"
+    held="${held}${id}|${reason}"$'\n'
+    continue
+  fi
+
+  why=""
+  for d in $(list_field "$f" depends_on); do
+    [ -n "$d" ] || continue
+    ds=$(task_status "$d")
+    [ "$ds" = "completed" ] || why="${why}waiting on ${d} (${ds}); "
+  done
+  for s in $(list_field "$f" spec_ref); do
+    [ -n "$s" ] || continue
+    ss=$(spec_status "$s")
+    case "$ss" in
+      approved|implemented) ;;
+      *) why="${why}${s} is ${ss}; " ;;
+    esac
+  done
+
+  if [ -n "$why" ]; then
+    held="${held}${id}|${why%; }"$'\n'
+    continue
+  fi
+
+  # Eligible on paper, but a pull request for it is already open. Not
+  # "held back" — nothing is wrong with the task; someone is on it.
+  who=$(taken_by "$id")
+  if [ -n "$who" ]; then
+    inflight="${inflight}${id}|${who}|${tt}"$'\n'
+  else
+    available="${available}$(rank "$pr")|${cr}|${id}|${pr}|${tt}"$'\n'
+  fi
+done
+
+if [ -n "$resumable" ]; then
+  echo "In progress — resume before selecting anything new:"
+  printf '%s' "$resumable" | while IFS='|' read -r id tt; do
+    [ -n "$id" ] && printf '  %-10s %s\n' "$id" "$tt"
+  done
+  echo
+fi
+
+if [ -n "$available" ]; then
+  echo "Available — any of these may be taken:"
+  printf '%s' "$available" | sed '/^$/d' | sort -t'|' -k1,1n -k2,2 -k3,3 \
+    | while IFS='|' read -r _ _ id pr tt; do
+        printf '  %-10s %-7s %s\n' "$id" "$pr" "$tt"
+      done
+  echo
+  echo "Order is a suggestion for a person and binding for an agent."
+else
+  echo "Nothing is available."
+fi
+
+if [ -n "$inflight" ]; then
+  echo
+  echo "In flight — an open pull request already exists:"
+  printf '%s' "$inflight" | sed '/^$/d' | sort | while IFS='|' read -r id who tt; do
+    printf '  %-10s %-16s %s\n' "$id" "$who" "$tt"
+  done
+fi
+
+if [ -n "$held" ]; then
+  echo
+  echo "Held back:"
+  printf '%s' "$held" | sed '/^$/d' | sort | while IFS='|' read -r id why; do
+    printf '  %-10s %s\n' "$id" "$why"
+  done
+fi
+
+if [ "$pr_source" = "none" ]; then
+  echo
+  echo "Note: could not reach GitHub, so nothing above accounts for work"
+  echo "already in flight. Check open pull requests before starting."
+elif [ "$pr_source" = "gh" ] \
+    && [ "$(printf '%s\n' "$pr_lines" | grep -c .)" -ge "$PR_FETCH_LIMIT" ]; then
+  echo
+  echo "Note: the open pull request list hit the fetch limit (${PR_FETCH_LIMIT}),"
+  echo "so the in-flight section may be incomplete. Check open pull requests"
+  echo "before starting."
+fi
+
+[ -n "$available" ]

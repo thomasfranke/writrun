@@ -1,0 +1,89 @@
+name: writrun approve
+
+# Records the `draft -> approved` transition once a maintainer has approved
+# the pull request. The human decision is the review; this only writes it
+# down (docs/product/pipeline.md#human-gates).
+#
+# Best-effort by design. It writes to the pull request's own branch, never
+# to `main` — so a protected `main` needs no bypass, no App token, no PAT.
+# The trade-off is that it cannot serve a fork: GITHUB_TOKEN has no write
+# access to another repository's branch, and no setting changes that. Fork
+# contributors record the transition by hand after approval instead
+# (CONTRIBUTING.md), and `writrun check` — the mandatory half, which runs
+# everywhere — verifies against the PR's actual reviews that an approval
+# authorizing it exists.
+#
+# Three settings this depends on:
+#   - Actions must have write permission (Settings > Actions > General >
+#     Workflow permissions). That setting is a ceiling; the `permissions:`
+#     block below cannot rise above it.
+#   - "Dismiss stale pull request approvals when new commits are pushed"
+#     must be OFF on the protected branch, or this push dismisses the very
+#     approval it just recorded.
+#   - Branch protection must not bind administrators while `writrun check`
+#     is a required check. The push below uses GITHUB_TOKEN, and pushes
+#     made with it trigger no workflow runs — which is what keeps this from
+#     looping, but also means no check ever reports on the flip commit, so
+#     a merge gated on required checks would wait forever. The maintainer's
+#     squash-merge is an administrator waving through a commit no check
+#     re-ran: acceptable because the commit is deterministic and the checks
+#     passed on the exact state it was derived from
+#     (docs/technical/decisions.md).
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  approve-specs:
+    # The author_association filter is what makes "approved" mean "approved
+    # by someone with authority". On a public repo, any account can submit
+    # an approving review — it never counts toward branch protection, but
+    # the event fires all the same, and without this filter it would write
+    # the transition and sign the commit with a name that had no say.
+    if: >-
+      github.event.review.state == 'approved' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.review.author_association)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Flip draft specs the review approved
+        # Which specs qualify — added by the PR, or returned approved→draft
+        # by the PR itself (an amendment) — is documented in the script,
+        # which the test suite's integration tier executes.
+        id: flip
+        run: |
+          set -euo pipefail
+          out=$(bash .writrun/scripts/flip_approved_specs.sh \
+            "origin/${{ github.event.pull_request.base.ref }}...HEAD")
+          printf '%s\n' "$out"
+          if [ -n "$out" ]; then
+            echo "changed=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=0" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit
+        if: steps.flip.outputs.changed == '1'
+        # COMMIT_TITLE is the adopter's to edit: it only has to satisfy the
+        # adopting project's own commit convention — nothing in WritRun
+        # parses commit messages.
+        env:
+          COMMIT_TITLE: "chore(specs): record approval from PR review"
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add work/specs
+          git commit \
+            -m "$COMMIT_TITLE" \
+            -m "Approved by @${{ github.event.review.user.login }} in review of #${{ github.event.pull_request.number }}."
+          git push origin HEAD:"${{ github.event.pull_request.head.ref }}"

@@ -1,0 +1,57 @@
+name: writrun progress
+
+# Moves the mirrored Issue as its pull request moves: into review when one
+# opens, closed when one merges the task to completion, back to where it
+# was when one closes without merging.
+#
+# Without this the mirror rots at exactly the moment it matters. `writrun
+# issues` only reacts to task files a pull request *adds*, and an
+# implementation PR adds none — it modifies a task that already exists. So
+# a completed task would keep an open Issue labelled in-progress forever,
+# long after the work landed.
+#
+# Every step's logic lives in .writrun/scripts/, where the test suite's
+# integration tier executes it — YAML here only wires events onto scripts.
+# The reasoning (in-review vs. in-progress, relabel-only, the completion
+# test on the merged diff) is documented in reflect_progress.sh itself.
+#
+# Runs on pull_request_target for `issues: write` on fork PRs too. Safe
+# here because the PR's code is never checked out or executed: the
+# checkout below takes the BASE branch — actions/checkout's default on
+# pull_request_target — which also gives the script the base tree's own
+# work/specs/ files to resolve a spec branch through.
+
+# A draft is not waiting on review — someone is working. The mirror says
+# which of the two is true at every moment of the PR's life: draft means
+# `status:in-progress` (leave the worker alone), ready means
+# `status:in-review` (the maintainer is the blocker), and the two
+# conversion events flip between them.
+on:
+  pull_request_target:
+    types: [opened, reopened, ready_for_review, converted_to_draft, closed]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  reflect:
+    runs-on: ubuntu-latest
+    steps:
+      # Base branch only — never the PR's code (see the header note).
+      - uses: actions/checkout@v4
+
+      - name: Reflect the pull request onto the mirror
+        # The PR's fields go through env, never inline interpolation —
+        # the head branch name is a fork's to choose.
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_STATE: ${{ github.event.pull_request.state }}
+          PR_DRAFT: ${{ github.event.pull_request.draft }}
+          PR_MERGED: ${{ github.event.pull_request.merged }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          bash .writrun/scripts/reflect_progress.sh \
+            "${{ github.repository }}" \
+            "${{ github.event.pull_request.number }}"
