@@ -8,7 +8,9 @@ docs (human) → task (request) → spec (elaboration) → code (derived)
 ```
 
 Permanent documentation is written by a human, with human review. Everything
-downstream of it is agent work, gated at specific, named points — never
+downstream of it is derived: the queue mechanics are agent work, and the
+implementation goes to whoever takes the task — a developer or an agent,
+same flow (flows 3 and 4). All of it is gated at specific, named points — never
 gated by implication, never left to whoever is doing the work that day to
 decide whether a checkpoint applies.
 
@@ -387,7 +389,8 @@ reaching `main`, with no person having assented to it at all.
 
 Everything else in the pipeline — creating tasks, drafting specs,
 implementing an approved spec, filling a spec's Outcome — is agent work,
-autonomously, by default.
+autonomously, by default. Implementing is also the one step equally a
+person's to take (flow 4); the gates do not change with who takes it.
 
 ## When the doc moves ahead of the queue
 
