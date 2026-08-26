@@ -3,7 +3,8 @@
 > **What is written, runs.** A documentation methodology where docs are the
 > executable source and code is the derived artefact — split by audience
 > (business vs. engineering) and by nature (permanent state vs. work in
-> progress), designed for AI agents to read and act on directly.
+> progress), designed to be read and acted on directly — by the team's
+> developers and by AI agents alike.
 
 ## Why "WritRun"
 
@@ -55,11 +56,13 @@ docs (human) → task (request) → spec (elaboration) → code (derived)
 ```
 
 Permanent documentation is written by humans, with human review. Everything
-downstream is agent work with human gates: a **task** is the request — a
+downstream is derived, with human gates: a **task** is the request — a
 tracked slot in the queue with no technical detail; a **spec** is its
 elaboration — the full brief for one change, belonging to exactly one task.
-The task always precedes the spec. An agent that finds work without a task
-creates the task first; a spec never exists as an orphan.
+The task always precedes the spec. A ready task is a complete brief
+whichever door it goes through — to a developer on the team, or to an AI
+agent — and the pipeline never assumes which. An agent that finds work
+without a task creates the task first; a spec never exists as an orphan.
 
 The flow is a loop, not a line. A spec names every permanent doc its
 finished change will touch, and the diff that completes the task must touch
@@ -159,6 +162,10 @@ everything under `docs/` is the input tasks are created from.
   wants agents to implement features correctly without re-explaining context
   every session, and wants documentation that stays true after the agent is
   done.
+- **The developer on a team that adopted it** — receives a task whose brief
+  is complete and already assented to, without having sat in the
+  discussions that produced it. The task reads the same whether it was
+  routed to them or to an agent.
 - **The open-source maintainer building a community roadmap** — wants
   contributors to propose and pick up work from the repository itself, without
   standing up a separate paid issue tracker.

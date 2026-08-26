@@ -5,8 +5,8 @@
 **What is written, runs.**
 
 Autogen tasks and specs from your docs.   
-Docs are the executable source. Code is the derived artefact.
-
+Docs are the executable source. Code is the derived artefact.  
+You write the doc. AI checks the code and generates the tasks and specs, ready for development.
 
 
 [![license](https://img.shields.io/badge/license-MIT--0-blue)](LICENSE)
@@ -19,10 +19,7 @@ Docs are the executable source. Code is the derived artefact.
 
 > **Alpha.** Everything here — rules, schemas, statuses, workflows, even
 > names — can still change without notice; nothing is stable to build on
-> yet. `docs/product/` — the prescriptive, checkable rules an adopting
-> project is judged against — is written, extracted from two real
-> projects. Neither has been migrated to actually consume this repo yet.
-> Building in public from here, all of it in [`docs/`](docs).
+> yet.
 
 What it does:
 
@@ -31,10 +28,14 @@ What it does:
 - **Tasks and specs are generated automatically.** Tell your agent
   "update the tasks": it reads what you wrote, compares it to the actual
   project, and generates the tasks and specs that close the gap.
-- **The queue mirrors into GitHub Issues.** Every task appears as an
-  Issue in real time, labels following the work on their own.
+- **Who implements is your call, per task.** A generated task carries a
+  complete brief, linked to a spec. Hand it to a developer on the team,
+  or point an AI agent at it.
+- **The queue mirrors into GitHub Issues.** Optional: every task appears
+  as an Issue in real time, labels following the work on their own.
 - **AI drives the commits and PRs.** Branches, conventional commits, PR
-  bodies, checks in the right order — all conducted by the agent.
+  bodies, checks in the right order — the agent conducts the queue
+  mechanics, whoever writes the code.
 - **Humans keep four named gates:** the docs, the handoff, the approval,
   the merge.
 
@@ -84,9 +85,10 @@ input tasks are created from.
 
 Everything starts at the permanent docs: human-written, human-reviewed —
 the input, never the output. A task is the request; its spec is the
-elaboration; code is the derived artefact. Any AI agent picking up a spec
-gets the same brief a human would have written by hand, session after
-session, without re-explaining the project from scratch.
+elaboration; code is the derived artefact. Whoever picks up a spec — a
+developer on the team or an AI agent — gets the same brief a human would
+have written by hand, session after session, without the project being
+re-explained from scratch.
 
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'background':'#0d1117','primaryColor':'#161b22','primaryTextColor':'#e6edf3','primaryBorderColor':'#8b949e','lineColor':'#ffffff','secondaryColor':'#161b22','tertiaryColor':'#161b22','fontSize':'14px'}}}%%
@@ -94,7 +96,7 @@ flowchart LR
     A["HUMAN<br/>writes the docs"]
     B["AGENT<br/>derives tasks<br/>and draft specs"]
     C["HUMAN<br/>approves each spec"]
-    D["AGENT<br/>implements the code"]
+    D["DEV or AGENT<br/>implements the code"]
     A -->|"gate: doc declared finished"| B --> C --> D
     D -->|"same change updates the docs"| A
 ```
