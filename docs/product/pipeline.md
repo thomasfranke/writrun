@@ -386,6 +386,47 @@ flowchart LR
     A --> C --> D
 ```
 
+### A change migrates state outside the repository
+
+Some changes have to rewrite state that does not live in the repository —
+a mirror's title, its labels, anything the forge holds. That state has no
+branch, so it cannot move with the diff that understands it, and the
+ordering that is free everywhere else becomes a decision here.
+
+**The machinery that reads outside state runs the authority branch's
+copy, not the pull request's.** That is deliberate — a workflow with
+write access must never execute a contributor's code — and it has a
+consequence: outside state written in a new shape is unreadable until the
+reader that understands it has *merged*. Write first and the gap between
+the two is a window where the machinery cannot find what it just renamed.
+
+So the migration lands in two changes, in this order:
+
+1. **The reader**, taught to accept the old shape and the new one, and
+   still writing the old. Merging it is what puts the tolerant reader on
+   the authority branch.
+2. **The writer and the backfill**, once the reader is there.
+
+The old shape stays readable afterwards. Dropping it is a third change,
+and only worth making when nothing outside is left in the old shape —
+until then a reader that has forgotten it does not report a miss, it
+mints a duplicate for something that already exists.
+
+```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#0d1117','primaryColor':'#161b22','primaryTextColor':'#e6edf3','primaryBorderColor':'#8b949e','lineColor':'#ffffff','secondaryColor':'#161b22','tertiaryColor':'#161b22','fontSize':'14px'}}}%%
+flowchart LR
+    A["CHANGE 1<br/>reader accepts old + new<br/>still writes old"]
+    B["MERGE<br/>the authority branch<br/>now understands both"]
+    C["CHANGE 2<br/>writer emits new<br/>backfill rewrites what exists"]
+    D["Outside state and the machinery<br/>agree at every moment"]
+    A --> B --> C --> D
+```
+
+A single change that does both is not wrong in its result — it is wrong
+in its window. The repository moves atomically at the merge; the forge
+moved whenever the change's author ran the backfill, and the two are the
+same instant only by luck.
+
 A change belongs to flow 1, to flows 3–5, or to one special flow — never
 more than one. One that closes the loop on one rule while introducing
 another is two changes.
@@ -535,6 +576,9 @@ queue is what adjusts. Three consequences, in order:
   every task and spec derived from it, or state explicitly that none were.
 - When a change would both close the loop on one rule and author another,
   it shall be split into two changes.
+- When a change migrates state the repository does not hold, the reader
+  that accepts both shapes shall merge before the writer that emits the
+  new one.
 - When a task's `spec_ref` is empty and its body plus `doc_ref` do not
   amount to a sufficient brief, the agent shall stop and ask whether to
   draft a spec, rather than guessing at scope.
