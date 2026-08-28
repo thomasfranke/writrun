@@ -15,6 +15,7 @@
 
 MIRROR_ISSUES="$REPO_ROOT/.writrun/scripts/mirror_issues.sh"
 REFLECT_PROGRESS="$REPO_ROOT/.writrun/scripts/reflect_progress.sh"
+REDERIVE_LABELS="$REPO_ROOT/.writrun/scripts/rederive_labels.sh"
 
 b64() { base64 | tr -d '\n'; }
 
@@ -128,18 +129,41 @@ created: 2026-08-23T00:00:00Z
 EOF
 }
 
-# base_spec <id> <task-ref> — a spec as it already exists on the base
-# branch, for reflect_progress's branch resolution.
+# base_spec <id> <task-ref> [status] — a spec as it already exists on the
+# base branch, for reflect_progress's branch resolution and for the
+# readers that derive a label from the queue. Defaults to approved.
 base_spec() {
   cat > "work/specs/$1.md" <<EOF
 ---
 id: $1
 task_ref: $2
-status: approved
+status: ${3:-approved}
 created: 2026-08-23T00:00:00Z
 ---
 
 # $1 — test
+EOF
+}
+
+# base_task <id> <status> [spec-refs-csv] — a task as it already exists
+# on the base branch, for the readers that ask the queue on disk rather
+# than a pull request's diff.
+base_task() {
+  cat > "work/tasks/$1.md" <<EOF
+---
+id: $1
+status: $2
+blocked_reason: null
+spec_ref: [${3:-}]
+doc_ref: null
+priority: medium
+depends_on: []
+milestone: null
+created: 2026-08-23T00:00:00Z
+completed: null
+---
+
+# Task $1
 EOF
 }
 

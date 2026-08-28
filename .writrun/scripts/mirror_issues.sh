@@ -202,6 +202,28 @@ is_mine() {   # is_mine <body-b64>
   printf '%s' "$1" | b64_decode | grep -qF "$OWN_LINE"
 }
 
+# clear_status <issue> <labels-csv> — a retired mirror keeps every label
+# except its place in the pipeline, for the same reason a completed one
+# does (docs/product/pipeline.md#flows-and-statuses): the close and its
+# reason are the terminal state, and a `status:` label left on top of them
+# contradicts it.
+clear_status() {
+  local kept l args
+  kept=$(printf '%s\n' "$2" | tr ',' '\n' | grep -v '^status:' | sed '/^$/d' || true)
+  args=()
+  while IFS= read -r l; do
+    [ -n "$l" ] || continue
+    args+=(-f "labels[]=$l")
+  done <<EOF
+$kept
+EOF
+  if [ "${#args[@]}" -eq 0 ]; then
+    gh api -X DELETE "repos/${REPO}/issues/${1}/labels" >/dev/null
+    return 0
+  fi
+  gh api -X PUT "repos/${REPO}/issues/${1}/labels" "${args[@]}" >/dev/null
+}
+
 ensure_label() {   # ensure_label <name> <color> <description>
   local out
   if ! out=$(gh api -X POST "repos/${REPO}/labels" \
@@ -341,6 +363,7 @@ while IFS="$TAB" read -r num istate labels tb bb; do
   if [ "$closed_unmerged" != "true" ]; then
     case " $LIVE_NUMS " in *" $(num_of_id "$oid") "*) continue ;; esac
   fi
+  clear_status "$num" "$labels"
   gh api -X PATCH "repos/${REPO}/issues/${num}" \
     -f state=closed -f state_reason=not_planned >/dev/null
   if [ "$closed_unmerged" = "true" ]; then
