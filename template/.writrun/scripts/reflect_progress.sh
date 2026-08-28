@@ -199,10 +199,16 @@ reflect_one() {
   while IFS="$TAB" read -r n istate labels tb bb; do
     [ -n "$n" ] || continue
     t=$(printf '%s' "$tb" | b64_decode | tr '[:upper:]' '[:lower:]')
-    # A mirror's title opens with the task's id. Match on its number so a
-    # mirror titled at one width is still found by a tag spelling it at
-    # another — the id is the number, not how many zeroes precede it.
-    tn=$(printf '%s' "$t" | sed -n 's/^task-0*\([0-9][0-9]*\) .*/\1/p')
+    # A mirror's title opens with the task's tag, `[TASK-NNNN]` — and
+    # with the bare `task-NNNN ` prefix on any mirror minted before that
+    # rule, which must still be found rather than reported missing.
+    # Match on the number so a mirror titled at one width is still found
+    # by a tag spelling it at another — the id is the number, not how
+    # many zeroes precede it. `$t` is already lowercased above.
+    tn=$(printf '%s' "$t" | sed -n \
+      -e 's/^\[task-0*\([0-9][0-9]*\)\].*/\1/p' \
+      -e 's/^task-0*\([0-9][0-9]*\)[[:space:]].*/\1/p' \
+      | head -n1)
     [ -n "$tn" ] || continue
     if [ "$tn" -eq "$num" ] 2>/dev/null; then
       issue_num="$n"; issue_labels="$labels"; break

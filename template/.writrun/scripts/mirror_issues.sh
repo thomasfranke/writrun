@@ -74,6 +74,44 @@ first_heading() {
   printf '%s\n' "$1" | sed -n 's/^# //p' | head -n1 | sed 's/[[:space:]]*$//'
 }
 
+# A mirror's title names its task, and that is how a mirror is found —
+# there is no stored number anywhere. The rule now spells the name as the
+# tag a pull request title carries, `[TASK-NNNN] <task title>`
+# (docs/product/pipeline.md#flows-and-statuses), so one search for the tag
+# finds the task in the queue, in the PR, and in the mirror at once.
+#
+# Every lookup below still reads the `task-NNNN — ` prefix that predates
+# the rule. A mirror minted before it must be *found*, because a lookup
+# that only knows the new shape does not report a miss — it mints a
+# second mirror for a task that already has one.
+
+# id_of_title <title> — the task id a mirror's title names, lowercased and
+# at whatever width the title spells it; nothing for a title that names no
+# task, which is every foreign Issue the `writrun:task` filter let through.
+id_of_title() {
+  printf '%s' "$1" | sed -n \
+    -e 's/^\[\([Tt][Aa][Ss][Kk]-[0-9][0-9]*\)\].*/\1/p' \
+    -e 's/^\([Tt][Aa][Ss][Kk]-[0-9][0-9]*\)[[:space:]].*/\1/p' \
+    | head -n1 | tr '[:upper:]' '[:lower:]'
+}
+
+# num_of_id <task-id> — the number in `task-0006`, leading zeros dropped.
+# Comparisons are on the number, never the text: the id is the number, not
+# how many zeroes precede it, so a mirror titled at one width is still
+# found by an id spelled at another.
+num_of_id() {
+  printf '%s' "$1" | tr '[:upper:]' '[:lower:]' \
+    | sed -n 's/^task-0*\([0-9][0-9]*\)$/\1/p'
+}
+
+# tag_of_id <task-id> — the title's prefix: the id uppercased in brackets,
+# character for character the tag its pull request title carries. The id's
+# own width is kept rather than padded to four — `task-004` is that task's
+# id, and a mirror is a projection of the file, never a correction of it.
+tag_of_id() {
+  printf '[%s]' "$(printf '%s' "$1" | tr '[:lower:]' '[:upper:]')"
+}
+
 # Pass 1 — the spec statuses the diff itself carries, "id status" lines.
 # "Ready for development" is derived, never stored: pending task, every
 # spec approved. The mirror's label must derive it the same way — a spec
@@ -142,13 +180,17 @@ ISSUES=$(gh api "repos/${REPO}/issues?labels=writrun:task&state=all&per_page=100
   --jq '.[] | [.number, .state, ((.labels // []) | map(.name) | join(",")), (.title | @base64), ((.body // "") | @base64)] | @tsv')
 
 issue_row_of() {   # issue_row_of <task-id> — "number<TAB>state<TAB>body-b64"
-  local num state labels tb bb t
+  local num state labels tb bb t tn want
+  want=$(num_of_id "$1")
+  [ -n "$want" ] || return 0
   while IFS="$TAB" read -r num state labels tb bb; do
     [ -n "$num" ] || continue
     t=$(printf '%s' "$tb" | b64_decode)
-    case "$t" in
-      "$1 "*) printf '%s\t%s\t%s\n' "$num" "$state" "$bb"; return 0 ;;
-    esac
+    tn=$(num_of_id "$(id_of_title "$t")")
+    [ -n "$tn" ] || continue
+    if [ "$tn" -eq "$want" ] 2>/dev/null; then
+      printf '%s\t%s\t%s\n' "$num" "$state" "$bb"; return 0
+    fi
   done <<EOF
 $ISSUES
 EOF
@@ -190,11 +232,11 @@ if [ "$open" = "true" ]; then
 fi
 
 # Every task the diff adds gets a mirror in the right state.
-LIVE_IDS=""
+LIVE_NUMS=""
 while IFS="$TAB" read -r tid fname priority milestone refs ttitle; do
   [ -n "$tid" ] || continue
   [ "$refs" = "-" ] && refs=""
-  LIVE_IDS="${LIVE_IDS} ${tid}"
+  LIVE_NUMS="${LIVE_NUMS} $(num_of_id "$tid")"
 
   row=$(issue_row_of "$tid")
 
@@ -222,7 +264,7 @@ while IFS="$TAB" read -r tid fname priority milestone refs ttitle; do
       "Becomes ready for development when #${PR} merges and every" \
       "spec in its \`spec_ref\` is \`approved\`.")
     gh api -X POST "repos/${REPO}/issues" \
-      -f "title=${tid} — ${ttitle}" \
+      -f "title=$(tag_of_id "$tid") ${ttitle}" \
       -f "labels[]=writrun:task" \
       -f "labels[]=${lbl}" \
       -f "body=${body}" >/dev/null
@@ -282,9 +324,10 @@ while IFS="$TAB" read -r num istate labels tb bb; do
   [ -n "$num" ] || continue
   [ "$istate" = "open" ] || continue
   is_mine "$bb" || continue
-  oid=$(printf '%s' "$tb" | b64_decode | cut -d' ' -f1)
+  oid=$(id_of_title "$(printf '%s' "$tb" | b64_decode)")
+  [ -n "$oid" ] || continue
   if [ "$closed_unmerged" != "true" ]; then
-    case " $LIVE_IDS " in *" $oid "*) continue ;; esac
+    case " $LIVE_NUMS " in *" $(num_of_id "$oid") "*) continue ;; esac
   fi
   gh api -X PATCH "repos/${REPO}/issues/${num}" \
     -f state=closed -f state_reason=not_planned >/dev/null
