@@ -1,6 +1,6 @@
 ---
 id: task-0010
-status: pending
+status: completed
 blocked_reason: null
 spec_ref: [spec-0007]
 doc_ref: product/pipeline.md#flows-and-statuses
@@ -8,7 +8,7 @@ priority: medium
 depends_on: []
 milestone: null
 created: 2026-08-28T00:00:00Z
-completed: null
+completed: 2026-08-28T21:33:48Z
 ---
 
 # Label closed mirrors and re-derive after approval

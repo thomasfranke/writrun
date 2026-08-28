@@ -1,7 +1,7 @@
 ---
 id: spec-0007
 task_ref: task-0010
-status: approved
+status: implemented
 created: 2026-08-28T00:00:00Z
 ---
 
@@ -81,4 +81,46 @@ dated entry already.
 
 ## Outcome
 
-(filled when the task completes)
+Built as planned, all four steps. Step 3's extraction became
+`.writrun/scripts/rederive_labels.sh`: the same question
+mirror_issues.sh asks of a pull request's diff, asked of the queue on
+disk, which is why it is a script of its own rather than a branch inside
+either caller. The suite went from 176 to 186 case files.
+
+Four divergences:
+
+- **Only a `pending` task is re-derived.** No criterion says what to do
+  when a merge re-approves the spec of a task somebody is working — an
+  amendment does exactly that. Deriving `ready` there would tell a
+  worker's mirror it is free again, on the strength of an approval that
+  changed nothing about who holds it. `in-progress` and what follows
+  belong to `reflect_progress.sh`, which knows whether a pull request is
+  open; the queue does not. The script says so and writes nothing.
+
+- **The flipped spec files are passed in, not re-derived from the
+  range.** Step 4 says "re-derive the label of every task whose specs
+  that merge approved". Which specs those are is what
+  `flip_approved_specs.sh` just decided, so the workflow captures its
+  output rather than reading the range a second time — a second reading
+  is a second chance to disagree with the first.
+
+- **Nothing is committed or pushed by the re-derivation.** Step 4 says
+  "push both in one commit", which reads as if the label were a file. It
+  is not. The step is sequential and *after* the commit — because the
+  script reads the queue from disk, and the flip is only in the queue
+  once written there — so it cannot race the push it follows.
+
+- **`base_spec` gained a status argument and `base_task` was added.** The
+  mirror fixture could only write approved specs and no task files at
+  all, because until now nothing read the queue from disk.
+
+`writrun-approve.yml` also gains `issues: write`. It had `contents:
+write` for the flip commit; a label is not a file, and the job could not
+have written one.
+
+Not verified end to end, and worth naming: this repository's own stale
+mirrors — the closed ones still carrying `status:`, and the merged tasks
+sitting on `status:pending` with approved specs — are **not** back-filled
+here. Nothing in this spec proposes it, and the machinery only acts on
+events from now on. They will correct themselves for any task that sees
+another event, and stay wrong otherwise.
