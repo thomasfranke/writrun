@@ -118,7 +118,7 @@ dependency. The four skills backed by a script
 [`writrun-select-next-task`](.writrun/skills/writrun-select-next-task/list_tasks.sh)) need only
 `bash` and a POSIX-portable `awk`/`sed` — deliberately, since one already
 broke once on a machine with no `gawk` installed; see
-[`technical/decisions.md`](docs/technical/decisions.md).
+[`technical/decisions/`](docs/technical/decisions/README.md).
 
 **There is, however, something to run.** Those four scripts are the
 mechanical half of the methodology — one of them guards a human gate — so
@@ -247,7 +247,7 @@ queue only really gains the task when the PR merges.
   [docs/product/](docs/product/README.md) in the same PR. A spec does not
   own a rule; it implements one.
 - **Machinery changed?** Add a dated entry to
-  [docs/technical/decisions.md](docs/technical/decisions.md) in the
+  [docs/technical/decisions/](docs/technical/decisions/README.md) in the
   same PR. Entries are append-only — never edit one, add the next.
 - **Every path a spec's Proposed-changes sections promised is touched, and
   nothing permanent that isn't listed is.** This is what

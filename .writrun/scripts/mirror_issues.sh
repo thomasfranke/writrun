@@ -29,7 +29,7 @@
 # unexpected forge failure aborts non-zero via set -e.
 #
 # Portable bash 3.2, POSIX awk/sed — no gawk extensions, no associative
-# arrays. See the standing rule in docs/technical/decisions.md.
+# arrays. See the standing rule in docs/technical/decisions/.
 
 set -euo pipefail
 
