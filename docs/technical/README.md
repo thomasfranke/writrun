@@ -48,8 +48,10 @@ doc_ref: product/concepts/task.md#two-invariants   # any path under docs/; null 
 priority: medium                   # high | medium | low
 depends_on: [task-0002]            # real technical blocking, not sequencing taste
 milestone: v0.1-core
-created: 2026-08-21
-completed: null
+created: 2026-08-21                # written by hand: when the task was drafted
+queued: 2026-08-21                 # machinery only: the merge that put it in the queue
+completed: null                    # written by hand: when the work was finished
+merged: null                       # machinery only: the merge that took the work
 ---
 ```
 
@@ -70,6 +72,12 @@ completed: null
 - Status lives in front-matter, never in folder position — nothing moves
   between directories as work progresses, so `git log` stays readable without
   `--follow`.
+- **Four dates, and who writes each is part of the contract** — the table
+  is in [`product/pipeline.md`](../product/pipeline.md#flows-and-statuses).
+  `created` and `completed` are a person's, written on the branch;
+  `queued` and `merged` are the machinery's, written after the merge each
+  records. A date recording a merge is never hand-written: it would have
+  to be typed before the event it describes.
 
 ### `blocked` vs. `depends_on`
 
