@@ -60,7 +60,7 @@ full in [`gates.md`](gates.md).
 
 Flows 1–5 are the happy path. The edge cases reality produces are drawn
 separately — same gates — in [`conflicts.md`](conflicts.md) and, at level
-`flow`, in [`review.md`](../flow/review.md).
+`pull-requests`, in [`review.md`](../pull-requests/review.md).
 
 ## This folder
 
@@ -75,5 +75,5 @@ True at **every level**. What the higher levels add lives beside it.
 
 | Level | Adds |
 |---|---|
-| [`flow/`](../flow/README.md) | branches, pull requests, CI, merge as assent |
+| [`pull-requests/`](../pull-requests/README.md) | branches, pull requests, CI, merge as assent |
 | [`github-issues/`](../github-issues/README.md) | the GitHub Issues mirror |

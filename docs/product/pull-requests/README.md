@@ -1,4 +1,4 @@
-# Level `flow`
+# Level `pull-requests`
 
 What branches, pull requests and CI add to [`pipeline/`](../pipeline/README.md).
 Nothing here is required to claim adoption — it is mechanical enforcement of
