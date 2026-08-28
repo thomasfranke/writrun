@@ -427,6 +427,14 @@ in its window. The repository moves atomically at the merge; the forge
 moved whenever the change's author ran the backfill, and the two are the
 same instant only by luck.
 
+That window has a second edge, and it opens *after* the backfill has run.
+Until the writer merges, the authority branch still **mints** the old
+shape — so anything the machinery creates in the meantime is born stale,
+behind a backfill that already passed it. A migration is therefore not
+finished by its backfill; it is finished by its merge. Running the
+backfill second, as the order above puts it, is what leaves nothing to be
+born into.
+
 A change belongs to flow 1, to flows 3–5, or to one special flow — never
 more than one. One that closes the loop on one rule while introducing
 another is two changes.
