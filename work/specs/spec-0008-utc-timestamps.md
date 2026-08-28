@@ -2,7 +2,7 @@
 id: spec-0008
 task_ref: task-0011
 status: approved
-created: 2026-08-28
+created: 2026-08-28T00:00:00Z
 ---
 
 # spec-0008 — Record queue dates as UTC timestamps

@@ -134,7 +134,7 @@ doc_ref: null
 priority: medium
 depends_on: []
 milestone: null
-created: 2026-08-22
+created: 2026-08-22T00:00:00Z
 completed: ${4:-null}
 ---
 
@@ -148,7 +148,7 @@ spec_file() {   # spec_file <id> <task> <status> [promised-path]
 id: $1
 task_ref: $2
 status: $3
-created: 2026-08-22
+created: 2026-08-22T00:00:00Z
 ---
 
 # $1 — test

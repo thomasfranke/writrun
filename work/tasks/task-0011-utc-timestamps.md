@@ -7,7 +7,7 @@ doc_ref: technical/README.md#front-matter-is-canonical
 priority: medium
 depends_on: []
 milestone: null
-created: 2026-08-28
+created: 2026-08-28T00:00:00Z
 completed: null
 ---
 
