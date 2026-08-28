@@ -62,3 +62,4 @@ and only ever by appending a row.
 | [0045](0045-one-decision-per-file.md) | 2026-08-28 | one decision per file, numbered — reversing part of 0037. |
 | [0046](0046-the-task-tag-leads.md) | 2026-08-28 | the task tag leads the title, one bracket per task. |
 | [0047](0047-a-task-carries-four-dates.md) | 2026-08-28 | a task carries four dates, and who writes each is the contract. |
+| [0048](0048-a-label-names-a-place.md) | 2026-08-28 | a label names a place in the pipeline, so a closed mirror has none. |
