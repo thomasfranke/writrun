@@ -5,7 +5,7 @@ setup
 task_file task-001 pending spec-001
 spec_file spec-001 task-001 draft
 commit_all
-out=$(bash "$CI_SCRIPTS/flip_approved_specs.sh" main...HEAD)
+out=$(bash "$CI_SCRIPTS/pull-requests/flip_approved_specs.sh" main...HEAD)
 if printf '%s' "$out" | grep -q "approved work/specs/spec-001.md" &&
    grep -q '^status: approved$' work/specs/spec-001.md; then
   echo "ok    an added draft spec is flipped to approved"; pass=$((pass + 1))

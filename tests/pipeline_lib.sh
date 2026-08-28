@@ -23,6 +23,10 @@ NEW_SH="$REPO_ROOT/.writrun/skills/writrun-create-task-and-spec/new.sh"
 # way the unit tier exercises the skills.
 CI_SCRIPTS="$REPO_ROOT/.writrun/scripts"
 
+# check_front_matter runs on files alone, so it is a skill rather than a
+# CI script — it is the one check available at every adoption level.
+CHECK_FRONT_MATTER="$REPO_ROOT/.writrun/skills/writrun-check-front-matter/check_front_matter.sh"
+
 # stub_gh <n> — put a fake `gh` on PATH that answers every invocation with
 # <n>, standing in for the forge's count of authorized approving reviews.
 stub_gh() {

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # mirror_lib.sh — the fixture behind every case that exercises the mirror
-# scripts (.writrun/scripts/mirror_issues.sh, reflect_progress.sh).
+# scripts (.writrun/scripts/github-issues/mirror_issues.sh, reflect_progress.sh).
 #
 # The forge is a fake `gh` on PATH: reads are served from canned files —
 # the post-jq row shape the real scripts request, so the shell logic under
@@ -13,8 +13,8 @@
 
 . "$(dirname "${BASH_SOURCE[0]}")/harness.sh"
 
-MIRROR_ISSUES="$REPO_ROOT/.writrun/scripts/mirror_issues.sh"
-REFLECT_PROGRESS="$REPO_ROOT/.writrun/scripts/reflect_progress.sh"
+MIRROR_ISSUES="$REPO_ROOT/.writrun/scripts/github-issues/mirror_issues.sh"
+REFLECT_PROGRESS="$REPO_ROOT/.writrun/scripts/github-issues/reflect_progress.sh"
 
 b64() { base64 | tr -d '\n'; }
 

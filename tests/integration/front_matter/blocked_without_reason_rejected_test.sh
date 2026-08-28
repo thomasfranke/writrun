@@ -6,6 +6,6 @@
 setup
 task_file task-001 blocked ""
 check "blocked without a reason is named" 1 "blocked_reason is null" \
-  -- bash "$CI_SCRIPTS/check_front_matter.sh"
+  -- bash "$CHECK_FRONT_MATTER"
 
 finish

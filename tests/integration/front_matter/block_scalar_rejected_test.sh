@@ -22,6 +22,6 @@ completed: null
 # A task with a folded scalar
 EOF
 check "a block scalar is outside the contract" 1 "block scalar" \
-  -- bash "$CI_SCRIPTS/check_front_matter.sh"
+  -- bash "$CHECK_FRONT_MATTER"
 
 finish

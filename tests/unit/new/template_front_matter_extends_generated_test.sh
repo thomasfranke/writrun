@@ -31,6 +31,6 @@ else
   fail=$((fail + 1))
 fi
 check "and the canonical check accepts the result" 0 "all canonical" \
-  -- bash "$CI_SCRIPTS/check_front_matter.sh"
+  -- bash "$CHECK_FRONT_MATTER"
 
 finish

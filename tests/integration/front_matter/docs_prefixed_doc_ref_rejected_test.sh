@@ -21,6 +21,6 @@ completed: null
 # A task with a docs/-prefixed reference
 EOF
 check "a docs/-prefixed doc_ref is named" 1 "relative to docs/" \
-  -- bash "$CI_SCRIPTS/check_front_matter.sh"
+  -- bash "$CHECK_FRONT_MATTER"
 
 finish

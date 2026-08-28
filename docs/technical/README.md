@@ -195,7 +195,7 @@ way it fills the body — the template's placeholder text is the
 project's instruction for what belongs in each
 (`writrun-create-task-and-spec`'s SKILL.md says so explicitly).
 
-`.writrun/scripts/check_front_matter.sh` enforces all of it —
+`.writrun/skills/writrun-check-front-matter/check_front_matter.sh` enforces all of it —
 `writrun check` runs it before the lifecycle rules, so a file the
 line-based readers would misread never merges — and `new.sh` only ever
 generates this form, so the contract costs nothing on the happy path.

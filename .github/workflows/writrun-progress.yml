@@ -53,6 +53,6 @@ jobs:
           PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          bash .writrun/scripts/reflect_progress.sh \
+          bash .writrun/scripts/github-issues/reflect_progress.sh \
             "${{ github.repository }}" \
             "${{ github.event.pull_request.number }}"

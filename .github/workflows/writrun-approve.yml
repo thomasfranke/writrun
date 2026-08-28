@@ -67,7 +67,7 @@ jobs:
           MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
         run: |
           set -euo pipefail
-          out=$(bash .writrun/scripts/flip_approved_specs.sh \
+          out=$(bash .writrun/scripts/pull-requests/flip_approved_specs.sh \
             "${MERGE_SHA}~1...${MERGE_SHA}")
           printf '%s\n' "$out"
           if [ -n "$out" ]; then

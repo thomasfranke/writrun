@@ -21,6 +21,6 @@ completed: null
 # A pending task carrying a blocked reason
 EOF
 check "a reason without blocked is named" 1 "null unless blocked" \
-  -- bash "$CI_SCRIPTS/check_front_matter.sh"
+  -- bash "$CHECK_FRONT_MATTER"
 
 finish

@@ -14,6 +14,6 @@ git checkout -q main; git merge -q feature; git checkout -q feature
 printf 'status: draft\n' >> work/specs/spec-001.md
 commit_all
 check "a quoted status line does not hide an edit under approval" 1 "no status move" \
-  -- bash "$CI_SCRIPTS/check_recorded_approvals.sh" main...HEAD o/r 1
+  -- bash "$CI_SCRIPTS/pull-requests/check_recorded_approvals.sh" main...HEAD o/r 1
 
 finish

@@ -22,6 +22,6 @@ completed: null
 # A task that says two things at once
 EOF
 check "a duplicated field is named" 1 "exactly once" \
-  -- bash "$CI_SCRIPTS/check_front_matter.sh"
+  -- bash "$CHECK_FRONT_MATTER"
 
 finish

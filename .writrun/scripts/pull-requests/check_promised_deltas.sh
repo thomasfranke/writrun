@@ -17,7 +17,7 @@ RANGE="${1:?usage: check_promised_deltas.sh <diff-range>}"
 
 # Resolved from this script's own location, so it works from inside the
 # throwaway repositories the test suite builds.
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 CHECK_DELTAS="$REPO_ROOT/.writrun/skills/writrun-check-spec-deltas/check_deltas.sh"
 
 # "The specs this change implements" is read from the front matter at the

@@ -5,6 +5,6 @@
 # queue starts empty on purpose.
 setup
 check "an empty queue is canonical" 0 "0 queue file(s)" \
-  -- bash "$CI_SCRIPTS/check_front_matter.sh"
+  -- bash "$CHECK_FRONT_MATTER"
 
 finish

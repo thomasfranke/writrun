@@ -6,6 +6,6 @@
 setup
 task_file task-001 done ""
 check "an invented status is named" 1 "not a task status" \
-  -- bash "$CI_SCRIPTS/check_front_matter.sh"
+  -- bash "$CHECK_FRONT_MATTER"
 
 finish
