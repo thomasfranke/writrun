@@ -20,54 +20,54 @@ appending a row.
 
 | # | Date | Level | Decision |
 |---|---|---|---|
-| [0001](core/0001-blocked-is-a-status.md) | 2026-08-21 | core | `blocked` is a status, not a folder or a tag. |
-| [0002](core/0002-selection-resumes-in-progress.md) | 2026-08-21 | core | selection resumes `in-progress` before picking `pending`. |
-| [0003](core/0003-skills-install-into-writrun.md) | 2026-08-21 | core | skills install into `.writrun/skills/`, not a top-level `skills/`. |
-| [0004](core/0004-writrun-create-task-and.md) | 2026-08-21 | core | `writrun-create-task-and-spec` gains a generator script (`new.sh`). |
-| [0005](core/0005-script-backed-skills-target.md) | 2026-08-21 | core | script-backed skills target POSIX `awk`/`sed`, never gawk extensions. |
-| [0006](core/0006-writrun-check-spec-deltas.md) | 2026-08-21 | core | `writrun-check-spec-deltas` normalises promised paths to repository-root before comparing. |
-| [0007](core/0007-a-permanent-doc-changes.md) | 2026-08-22 | core | a permanent doc changes in two named directions, not one. |
-| [0008](core/0008-ready-for-development-is.md) | 2026-08-22 | core | "ready for development" is derived, never stored. |
-| [0009](core/0009-nothing-in-this-methodology.md) | 2026-08-22 | core | nothing in this methodology reserves a task. |
+| [0001](tasks-and-specs/0001-blocked-is-a-status.md) | 2026-08-21 | `tasks-and-specs` | `blocked` is a status, not a folder or a tag. |
+| [0002](tasks-and-specs/0002-selection-resumes-in-progress.md) | 2026-08-21 | `tasks-and-specs` | selection resumes `in-progress` before picking `pending`. |
+| [0003](tasks-and-specs/0003-skills-install-into-writrun.md) | 2026-08-21 | `tasks-and-specs` | skills install into `.writrun/skills/`, not a top-level `skills/`. |
+| [0004](tasks-and-specs/0004-writrun-create-task-and.md) | 2026-08-21 | `tasks-and-specs` | `writrun-create-task-and-spec` gains a generator script (`new.sh`). |
+| [0005](tasks-and-specs/0005-script-backed-skills-target.md) | 2026-08-21 | `tasks-and-specs` | script-backed skills target POSIX `awk`/`sed`, never gawk extensions. |
+| [0006](tasks-and-specs/0006-writrun-check-spec-deltas.md) | 2026-08-21 | `tasks-and-specs` | `writrun-check-spec-deltas` normalises promised paths to repository-root before comparing. |
+| [0007](tasks-and-specs/0007-a-permanent-doc-changes.md) | 2026-08-22 | `tasks-and-specs` | a permanent doc changes in two named directions, not one. |
+| [0008](tasks-and-specs/0008-ready-for-development-is.md) | 2026-08-22 | `tasks-and-specs` | "ready for development" is derived, never stored. |
+| [0009](tasks-and-specs/0009-nothing-in-this-methodology.md) | 2026-08-22 | `tasks-and-specs` | nothing in this methodology reserves a task. |
 | [0010](pull-requests/0010-ci-splits-into-a.md) | 2026-08-22 | `pull-requests` | CI splits into a mandatory read-only check and a best-effort write. |
 | [0011](github-issues/0011-the-github-issues-mirror.md) | 2026-08-22 | `github-issues` | the GitHub Issues mirror runs one direction only, and follows the pull request. |
-| [0012](core/0012-the-script-backed-skills.md) | 2026-08-22 | core | the script-backed skills carry a test suite. |
-| [0013](core/0013-new-sh-reads-git.md) | 2026-08-22 | core | `new.sh` reads git history, not only the filesystem, when assigning an id. |
+| [0012](tasks-and-specs/0012-the-script-backed-skills.md) | 2026-08-22 | `tasks-and-specs` | the script-backed skills carry a test suite. |
+| [0013](tasks-and-specs/0013-new-sh-reads-git.md) | 2026-08-22 | `tasks-and-specs` | `new.sh` reads git history, not only the filesystem, when assigning an id. |
 | [0014](pull-requests/0014-the-merge-stays-a.md) | 2026-08-22 | `pull-requests` | the merge stays a separate manual act; approval does not auto-merge. |
 | [0015](pull-requests/0015-a-spec-that-enters.md) | 2026-08-22 | `pull-requests` | a spec that enters the tree already `approved` is judged against the forge's review record. |
-| [0016](core/0016-a-multi-spec-completion.md) | 2026-08-22 | core | a multi-spec completion is checked against the union of its promises. |
-| [0017](core/0017-the-queue-lives-in.md) | 2026-08-22 | core | the queue lives in `work/`, not `docs/`. |
-| [0018](core/0018-an-approved-spec-s.md) | 2026-08-22 | core | an approved spec's content changes only through draft. |
-| [0019](core/0019-the-task-s-doc.md) | 2026-08-22 | core | the task's doc reference is `doc_ref`: any path under `docs/`. |
-| [0020](core/0020-a-cli-is-welcome.md) | 2026-08-22 | core | a CLI is welcome, as a separate repository, never as a dependency. |
-| [0021](core/0021-the-adoption-kit-is.md) | 2026-08-22 | core | the adoption kit is `template/`: a full copy, guarded by a test. |
+| [0016](tasks-and-specs/0016-a-multi-spec-completion.md) | 2026-08-22 | `tasks-and-specs` | a multi-spec completion is checked against the union of its promises. |
+| [0017](tasks-and-specs/0017-the-queue-lives-in.md) | 2026-08-22 | `tasks-and-specs` | the queue lives in `work/`, not `docs/`. |
+| [0018](tasks-and-specs/0018-an-approved-spec-s.md) | 2026-08-22 | `tasks-and-specs` | an approved spec's content changes only through draft. |
+| [0019](tasks-and-specs/0019-the-task-s-doc.md) | 2026-08-22 | `tasks-and-specs` | the task's doc reference is `doc_ref`: any path under `docs/`. |
+| [0020](tasks-and-specs/0020-a-cli-is-welcome.md) | 2026-08-22 | `tasks-and-specs` | a CLI is welcome, as a separate repository, never as a dependency. |
+| [0021](tasks-and-specs/0021-the-adoption-kit-is.md) | 2026-08-22 | `tasks-and-specs` | the adoption kit is `template/`: a full copy, guarded by a test. |
 | [0022](pull-requests/0022-derivation-is-reviewable-before.md) | 2026-08-22 | `pull-requests` | derivation is reviewable before it is public. |
 | [0023](github-issues/0023-mirrors-defer-to-authority.md) | 2026-08-22 | `github-issues` | mirrors defer to authority, and tell a draft from a review. |
-| [0024](core/0024-generated-shapes-resolve-in.md) | 2026-08-22 | core | generated shapes resolve in layers: the project's, then `.writrun/`, then the script. |
-| [0025](core/0025-the-selection-algorithm-s.md) | 2026-08-22 | core | the selection algorithm's filters and its sort bind different parties. |
-| [0026](core/0026-the-queue-is-printable.md) | 2026-08-22 | core | the queue is printable, not just selectable. |
-| [0027](core/0027-the-diagrams-paint-their.md) | 2026-08-22 | core | the diagrams paint their own background. |
-| [0028](core/0028-acceptance-criteria-are-not.md) | 2026-08-22 | core | acceptance criteria are not judged by a model, and CI does not run the adopter's tests. |
-| [0029](core/0029-writrun-check-task-state.md) | 2026-08-22 | core | `writrun-check-task-state` runs after the completion statuses are set, not before. |
+| [0024](tasks-and-specs/0024-generated-shapes-resolve-in.md) | 2026-08-22 | `tasks-and-specs` | generated shapes resolve in layers: the project's, then `.writrun/`, then the script. |
+| [0025](tasks-and-specs/0025-the-selection-algorithm-s.md) | 2026-08-22 | `tasks-and-specs` | the selection algorithm's filters and its sort bind different parties. |
+| [0026](tasks-and-specs/0026-the-queue-is-printable.md) | 2026-08-22 | `tasks-and-specs` | the queue is printable, not just selectable. |
+| [0027](tasks-and-specs/0027-the-diagrams-paint-their.md) | 2026-08-22 | `tasks-and-specs` | the diagrams paint their own background. |
+| [0028](tasks-and-specs/0028-acceptance-criteria-are-not.md) | 2026-08-22 | `tasks-and-specs` | acceptance criteria are not judged by a model, and CI does not run the adopter's tests. |
+| [0029](tasks-and-specs/0029-writrun-check-task-state.md) | 2026-08-22 | `tasks-and-specs` | `writrun-check-task-state` runs after the completion statuses are set, not before. |
 | [0030](release/0030-the-version-number-is.md) | 2026-08-23 | release | the version number is computed, never typed. |
 | [0031](github-issues/0031-the-mirror-workflows-logic.md) | 2026-08-23 | `github-issues` | the mirror workflows' logic moved out of the YAML too. |
-| [0032](core/0032-a-status-transition-is.md) | 2026-08-23 | core | a status transition is read from the front matter at the range's two ends, never grepped out of the diff. |
+| [0032](tasks-and-specs/0032-a-status-transition-is.md) | 2026-08-23 | `tasks-and-specs` | a status transition is read from the front matter at the range's two ends, never grepped out of the diff. |
 | [0033](pull-requests/0033-an-approving-review-vouches.md) | 2026-08-23 | `pull-requests` | an approving review vouches for the pull request, not for a commit. |
-| [0034](core/0034-the-flows-live-in.md) | 2026-08-23 | core | the flows live in the permanent docs; the README summarizes. |
-| [0035](core/0035-canonical-front-matter-is.md) | 2026-08-23 | core | canonical front matter is enforced, not assumed. |
-| [0036](core/0036-the-template-sync-is.md) | 2026-08-23 | core | the template sync is a script, not a Makefile recipe. |
-| [0037](core/0037-decisions-are-history-split.md) | 2026-08-23 | core | decisions are history, split from the living reference. |
-| [0038](core/0038-contract-front-matter-is.md) | 2026-08-23 | core | contract front matter is generated; extension front matter is the template's. |
+| [0034](tasks-and-specs/0034-the-flows-live-in.md) | 2026-08-23 | `tasks-and-specs` | the flows live in the permanent docs; the README summarizes. |
+| [0035](tasks-and-specs/0035-canonical-front-matter-is.md) | 2026-08-23 | `tasks-and-specs` | canonical front matter is enforced, not assumed. |
+| [0036](tasks-and-specs/0036-the-template-sync-is.md) | 2026-08-23 | `tasks-and-specs` | the template sync is a script, not a Makefile recipe. |
+| [0037](tasks-and-specs/0037-decisions-are-history-split.md) | 2026-08-23 | `tasks-and-specs` | decisions are history, split from the living reference. |
+| [0038](tasks-and-specs/0038-contract-front-matter-is.md) | 2026-08-23 | `tasks-and-specs` | contract front matter is generated; extension front matter is the template's. |
 | [0039](release/0039-a-release-verifies-the.md) | 2026-08-23 | release | a release verifies the sync produced nothing but the stamp. |
 | [0040](release/0040-main-gets-a-release.md) | 2026-08-23 | release | main gets a release pipeline of its own; the cut stays local. |
 | [0041](github-issues/0041-the-issues-mirror-is.md) | 2026-08-23 | `github-issues` | the Issues mirror is severable, and the kit says so. |
 | [0042](release/0042-an-unusable-gh-aborts.md) | 2026-08-24 | release | an unusable gh aborts the release before anything is mutated. |
 | [0043](pull-requests/0043-the-merge-is-this.md) | 2026-08-28 | `pull-requests` | the merge is this repository's assenting act, because its maintainer cannot review his own pull requests. |
 | [0044](github-issues/0044-a-proposed-task-and.md) | 2026-08-28 | `github-issues` | a proposed task and a queued one stop sharing a label. |
-| [0045](core/0045-one-decision-per-file.md) | 2026-08-28 | core | one decision per file, numbered — reversing part of 0037. |
+| [0045](tasks-and-specs/0045-one-decision-per-file.md) | 2026-08-28 | `tasks-and-specs` | one decision per file, numbered — reversing part of 0037. |
 | [0046](pull-requests/0046-the-task-tag-leads.md) | 2026-08-28 | `pull-requests` | the task tag leads the title, one bracket per task. |
-| [0047](core/0047-a-task-carries-four-dates.md) | 2026-08-28 | core | a task carries four dates, and who writes each is the contract. |
+| [0047](tasks-and-specs/0047-a-task-carries-four-dates.md) | 2026-08-28 | `tasks-and-specs` | a task carries four dates, and who writes each is the contract. |
 | [0048](github-issues/0048-a-label-names-a-place.md) | 2026-08-28 | `github-issues` | a label names a place in the pipeline, so a closed mirror has none. |
-| [0049](core/0049-dates-are-utc-timestamps.md) | 2026-08-28 | core | every queue date is a UTC timestamp, spelled with Z. |
-| [0050](core/0050-the-subject-slug-is-chosen.md) | 2026-08-28 | core | the filename's subject slug is chosen, not sliced off the title. |
+| [0049](tasks-and-specs/0049-dates-are-utc-timestamps.md) | 2026-08-28 | `tasks-and-specs` | every queue date is a UTC timestamp, spelled with Z. |
+| [0050](tasks-and-specs/0050-the-subject-slug-is-chosen.md) | 2026-08-28 | `tasks-and-specs` | the filename's subject slug is chosen, not sliced off the title. |
 | [0051](pull-requests/0051-an-id-is-unique-across-open-prs.md) | 2026-08-28 | `pull-requests` | an id is unique across open pull requests, not just across a branch. |
