@@ -86,7 +86,10 @@ rank() {
 # signal a forge can be asked for: an open pull request means somebody is
 # already working on that task.
 #
-# Set WRITRUN_PR_LIST to bypass `gh` — lines of "number<TAB>branch<TAB>author".
+# Set WRITRUN_PR_LIST to bypass `gh` — lines of
+# "number<TAB>branch<TAB>author<TAB>title". The title is optional: a line
+# without it still resolves through the branch, which is what a pull
+# request opened before the tag convention looks like.
 # Absent `gh`, a remote, or authentication, this degrades to files only and
 # says so rather than implying nobody is working.
 
@@ -104,17 +107,42 @@ elif command -v gh >/dev/null 2>&1; then
   # raised, and *hitting* it is reported at the end rather than passed
   # off as a complete answer.
   if pr_lines=$(gh pr list --state open --limit "$PR_FETCH_LIMIT" \
-        --json number,headRefName,author \
-        --jq '.[] | "\(.number)\t\(.headRefName)\t\(.author.login)"' 2>/dev/null); then
+        --json number,headRefName,author,title \
+        --jq '.[] | "\(.number)\t\(.headRefName)\t\(.author.login)\t\(.title)"' 2>/dev/null); then
     pr_source="gh"
   fi
 fi
 
 if [ "$pr_source" != "none" ]; then
-  while IFS="$(printf '\t')" read -r num branch author; do
+  while IFS="$(printf '\t')" read -r num branch author ptitle; do
     [ -n "$branch" ] || continue
-    # A branch is named after the spec it implements, or the task when there
-    # is none — so a spec has to be resolved back to its task_ref.
+
+    # The title is the authority on which tasks a pull request carries: a
+    # branch name holds one id, and a PR may carry several. Every task
+    # tagged in the leading run is in flight; only when the title carries
+    # no tag does the branch marker answer instead.
+    tagged=""
+    rest="${ptitle:-}"
+    while :; do
+      rest=$(printf '%s' "$rest" | sed 's/^[[:space:]]*//')
+      tg=$(printf '%s' "$rest" \
+        | sed -n 's/^\[[Tt][Aa][Ss][Kk]-0*\([0-9][0-9]*\)\].*/\1/p')
+      [ -n "$tg" ] || break
+      tf=$(num_file "$TASK_DIR" task "$tg")
+      if [ -n "$tf" ]; then tid=$(field "$tf" id)
+      else tid=$(printf 'task-%04d' "$tg"); fi
+      tagged="${tagged} ${tid}"
+      rest=$(printf '%s' "$rest" | sed 's/^\[[Tt][Aa][Ss][Kk]-[0-9][0-9]*\]//')
+    done
+    if [ -n "$tagged" ]; then
+      for tid in $tagged; do
+        taken="${taken}$(printf '%s' "$tid" | tr '[:upper:]' '[:lower:]')|#${num}|${author}"$'\n'
+      done
+      continue
+    fi
+
+    # A branch is named after the task being worked, or historically after
+    # the spec, which resolves back through its task_ref.
     ref=""
     tn=$(printf '%s' "$branch" | sed -n 's|^[a-z]*/\{0,1\}task-0*\([0-9][0-9]*\).*|\1|p')
     if [ -z "$tn" ]; then
