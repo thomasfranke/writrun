@@ -6,10 +6,18 @@ generator (`new.sh`) writes it. What is taste, and this file's to state:
 
 - **Title**: imperative and outcome-shaped ("Mirror the queue into
   Issues"), never activity-shaped ("Work on the mirror").
-- **Filename subject**: `task-NNNN-<subject>.md` — the id plus an
-  extremely short kebab-case echo of the title, two or three words
-  (`task-0012-issue-mirrors.md`). Fixed at creation: a later retitle
-  never renames the file.
+- **Filename subject**: `task-NNNN-<subject>.md` — the id plus two or
+  three kebab-case words (`task-0012-issue-mirrors.md`). Fixed at
+  creation: a later retitle never renames the file.
+
+  **Choose those words; do not let them fall out of the title.** They are
+  what a directory listing shows, so they must say which task this is
+  among its neighbours — which is a judgement about the queue, not a
+  string operation on one sentence. Taking the title's first three words
+  produces `task-0009-stamp-queued-and`: grammatical, and it ends on a
+  conjunction that identifies nothing. The generator still derives a slug
+  when none is given, because a mechanical name beats a missing file; it
+  is the fallback, not the intent.
 - **Body**: the request only — what to do, and why it matters. No
   acceptance criteria, no step-by-step plan, no technical detail: that
   belongs in the spec.
