@@ -6,8 +6,9 @@ see the [spec schema](../docs/technical/README.md#spec-schema). What is
 taste, and this file's to state:
 
 - **Title**: `spec-NNNN — <what the change achieves>`.
-- **Filename subject**: `spec-NNNN-<subject>.md` — same shape as a task
-  file: the id plus a two-or-three-word kebab-case echo of the title,
+- **Filename subject**: `spec-NNNN-<subject>.md` — same shape and same
+  rule as a task file: two or three kebab-case words, **chosen** to
+  identify this spec in a listing rather than sliced off the title, and
   fixed at creation.
 - **Acceptance criteria**: EARS form — `When <trigger>, the system shall
   <response>` — one criterion per testable behaviour.

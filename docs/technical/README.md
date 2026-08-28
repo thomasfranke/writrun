@@ -60,6 +60,10 @@ merged: null                       # machinery only: the merge that took the wor
   (`task-0005-multi-file-search.md`), so a directory listing reads as a
   queue summary. The slug is fixed at creation: reprioritising or
   retitling never renames a file, and identity lives in the id alone.
+  **Whoever creates the file chooses those words**, because "which task
+  is this, among these" is a judgement about the queue rather than a
+  string operation on the title; a generator derives them only when
+  nobody chose.
 - `spec_ref` is a list because the relationship is 0..N: a task can ship
   without a spec (trivial-but-tracked work) or span several (sequential phases,
   or parallel concerns of the same task). An empty list is valid and explicit
