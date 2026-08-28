@@ -143,7 +143,7 @@ everything under `docs/` is the input tasks are created from.
    it is today; `work/` describes changes in flight — the split is
    structural, at the repository root. A finished spec is history, not
    documentation.
-4. **Identity is never order.** An id (`task-005`, `spec-011`) is permanent.
+4. **Identity is never order.** An id (`task-0005`, `spec-0011`) is permanent.
    Priority, sequencing, and status live in mutable fields, so reprioritising
    never touches a filename.
 5. **No drift by construction, not by discipline.** A completed unit of work

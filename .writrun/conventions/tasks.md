@@ -6,6 +6,10 @@ generator (`new.sh`) writes it. What is taste, and this file's to state:
 
 - **Title**: imperative and outcome-shaped ("Mirror the queue into
   Issues"), never activity-shaped ("Work on the mirror").
+- **Filename subject**: `task-NNNN-<subject>.md` — the id plus an
+  extremely short kebab-case echo of the title, two or three words
+  (`task-0012-issue-mirrors.md`). Fixed at creation: a later retitle
+  never renames the file.
 - **Body**: the request only — what to do, and why it matters. No
   acceptance criteria, no step-by-step plan, no technical detail: that
   belongs in the spec.

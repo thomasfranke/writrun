@@ -7,10 +7,12 @@ is its elaboration. The task always exists before its spec.
 
 ## Two invariants
 
-- **Identity is never order.** A task's id (`task-005`) is permanent.
-  Priority, sequencing, and status live in mutable front-matter fields, so
-  reprioritising work never renames a file, and a deleted task's id is never
-  reused.
+- **Identity is never order.** A task's id (`task-0005`) is permanent, and
+  identity lives in the id alone — the filename's extremely short subject
+  slug (`task-0005-multi-file-search.md`) is a courtesy to whoever reads
+  the directory, fixed at creation. Priority, sequencing, and status live
+  in mutable front-matter fields, so reprioritising or retitling work
+  never renames a file, and a deleted task's id is never reused.
 - **No technical detail in the task body.** If a sentence in a task reads
   like an implementation step, an acceptance criterion, or an edge case, it
   belongs in the spec. A task that tries to also be its own spec breaks the
@@ -52,13 +54,13 @@ omitted field is never the same as an empty one:
 
 ```yaml
 ---
-id: task-005
+id: task-0005
 status: pending
 blocked_reason: null
-spec_ref: [spec-011]
+spec_ref: [spec-0011]
 doc_ref: product/editor/search-and-replace.md#scope
 priority: high
-depends_on: [task-003]
+depends_on: [task-0003]
 milestone: v0.1-core
 created: 2026-08-21
 completed: null
@@ -69,14 +71,14 @@ completed: null
 Allow a user to search and replace text across every open `.md` file at
 once, not just the current one.
 
-Full detail in spec-011.
+Full detail in spec-0011.
 ```
 
 Three details worth naming, because a hand-written task drifted on exactly
 these while drafting this chapter:
 
-- **`spec_ref` is always a list**, `[spec-011]`, even for a single spec —
-  never the bare scalar `spec-011`. The relationship is 0..N; the syntax
+- **`spec_ref` is always a list**, `[spec-0011]`, even for a single spec —
+  never the bare scalar `spec-0011`. The relationship is 0..N; the syntax
   says so even when N happens to be 1.
 - **`doc_ref` is a full path with an anchor, resolved relative to
   `docs/`** — `product/editor/search-and-replace.md#scope`, never a bare

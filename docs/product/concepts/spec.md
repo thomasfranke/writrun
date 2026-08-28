@@ -55,13 +55,13 @@ The spec for the task shown in [Task](task.md#example):
 
 ```yaml
 ---
-id: spec-011
-task_ref: task-005
+id: spec-0011
+task_ref: task-0005
 status: draft
 created: 2026-08-21
 ---
 
-# spec-011 — Search and replace across multiple files
+# spec-0011 — Search and replace across multiple files
 
 - **Goal:** let a user find and replace text across every open `.md` file
   in one operation, instead of repeating the same edit file by file.

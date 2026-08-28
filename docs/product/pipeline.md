@@ -145,7 +145,7 @@ reporting a task as free.
 flowchart LR
     A1["AGENT<br/>writrun-select-next-task<br/>takes the next one"]
     A2["HUMAN<br/>list_tasks.sh<br/>picks any available one"]
-    B["AGENT<br/>branch spec/NNN-name<br/>task: → in-progress"]
+    B["AGENT<br/>branch spec/NNNN-name<br/>task: → in-progress"]
     A1 --> B
     A2 --> B
 ```
@@ -188,8 +188,8 @@ and that no status moved through a gate it should not have. Whether the
 code works is the adopting project's own pipeline's answer; WritRun does
 not duplicate it or stand in for it.
 
-The mirror follows the PR: `status:in-review` while it is open, closed once
-a merge carries the task to `completed`. **`in-review` is a label of its own
+Each task the PR carries has its mirror follow it: `status:in-review`
+while the PR is open, closed once a merge carries the task to `completed`. **`in-review` is a label of its own
 rather than part of `in-progress`** because the two ask opposite things of
 the maintainer — one means leave the worker alone, the other means the
 maintainer is the blocker.

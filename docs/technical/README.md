@@ -39,20 +39,24 @@ not about folder names.
 
 ```yaml
 ---
-id: task-005                       # immutable identity, never an ordering
+id: task-0005                      # immutable identity, never an ordering
 status: pending                    # pending | in-progress | blocked | completed
 blocked_reason: null               # required non-null when status: blocked; null otherwise
-spec_ref: [spec-004]               # list — zero, one, or many specs
+spec_ref: [spec-0004]              # list — zero, one, or many specs
 doc_ref: product/concepts/task.md#two-invariants   # any path under docs/; null only when the task originates in code or machinery, not in a doc
 priority: medium                   # high | medium | low
-depends_on: [task-002]             # real technical blocking, not sequencing taste
+depends_on: [task-0002]            # real technical blocking, not sequencing taste
 milestone: v0.1-core
 created: 2026-08-21
 completed: null
 ---
 ```
 
-- `id` is identity, never order. Reprioritising never renames a file.
+- `id` is identity, never order. A task file is named
+  `task-NNNN-<subject>.md` — the id plus an extremely short subject slug
+  (`task-0005-multi-file-search.md`), so a directory listing reads as a
+  queue summary. The slug is fixed at creation: reprioritising or
+  retitling never renames a file, and identity lives in the id alone.
 - `spec_ref` is a list because the relationship is 0..N: a task can ship
   without a spec (trivial-but-tracked work) or span several (sequential phases,
   or parallel concerns of the same task). An empty list is valid and explicit
@@ -86,12 +90,16 @@ blocker is a task, it's a dependency.
 
 ```yaml
 ---
-id: spec-004
-task_ref: task-005                 # a spec belongs to exactly one task
+id: spec-0004
+task_ref: task-0005                # a spec belongs to exactly one task
 status: draft                      # draft | approved | implemented
 created: 2026-08-20
 ---
 ```
+
+A spec file is named `spec-NNNN-<subject>.md`, the same shape as a
+task's — four-digit id plus an extremely short subject slug, fixed at
+creation.
 
 The `draft → approved` transition is a gate, and **who operates it is an
 adopter decision, declared in `AGENTS.md`** — this methodology's own
@@ -138,8 +146,9 @@ a folded scalar reads as nothing. Silently, in every case.
 So the canonical form is a checked contract, not an assumption: one
 field per line as `key: value`, values bare (no quotes, no `>`/`|`
 block scalars), every schema field present exactly once even when
-`null`, lists inline (`[]` or `[spec-001, spec-002]`), `id` agreeing
-with the filename, statuses and priority drawn only from their
+`null`, lists inline (`[]` or `[spec-0001, spec-0002]`), `id` agreeing
+with the filename — exactly for a spec, as the `task-NNNN` prefix of
+`task-NNNN-<subject>.md` for a task — statuses and priority drawn only from their
 documented vocabularies, `blocked`/`blocked_reason` paired both ways,
 dates as `YYYY-MM-DD`, and `doc_ref` written relative to `docs/`.
 Unknown keys in canonical shape are allowed — an adopter may extend the

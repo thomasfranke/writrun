@@ -8,6 +8,9 @@
   repository): `about`, `product`, `technical`, `tasks`, `specs`,
   `skills`, `ci`, `tests`, `agents`.
 - Example: `docs(product): add the coverage-rule concept chapter`.
+- Squash-only means the PR title is the commit that lands, so an
+  implementing change's summary ends with its `[TASK-NNNN]` tag — see
+  [prs.md](prs.md).
 - Trivial work is a commit, never a task (principle 6).
 
 The one commit the machinery makes — `writrun approve`'s recording flip —
