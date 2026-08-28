@@ -25,6 +25,13 @@ A task is available only when it is `pending` **and** every spec in its
 the task is not authorized work — if every task is held back that way, say
 so rather than reporting an empty queue.
 
+**Taking a task ends with its draft pull request open, not with the
+branch created.** Branch as `task/NNNN-short-name`, set the task
+`in-progress`, push, and open the PR as a draft *before* implementing —
+the branch is invisible until it reaches the forge, and the draft is
+what moves the mirror to `status:in-progress`. Mark it ready for review
+when the work is done, which moves the mirror to `status:in-review`.
+
 ## Creating tasks and specs
 
 Use the [`writrun-create-task-and-spec`](.writrun/skills/writrun-create-task-and-spec/SKILL.md)
@@ -40,7 +47,7 @@ Two, and they are not handled the same way — see
 |---|---|---|---|
 | Is | a rule that isn't true yet | work discovered that an existing rule already authorizes | an approved spec |
 | Touches | `docs/` + the work it derives | `work/` only — no permanent doc | code + the docs its spec promised |
-| Branch | `docs/short-name` | `queue/short-name` | `spec/NNNN-short-name` |
+| Branch | `docs/short-name` | `queue/short-name` | `task/NNNN-short-name` |
 | PR states | the tasks and specs it created | the tasks and specs it adds, and the rule they derive from | the spec(s) it implements, every carried task tagged `[TASK-NNNN]` in the title |
 | `writrun-check-spec-deltas` | does not apply | does not apply | must exit 0 |
 | `writrun-check-task-state` | must exit 0 | must exit 0 | must exit 0 |
