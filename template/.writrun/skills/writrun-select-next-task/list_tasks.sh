@@ -33,16 +33,40 @@ list_field() {
   field "$1" "$2" | tr -d '[]' | tr ',' ' '
 }
 
+# A queue file is named <id>.md or <id>-<subject>.md — the subject slug
+# makes a listing readable and is never identity, so both resolve here.
+queue_file() {
+  find "$1" \( -iname "$2.md" -o -iname "$2-*.md" \) 2>/dev/null | head -n1
+}
+
+# num_file <dir> <prefix> <number> — the queue file whose id is that
+# number, whatever width it was written at. A branch names a number, not
+# an id, so `spec/0001-name` and a historical `spec/001-name` must both
+# reach the one spec-0001 file that exists.
+num_file() {
+  local want f n
+  want=$(printf '%s' "$3" | sed -n 's/^0*\([0-9][0-9]*\)$/\1/p')
+  [ -n "$want" ] || return 0
+  for f in "$1"/"$2"-*.md; do
+    [ -f "$f" ] || continue
+    n=$(basename "$f" .md | tr '[:upper:]' '[:lower:]' \
+      | sed -n "s/^$2-0*\([0-9][0-9]*\).*/\1/p")
+    [ -n "$n" ] || continue
+    if [ "$n" -eq "$want" ] 2>/dev/null; then printf '%s' "$f"; return 0; fi
+  done
+  return 0
+}
+
 spec_status() {
   local f
-  f=$(find "$SPEC_DIR" -iname "$1.md" 2>/dev/null | head -n1)
+  f=$(queue_file "$SPEC_DIR" "$1")
   [ -n "$f" ] || { echo "missing"; return; }
   field "$f" status
 }
 
 task_status() {
   local f
-  f=$(find "$TASK_DIR" -iname "$1.md" 2>/dev/null | head -n1)
+  f=$(queue_file "$TASK_DIR" "$1")
   [ -n "$f" ] || { echo "missing"; return; }
   field "$f" status
 }
@@ -91,22 +115,26 @@ if [ "$pr_source" != "none" ]; then
     [ -n "$branch" ] || continue
     # A branch is named after the spec it implements, or the task when there
     # is none — so a spec has to be resolved back to its task_ref.
-    ref=$(printf '%s' "$branch" | sed -n 's|^[a-z]*/\{0,1\}\(task-[0-9][0-9]*\).*|\1|p')
-    if [ -z "$ref" ]; then
-      sref=$(printf '%s' "$branch" | sed -n 's|^[a-z]*/\{0,1\}\(spec-[0-9][0-9]*\).*|\1|p')
-      if [ -z "$sref" ]; then
-        # `spec/003-name` — the bare number form the branch convention uses.
-        n=$(printf '%s' "$branch" | sed -n 's|^spec/0*\([0-9][0-9]*\).*|\1|p')
-        [ -n "$n" ] && sref=$(printf 'spec-%03d' "$n")
+    ref=""
+    tn=$(printf '%s' "$branch" | sed -n 's|^[a-z]*/\{0,1\}task-0*\([0-9][0-9]*\).*|\1|p')
+    if [ -z "$tn" ]; then
+      sn=$(printf '%s' "$branch" | sed -n 's|^[a-z]*/\{0,1\}spec-0*\([0-9][0-9]*\).*|\1|p')
+      if [ -z "$sn" ]; then
+        # `spec/0003-name` — the bare number form the branch convention uses.
+        sn=$(printf '%s' "$branch" | sed -n 's|^spec/0*\([0-9][0-9]*\).*|\1|p')
       fi
-      if [ -n "$sref" ]; then
-        sf=$(find "$SPEC_DIR" -iname "$sref.md" 2>/dev/null | head -n1)
+      if [ -n "$sn" ]; then
+        sf=$(num_file "$SPEC_DIR" spec "$sn")
         [ -n "$sf" ] && ref=$(field "$sf" task_ref)
       fi
       if [ -z "$ref" ]; then
-        n=$(printf '%s' "$branch" | sed -n 's|^task/0*\([0-9][0-9]*\).*|\1|p')
-        [ -n "$n" ] && ref=$(printf 'task-%03d' "$n")
+        tn=$(printf '%s' "$branch" | sed -n 's|^task/0*\([0-9][0-9]*\).*|\1|p')
       fi
+    fi
+    if [ -z "$ref" ] && [ -n "$tn" ]; then
+      tf=$(num_file "$TASK_DIR" task "$tn")
+      if [ -n "$tf" ]; then ref=$(field "$tf" id)
+      else ref=$(printf 'task-%04d' "$tn"); fi
     fi
     [ -n "$ref" ] && taken="${taken}$(printf '%s' "$ref" | tr '[:upper:]' '[:lower:]')|#${num}|${author}"$'\n'
   done <<EOF

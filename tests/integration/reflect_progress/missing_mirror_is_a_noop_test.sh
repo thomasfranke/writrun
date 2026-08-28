@@ -5,7 +5,7 @@
 # and nothing is written.
 setup_forge
 export PR_HEAD_REF="task/007-cleanup"
-check "a task without a mirror is a no-op" 0 "No mirrored Issue for task-007." \
+check "a task without a mirror is a no-op" 0 "No mirrored Issue for task-0007." \
   -- bash "$REFLECT_PROGRESS" o/r 7
 forge_not_told "nothing is written" "-X PUT"
 forge_not_told "and nothing is closed" "-X PATCH"

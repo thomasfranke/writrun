@@ -27,19 +27,21 @@ drift this script exists to make impossible:
 ```bash
 bash .writrun/skills/writrun-create-task-and-spec/new.sh task "<title>" \
   [--priority high|medium|low] \
-  [--depends-on task-nnn,task-mmm] \
+  [--depends-on task-nnnn,task-mmmm] \
   [--doc-ref path/to/doc.md#anchor] \
   [--milestone name]
 ```
 
-It finds the highest existing `task-nnn` id and increments it (never reuses
+It finds the highest existing `task-nnnn` id and increments it (never reuses
 or renumbers one, even if a task was later deleted), and writes
-`work/tasks/task-nnn.md` with every field present explicitly — an empty
-list is never the same as an omitted field:
+`work/tasks/task-nnnn-<subject>.md` — the id plus an extremely short
+kebab-case echo of the title, which makes a directory listing readable
+without ever being identity — with every field present explicitly, an
+empty list never the same as an omitted field:
 
 ```yaml
 ---
-id: task-nnn
+id: task-nnnn
 status: pending
 blocked_reason: null
 spec_ref: []
@@ -99,13 +101,16 @@ missing one costs an agent guessing at scope.
 Same generator, second subcommand:
 
 ```bash
-bash .writrun/skills/writrun-create-task-and-spec/new.sh spec task-nnn "<title>"
+bash .writrun/skills/writrun-create-task-and-spec/new.sh spec task-nnnn "<title>"
 ```
 
 `task_ref` must point at a task that already exists — the script refuses
-otherwise, because a spec is never created before its task. It finds the
-highest existing `spec-nnn` id and increments it, writes
-`work/specs/spec-nnn.md` with `status: draft` and a body skeleton (Scope,
+otherwise, because a spec is never created before its task; it resolves the
+argument by number, so any spelling of the task's id finds it, and records
+the id the task file itself carries. It finds the
+highest existing `spec-nnnn` id and increments it, writes
+`work/specs/spec-nnnn-<subject>.md` — named the same way a task is — with
+`status: draft` and a body skeleton (Scope,
 Steps, Acceptance criteria, Edge cases, Tests required, Definition of Done,
 and both Proposed-changes sections defaulted to "none"), and **appends**
 the new spec's id to the task's `spec_ref` list itself — never overwriting

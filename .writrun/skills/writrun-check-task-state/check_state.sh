@@ -130,7 +130,9 @@ for f in $CHANGED; do
         refs=$(fm_now "$f" spec_ref | tr -d '[]' | tr ',' ' ')
         for ref in $refs; do
           [ -n "$ref" ] || continue
-          spec=$(find work/specs -iname "${ref}.md" 2>/dev/null | head -n1)
+          # <id>.md or <id>-<subject>.md — the subject slug is not identity.
+          spec=$(find work/specs \
+            \( -iname "${ref}.md" -o -iname "${ref}-*.md" \) 2>/dev/null | head -n1)
           if [ -z "$spec" ]; then
             echo "BROKEN: ${f} lists ${ref} in spec_ref, which resolves to no file." >&2
             status=1
