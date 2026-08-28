@@ -65,3 +65,4 @@ and only ever by appending a row.
 | [0048](0048-a-label-names-a-place.md) | 2026-08-28 | a label names a place in the pipeline, so a closed mirror has none. |
 | [0049](0049-dates-are-utc-timestamps.md) | 2026-08-28 | every queue date is a UTC timestamp, spelled with Z. |
 | [0050](0050-the-subject-slug-is-chosen.md) | 2026-08-28 | the filename's subject slug is chosen, not sliced off the title. |
+| [0051](0051-an-id-is-unique-across-open-prs.md) | 2026-08-28 | an id is unique across open pull requests, not just across a branch. |
