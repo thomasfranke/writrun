@@ -15,7 +15,7 @@
 #
 # These exist because check_deltas.sh once shipped with a path-prefix bug
 # that meant it had never passed and could not have — caught by reading it,
-# not by running it (docs/technical/decisions.md). A check nobody
+# not by running it (docs/technical/decisions/). A check nobody
 # executes is a check nobody can trust.
 
 set -uo pipefail

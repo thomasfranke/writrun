@@ -151,7 +151,7 @@ No secrets, no App token, no PAT. Labels are created on first use.
 | Settings → Actions → General | Workflow permissions | **Read and write** — lets `writrun approve` record `draft → approved`. Read-only loses only that convenience; every check still works. |
 | Settings → Branches → rule on `main` | Require a pull request before merging | **On**, 1 approval. |
 | Settings → Branches → rule on `main` | Dismiss stale approvals when new commits are pushed | **Off** — the recording push would dismiss the approval it records. |
-| Settings → Branches → rule on `main` | Required status checks | Optional: the four `writrun check` jobs. If required, **do not apply the rule to administrators** ([why](docs/technical/decisions.md)). |
+| Settings → Branches → rule on `main` | Required status checks | Optional: the four `writrun check` jobs. If required, **do not apply the rule to administrators** ([why](docs/technical/decisions/README.md)). |
 
 For this repository itself (not adopters): Settings → General →
 Description = `What is written, runs. Autogen tasks and specs from your
@@ -193,7 +193,7 @@ Everything relevant lives in [`docs/`](docs):
 | [About](docs/about.md) | What this project is, who it's for, and what it refuses to become |
 | [Product](docs/product/README.md) | What the methodology prescribes, rule by rule — read in order, like a book |
 | [Technical](docs/technical/README.md) | Schemas, the task selection algorithm, and how the skills are distributed |
-| [Decisions](docs/technical/decisions.md) | The dated why behind each piece of machinery, and what was rejected |
+| [Decisions](docs/technical/decisions/README.md) | The dated why behind each piece of machinery, and what was rejected |
 | [Tasks](work/tasks/README.md) | This project's own queue — it dogfoods itself |
 | [Specs](work/specs/README.md) | The detail of each change made to this repo |
 | [Skills](.writrun/skills) | `writrun-select-next-task`, `writrun-create-task-and-spec`, `writrun-check-spec-deltas`, `writrun-check-task-state` — installed into an adopting project's own `.writrun/skills/` |
@@ -212,7 +212,7 @@ next milestone for each, separately.
 
 That gap already cost something: a review before the first commit found the
 check had a fatal path-prefix bug and could never have passed — see the
-dated entry in [Technical](docs/technical/decisions.md). The same
+dated entry in [Technical](docs/technical/decisions/README.md). The same
 review corrected the pipeline diagram above, which had ended at the agent
 rather than the code and left out the loop back to the permanent docs. Both
 went straight into the docs without a task or a spec, this once, since

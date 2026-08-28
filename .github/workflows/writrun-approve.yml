@@ -28,7 +28,7 @@ name: writrun approve
 #     squash-merge is an administrator waving through a commit no check
 #     re-ran: acceptable because the commit is deterministic and the checks
 #     passed on the exact state it was derived from
-#     (docs/technical/decisions.md).
+#     (docs/technical/decisions/).
 
 on:
   pull_request_review:
