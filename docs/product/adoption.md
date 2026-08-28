@@ -4,6 +4,32 @@ What a project must have, at minimum, to claim it follows WritRun — and
 where a project is free to shape that structure differently without it
 counting as non-compliance.
 
+## Three levels
+
+Adoption is progressive. Each level adds to the one before it, and a project
+declares which it is at in
+[`.writrun/conventions/settings.json`](../../.writrun/conventions/settings.json).
+
+| Level | Adds | Needs |
+|---|---|---|
+| `docs` | the docs and the queue, as markdown | nothing but files |
+| `flow` | branches, pull requests, the CI checks, merge as assent | a forge |
+| `mirror` | the GitHub Issues mirror | Issues |
+
+**`docs` is the minimum bar below**, and it is a complete adoption: the
+audience split, the queue, the schemas and the four gates are all satisfiable
+with files alone. What the higher levels add is *mechanical enforcement* of
+things a person otherwise does deliberately.
+
+The levels are ordered and cumulative, which is why the setting is one value
+and not three switches: `mirror` without `flow` would ask for a projection
+that pull-request events drive, with no pull requests to drive it.
+
+Each level's rules live in its own folder —
+[`pipeline/`](pipeline/README.md) is true at every level,
+[`flow/`](flow/README.md) and [`mirror/`](mirror/README.md) are what the
+other two add.
+
 ## Minimum bar
 
 All of the following, or the project is *adopting*, not *adopted*:
@@ -52,10 +78,20 @@ they are not judged the same way:
   is organized by concept or by feature, id prefixes, whether a spec is
   mandatory for every task or only for the ones [Task](concepts/task.md)'s
   own guidance flags. A project is free to choose either side of any of
-  these — the requirement is that the choice is stated somewhere a reader
-  would look for it (that project's own `about.md` or its `product/` /
-  `technical/` index), not left to be reverse-engineered from the file
-  tree.
+  these — the requirement is that the choice is **stated, not left to be
+  reverse-engineered from the file tree**.
+
+  **Where it is stated is
+  [`settings.json`](../../.writrun/conventions/settings.json).** "Somewhere a
+  reader would look" was honest about the obligation and vague about the
+  address. One known path ends the hunt, and the machinery reads the same
+  statement the reader does — so a choice cannot be declared in one place and
+  contradicted by what the tooling does.
+
+  Two limits. It carries **only what this section leaves open** — a key
+  switching off something from the core list is refused, not discouraged. And
+  it holds **values, never reasoning**: why a project chose a side stays in
+  its prose.
 
 ## Worked example: TOM
 
