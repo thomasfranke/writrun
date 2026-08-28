@@ -2,7 +2,7 @@
 id: spec-0015
 task_ref: task-0018
 status: draft
-created: 2026-08-28
+created: 2026-08-28T00:00:00Z
 ---
 
 # spec-0015 — Page the generator's forge scan

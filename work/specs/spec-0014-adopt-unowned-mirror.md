@@ -2,7 +2,7 @@
 id: spec-0014
 task_ref: task-0017
 status: draft
-created: 2026-08-28
+created: 2026-08-28T00:00:00Z
 ---
 
 # spec-0014 — Adopt an unowned mirror, never a live one
