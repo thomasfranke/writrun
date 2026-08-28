@@ -1,6 +1,6 @@
 ---
 id: task-0011
-status: pending
+status: in-progress
 blocked_reason: null
 spec_ref: [spec-0008]
 doc_ref: technical/README.md#front-matter-is-canonical
