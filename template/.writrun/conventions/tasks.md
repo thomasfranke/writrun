@@ -1,7 +1,7 @@
 # Tasks
 
 The front-matter schema is contract, not convention — see the
-[task schema](../docs/technical/README.md#task-schema) — and the
+[task schema](../../docs/technical/README.md#task-schema) — and the
 generator (`new.sh`) writes it. What is taste, and this file's to state:
 
 - **Title**: imperative and outcome-shaped ("Mirror the queue into

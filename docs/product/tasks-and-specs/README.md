@@ -21,19 +21,19 @@ were true once.
 
 ## The flow
 
-1. **Docs** — [a product doc](concepts/product-doc.md) or [a technical
-   doc](concepts/technical-doc.md) states what should be true. These two are
+1. **Docs** — [a product doc](../concepts/product-doc.md) or [a technical
+   doc](../concepts/technical-doc.md) states what should be true. These two are
    the input the rest of the pipeline works from, not a record of what was
    already built. Writing a rule here is **authoring**, described below.
-   [About](concepts/about.md) sits alongside them as the shared context
+   [About](../concepts/about.md) sits alongside them as the shared context
    every reader starts from — it is permanent, and a change to it goes
    through this same pipeline, but no task originates from it: About says
    what the project *is*, and work originates from what the system *does*
    or *how it is built*.
 2. **Task** — an agent (or a human) that finds work not yet tracked creates
-   its [task](concepts/task.md) first. A task never follows its own spec
+   its [task](../concepts/task.md) first. A task never follows its own spec
    into existence.
-3. **Spec** — a [spec](concepts/spec.md) elaborates one task: scope, steps,
+3. **Spec** — a [spec](../concepts/spec.md) elaborates one task: scope, steps,
    acceptance criteria, and the Proposed-changes contract that names every
    permanent doc the completed work will touch.
 4. **Code** — the derived artefact. It exists because a doc authorized it
@@ -44,7 +44,7 @@ were true once.
    This is **loop closure**, and it is the step that stops the input from
    going stale: without it, step 1 describes a system that no longer
    exists. Mechanically checked, not remembered — see
-   [`writrun-check-spec-deltas`](../../.writrun/skills/writrun-check-spec-deltas/SKILL.md).
+   [`writrun-check-spec-deltas`](../../../.writrun/skills/writrun-check-spec-deltas/SKILL.md).
 
 
 Each node names who acts. Only the human ones are decisions.

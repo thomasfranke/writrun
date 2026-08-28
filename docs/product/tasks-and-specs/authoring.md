@@ -64,7 +64,7 @@ change as undeclared.
 **Both modes leave the doc in the present tense.** A permanent doc is never
 a plan and never a changelog, in either direction. Authoring writes the rule
 as a rule, not as an intention: the doc says what the system does, and the
-[task queue](concepts/task.md) is what records that the system has not
+[task queue](../concepts/task.md) is what records that the system has not
 caught up yet. That separation is the whole reason a doc can lead
 implementation without becoming a roadmap — the gap lives in the queue,
 where it is tracked and closed, rather than in the prose, where it would

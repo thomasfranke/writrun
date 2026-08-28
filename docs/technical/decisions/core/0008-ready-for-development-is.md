@@ -4,7 +4,7 @@
 
 It is a
 task that is `pending` with every spec in its `spec_ref` `approved` — two
-facts the [selection algorithm](README.md#task-selection-algorithm) already reads.
+facts the [selection algorithm](../README.md#task-selection-algorithm) already reads.
 A status recording it would duplicate a derivable fact, and a duplicated
 fact eventually disagrees with its source. The same reasoning applies to
 "waiting for review", which is an open pull request and nothing else.

@@ -6,7 +6,7 @@ pull requests, tasks, and specs.
 **Every file here is the project's to edit.** WritRun ships them as
 defaults and its machinery reads none of them — mechanics depend only on
 the grep-level markers listed in the
-[public contract](../docs/technical/README.md#distribution).
+[public contract](../../docs/technical/README.md#distribution).
 Agents read these before writing; tooling (a commit-msg hook, a PR
 opener) validates against whatever they say.
 
