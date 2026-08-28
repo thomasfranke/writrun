@@ -51,8 +51,9 @@ were true once.
 How the pipeline actually runs — step by step, with every actor named —
 is the flows below, and **the flows are the source of truth for the
 mechanics**. The human gates sit where the flows draw them: a rule
-declared finished (flow 1), a spec approved by review (flow 2), every
-merge a maintainer performs (flows 2 and 5) — and behind them all, a
+declared finished (flow 1), a spec assented to by the maintainer (flow
+2), every merge a maintainer performs (flows 2 and 5) — and behind them
+all, a
 permanent doc never merges on agent approval alone; the gates are named
 in full in [Human gates](#human-gates).
 
@@ -109,18 +110,28 @@ flowchart LR
 
 ### Flow 2 — Approval
 
-The only flow the maintainer drives. Their review *is* the human gate —
+The only flow the maintainer drives. Their **assent** *is* the human gate —
 everything after it is recorded, not decided.
+
+**Which act carries the assent is the project's to name**, in its
+`AGENTS.md`, because the forge decides what is even available. An
+approving review is the richer signal and the default. A repository whose
+maintainer authors its pull requests cannot use it at all — no forge lets
+a person approve their own — and there the **merge** is the assenting act.
+That is not the weaker gate it looks like: whoever may merge is exactly
+whoever may approve, so the same person is deciding the same thing. What
+changes is only where the recording can land, which the project's
+machinery has to match — the PR's own branch while it is still open, or
+`main` once the merge has closed it.
 
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'background':'#0d1117','primaryColor':'#161b22','primaryTextColor':'#e6edf3','primaryBorderColor':'#8b949e','lineColor':'#ffffff','secondaryColor':'#161b22','tertiaryColor':'#161b22','fontSize':'14px'}}}%%
 flowchart LR
-    A["MAINTAINER<br/>Approves the PR"]
-    B["CI<br/>writrun approve<br/>spec: draft → approved<br/>onto the PR branch"]
-    C["MAINTAINER<br/>Squash-merge to main"]
+    A["MAINTAINER<br/>Assents to the PR<br/>an approving review · or the merge"]
+    B["CI<br/>writrun approve<br/>spec: draft → approved<br/>onto the PR branch, or onto main"]
     D["CI<br/>writrun issues<br/>Issue: status:ready"]
     E["Ready for development<br/>pending task + approved specs"]
-    A --> B --> C --> D --> E
+    A --> B --> D --> E
 ```
 
 ### Flow 3 — Taking a task
@@ -198,8 +209,9 @@ flowchart LR
 
 ### Flow 5 — Review and merge
 
-Everything after the pull request opens. The maintainer's review is the
-decision; CI records around it — the same shape as flow 2.
+Everything after the pull request opens. The maintainer's assent — the
+review, or the merge itself, whichever act the project named — is the
+decision; CI records around it, the same shape as flow 2.
 
 CI re-runs both checks on the PR. **They verify the methodology, not the
 code** — that the diff touched every doc the spec promised and no other,
@@ -248,9 +260,9 @@ spec before any code.
 flowchart LR
     A["CI or AGENT<br/>Conflict surfaced<br/>doc moved ahead of spec"]
     B["AGENT<br/>Amend spec to match doc<br/>spec: approved → draft · open PR"]
-    C["MAINTAINER<br/>Approves the PR<br/>assent to the amended content"]
+    C["MAINTAINER<br/>Assents to the PR<br/>to the amended content"]
     D["CI<br/>writrun approve<br/>spec: draft → approved"]
-    E["MAINTAINER<br/>Squash-merge<br/>net status unchanged · brief current"]
+    E["Net status unchanged<br/>brief current"]
     A --> B --> C --> D --> E
 ```
 
@@ -393,6 +405,9 @@ agent, autonomously":
 - **A spec's `draft → approved` transition.** By default, human-only. An
   agent never self-approves a spec it drafted, or anyone else's, unless the
   adopting project has explicitly written down that it delegates this gate.
+  The project also names **which act carries the assent** — an approving
+  review, or the merge — since a repository whose maintainer authors its
+  own pull requests has no review available to give (flow 2).
   `approved → implemented` is not gated the same way — it happens
   mechanically when the task completes and the Outcome section is filled.
 - **A task whose brief is insufficient.** When `spec_ref` is empty and the
@@ -456,6 +471,9 @@ queue is what adjusts. Three consequences, in order:
   draft a spec, rather than guessing at scope.
 - When a spec transitions from `draft` to `approved`, a human shall have
   assented to that transition, whether or not a person writes the field.
+- When a project names the act that carries a maintainer's assent, it
+  shall name one its forge makes available to the people who hold the
+  gate, and shall state it in its `AGENTS.md`.
 - When a permanent doc (About, a product chapter, a technical section) is
   changed, the change shall not be treated as final until a human has
   written or reviewed it.
