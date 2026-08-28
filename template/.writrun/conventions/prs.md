@@ -1,15 +1,34 @@
 # Pull requests
 
-- **Title**: every task the PR carries, tagged, then the Conventional
-  Commit the squash will produce — `[TASK-0012] fix(ci): debounce mirror
-  updates`, or `[TASK-0012][TASK-0014] feat(mirror): …` when several,
-  one bracket each and no separator. Uppercase; the machinery maps it to
-  the lowercase file id. **The tag leads** because the squash puts the
-  title into `main`'s history, where a scanning eye reads the left edge:
-  what work this was comes before what kind of change it was, and a
-  task's story stays a `git log --grep`. Authoring and tracking PRs
-  carry no tag: their tasks are born in the PR, not worked by it, and
-  their titles open with the type.
+- **Title**: every task the PR carries, tagged, then a summary written in
+  the style [`settings.json`](settings.json) names.
+
+  **The tag is not the settable part.** One bracket per task, uppercase,
+  no separator — `[TASK-0012]`, or `[TASK-0012][TASK-0014]` when several.
+  It leads because the squash puts the title into `main`'s history, where
+  a scanning eye reads the left edge: what work this was comes before
+  what kind of change it was, and a task's story stays a `git log
+  --grep`. It is also how the machinery learns which tasks the PR
+  carries, so it stays whatever the style. Authoring and tracking PRs
+  carry none — their tasks are born in the PR, not worked by it.
+
+  **`pr_title_style` chooses what follows**, and the choice is about who
+  reads the history:
+
+  - `conventional` — the Conventional Commit the squash will produce:
+    `[TASK-0012] fix(ci): debounce mirror updates`, and
+    `docs(product): the merge is the assenting act` for an authoring PR.
+    Familiar to tooling built around the convention, and a log that
+    machines and people both scan.
+  - `bracketed` — a human sentence behind bracketed labels:
+    `[TASK-0012][Fix][CI] Debounce mirror updates`, and
+    `[DOCS] The merge is the assenting act`. Nothing here parses a
+    subject, so this costs no guarantee; it reads as prose rather than as
+    a grammar, which suits a project whose history is read mostly by
+    people.
+
+  Neither is more correct. Pick the one your readers already know, state
+  it in the settings file, and let the agents follow it.
 - **Body**: the [template](../templates/pull_request_template.md), lives
   only in `.writrun/templates/` — agents fill it when opening any PR; a
   human opening one by hand copies it from there (GitHub does not

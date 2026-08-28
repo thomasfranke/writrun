@@ -4,7 +4,32 @@ What a project must have, at minimum, to claim it follows WritRun — and
 where a project is free to shape that structure differently without it
 counting as non-compliance.
 
-## Minimum bar
+## Three levels
+
+Adoption is progressive. Each level adds to the one before it, and a project
+declares which it is at in
+[`settings.json`](../../.writrun/conventions/settings.json).
+
+| Level | Adds | Needs |
+|---|---|---|
+| `tasks-and-specs` | the docs and the queue, as markdown | nothing but files |
+| `pull-requests` | branches, pull requests, the CI checks, merge as assent | a forge |
+| `github-issues` | the Issues mirror | Issues |
+
+Ordered and cumulative, which is why the setting is one value and not three
+switches: `github-issues` without `pull-requests` would ask for a projection
+that pull-request events drive, with no pull requests to drive it.
+
+Each level's rules live in the folder of its name —
+[`pipeline.md`](pipeline.md) is true at every level; what the other two
+add is marked there.
+
+## Level `tasks-and-specs` — the minimum bar
+
+**This level is a complete adoption**, not a partial one. The audience
+split, the queue, the schemas and the four gates are all satisfiable with
+files alone; what the higher levels add is *mechanical enforcement* of
+things a person otherwise does deliberately.
 
 All of the following, or the project is *adopting*, not *adopted*:
 
@@ -33,6 +58,23 @@ concrete case: strong `about.md`-equivalent, strong technical layer, real
 per-feature product rules — and no task/spec pipeline at all. That gap
 alone is what keeps it from claiming adoption today.
 
+## Level `pull-requests`
+
+Adds branches, pull requests and the CI checks — and with them, a merge
+that can carry assent. Nothing here is required to claim adoption; what it
+buys is that the rules above stop depending on anybody remembering them.
+
+The four gates do not change, only who executes them: below this level a
+person performs each directly, at it the machinery records what the person
+decided. Its rules are in [`pipeline.md`](pipeline.md#flow-2--approval).
+
+## Level `github-issues`
+
+Adds the mirror: the queue projected into Issues, one direction only, for
+people who read it in a browser. The files stay the authority at every
+level, so a project that never turns this on loses no guarantee — only a
+window. Its rules are in [`pipeline.md`](pipeline.md#flows-and-statuses).
+
 ## Mandatory core vs. documented variant
 
 Two different kinds of divergence from what this methodology describes, and
@@ -52,10 +94,20 @@ they are not judged the same way:
   is organized by concept or by feature, id prefixes, whether a spec is
   mandatory for every task or only for the ones [Task](concepts/task.md)'s
   own guidance flags. A project is free to choose either side of any of
-  these — the requirement is that the choice is stated somewhere a reader
-  would look for it (that project's own `about.md` or its `product/` /
-  `technical/` index), not left to be reverse-engineered from the file
-  tree.
+  these — the requirement is that the choice is **stated, not left to be
+  reverse-engineered from the file tree**.
+
+  **Where it is stated is
+  [`settings.json`](../../.writrun/conventions/settings.json).** "Somewhere a
+  reader would look" was honest about the obligation and vague about the
+  address. One known path ends the hunt, and the machinery reads the same
+  statement the reader does — so a choice cannot be declared in one place and
+  contradicted by what the tooling does.
+
+  Two limits. It carries **only what this section leaves open** — a key
+  switching off something from the core list is refused, not discouraged. And
+  it holds **values, never reasoning**: why a project chose a side stays in
+  its prose.
 
 ## Worked example: TOM
 

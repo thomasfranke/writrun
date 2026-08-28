@@ -200,6 +200,94 @@ project's instruction for what belongs in each
 line-based readers would misread never merges — and `new.sh` only ever
 generates this form, so the contract costs nothing on the happy path.
 
+## Settings
+
+`.writrun/conventions/settings.json` holds the choices
+[Adoption](../product/adoption.md#three-levels) leaves open — values only, no
+prose — read by both the machinery and the agents. It sits in `conventions/`
+because that folder is the project's from adoption onward and `writ update`
+never touches it.
+
+```json
+{
+  "level": "github-issues",
+  "pr_title_style": "conventional"
+}
+```
+
+| Key | Values | Read by |
+|---|---|---|
+| `level` | `tasks-and-specs` / `pull-requests` / `github-issues` | the workflows, and agents |
+| `pr_title_style` | `conventional` / `bracketed` | agents only |
+
+**Every key is present, always** — the same reason the front matter carries
+`null` fields rather than omitting them: a reader sees the whole
+configuration without knowing the defaults.
+
+### `level`
+
+Ordered and cumulative, so one value rather than three switches. Each level
+stops the machinery the one below it does not need:
+
+- `tasks-and-specs` — no workflow runs. The four scripts still run as ordinary
+  commands, so every guarantee they carry survives; what stops is the
+  *enforcement*, which a person then performs deliberately.
+- `pull-requests` — `writrun check` and `writrun approve` run.
+- `github-issues` — adds `writrun issues` and `writrun progress`.
+
+**The four human gates are core at every level.** A gate asks for *a human
+decision, recorded*, never for a pull request specifically
+([gates](../product/pipeline.md#human-gates)). At `tasks-and-specs` a person performs each
+directly and names how in their `AGENTS.md`, which Adoption already requires.
+No check can verify that, which is why it is stated here: `level: tasks-and-specs` is
+not permission to drop them.
+
+### `pr_title_style`
+
+Governs every title, including authoring ones, which carry no task tag:
+
+```
+conventional   [TASK-0007] feat(ci): record approval on the merge
+               docs(product): the merge is the assenting act
+
+bracketed      [TASK-0007][Feat][CI] Record approval on the merge
+               [DOCS] The merge is the assenting act
+```
+
+Read by agents, never by code — nothing parses the summary after the tag,
+not the checks and not the release notes, which the forge generates from
+pull requests.
+
+**The `[TASK-NNNN]` tag is in both and is not settable.** It is how
+`reflect_progress.sh` and `list_tasks.sh` learn which tasks a pull request
+carries, and a branch name holds one id: a title without it reduces a
+multi-task pull request to reporting one task, silently.
+
+### The shape is a checked contract
+
+JSON permits nesting, arrays and free-form whitespace; a line-based reader
+sees none of it and would misread in silence. So the file is restricted to
+what such a reader can see — a flat object, one `"key": value` per line,
+two-space indent, values `true`, `false`, or a double-quoted string — and
+`check_settings.sh` enforces it. The subset is ordinary JSON that any editor
+or `jq` reads.
+
+What the restriction buys is that no script needs `jq`, which would be this
+project's first runtime dependency (see the non-goal in
+[`about.md`](../about.md#non-goals--equally-important)). Strictness is scoped
+to where the risk is: keys a workflow parses are shape-checked; keys only an
+agent reads are checked for value alone, since an agent reads JSON the way it
+reads prose.
+
+Two things the file may never do: carry a key that switches off anything in
+Adoption's **core** list, and carry reasoning — that stays in
+`.writrun/conventions/*.md`, and nothing is stated in both.
+
+**A setting controls; it never merely describes.** `level: tasks-and-specs` means the
+workflows stop, not that a reader is told they were deleted. The alternative
+is the failure [`0041`](decisions/0041-the-issues-mirror-is.md) named when it
+rejected a flag: two ways to say one thing, free to disagree.
+
 ## Task selection algorithm
 
 Deterministic, independent of file layout on disk:
