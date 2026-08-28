@@ -108,6 +108,24 @@ label per state, no state sharing a label with another:
 | `status:ready` | ready for development: `pending`, every spec `approved`. |
 | `status:in-progress` | being worked on — leave the worker alone. |
 | `status:in-review` | waiting on review — the maintainer is the blocker. |
+| *(none — the mirror is closed)* | out of the pipeline. The close and its reason carry the outcome: completed, or not planned. |
+
+**A closed mirror carries no `status:` label.** Every label above names a
+place *inside* the pipeline, so any of them on a closed mirror is a
+leftover from the step before last — and a leftover is not merely
+useless, it is false: an issue closed as completed reading
+`status:in-review` says the maintainer is still the blocker. The close
+itself, with its reason, is the terminal state, and it is one the forge
+records rather than one anybody has to remember to write.
+
+**A label is re-derived after the merge that approves the specs, not
+only from that merge's own diff.** Since the assenting act is the merge
+(flow 2), a task's specs are approved *by the very merge* that brings
+them in — so a mirror labelled from that merge's diff reads them still
+`draft` and reports `pending` for work that is already ready. Reading
+the diff is right for what the merge *carried*; it is wrong for what the
+merge *caused*. The machinery therefore labels again once the approval
+is recorded, from the queue as it then stands.
 
 **The merge of the pull request that creates a task is that task's
 authorization.** Nothing else authorizes it, and nothing else needs to:
@@ -544,6 +562,10 @@ queue is what adjusts. Three consequences, in order:
   the queue already holds.
 - When a queue field records what a merge did, the machinery shall write
   it after that merge, and a person shall not write it by hand.
+- When a mirror is closed, it shall carry no `status:` label.
+- When a merge records the approval of a task's specs, the machinery
+  shall re-derive that task's label from the queue as it then stands,
+  rather than from the merge's own diff.
 - When a task is taken, its pull request shall be opened as a draft
   before the work starts, so that no task is under way without a signal
   the forge can be asked for.
