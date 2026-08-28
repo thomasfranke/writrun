@@ -568,6 +568,9 @@ queue is what adjusts. Three consequences, in order:
   rather than from the merge's own diff.
 - When a queue file records a moment, it shall record it as a UTC
   timestamp, so that two entries made the same day remain orderable.
+- When a change adds a queue file whose id the authority branch or
+  another open pull request already claims, the machinery shall reject
+  the change.
 - When a task is taken, its pull request shall be opened as a draft
   before the work starts, so that no task is under way without a signal
   the forge can be asked for.

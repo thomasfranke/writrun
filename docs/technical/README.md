@@ -64,6 +64,18 @@ merged: null                       # machinery only: the merge that took the wor
   is this, among these" is a judgement about the queue rather than a
   string operation on the title; a generator derives them only when
   nobody chose.
+- **An id is unique across the queue *and* across every open pull
+  request.** Minting the next one from the branch you are on is not
+  enough: two branches that start from the same `main` both see the same
+  highest id and both claim the next, and neither can tell until one
+  merges. So the queue is the union of what the authority branch holds
+  and what open pull requests propose — anything else is a claim on a
+  number somebody else may already have taken.
+
+  A number claimed by a branch that has not merged is **not yet an id**,
+  and renumbering it costs nothing: identity begins at the merge that
+  puts the file on the authority branch. "An id is never renumbered"
+  binds from there, not from the moment a generator printed one.
 - `spec_ref` is a list because the relationship is 0..N: a task can ship
   without a spec (trivial-but-tracked work) or span several (sequential phases,
   or parallel concerns of the same task). An empty list is valid and explicit
