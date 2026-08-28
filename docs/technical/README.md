@@ -48,9 +48,9 @@ doc_ref: product/concepts/task.md#two-invariants   # any path under docs/; null 
 priority: medium                   # high | medium | low
 depends_on: [task-0002]            # real technical blocking, not sequencing taste
 milestone: v0.1-core
-created: 2026-08-21                # written by hand: when the task was drafted
-queued: 2026-08-21                 # machinery only: the merge that put it in the queue
-completed: null                    # written by hand: when the work was finished
+created: 2026-08-21T09:14:00Z      # by hand: when the task was drafted
+queued: 2026-08-21T11:02:37Z       # machinery only: the merge that put it in the queue
+completed: null                    # by hand: when the work was finished
 merged: null                       # machinery only: the merge that took the work
 ---
 ```
@@ -78,6 +78,15 @@ merged: null                       # machinery only: the merge that took the wor
   `queued` and `merged` are the machinery's, written after the merge each
   records. A date recording a merge is never hand-written: it would have
   to be typed before the event it describes.
+- **Every date is a UTC timestamp, and always spelled with `Z`** —
+  `2026-08-21T09:14:00Z`, never a local time and never an offset like
+  `+02:00`. Two reasons, and both are about the line-based readers this
+  schema exists for. A bare date cannot order two entries made the same
+  day, which is most of them in an active queue. And with `Z` as the only
+  spelling, sorting these strings lexicographically *is* sorting them
+  chronologically — an offset form would break that silently, giving a
+  `sort` that looks right and is wrong for exactly the entries that
+  crossed a timezone.
 
 ### `blocked` vs. `depends_on`
 
@@ -102,7 +111,7 @@ blocker is a task, it's a dependency.
 id: spec-0004
 task_ref: task-0005                # a spec belongs to exactly one task
 status: draft                      # draft | approved | implemented
-created: 2026-08-20
+created: 2026-08-20T16:02:00Z
 ---
 ```
 
@@ -159,7 +168,8 @@ block scalars), every schema field present exactly once even when
 with the filename — exactly for a spec, as the `task-NNNN` prefix of
 `task-NNNN-<subject>.md` for a task — statuses and priority drawn only from their
 documented vocabularies, `blocked`/`blocked_reason` paired both ways,
-dates as `YYYY-MM-DD`, and `doc_ref` written relative to `docs/`.
+every date an RFC 3339 UTC timestamp
+(`2026-08-21T09:14:00Z`), and `doc_ref` written relative to `docs/`.
 Unknown keys in canonical shape are allowed — an adopter may extend the
 schema, not reshape it. Extensions enter through the project template's
 own front-matter block: `new.sh` appends those fields to the generated

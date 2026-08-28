@@ -63,3 +63,4 @@ and only ever by appending a row.
 | [0046](0046-the-task-tag-leads.md) | 2026-08-28 | the task tag leads the title, one bracket per task. |
 | [0047](0047-a-task-carries-four-dates.md) | 2026-08-28 | a task carries four dates, and who writes each is the contract. |
 | [0048](0048-a-label-names-a-place.md) | 2026-08-28 | a label names a place in the pipeline, so a closed mirror has none. |
+| [0049](0049-dates-are-utc-timestamps.md) | 2026-08-28 | every queue date is a UTC timestamp, spelled with Z. |
