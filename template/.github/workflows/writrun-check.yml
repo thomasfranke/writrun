@@ -77,6 +77,25 @@ jobs:
           bash .writrun/scripts/check_queue_impact.sh \
             "origin/${{ github.base_ref }}...HEAD"
 
+  ids:
+    name: queue ids are unique
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The check compares what the range adds against what the base
+          # branch already holds, so both ends must be present.
+          fetch-depth: 0
+
+      - name: No id another change already claims
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bash .writrun/scripts/check_unique_ids.sh \
+            "origin/${{ github.base_ref }}...HEAD" \
+            "${{ github.repository }}" \
+            "${{ github.event.pull_request.number }}"
+
   derived:
     name: derived work declared
     runs-on: ubuntu-latest

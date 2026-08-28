@@ -32,6 +32,78 @@ stub_gh() {
   export PATH="$WORK/stub-bin:$PATH"
 }
 
+# stub_forge — a fake `gh` that answers the two questions the id checks
+# ask, and records every call. Reads are served post-jq, the shape the
+# real scripts request, so the shell logic under test sees exactly what
+# CI would (the same contract mirror_lib.sh's forge holds):
+#
+#   gh pr list --json number  -> $FORGE_DIR/pr_numbers
+#   gh pr list --json files   -> $FORGE_DIR/pr_paths
+#   gh api .../pulls/N/files  -> $FORGE_DIR/pr_N_added
+#
+# Touch $FORGE_DIR/unavailable and every call fails, which is what no
+# network, no auth, and no remote all look like from the caller's side.
+# Call after setup — it lives in the repository setup created.
+stub_forge() {
+  FORGE_DIR="$WORK/forge"
+  FORGE_LOG="$WORK/forge/gh.log"
+  mkdir -p "$FORGE_DIR"
+  : > "$FORGE_LOG"
+  export FORGE_DIR FORGE_LOG
+
+  mkdir -p "$WORK/stub-bin"
+  cat > "$WORK/stub-bin/gh" <<'GH'
+#!/usr/bin/env bash
+printf '%s\n' "$*" >> "$FORGE_LOG"
+[ -e "$FORGE_DIR/unavailable" ] && exit 1
+case "${1:-}" in
+  pr)
+    field=""; prev=""
+    for a in "$@"; do
+      [ "$prev" = "--json" ] && field="$a"
+      prev="$a"
+    done
+    case "$field" in
+      number) cat "$FORGE_DIR/pr_numbers" 2>/dev/null ;;
+      files)  cat "$FORGE_DIR/pr_paths"   2>/dev/null ;;
+    esac
+    ;;
+  api)
+    n=$(printf '%s' "${2:-}" | sed -n 's|.*/pulls/\([0-9][0-9]*\)/files$|\1|p')
+    [ -n "$n" ] && cat "$FORGE_DIR/pr_${n}_added" 2>/dev/null
+    ;;
+esac
+exit 0
+GH
+  chmod +x "$WORK/stub-bin/gh"
+  export PATH="$WORK/stub-bin:$PATH"
+}
+
+# forge_pr <number> <added|modified> <path> — one file on one open pull
+# request. The number joins the open list once; the path is visible to the
+# generator either way, and only an added one is a claim the check reads.
+forge_pr() {
+  grep -qxF "$1" "$FORGE_DIR/pr_numbers" 2>/dev/null \
+    || printf '%s\n' "$1" >> "$FORGE_DIR/pr_numbers"
+  printf '%s\n' "$3" >> "$FORGE_DIR/pr_paths"
+  [ "$2" = added ] && printf '%s\n' "$3" >> "$FORGE_DIR/pr_${1}_added"
+  return 0
+}
+
+# forge_unavailable — no `gh` answer at all, from here on.
+forge_unavailable() { : > "$FORGE_DIR/unavailable"; }
+
+# forge_untouched <name> — not a single call reached the forge.
+forge_untouched() {
+  if [ -s "$FORGE_LOG" ]; then
+    printf 'FAIL  %s\n      expected no gh call at all\n' "$1"
+    sed 's/^/      | /' "$FORGE_LOG"
+    fail=$((fail + 1))
+  else
+    printf 'ok    %s\n' "$1"; pass=$((pass + 1))
+  fi
+}
+
 # A repository with docs/ and one commit on main. cd's into it.
 setup() {
   WORK_PREV="$WORK"
