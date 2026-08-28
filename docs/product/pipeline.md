@@ -64,9 +64,11 @@ in full in [Human gates](#human-gates).
 | Task | `pending` → `in-progress` → `completed`, or `blocked` (needs `blocked_reason`) | whoever does the work |
 | Spec | `draft` → `approved` → `implemented` | `approved` by a human only; the rest by whoever does the work |
 
-Two states are **derived, never stored**: *ready for development* is a
-`pending` task whose every spec is `approved`; *waiting for review* is an
-open PR. No field records either.
+Three states are **derived, never stored**: *proposed* is a task whose
+file an open pull request adds and the authority branch does not hold
+yet; *ready for development* is a `pending` task whose every spec is
+`approved`; *waiting for review* is an open PR. No field records any of
+them.
 
 **Task is WritRun's noun; a GitHub Issue is only where a task is mirrored**
 for people who read the queue in a browser. The file under `work/tasks/` is
@@ -76,6 +78,37 @@ repository that also uses Issues for bug reports and feature requests, the
 workflow filters on it and touches nothing without it. A mirror is titled
 `[TASK-NNNN] <task title>` — the same tag a PR title carries, so one
 search for the tag finds the task everywhere it appears.
+
+The mirror's `status:` label reports where the task is, and **a task an
+open pull request merely proposes is not where a merged one is**. One
+label per state, no state sharing a label with another:
+
+| Label | The task is |
+|---|---|
+| `status:proposed` | proposed by an open pull request — not in the queue. The PR may still close unmerged, and the mirror retires with it. |
+| `status:pending` | in the queue, with a spec it references not yet `approved`. |
+| `status:ready` | ready for development: `pending`, every spec `approved`. |
+| `status:in-progress` | being worked on — leave the worker alone. |
+| `status:in-review` | waiting on review — the maintainer is the blocker. |
+
+**The merge of the pull request that creates a task is that task's
+authorization.** Nothing else authorizes it, and nothing else needs to:
+before that merge the file is not on the authority branch at all. That
+absence is why a task carries no `draft` of its own the way a spec does —
+a spec is `draft` *while already in the queue*, which is a state a task
+never occupies. What a merged task might still be waiting on is covered
+three ways that already exist: its spec's approval gate, `blocked` with
+its reason, and `depends_on`.
+
+The mirror reports *proposed* all the same, and that is not the mirror
+inventing state the files lack: it projects the task's **situation**, of
+which stored status is one input and the forge is another — exactly as it
+already does for *ready* and *waiting for review*, neither of which any
+field records. A stored `proposed` could not work even in principle: the
+merge that makes a task real is the very commit that carries the file's
+own words onto the authority branch, so the field would land already
+false and need a second commit to correct itself. Git records where a
+file is; the queue records what the work is. Neither restates the other.
 
 Each node names who acts. Only the human ones are decisions.
 
@@ -103,7 +136,7 @@ flowchart LR
     B["AGENT<br/>writrun-create-task-and-spec<br/>generates task: pending<br/>and spec: draft"]
     C["AGENT<br/>Branch docs/name · open PR<br/>Derived work listed"]
     D["CI<br/>writrun check<br/>derived work in the diff<br/>or declared none"]
-    E["CI<br/>writrun issues<br/>Creates the GitHub Issue<br/>labelled status:pending"]
+    E["CI<br/>writrun issues<br/>Creates the GitHub Issue<br/>labelled status:proposed"]
     A -->|"gate: doc declared finished"| B --> C --> D
     C --> E
 ```
@@ -488,6 +521,9 @@ queue is what adjusts. Three consequences, in order:
 - When a change edits a permanent doc that a non-completed task
   references, the machinery shall surface the overlap to the change's
   reviewer.
+- When a task is mirrored while the pull request that creates it is still
+  open, the mirror shall report it as proposed, distinctly from a task
+  the queue already holds.
 - When a task is taken, its pull request shall be opened as a draft
   before the work starts, so that no task is under way without a signal
   the forge can be asked for.
