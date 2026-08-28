@@ -24,6 +24,14 @@
 # `new.sh spec` also appends the new spec's id to its task's spec_ref list
 # — appends, never overwrites existing entries.
 #
+# The next id is minted above the queue, the history, *and* every open pull
+# request — an id is unique across all three
+# (docs/technical/README.md#task-schema). Consulting the forge is
+# best-effort by design: no `gh`, no network, or no auth mints from this
+# checkout alone, exactly as before, and says so. A narrower view is not
+# wrong, it is narrower — and a silently narrower scan is how two branches
+# cut from the same main both claimed 0009 here.
+#
 # Body templates resolve in three layers — the project's shape wins:
 #   1. .writrun/conventions/templates/{task,spec}.md   — the project customized
 #   2. .writrun/templates/{task,spec}.md      — WritRun's shipped default
@@ -44,6 +52,43 @@
 # Exit codes: 0 success; 3 usage error or an invalid project template.
 
 set -euo pipefail
+
+# --- what open pull requests already claim --------------------------------
+#
+# FORGE_VIEW is `forge` once open pull requests have answered, `local`
+# otherwise; FORGE_PATHS holds every path they touch. Never called from
+# inside a command substitution — the subshell would swallow both.
+FORGE_VIEW=local
+FORGE_PATHS=""
+
+# forge_scan — asks the forge for the paths open pull requests touch,
+# added *or* modified. Coarser than the collision check downstream, and
+# deliberately: a generator needs an upper bound, not an accusation. A
+# modified queue file's id is already on the branch this checkout reads,
+# so folding it in can only agree with what the tree said — while the one
+# extra call per pull request that `status` would cost buys nothing.
+forge_scan() {
+  command -v gh >/dev/null 2>&1 || return 0
+  local paths
+  # gh defaults to 30 open pull requests, and the id this misses is
+  # exactly the one worth seeing.
+  paths=$(gh pr list --state open --limit 200 --json files \
+    --jq '.[].files[]?.path' 2>/dev/null) || return 0
+  FORGE_VIEW=forge
+  FORGE_PATHS="$paths"
+  return 0
+}
+
+# mint_report — what the id above was minted against, printed after the
+# file so an id claimed elsewhere is never reported as simply "created".
+mint_report() {
+  if [ "$FORGE_VIEW" = forge ]; then
+    echo "Minted above the queue, its history, and every open pull request."
+  else
+    echo "Minted from this checkout only — no forge answered, so an id an" >&2
+    echo "open pull request already claims would not have been seen." >&2
+  fi
+}
 
 next_id() {
   # next_id <dir> <prefix>  — e.g. next_id work/tasks task
@@ -72,6 +117,18 @@ next_id() {
     while IFS= read -r f; do
       case "$f" in "$dir"/*) bump "$f" ;; esac
     done < <(git log --diff-filter=A --name-only --pretty=format: -- "$dir" 2>/dev/null)
+  fi
+
+  # An open pull request holds numbers no branch here can see: it may be
+  # a fork's, and even from this repository it reaches this checkout only
+  # once fetched. Its paths are the third input, and the one the tree and
+  # the history cannot stand in for.
+  if [ -n "$FORGE_PATHS" ]; then
+    while IFS= read -r f; do
+      case "$f" in "$dir"/*) bump "$f" ;; esac
+    done <<EOF
+$FORGE_PATHS
+EOF
   fi
 
   printf "%04d" $((max + 1))
@@ -237,6 +294,7 @@ case "$cmd" in
       *) echo "Invalid --priority '$priority' — expected high, medium, or low" >&2; exit 3 ;;
     esac
 
+    forge_scan
     id="task-$(next_id work/tasks task)"
     slug=$(slugify "$title")
     file="work/tasks/${id}${slug:+-$slug}.md"
@@ -288,6 +346,7 @@ EOF
       fi
     } > "$file"
     echo "Created ${file} (${id})"
+    mint_report
     ;;
 
   spec)
@@ -304,6 +363,7 @@ EOF
     # `task-001` must still record the reference the queue actually holds.
     task_id=$(sed -n 's/^id: *//p' "$task_file" | head -n1 | sed 's/[[:space:]]*$//')
 
+    forge_scan
     id="spec-$(next_id work/specs spec)"
     slug=$(slugify "$title")
     file="work/specs/${id}${slug:+-$slug}.md"
@@ -406,6 +466,7 @@ EOF
     ' "$task_file" > "${task_file}.tmp" && mv "${task_file}.tmp" "$task_file"
 
     echo "Created ${file} (${id}), appended to ${task_file}'s spec_ref"
+    mint_report
     ;;
 
   *)
