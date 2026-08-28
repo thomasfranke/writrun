@@ -2,7 +2,7 @@
 
 The front-matter schema and the section headings are contract — the two
 Proposed-changes headings are grep-level markers the delta check reads;
-see the [spec schema](../../docs/technical/README.md#spec-schema). What is
+see the [spec schema](https://github.com/thomasfranke/writrun/blob/main/docs/technical/README.md#spec-schema). What is
 taste, and this file's to state:
 
 - **Title**: `spec-NNNN — <what the change achieves>`.

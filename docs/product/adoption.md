@@ -33,6 +33,24 @@ concrete case: strong `about.md`-equivalent, strong technical layer, real
 per-feature product rules — and no task/spec pipeline at all. That gap
 alone is what keeps it from claiming adoption today.
 
+## Adoption levels
+
+The methodology is adopted in **levels**, each named after the chapter
+that defines it. Each level adds machinery on top of the one before it
+and changes nothing beneath:
+
+1. **`tasks-and-specs`** — the base level: the [minimum bar](#minimum-bar)
+   above, run entirely on files — no forge, no CI required.
+   [Tasks and specs](tasks-and-specs/README.md) is its chapter, and stays
+   true at every level.
+2. **`pull-requests`** — adds branches, pull requests, CI, and the merge
+   as recorded assent. [Pull requests](pull-requests/README.md).
+3. **`github-issues`** — adds the GitHub Issues mirror.
+   [GitHub issues](github-issues/README.md).
+
+A rule marked with a level binds projects at that level and above; a rule
+carrying no level belongs to `tasks-and-specs` and binds every adopter.
+
 ## Mandatory core vs. documented variant
 
 Two different kinds of divergence from what this methodology describes, and
@@ -86,9 +104,10 @@ actually prevents drift.
 
 ## Skills namespacing
 
-WritRun ships as four skills — `writrun-select-next-task`,
+WritRun ships as five skills — `writrun-select-next-task`,
 `writrun-create-task-and-spec`, `writrun-check-spec-deltas`,
-`writrun-check-task-state` — and they live in **WritRun's own home**,
+`writrun-check-task-state`, `writrun-check-front-matter` — and they live
+in **WritRun's own home**,
 `.writrun/skills/`, never mixed into the project's skill folder. A project
 that keeps its own repo-maintenance skills (swoop's `swoop-git-workflow`
 and `swoop-pr-writer` are the real example, in its `.ai/skills/`) keeps
@@ -110,6 +129,6 @@ is unmissable at the path *and* at the name.
   ephemeral split, task holds no technical detail, spec's Proposed-changes
   contract, identity-never-order, the four named human gates), the project
   shall not claim adoption regardless of how much of the rest it follows.
-- When WritRun's four skills are installed, they shall live under
+- When WritRun's five skills are installed, they shall live under
   `.writrun/skills/`, apart from the project's own skill folder, and no
   skill across the two sets shall share a name.

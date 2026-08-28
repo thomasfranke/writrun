@@ -38,10 +38,16 @@ Use the [`writrun-create-task-and-spec`](.writrun/skills/writrun-create-task-and
 skill — it covers id assignment, front-matter, when a spec is warranted,
 and how to fill the Proposed changes sections.
 
+Any queue file touched by hand — a body edited, a status flipped,
+anything `new.sh` did not write — must pass
+[`writrun-check-front-matter`](.writrun/skills/writrun-check-front-matter/SKILL.md)
+before it is committed: the generator only ever produces canonical form,
+and the line-based readers silently misread anything else.
+
 ## Which kind of change you have
 
 Two, and they are not handled the same way — see
-[`pipeline/README.md`](docs/product/tasks-and-specs/authoring.md#two-ways-a-permanent-doc-changes).
+[`tasks-and-specs/authoring.md`](docs/product/tasks-and-specs/authoring.md#two-ways-a-permanent-doc-changes).
 
 | | Authoring | Tracking | Implementing |
 |---|---|---|---|

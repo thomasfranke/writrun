@@ -22,6 +22,6 @@ command that would have told them otherwise never ran.
 Two of the five are gates. A gate that passes because git failed is worse
 than no gate: it reports a guarantee it did not check.
 
-Priority is high because level `docs` makes it reachable. Without
+Priority is high because level `tasks-and-specs` makes it reachable. Without
 branches, `main...HEAD` is empty by construction, so `check_state.sh`
 prints OK having read nothing.

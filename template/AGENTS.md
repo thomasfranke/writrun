@@ -32,7 +32,10 @@ its `spec_ref` is `approved`.
 Use the
 [`writrun-create-task-and-spec`](.writrun/skills/writrun-create-task-and-spec/SKILL.md)
 skill — it covers id assignment, front-matter, when a spec is warranted,
-and the Proposed changes sections.
+and the Proposed changes sections. A queue file touched by hand — a body
+edited, a status flipped — must pass
+[`writrun-check-front-matter`](.writrun/skills/writrun-check-front-matter/SKILL.md)
+before it is committed.
 
 ### Human gates
 

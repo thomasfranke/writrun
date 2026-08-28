@@ -36,8 +36,8 @@ else.
 
 ## What it enforces
 
-The full contract is in
-[`technical/README.md`](../../../docs/technical/README.md#front-matter-is-canonical).
+The full contract is in WritRun's
+[`technical/README.md`](https://github.com/thomasfranke/writrun/blob/main/docs/technical/README.md#front-matter-is-canonical).
 In short: front matter opens at line 1 and closes with `---`; one field per
 line as `key: value`; values bare — no quotes, no `>`/`|` block scalars, no
 trailing whitespace; every schema field present exactly once even when

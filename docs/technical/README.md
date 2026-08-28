@@ -89,7 +89,7 @@ merged: null                       # machinery only: the merge that took the wor
   between directories as work progresses, so `git log` stays readable without
   `--follow`.
 - **Four dates, and who writes each is part of the contract** — the table
-  is in [`product/tasks-and-specs/README.md`](../product/tasks-and-specs/statuses.md).
+  is in [`product/tasks-and-specs/statuses.md`](../product/tasks-and-specs/statuses.md).
   `created` and `completed` are a person's, written on the branch;
   `queued` and `merged` are the machinery's, written after the merge each
   records. A date recording a merge is never hand-written: it would have
@@ -255,7 +255,7 @@ never depends on it. Three reasons the skills are the mandatory form:
   `AGENTS.md` in context can create a correctly-shaped task or spec directly —
   a CLI subcommand that also writes the file duplicates work the agent
   already does natively.
-- **No language lock-in.** Skills are markdown instructions, all four of them
+- **No language lock-in.** Skills are markdown instructions, all five of them
   backed by a small deterministic script for the one step each that must
   not be self-graded or hand-derived from memory — see below. This keeps
   the methodology's own non-goal — "not tied to one language, framework, or
@@ -264,7 +264,7 @@ never depends on it. Three reasons the skills are the mandatory form:
   mechanism adopters already use for other reusable instructions — no
   install script, no binary to build per platform.
 
-The four skills, in `.writrun/skills/` — WritRun's own home, never the
+The five skills, in `.writrun/skills/` — WritRun's own home, never the
 project's skill folder; see
 [Adoption's skills-namespacing note](../product/adoption.md#skills-namespacing)
 for how the two sets stay apart by path and by prefix:
@@ -293,6 +293,14 @@ for how the two sets stay apart by path and by prefix:
   `check_state.sh`, which also rejects the two ways of routing around the
   gate: `draft → implemented`, and completing a task whose spec is not
   `implemented`.
+- **`writrun-check-front-matter`** — every reader above is line-based on
+  purpose, and YAML permits shapes those readers silently misread: a block
+  list that reads as empty, a quoted value that never matches a path
+  comparison. So the canonical form of
+  [Front matter is canonical](#front-matter-is-canonical) is a checked
+  contract, not an assumption — `check_front_matter.sh` validates every
+  queue file against it, on files alone, no git and no forge, which makes
+  it the one check available at every adoption level.
 
 The whole adoption kit ships as [`template/`](../../template), one folder
 **shaped exactly like the destination root** — that is what a template

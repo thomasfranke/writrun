@@ -46,9 +46,6 @@ were true once.
    exists. Mechanically checked, not remembered — see
    [`writrun-check-spec-deltas`](../../../.writrun/skills/writrun-check-spec-deltas/SKILL.md).
 
-
-Each node names who acts. Only the human ones are decisions.
-
 ## The flows are the source of truth for the mechanics
 
 How the pipeline actually runs — step by step, with every actor named — is
@@ -58,9 +55,13 @@ every merge a maintainer performs (flows 2 and 5). Behind them all, a
 permanent doc never merges on agent approval alone; the gates are named in
 full in [`gates.md`](gates.md).
 
-Flows 1–5 are the happy path. The edge cases reality produces are drawn
-separately — same gates — in [`conflicts.md`](conflicts.md) and, at level
-`pull-requests`, in [`review.md`](../pull-requests/review.md).
+Flows 1–5 are the happy path — flow 1 drawn in
+[`authoring.md`](authoring.md), flows 2–5 in
+[`../pull-requests/`](../pull-requests/README.md). In the flow diagrams,
+each node names who acts; only the human ones are decisions. The edge
+cases reality produces are drawn separately — same gates — in
+[`conflicts.md`](conflicts.md) and, at level `pull-requests`, in
+[`review.md`](../pull-requests/review.md).
 
 ## This folder
 

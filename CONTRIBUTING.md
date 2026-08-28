@@ -111,16 +111,17 @@ relying on getting the schema right from memory.
 
 **There is nothing to build.** WritRun is documentation and a handful of
 shell-scripted skills — no compiler, no package manager, no runtime
-dependency. The four skills backed by a script
+dependency. The five skills backed by a script
 ([`writrun-check-spec-deltas`](.writrun/skills/writrun-check-spec-deltas/check_deltas.sh),
 [`writrun-check-task-state`](.writrun/skills/writrun-check-task-state/check_state.sh),
+[`writrun-check-front-matter`](.writrun/skills/writrun-check-front-matter/check_front_matter.sh),
 [`writrun-create-task-and-spec`](.writrun/skills/writrun-create-task-and-spec/new.sh),
 [`writrun-select-next-task`](.writrun/skills/writrun-select-next-task/list_tasks.sh)) need only
 `bash` and a POSIX-portable `awk`/`sed` — deliberately, since one already
 broke once on a machine with no `gawk` installed; see
 [`technical/decisions/`](docs/technical/decisions/README.md).
 
-**There is, however, something to run.** Those four scripts are the
+**There is, however, something to run.** Those five scripts are the
 mechanical half of the methodology — one of them guards a human gate — so
 they have a suite:
 
