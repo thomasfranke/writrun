@@ -37,7 +37,12 @@ fi
 
 # No associative arrays — macOS ships bash 3.2, and these scripts promise
 # to run there. The file is re-resolved where needed instead.
-spec_file_of() { find work/specs -iname "$1.md" 2>/dev/null | head -n1; }
+# <id>.md or <id>-<subject>.md — the subject slug is not identity, and the
+# generator writes one, so a resolver that reads only the bare form finds
+# nothing for every spec this project now creates.
+spec_file_of() {
+  find work/specs \( -iname "$1.md" -o -iname "$1-*.md" \) 2>/dev/null | head -n1
+}
 
 SPEC_LIST=$(printf '%s' "$SPEC_IDS" | tr ',' ' ')
 for id in $SPEC_LIST; do
