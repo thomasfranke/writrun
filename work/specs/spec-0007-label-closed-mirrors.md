@@ -76,7 +76,7 @@ none — the authoring change stated both rules in
 
 ## Proposed technical changes
 
-none — `technical/decisions/github-issues/0048-a-label-names-a-place.md` carries the
+none — `technical/decisions/0048-a-label-names-a-place.md` carries the
 dated entry already.
 
 ## Outcome
