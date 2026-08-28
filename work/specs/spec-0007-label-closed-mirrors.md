@@ -72,7 +72,7 @@ One case per acceptance criterion, in the `reflect_progress` and
 ## Proposed product changes
 
 none — the authoring change stated both rules in
-`product/pipeline/statuses.md` first.
+`product/pipeline.md#flows-and-statuses` first.
 
 ## Proposed technical changes
 

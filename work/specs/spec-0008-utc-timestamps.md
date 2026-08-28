@@ -71,7 +71,7 @@ suites.
 ## Proposed product changes
 
 none — the authoring change stated the rule in
-`product/pipeline/README.md` first.
+`product/pipeline.md#criteria` first.
 
 ## Proposed technical changes
 
