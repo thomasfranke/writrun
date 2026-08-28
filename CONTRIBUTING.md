@@ -56,10 +56,14 @@ does not exist yet.
 - **One change = one branch = one PR.** A PR normally carries one task,
   and legitimately carries several when they are facets of one atomic
   change — landing them apart would ship something half-true. Branch
-  name: `spec/NNNN-short-name`, after the spec the change implements —
-  the lead one, when it implements several — or `task/NNNN-short-name`
-  for a task with no spec; the PR title's `[TASK-NNNN]` tag names every
-  task the PR carries. A change that *authors* a rule rather than
+  name: `task/NNNN-short-name`, after the task being worked — the lead
+  one, when the PR carries several — whether that task has one spec,
+  many, or none; the PR title's `[TASK-NNNN]` tag names every task the
+  PR carries. The task is what the branch is named after because the
+  task is what is being worked: a spec is one task's elaboration, and
+  `spec_ref` is 0..N, so a spec-named branch would force an arbitrary
+  pick the moment a change implements two of them. A change that
+  *authors* a rule rather than
   implementing one uses `docs/short-name` — it creates specs it will not
   implement, so naming it after one would misdescribe it. See
   [Pipeline](docs/product/pipeline.md#two-ways-a-permanent-doc-changes) for
@@ -68,6 +72,9 @@ does not exist yet.
   references `approved`. A task whose spec is still `draft` has not passed
   the approval gate — leave it, and say so rather than reporting an empty
   queue.
+- **Taking it means opening its draft PR**, before the work starts — a
+  branch on your machine is invisible to everyone else, and the draft is
+  the signal that the task is under way. It reserves nothing; it reports.
 - Follow the spec's Steps in order. Acceptance criteria are written in EARS
   form (`When <trigger>, the system shall <response>`) where the chapter
   asserts something testable — see
@@ -154,7 +161,11 @@ itself only requires one authority branch, whatever the strategy around
 it.
 
 1. Branch off the latest `main`. Rebase on `main` rather than merging it in
-   — it keeps the squash clean.
+   — it keeps the squash clean. For an implementing change, **push the
+   branch and open the pull request as a draft before you start
+   working**: until it reaches the forge nothing says the task is taken,
+   and the draft is what moves its mirror to `status:in-progress`. Mark
+   it ready for review when the work is done.
 2. Commit, branch, and title per [`.writrun/conventions/`](.writrun/conventions/README.md)
    — Conventional Commits with this repo's types and scopes, and
    squash-only merges. **That folder is this repository's own convention,
@@ -168,9 +179,9 @@ it.
    An implementation PR fills **Spec** and **How to verify**, the latter
    being the `writrun-check-spec-deltas` result plus anything a reviewer should
    re-read by hand.
-4. **One spec per PR is the recommended shape** — it is what the branch
-   name (`spec/NNNN-short-name`) and the template's singular "Implements
-   spec-NNNN" assume. A task with several specs completes across several
+4. **One spec per PR is the recommended shape** — it is what the
+   template's singular "Implements spec-NNNN" assumes. A task with
+   several specs completes across several
    PRs, one spec each, the task reaching `completed` in the last; a merge
    that implements a spec without completing its task is fine, and lands
    the task on `main` as `in-progress`, where the lister surfaces it as

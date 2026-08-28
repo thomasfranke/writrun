@@ -14,5 +14,10 @@
   platform's pre-fill). Everything in it is editable except the
   `## Derived work` heading, which `writrun check` reads — a **contract
   marker**.
+- **Opening state**: an implementing PR opens as a **draft**, at the
+  moment its task is taken and before the work starts — that is what puts
+  the task's mirror on `status:in-progress`. Ready for review is the end
+  of the work, not the start. Authoring and tracking PRs have no work to
+  announce and open ready.
 - **Merge**: squash only — a messy branch history is fine; the commit
   landing on `main` is not.

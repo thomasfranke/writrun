@@ -115,7 +115,10 @@ the signal really lives:
   or in a project that commits to `main` directly without PRs.
 - **Someone else's unfinished work with a PR open** — the lister's
   **In flight** section, not step 0.
-- **A branch never pushed or pushed without a PR** — visible nowhere. When
+- **A branch never pushed or pushed without a PR** — visible nowhere.
+  This is the hiding place a project closes by opening the pull request
+  as a draft when the task is taken, before the work starts; where that
+  is the rule, a taken task always has a PR to be seen through. When
   resuming on a machine or repo you share, check `git branch` (and
   `git branch -r`) before concluding nothing is unfinished.
 

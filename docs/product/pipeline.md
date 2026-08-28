@@ -131,13 +131,27 @@ what is available and picks** — order is a suggestion for them, and taking a
 lower-priority task bypasses nothing. What neither can do is take a task the
 filters exclude: `blocked`, a dependency still open, a spec still `draft`.
 
+**Taking a task opens its pull request, as a draft, before the work
+starts.** The branch alone is invisible: it lives on one machine, and
+until it reaches the forge nothing anywhere says the task is being
+worked — `main` still reads `pending`, the mirror still reads
+`status:pending`, and the next person to ask what is available is handed
+work already under way. The draft is what closes that window, and it
+costs nothing extra: `status:in-progress` already means *someone is
+working on it, leave the worker alone*, and the mirror moves there on
+its own the moment the draft opens. Marking the pull request ready for
+review at the end is the same event running the other way, into
+`status:in-review`.
+
 **Nothing reserves a task, and that is deliberate.** Reserving work is a
-tracker's job, not this methodology's — WritRun's own non-goals say so. The
-`in-progress` status is written on the branch and reaches `main` only at
+tracker's job, not this methodology's — WritRun's own non-goals say so.
+A draft pull request is a signal, never a lock: it reports that work is
+under way, and it neither stops nor entitles anyone. The `in-progress`
+status is written on the branch and reaches `main` only at
 merge — normally as `completed` already, though a merge that implements
 one spec of several does land the task there still `in-progress`, where
 the lister surfaces it as work to resume. Either way the queue files
-cannot warn anyone in time to reserve anything. What `list_tasks.sh` can see is work in
+cannot warn anyone in time. What `list_tasks.sh` can see is work in
 flight: an open pull request for a task. Not a lock, but the one real-time signal a
 forge can be asked for — and without network access it says so rather than
 reporting a task as free.
@@ -147,9 +161,12 @@ reporting a task as free.
 flowchart LR
     A1["AGENT<br/>writrun-select-next-task<br/>takes the next one"]
     A2["HUMAN<br/>list_tasks.sh<br/>picks any available one"]
-    B["AGENT<br/>branch spec/NNNN-name<br/>task: → in-progress"]
+    B["AGENT<br/>branch task/NNNN-name<br/>task: → in-progress"]
+    C["AGENT<br/>push · open draft PR<br/>before the work starts"]
+    D["CI<br/>writrun progress<br/>mirror: status:in-progress"]
     A1 --> B
     A2 --> B
+    B --> C --> D
 ```
 
 ### Flow 4 — Finishing a task
@@ -190,8 +207,9 @@ and that no status moved through a gate it should not have. Whether the
 code works is the adopting project's own pipeline's answer; WritRun does
 not duplicate it or stand in for it.
 
-Each task the PR carries has its mirror follow it: `status:in-review`
-while the PR is open, closed once a merge carries the task to `completed`. **`in-review` is a label of its own
+Each task the PR carries has its mirror follow it: `status:in-progress`
+while the PR is still a draft, `status:in-review` once it is marked ready,
+closed once a merge carries the task to `completed`. **`in-review` is a label of its own
 rather than part of `in-progress`** because the two ask opposite things of
 the maintainer — one means leave the worker alone, the other means the
 maintainer is the blocker.
@@ -452,3 +470,8 @@ queue is what adjusts. Three consequences, in order:
 - When a change edits a permanent doc that a non-completed task
   references, the machinery shall surface the overlap to the change's
   reviewer.
+- When a task is taken, its pull request shall be opened as a draft
+  before the work starts, so that no task is under way without a signal
+  the forge can be asked for.
+- When an implementing branch is named, it shall carry the id of the task
+  it works, never of a spec that task elaborates.
