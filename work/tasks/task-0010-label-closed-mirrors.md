@@ -3,7 +3,7 @@ id: task-0010
 status: pending
 blocked_reason: null
 spec_ref: [spec-0007]
-doc_ref: product/mirror/labels.md
+doc_ref: product/github-issues/labels.md
 priority: medium
 depends_on: []
 milestone: null

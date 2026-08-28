@@ -76,4 +76,4 @@ True at **every level**. What the higher levels add lives beside it.
 | Level | Adds |
 |---|---|
 | [`flow/`](../flow/README.md) | branches, pull requests, CI, merge as assent |
-| [`mirror/`](../mirror/README.md) | the GitHub Issues mirror |
+| [`github-issues/`](../github-issues/README.md) | the GitHub Issues mirror |
