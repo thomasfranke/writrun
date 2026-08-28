@@ -6,7 +6,8 @@
 #
 # minor bumps the 3rd digit, major the middle one, epoch the 1st
 # (historic milestones only). The next number is computed from the
-# latest tag — the very first release is v0.0.10 — then: stamp
+# latest tag — the very first release is v0.0.01, and the third field
+# stays two digits — then: stamp
 # .writrun/VERSION, sync the template, run the suite, and only after
 # that commit, tag, push, and publish the GitHub Release with notes
 # generated from the conventional commits.
@@ -35,14 +36,14 @@ command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1 \
 
 last="$(git tag --list 'v*' --sort=-v:refname | head -n 1)"
 if [ -z "$last" ]; then
-  next="v0.0.10"
+  next="v0.0.01"
 else
   next="$(echo "$last" | awk -F. -v b="$bump" '{
     sub(/^v/, "")
     if (b == "epoch")      { $1++; $2 = 0; $3 = 0 }
     else if (b == "major") { $2++; $3 = 0 }
     else                   { $3++ }
-    printf "v%d.%d.%d", $1, $2, $3 }')"
+    printf "v%d.%d.%02d", $1, $2, $3 }')"
 fi
 echo "release: ${last:-none} -> $next ($bump)"
 
