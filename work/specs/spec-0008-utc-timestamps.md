@@ -110,6 +110,29 @@ Three notes, one of them a divergence:
   written now knows the hour, and writing midnight would discard a fact
   the decision entry only accepted losing where it was already lost.
 
+- **Three approved specs were returned to `draft`, which no step
+  foresaw.** Step 3 says "migrate every task and spec in `work/`", and
+  three of them — `spec-0006`, `spec-0007`, `spec-0009` — were
+  `approved`. Widening their `created` field edits a body under an
+  approval, which `check_recorded_approvals.sh` forbids, and it caught
+  this on the pull request rather than after the merge.
+
+  The guard's own escape hatch is an approving review, and this
+  repository cannot use it: its pull requests are authored by the
+  maintainer, whom the forge will not let approve their own
+  (`AGENTS.md`). So the only path is the documented one — the amendment
+  goes through `draft`, and the merge that carries it is the assent
+  (`product/pipeline.md#a-spec-changes-after-its-approval`).
+  `flip_approved_specs.sh` already flips a re-drafted amendment back, so
+  the three return to `approved` on the merge with no further action.
+
+  Recording it because the instinct was to argue the guard was too
+  blunt — a date widening changes no meaning a human assented to. It is
+  blunt, and it is right to be: a diff cannot tell a normalization from
+  an edit, and the flow it forces costs one automated flip. A spec that
+  migrates the shape of every queue file should say this step out loud;
+  this one did not.
+
 Not done here, and deliberately: `queued` and `merged` do not exist yet
 (task-0009), and `spec-0006` still specifies them as `YYYY-MM-DD`. That
 spec is stale against the schema and must be amended through `draft`
