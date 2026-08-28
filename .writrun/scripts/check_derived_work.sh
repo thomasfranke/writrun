@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # check_derived_work.sh — an authoring change names its derived work, or
-# states that none was (docs/product/pipeline/authoring.md#declaring-derived-work).
+# states that none was (docs/product/tasks-and-specs/authoring.md#declaring-derived-work).
 #
 # Usage: check_derived_work.sh <diff-range>
 #   The PR body arrives via $PR_BODY — through the environment, never
@@ -75,5 +75,5 @@ fi
 echo "This change edits a permanent doc but neither adds a task" >&2
 echo "nor declares 'none' under '## Derived work' in the PR body." >&2
 echo "An empty declaration and a forgotten one look identical —" >&2
-echo "see docs/product/pipeline/authoring.md#declaring-derived-work." >&2
+echo "see docs/product/tasks-and-specs/authoring.md#declaring-derived-work." >&2
 exit 1

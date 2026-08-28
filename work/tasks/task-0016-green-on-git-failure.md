@@ -3,7 +3,7 @@ id: task-0016
 status: pending
 blocked_reason: null
 spec_ref: [spec-0013]
-doc_ref: product/pipeline/gates.md
+doc_ref: product/tasks-and-specs/gates.md
 priority: high
 depends_on: []
 milestone: null

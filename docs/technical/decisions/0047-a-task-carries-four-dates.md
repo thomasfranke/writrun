@@ -18,7 +18,7 @@ claims to describe. `created` and `completed` stay hand-written and keep
 their meanings unchanged.
 
 This became possible only with
-[0043](0043-the-merge-is-this.md): before the assenting act moved to the
+[0043](pull-requests/0043-the-merge-is-this.md): before the assenting act moved to the
 merge, nothing in this project wrote to `main` after one, so a post-merge
 stamp had nowhere to run. The same workflow now carries both jobs — what
 the merge did to the specs, and what it did to the tasks.

@@ -18,7 +18,7 @@ what `stateReason` already distinguishes (completed vs not planned) and
 adds one more thing to keep in sync.
 
 **`status:ready` had become unreachable**, and
-[0043](0043-the-merge-is-this.md) is what made it so. `mirror_issues.sh`
+[0043](../pull-requests/0043-the-merge-is-this.md) is what made it so. `mirror_issues.sh`
 derives "ready" from the spec statuses *in the merged pull request's
 diff*, where they are still `draft` — because the same merge is what
 approves them, and `writrun approve` writes that flip afterwards, in a

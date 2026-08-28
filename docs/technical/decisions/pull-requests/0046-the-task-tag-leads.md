@@ -2,7 +2,7 @@
 
 **2026-08-28**
 
-[0045](0045-one-decision-per-file.md)'s sibling change put the
+[0045](../0045-one-decision-per-file.md)'s sibling change put the
 `[TASK-NNNN]` tag at the *end* of a pull request's title, after the
 Conventional Commit summary, and used a comma form — `[TASK-0012,
 TASK-0014]` — when a change carried several. Both are reversed here: the

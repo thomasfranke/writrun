@@ -2,7 +2,7 @@
 
 **2026-08-28**
 
-[0044](0044-a-proposed-task-and.md)'s sibling change gave queue files a
+[0044](github-issues/0044-a-proposed-task-and.md)'s sibling change gave queue files a
 subject slug and left the generator deriving it: lowercase the title,
 split on non-alphanumerics, keep the first three words. The first file it
 produced under that rule was `task-0009-stamp-queued-and.md` — three

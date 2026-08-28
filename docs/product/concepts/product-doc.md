@@ -58,7 +58,7 @@ for it to be doing what it claims.
 
 A product doc describes the system **as it is today** — never a plan, never
 history. It changes in the two directions
-[Pipeline](../pipeline/authoring.md#two-ways-a-permanent-doc-changes) names, and the
+[Pipeline](../tasks-and-specs/authoring.md#two-ways-a-permanent-doc-changes) names, and the
 present tense holds in both:
 
 - **Authoring** — a rule is decided and written down before anything
