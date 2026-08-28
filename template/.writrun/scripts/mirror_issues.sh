@@ -227,7 +227,8 @@ esac
 
 if [ "$open" = "true" ]; then
   ensure_label "writrun:task" "1d76db" "Mirrors a work/tasks/ entry"
-  ensure_label "status:pending" "fbca04" "Task exists; its specs are not approved yet"
+  ensure_label "status:proposed" "ededed" "A pull request proposes this task; it is not in the queue yet"
+  ensure_label "status:pending" "fbca04" "In the queue, with a spec it references not yet approved"
   ensure_label "status:ready" "0e8a16" "Ready for development: task pending, specs approved"
 fi
 
@@ -249,8 +250,17 @@ while IFS="$TAB" read -r tid fname priority milestone refs ttitle; do
       echo "${tid}: author lacks authority — mirror deferred to merge."
       continue
     fi
-    lbl=status:ready
-    if [ "$open" = "true" ] || ! is_ready $refs; then lbl=status:pending; fi
+    # Three states, not two. An open pull request only *proposes* the
+    # task — it may still close unmerged, and the mirror retires with it,
+    # so the queue does not hold it yet. A merged one puts it in the
+    # queue, ready or not (docs/product/pipeline.md#flows-and-statuses).
+    if [ "$open" = "true" ]; then
+      lbl=status:proposed
+    elif is_ready $refs; then
+      lbl=status:ready
+    else
+      lbl=status:pending
+    fi
     body=$(printf '%s\n' \
       "Mirrors [\`${fname}\`](${PR_HTML_URL}/files), which is the authority." \
       "Edits made here are **not** written back to the file." \
@@ -289,9 +299,11 @@ while IFS="$TAB" read -r tid fname priority milestone refs ttitle; do
     # A reopened PR finds its mirrors closed as orphans; they are not
     # orphans any more.
     if [ "$istate" = "closed" ]; then
+      # Reopened means open, and open means proposed — the task is back
+      # to being offered, not back in the queue.
       gh api -X PATCH "repos/${REPO}/issues/${num}" -f state=open >/dev/null
       gh api -X PUT "repos/${REPO}/issues/${num}/labels" \
-        -f "labels[]=writrun:task" -f "labels[]=status:pending" >/dev/null
+        -f "labels[]=writrun:task" -f "labels[]=status:proposed" >/dev/null
       echo "${tid} reopened with #${PR}"
     else
       echo "${tid} already mirrored; nothing to do."
