@@ -16,7 +16,7 @@ EOF
 check "a template redefining a contract field is refused" 3 \
   "redefines the contract field 'status'" \
   -- bash "$NEW_SH" task "Sneaky"
-if [ ! -e work/tasks/task-001.md ]; then
+if ! ls work/tasks/task-*.md >/dev/null 2>&1; then
   echo "ok    the refusal leaves no half-written file"; pass=$((pass + 1))
 else
   echo "FAIL  the refusal leaves no half-written file"; fail=$((fail + 1))

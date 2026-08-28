@@ -26,14 +26,14 @@ _(fill after execution)_
 EOF
 bash "$NEW_SH" task "The task" >/dev/null 2>&1
 bash "$NEW_SH" spec task-001 "The spec" >/dev/null 2>&1
-fm=$(sed -n '2,/^---$/p' work/specs/spec-001.md)
-if printf '%s\n' "$fm" | grep -q '^origin: task-001$' &&
+fm=$(sed -n '2,/^---$/p' work/specs/spec-0001-the-spec.md)
+if printf '%s\n' "$fm" | grep -q '^origin: task-0001$' &&
    printf '%s\n' "$fm" | grep -q '^status: draft$' &&
-   grep -q '^# spec-001 — The spec$' work/specs/spec-001.md; then
+   grep -q '^# spec-0001 — The spec$' work/specs/spec-0001-the-spec.md; then
   echo "ok    spec template extensions land, placeholders substituted"; pass=$((pass + 1))
 else
   echo "FAIL  spec template extensions land, placeholders substituted"
-  cat work/specs/spec-001.md | sed 's/^/      | /'
+  cat work/specs/spec-0001-the-spec.md | sed 's/^/      | /'
   fail=$((fail + 1))
 fi
 

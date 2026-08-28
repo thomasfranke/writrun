@@ -49,7 +49,10 @@ next_id() {
   # next_id <dir> <prefix>  — e.g. next_id work/tasks task
   local dir="$1" prefix="$2" max=0 f n
   bump() {
-    n=$(basename "$1" .md | tr '[:upper:]' '[:lower:]' | sed -E "s/^${prefix}-0*//")
+    # The id is the digits after the prefix; a filename subject slug
+    # follows them (task-0004-file-naming) and is not part of identity.
+    n=$(basename "$1" .md | tr '[:upper:]' '[:lower:]' \
+      | sed -E "s/^${prefix}-0*([0-9]+).*/\1/")
     [[ "$n" =~ ^[0-9]+$ ]] || return 0
     (( n > max )) && max=$n
     return 0
@@ -71,7 +74,45 @@ next_id() {
     done < <(git log --diff-filter=A --name-only --pretty=format: -- "$dir" 2>/dev/null)
   fi
 
-  printf "%03d" $((max + 1))
+  printf "%04d" $((max + 1))
+}
+
+# slugify <title> — the filename's subject: an extremely short kebab-case
+# echo of the title, at most three words. Identity lives in the id, so a
+# slug that loses nuance costs nothing; it exists to make a directory
+# listing readable. Prints nothing when the title has no usable word,
+# and the caller then writes a bare-id filename.
+slugify() {
+  printf '%s' "$1" \
+    | tr '[:upper:]' '[:lower:]' \
+    | sed 's/[^a-z0-9]\{1,\}/-/g; s/^-*//; s/-*$//' \
+    | awk -F- '{
+        n = 0
+        for (i = 1; i <= NF && n < 3; i++) {
+          if ($i == "") continue
+          s = (n == 0 ? $i : s "-" $i)
+          n++
+        }
+        print s
+      }'
+}
+
+# queue_file <dir> <prefix> <id> — the file whose id is <id>, whatever
+# its filename subject and whatever width its number was written at.
+# Prints nothing when no file matches.
+queue_file() {
+  local dir="$1" prefix="$2" want f n
+  want=$(printf '%s' "$3" | tr '[:upper:]' '[:lower:]' \
+    | sed -E "s/^${prefix}-0*([0-9]+)$/\1/")
+  [[ "$want" =~ ^[0-9]+$ ]] || return 0
+  for f in "$dir"/"$prefix"-*.md; do
+    [[ -f "$f" ]] || continue
+    n=$(basename "$f" .md | tr '[:upper:]' '[:lower:]' \
+      | sed -E "s/^${prefix}-0*([0-9]+).*/\1/")
+    [[ "$n" =~ ^[0-9]+$ ]] || continue
+    if (( n == want )); then printf '%s' "$f"; return 0; fi
+  done
+  return 0
 }
 
 # render_template <file> <id> <title> <task_ref> — prints the template
@@ -197,7 +238,8 @@ case "$cmd" in
     esac
 
     id="task-$(next_id work/tasks task)"
-    file="work/tasks/${id}.md"
+    slug=$(slugify "$title")
+    file="work/tasks/${id}${slug:+-$slug}.md"
     [[ -e "$file" ]] && { echo "$file already exists" >&2; exit 3; }
 
     if [[ -n "$depends_on" ]]; then
@@ -254,11 +296,17 @@ EOF
     title="${2:-}"
     [[ -z "$task_id" || -z "$title" ]] && usage
 
-    task_file="work/tasks/${task_id}.md"
-    [[ -f "$task_file" ]] || { echo "No such task: ${task_file} — a spec is never created before its task" >&2; exit 3; }
+    task_file=$(queue_file work/tasks task "$task_id")
+    [[ -n "$task_file" && -f "$task_file" ]] \
+      || { echo "No such task: ${task_id} — a spec is never created before its task" >&2; exit 3; }
+    # The task's file is the authority on how its id is written — the
+    # argument only had to identify it, and `task-1` or a historical
+    # `task-001` must still record the reference the queue actually holds.
+    task_id=$(sed -n 's/^id: *//p' "$task_file" | head -n1 | sed 's/[[:space:]]*$//')
 
     id="spec-$(next_id work/specs spec)"
-    file="work/specs/${id}.md"
+    slug=$(slugify "$title")
+    file="work/specs/${id}${slug:+-$slug}.md"
     [[ -e "$file" ]] && { echo "$file already exists" >&2; exit 3; }
 
     # Resolve and validate the template before writing anything — a

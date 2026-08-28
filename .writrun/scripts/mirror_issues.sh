@@ -85,7 +85,7 @@ SPEC_STATUSES=""
 while IFS="$TAB" read -r fstatus fname fpatch; do
   [ "$fstatus" = "added" ] || continue
   printf '%s' "$fname" | tr '[:upper:]' '[:lower:]' \
-    | grep -qE '^work/specs/spec-[0-9]+\.md$' || continue
+    | grep -qE '^work/specs/spec-[0-9]+(-[a-z0-9-]+)?\.md$' || continue
   body=$(printf '%s' "$fpatch" | b64_decode | sed -n 's/^+//p')
   sid=$(fm_field "$body" id)
   [ -n "$sid" ] || continue
@@ -114,7 +114,7 @@ TASKS=""
 while IFS="$TAB" read -r fstatus fname fpatch; do
   [ "$fstatus" = "added" ] || continue
   printf '%s' "$fname" | tr '[:upper:]' '[:lower:]' \
-    | grep -qE '^work/tasks/task-[0-9]+\.md$' || continue
+    | grep -qE '^work/tasks/task-[0-9]+(-[a-z0-9-]+)?\.md$' || continue
   body=$(printf '%s' "$fpatch" | b64_decode | sed -n 's/^+//p')
   tid=$(fm_field "$body" id)
   ttitle=$(first_heading "$body")

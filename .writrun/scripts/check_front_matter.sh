@@ -122,12 +122,17 @@ check_date() {   # check_date <file> <block> <field> <null-ok>
   return 0
 }
 
-check_id() {   # check_id <file> <block> — id agrees with the filename
+check_id() {   # check_id <file> <block> — id agrees with the filename's id
+  # A queue file is named <id> or <id>-<subject>: identity is the id, the
+  # subject slug only makes a directory listing readable. Both shapes are
+  # canonical, and anything else disagrees with its own name.
   local want got
   want=$(basename "$1" .md | tr '[:upper:]' '[:lower:]')
   got=$(get "$2" "id" | tr '[:upper:]' '[:lower:]')
-  [ "$got" = "$want" ] \
-    || fail "$1" "id '$(get "$2" id)' does not match the filename — identity is the filename's id"
+  case "$want" in
+    "$got"|"$got"-*) return 0 ;;
+  esac
+  fail "$1" "id '$(get "$2" id)' is not the filename's id — a queue file is named <id>.md or <id>-<subject>.md"
   return 0
 }
 
