@@ -1,7 +1,7 @@
 # Specs — the detail of one change
 
 **Historical record — not a description of the present.** One file per spec,
-named by id (`spec-001.md`). A spec belongs to exactly one task (`task_ref`)
+named by id plus a tiny subject slug (`spec-0011-multi-file-search.md`). A spec belongs to exactly one task (`task_ref`)
 and inherits its order and priority from it; specs have no sequence of their
 own. The full schema is in
 [`technical/README.md`](../../docs/technical/README.md#spec-schema).

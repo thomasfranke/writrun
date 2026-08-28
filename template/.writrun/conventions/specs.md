@@ -5,7 +5,10 @@ Proposed-changes headings are grep-level markers the delta check reads;
 see the [spec schema](../docs/technical/README.md#spec-schema). What is
 taste, and this file's to state:
 
-- **Title**: `spec-NNN — <what the change achieves>`.
+- **Title**: `spec-NNNN — <what the change achieves>`.
+- **Filename subject**: `spec-NNNN-<subject>.md` — same shape as a task
+  file: the id plus a two-or-three-word kebab-case echo of the title,
+  fixed at creation.
 - **Acceptance criteria**: EARS form — `When <trigger>, the system shall
   <response>` — one criterion per testable behaviour.
 - **Scope**: name what is *out*, not only what is in.

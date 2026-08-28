@@ -31,14 +31,14 @@ See docs/product/pipeline.md#two-ways-a-permanent-doc-changes.
 
 | Task | Spec | What it implements |
 |---|---|---|
-| task-NNN | spec-NNN | |
+| task-NNNN | spec-NNNN | |
 
 ## Spec
 
 <!-- IMPLEMENTATION PRs ONLY. The spec this PR implements. It must already
      be `approved` — a PR may not approve its own spec. -->
 
-Implements spec-NNN.
+Implements spec-NNNN.
 
 ## How to verify
 

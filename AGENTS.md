@@ -40,8 +40,8 @@ Two, and they are not handled the same way — see
 |---|---|---|---|
 | Is | a rule that isn't true yet | work discovered that an existing rule already authorizes | an approved spec |
 | Touches | `docs/` + the work it derives | `work/` only — no permanent doc | code + the docs its spec promised |
-| Branch | `docs/short-name` | `queue/short-name` | `spec/NNN-short-name` |
-| PR states | the tasks and specs it created | the tasks and specs it adds, and the rule they derive from | the spec it implements |
+| Branch | `docs/short-name` | `queue/short-name` | `spec/NNNN-short-name` |
+| PR states | the tasks and specs it created | the tasks and specs it adds, and the rule they derive from | the spec(s) it implements, every carried task tagged `[TASK-NNNN]` in the title |
 | `writrun-check-spec-deltas` | does not apply | does not apply | must exit 0 |
 | `writrun-check-task-state` | must exit 0 | must exit 0 | must exit 0 |
 

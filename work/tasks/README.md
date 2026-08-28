@@ -1,7 +1,8 @@
 # Tasks — the queue
 
 **What is being worked on for this project itself.** One file per task, named
-by id (`task-001.md`), never renamed, never moved. Status, priority, and
+by id plus a tiny subject slug (`task-0001-adoption-kit.md`), never renamed,
+never moved. Status, priority, and
 dependencies live in front-matter — the full schema and the selection
 algorithm are defined in
 [`technical/README.md`](../../docs/technical/README.md#task-schema).

@@ -53,11 +53,15 @@ does not exist yet.
 - Trivial work does not become a task — a typo or a one-line fix goes
   straight to a commit. `work/tasks/` exists only for work that justifies
   tracking.
-- **One task = one branch = one PR.** Branch name: `spec/NNN-short-name`,
-  after the spec the task points at, or `task/NNN-short-name` for a task
-  with no spec. A change that *authors* a rule rather than implementing one
-  uses `docs/short-name` — it creates specs it will not implement, so
-  naming it after one would misdescribe it. See
+- **One change = one branch = one PR.** A PR normally carries one task,
+  and legitimately carries several when they are facets of one atomic
+  change — landing them apart would ship something half-true. Branch
+  name: `spec/NNNN-short-name`, after the spec the change implements —
+  the lead one, when it implements several — or `task/NNNN-short-name`
+  for a task with no spec; the PR title's `[TASK-NNNN]` tag names every
+  task the PR carries. A change that *authors* a rule rather than
+  implementing one uses `docs/short-name` — it creates specs it will not
+  implement, so naming it after one would misdescribe it. See
   [Pipeline](docs/product/pipeline.md#two-ways-a-permanent-doc-changes) for
   which kind of change you have.
 - **Take a task only when it is ready.** `pending`, and every spec it
@@ -165,8 +169,8 @@ it.
    being the `writrun-check-spec-deltas` result plus anything a reviewer should
    re-read by hand.
 4. **One spec per PR is the recommended shape** — it is what the branch
-   name (`spec/NNN-short-name`) and the template's singular "Implements
-   spec-NNN" assume. A task with several specs completes across several
+   name (`spec/NNNN-short-name`) and the template's singular "Implements
+   spec-NNNN" assume. A task with several specs completes across several
    PRs, one spec each, the task reaching `completed` in the last; a merge
    that implements a spec without completing its task is fine, and lands
    the task on `main` as `in-progress`, where the lister surfaces it as
@@ -174,7 +178,10 @@ it.
    single PR implementing all of them is also legitimate — the checks
    verify the real contract either way: every implemented spec's promises
    honoured in full, every touched permanent doc promised by at least one
-   of them.
+   of them. The same goes a level up: several *tasks* land in one PR when
+   their changes form one atomic whole — the union contract covers their
+   specs together, each task's transitions are still checked on their
+   own, and the PR title tags every one of them.
 
 Releases are tags on `main` (the first: `v0.0.01`, and the third field stays two digits): everything merges to `main`
 continuously, a version exists when its tag does, and the changelog is
