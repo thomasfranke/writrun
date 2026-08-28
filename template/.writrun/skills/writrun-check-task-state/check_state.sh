@@ -7,7 +7,7 @@
 # Four rules, all derivable from the range alone:
 #
 #   A. A change may not move a spec draft -> approved. That transition is a
-#      human gate (docs/product/pipeline.md#human-gates); a pull request
+#      human gate (docs/product/pipeline/gates.md); a pull request
 #      approving its own spec is the exact thing the gate exists to stop.
 #   B. A spec may not reach `implemented` from `draft`. Work is authorized
 #      by approval, so an implemented spec was approved at some point first.

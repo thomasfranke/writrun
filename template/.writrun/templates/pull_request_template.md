@@ -14,7 +14,7 @@ Two kinds of PR land here. Keep the section that applies, delete the other.
   Implementing — ships an approved spec and closes the loop on the docs it
                  promised. Fill "Spec" and "How to verify".
 
-See docs/product/pipeline.md#two-ways-a-permanent-doc-changes.
+See docs/product/pipeline/authoring.md#two-ways-a-permanent-doc-changes.
 -->
 
 ## What

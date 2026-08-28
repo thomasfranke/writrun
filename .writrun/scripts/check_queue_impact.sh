@@ -7,7 +7,7 @@
 # doc file its brief derives from. If this change edits that file, the
 # person reviewing the rule change is the right one to re-check the brief —
 # staleness is caught where it is born
-# (docs/product/pipeline.md#when-the-doc-moves-ahead-of-the-queue).
+# (docs/product/pipeline/conflicts.md#when-the-doc-moves-ahead-of-the-queue).
 #
 # Always exits 0 — file-level overlap is a signal, never a failure; whether
 # the brief survived the edit is the reviewer's call. The amend path is the

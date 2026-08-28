@@ -23,8 +23,10 @@ of those nouns are redefined downstream:
 | 3 | [`concepts/technical-doc.md`](concepts/technical-doc.md) | What a technical doc is, and the link-don't-restate rule. |
 | 4 | [`concepts/task.md`](concepts/task.md) | What a task is: the request, its two invariants (identity ≠ order, no technical detail). |
 | 5 | [`concepts/spec.md`](concepts/spec.md) | What a spec is: the elaboration, its lifecycle, the approval gate, the doc-delta contract. |
-| 6 | [`pipeline.md`](pipeline.md) | The docs → task → spec → code flow and where humans gate it. |
-| 7 | [`adoption.md`](adoption.md) | What a project must have, at minimum, to claim adoption. |
+| 6 | [`pipeline/`](pipeline/README.md) | The docs → task → spec → code flow and where humans gate it. True at every level. |
+| 7 | [`flow/`](flow/README.md) | What branches, pull requests and CI add — level `flow`. |
+| 8 | [`mirror/`](mirror/README.md) | What the GitHub Issues mirror adds — level `mirror`. |
+| 9 | [`adoption.md`](adoption.md) | What a project must have, at minimum, to claim adoption. |
 
 Every chapter above traces to a concrete case, not an invented example: the
 five concepts and the pipeline generalize swoop's mature, fully-designed
@@ -37,7 +39,7 @@ pipeline; adoption's worked example is TOM's real, partial adoption.
 - Each rule is checkable: an agent (or a reviewer) reading it can answer
   "does this repo comply — yes or no" without interpretation.
 - Changes here are behaviour changes, and arrive by one of the two routes
-  [Pipeline](pipeline.md#two-ways-a-permanent-doc-changes) names. **Loop
+  [Pipeline](pipeline/authoring.md#two-ways-a-permanent-doc-changes) names. **Loop
   closure** — the change ships with the task that implements it, and the
   spec's **Proposed product changes** section must list it. **Authoring** —
   the rule is written before anything implements it, no task precedes it,

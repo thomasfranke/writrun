@@ -73,7 +73,7 @@ One case per acceptance criterion, in a new `unique_ids` suite and the
 
 ## Proposed product changes
 
-none — the authoring change stated the rule in `product/pipeline.md`
+none — the authoring change stated the rule in `product/pipeline/README.md`
 first.
 
 ## Proposed technical changes

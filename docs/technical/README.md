@@ -89,7 +89,7 @@ merged: null                       # machinery only: the merge that took the wor
   between directories as work progresses, so `git log` stays readable without
   `--follow`.
 - **Four dates, and who writes each is part of the contract** — the table
-  is in [`product/pipeline.md`](../product/pipeline.md#flows-and-statuses).
+  is in [`product/pipeline/README.md`](../product/pipeline/statuses.md).
   `created` and `completed` are a person's, written on the branch;
   `queued` and `merged` are the machinery's, written after the merge each
   records. A date recording a merge is never hand-written: it would have

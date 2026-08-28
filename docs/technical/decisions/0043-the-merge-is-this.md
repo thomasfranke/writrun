@@ -17,7 +17,7 @@ may merge is exactly whoever may approve, so the gate loses no strength
 — it only stops asking for a signal that cannot exist. The trade-off is
 named where it lands: the recording now writes to `main`, which is why
 `main` stays unprotected here, and protecting it later means allowing
-the Actions token to push or the recording stops. `pipeline.md` needed
+the Actions token to push or the recording stops. `pipeline/README.md` needed
 no new permission for any of this — it already said a project may
 record assent however it likes; what it lacked was the instruction to
 *name* the act, which it now carries as a criterion. Rejected: keeping

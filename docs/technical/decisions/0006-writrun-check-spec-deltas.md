@@ -3,9 +3,9 @@
 **2026-08-21**
 
 A spec writes its Proposed-changes
-paths relative to `docs/` (`product/pipeline.md`), while `git diff
+paths relative to `docs/` (`product/pipeline/README.md`), while `git diff
 --name-only` reports relative to the repository root
-(`docs/product/pipeline.md`). The two never matched, so every run reported
+(`docs/product/pipeline/README.md`). The two never matched, so every run reported
 every promised path MISSING *and* every touched doc UNDECLARED at the same
 time — the check had never passed and could not have. The script now
 prefixes `docs/` when extracting. Two related changes in the same pass: a

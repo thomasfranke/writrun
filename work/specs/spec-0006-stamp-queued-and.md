@@ -89,7 +89,7 @@ directory plus the existing `front_matter` and `new` suites.
 ## Proposed product changes
 
 none — the authoring change stated the rule and its table in
-`product/pipeline.md#flows-and-statuses` first.
+`product/pipeline/statuses.md` first.
 
 ## Proposed technical changes
 

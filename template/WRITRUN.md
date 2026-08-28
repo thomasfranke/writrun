@@ -7,7 +7,7 @@ copied from; `.writrun/VERSION` records it.
 
 ## The flows, in one line each
 
-Happy path (drawn in full in WritRun's `docs/product/pipeline.md`):
+Happy path (drawn in full in WritRun's `docs/product/pipeline/README.md`):
 
 1. **Authoring** — a human writes a rule in `docs/`, declares it finished
    (a gate); the agent derives tasks + draft specs and opens the PR.
