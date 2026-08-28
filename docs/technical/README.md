@@ -296,7 +296,7 @@ the PR title rule, the merge policy, task and spec taste. The one commit
 the machinery makes has its title as a variable at the top of
 `writrun-approve.yml`, and the PR template ships as an editable default
 alongside. Versions are tags on `main`
-(the first: `v0.0.10`) — everything merges to `main` continuously, and a
+(the first: `v0.0.01`, and the third field stays two digits) — everything merges to `main` continuously, and a
 version exists when its tag does. The number measures this contract, not
 the code, and it is computed, never typed: `make release` cuts one, with a
 vocabulary that is deliberately WritRun's own rather than SemVer's —

@@ -176,7 +176,7 @@ it.
    honoured in full, every touched permanent doc promised by at least one
    of them.
 
-Releases are tags on `main` (the first: `v0.0.10`): everything merges to `main`
+Releases are tags on `main` (the first: `v0.0.01`, and the third field stays two digits): everything merges to `main`
 continuously, a version exists when its tag does, and the changelog is
 generated from commit messages. Cut one with `make release` — the number
 is computed from the latest tag, never typed: `minor` (the default) bumps
