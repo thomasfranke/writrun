@@ -9,6 +9,6 @@ added_task task-001 "Add search"
 check "existing labels do not abort the run" 0 "Created issue for task-001" \
   -- bash "$MIRROR_ISSUES" o/r 7
 forge_told "the issue is still created" \
-  "POST repos/o/r/issues -f title=task-001 — Add search"
+  "POST repos/o/r/issues -f title=[TASK-001] Add search"
 
 finish
