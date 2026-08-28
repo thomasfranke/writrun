@@ -64,6 +64,24 @@ in full in [Human gates](#human-gates).
 | Task | `pending` → `in-progress` → `completed`, or `blocked` (needs `blocked_reason`) | whoever does the work |
 | Spec | `draft` → `approved` → `implemented` | `approved` by a human only; the rest by whoever does the work |
 
+**Dates.** A task carries four, and **who writes each is part of the
+contract** — not a convention anyone may bend.
+
+| Field | Records | Written by |
+|---|---|---|
+| `created` | the task was drafted | a person, on the branch |
+| `queued` | the merge that brought it into the queue | the machinery, after that merge |
+| `completed` | its work was finished | a person, on the branch |
+| `merged` | the merge that took its work | the machinery, after that merge |
+
+The split is not decoration. **A hand-written date cannot honestly record
+a merge**: it would have to be typed before the event it claims to
+describe, and would be wrong by however long review takes. So the two
+halves answer different questions and neither substitutes for the other —
+`completed` is when the worker finished, `merged` is when the project
+took it. Where everything merges the same day they coincide; anywhere
+else the gap between them *is* the review.
+
 Three states are **derived, never stored**: *proposed* is a task whose
 file an open pull request adds and the authority branch does not hold
 yet; *ready for development* is a `pending` task whose every spec is
@@ -524,6 +542,8 @@ queue is what adjusts. Three consequences, in order:
 - When a task is mirrored while the pull request that creates it is still
   open, the mirror shall report it as proposed, distinctly from a task
   the queue already holds.
+- When a queue field records what a merge did, the machinery shall write
+  it after that merge, and a person shall not write it by hand.
 - When a task is taken, its pull request shall be opened as a draft
   before the work starts, so that no task is under way without a signal
   the forge can be asked for.
