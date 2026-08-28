@@ -85,7 +85,7 @@ This is this repo's concrete answer to the general rule in
 |---|---|
 | Writing or changing anything under `docs/` | Human writes or human reviews before merge. Agents may draft; permanent docs never merge on agent approval alone. |
 | An authored rule is finished, so derivation may start | **Human declares it.** No event marks the last edit of a rule, so the handoff is a signal, never an inference: invoking `writrun-create-task-and-spec`, or marking the authoring PR ready for review. An agent never derives from a doc edit nobody declared finished. A forgotten handoff is caught, not remembered: `writrun check` fails an authoring PR that neither adds tasks nor declares "Derived work: none". |
-| Spec `draft → approved` | **Human only.** Never self-approve, and never write the field on verbal permission relayed through you — the gate is satisfied by an approved PR, which CI then records. |
+| Spec `draft → approved` | **Human only.** The assenting act here is **the maintainer's squash-merge** — this repository's pull requests are authored by its maintainer, who cannot review them, so a review-based gate would never be satisfiable. CI records the flip on `main` after the merge. Never self-approve, and never write the field on verbal permission relayed through you: a merged PR is the record, and nothing else is. |
 | Task with empty `spec_ref` | If the task body + `doc_ref` is not a sufficient brief, **stop and ask for a spec** — do not improvise scope. |
 | Everything else (creating tasks, drafting specs, implementing approved specs, filling Outcome) | Agent, autonomously. |
 

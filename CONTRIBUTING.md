@@ -209,14 +209,16 @@ from.
 
 - `writrun check` runs on every PR, from a branch or a fork alike. No
   secrets, no write permission. It is the half that carries the guarantee.
-- `writrun approve` records `draft → approved` once a maintainer approves,
-  writing to the PR's own branch — never to `main`, which is protected and
-  which `GITHUB_TOKEN` cannot push to. It is skipped for fork PRs, where
-  that token has no write access to the head branch and no setting changes
-  that. If your PR came from a fork, set the field yourself after approval
-  — `writrun check` verifies against the PR's reviews that the approval
-  you are recording exists, so the hand-written field stays a record,
-  never a claim.
+- `writrun approve` records `draft → approved` once the maintainer has
+  assented. **Here the assenting act is the merge**, not an approving
+  review: every pull request in this repository is authored by its
+  maintainer, and no forge lets a person approve their own — a
+  review-based gate would be unsatisfiable, and an unsatisfiable gate gets
+  worked around, which is worse than no gate. The flip is written to
+  `main` after the merge, which is why this repository leaves `main`
+  unprotected; protecting it later means allowing the Actions token to
+  push, or the recording stops. Fork PRs need nothing special: the merge
+  is the maintainer's either way.
 - `writrun issues` mirrors new tasks into GitHub Issues, one direction
   only. **The file under `work/tasks/` is the authority.** An edit made in
   an Issue is not written back.
