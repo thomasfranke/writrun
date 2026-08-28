@@ -51,8 +51,9 @@ were true once.
 How the pipeline actually runs — step by step, with every actor named —
 is the flows below, and **the flows are the source of truth for the
 mechanics**. The human gates sit where the flows draw them: a rule
-declared finished (flow 1), a spec approved by review (flow 2), every
-merge a maintainer performs (flows 2 and 5) — and behind them all, a
+declared finished (flow 1), a spec assented to by the maintainer (flow
+2), every merge a maintainer performs (flows 2 and 5) — and behind them
+all, a
 permanent doc never merges on agent approval alone; the gates are named
 in full in [Human gates](#human-gates).
 
@@ -63,9 +64,11 @@ in full in [Human gates](#human-gates).
 | Task | `pending` → `in-progress` → `completed`, or `blocked` (needs `blocked_reason`) | whoever does the work |
 | Spec | `draft` → `approved` → `implemented` | `approved` by a human only; the rest by whoever does the work |
 
-Two states are **derived, never stored**: *ready for development* is a
-`pending` task whose every spec is `approved`; *waiting for review* is an
-open PR. No field records either.
+Three states are **derived, never stored**: *proposed* is a task whose
+file an open pull request adds and the authority branch does not hold
+yet; *ready for development* is a `pending` task whose every spec is
+`approved`; *waiting for review* is an open PR. No field records any of
+them.
 
 **Task is WritRun's noun; a GitHub Issue is only where a task is mirrored**
 for people who read the queue in a browser. The file under `work/tasks/` is
@@ -75,6 +78,37 @@ repository that also uses Issues for bug reports and feature requests, the
 workflow filters on it and touches nothing without it. A mirror is titled
 `[TASK-NNNN] <task title>` — the same tag a PR title carries, so one
 search for the tag finds the task everywhere it appears.
+
+The mirror's `status:` label reports where the task is, and **a task an
+open pull request merely proposes is not where a merged one is**. One
+label per state, no state sharing a label with another:
+
+| Label | The task is |
+|---|---|
+| `status:proposed` | proposed by an open pull request — not in the queue. The PR may still close unmerged, and the mirror retires with it. |
+| `status:pending` | in the queue, with a spec it references not yet `approved`. |
+| `status:ready` | ready for development: `pending`, every spec `approved`. |
+| `status:in-progress` | being worked on — leave the worker alone. |
+| `status:in-review` | waiting on review — the maintainer is the blocker. |
+
+**The merge of the pull request that creates a task is that task's
+authorization.** Nothing else authorizes it, and nothing else needs to:
+before that merge the file is not on the authority branch at all. That
+absence is why a task carries no `draft` of its own the way a spec does —
+a spec is `draft` *while already in the queue*, which is a state a task
+never occupies. What a merged task might still be waiting on is covered
+three ways that already exist: its spec's approval gate, `blocked` with
+its reason, and `depends_on`.
+
+The mirror reports *proposed* all the same, and that is not the mirror
+inventing state the files lack: it projects the task's **situation**, of
+which stored status is one input and the forge is another — exactly as it
+already does for *ready* and *waiting for review*, neither of which any
+field records. A stored `proposed` could not work even in principle: the
+merge that makes a task real is the very commit that carries the file's
+own words onto the authority branch, so the field would land already
+false and need a second commit to correct itself. Git records where a
+file is; the queue records what the work is. Neither restates the other.
 
 Each node names who acts. Only the human ones are decisions.
 
@@ -102,25 +136,35 @@ flowchart LR
     B["AGENT<br/>writrun-create-task-and-spec<br/>generates task: pending<br/>and spec: draft"]
     C["AGENT<br/>Branch docs/name · open PR<br/>Derived work listed"]
     D["CI<br/>writrun check<br/>derived work in the diff<br/>or declared none"]
-    E["CI<br/>writrun issues<br/>Creates the GitHub Issue<br/>labelled status:pending"]
+    E["CI<br/>writrun issues<br/>Creates the GitHub Issue<br/>labelled status:proposed"]
     A -->|"gate: doc declared finished"| B --> C --> D
     C --> E
 ```
 
 ### Flow 2 — Approval
 
-The only flow the maintainer drives. Their review *is* the human gate —
+The only flow the maintainer drives. Their **assent** *is* the human gate —
 everything after it is recorded, not decided.
+
+**Which act carries the assent is the project's to name**, in its
+`AGENTS.md`, because the forge decides what is even available. An
+approving review is the richer signal and the default. A repository whose
+maintainer authors its pull requests cannot use it at all — no forge lets
+a person approve their own — and there the **merge** is the assenting act.
+That is not the weaker gate it looks like: whoever may merge is exactly
+whoever may approve, so the same person is deciding the same thing. What
+changes is only where the recording can land, which the project's
+machinery has to match — the PR's own branch while it is still open, or
+`main` once the merge has closed it.
 
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'background':'#0d1117','primaryColor':'#161b22','primaryTextColor':'#e6edf3','primaryBorderColor':'#8b949e','lineColor':'#ffffff','secondaryColor':'#161b22','tertiaryColor':'#161b22','fontSize':'14px'}}}%%
 flowchart LR
-    A["MAINTAINER<br/>Approves the PR"]
-    B["CI<br/>writrun approve<br/>spec: draft → approved<br/>onto the PR branch"]
-    C["MAINTAINER<br/>Squash-merge to main"]
+    A["MAINTAINER<br/>Assents to the PR<br/>an approving review · or the merge"]
+    B["CI<br/>writrun approve<br/>spec: draft → approved<br/>onto the PR branch, or onto main"]
     D["CI<br/>writrun issues<br/>Issue: status:ready"]
     E["Ready for development<br/>pending task + approved specs"]
-    A --> B --> C --> D --> E
+    A --> B --> D --> E
 ```
 
 ### Flow 3 — Taking a task
@@ -198,8 +242,9 @@ flowchart LR
 
 ### Flow 5 — Review and merge
 
-Everything after the pull request opens. The maintainer's review is the
-decision; CI records around it — the same shape as flow 2.
+Everything after the pull request opens. The maintainer's assent — the
+review, or the merge itself, whichever act the project named — is the
+decision; CI records around it, the same shape as flow 2.
 
 CI re-runs both checks on the PR. **They verify the methodology, not the
 code** — that the diff touched every doc the spec promised and no other,
@@ -248,9 +293,9 @@ spec before any code.
 flowchart LR
     A["CI or AGENT<br/>Conflict surfaced<br/>doc moved ahead of spec"]
     B["AGENT<br/>Amend spec to match doc<br/>spec: approved → draft · open PR"]
-    C["MAINTAINER<br/>Approves the PR<br/>assent to the amended content"]
+    C["MAINTAINER<br/>Assents to the PR<br/>to the amended content"]
     D["CI<br/>writrun approve<br/>spec: draft → approved"]
-    E["MAINTAINER<br/>Squash-merge<br/>net status unchanged · brief current"]
+    E["Net status unchanged<br/>brief current"]
     A --> B --> C --> D --> E
 ```
 
@@ -393,6 +438,9 @@ agent, autonomously":
 - **A spec's `draft → approved` transition.** By default, human-only. An
   agent never self-approves a spec it drafted, or anyone else's, unless the
   adopting project has explicitly written down that it delegates this gate.
+  The project also names **which act carries the assent** — an approving
+  review, or the merge — since a repository whose maintainer authors its
+  own pull requests has no review available to give (flow 2).
   `approved → implemented` is not gated the same way — it happens
   mechanically when the task completes and the Outcome section is filled.
 - **A task whose brief is insufficient.** When `spec_ref` is empty and the
@@ -456,6 +504,9 @@ queue is what adjusts. Three consequences, in order:
   draft a spec, rather than guessing at scope.
 - When a spec transitions from `draft` to `approved`, a human shall have
   assented to that transition, whether or not a person writes the field.
+- When a project names the act that carries a maintainer's assent, it
+  shall name one its forge makes available to the people who hold the
+  gate, and shall state it in its `AGENTS.md`.
 - When a permanent doc (About, a product chapter, a technical section) is
   changed, the change shall not be treated as final until a human has
   written or reviewed it.
@@ -470,6 +521,9 @@ queue is what adjusts. Three consequences, in order:
 - When a change edits a permanent doc that a non-completed task
   references, the machinery shall surface the overlap to the change's
   reviewer.
+- When a task is mirrored while the pull request that creates it is still
+  open, the mirror shall report it as proposed, distinctly from a task
+  the queue already holds.
 - When a task is taken, its pull request shall be opened as a draft
   before the work starts, so that no task is under way without a signal
   the forge can be asked for.

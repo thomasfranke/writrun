@@ -7,8 +7,9 @@ What the methodology *is* is [`about.md`](../about.md); what it *prescribes*
 for an adopting project is [`product/`](../product/README.md). This file
 covers the mechanics: folder layout, file schemas, the selection algorithm,
 and how a project pulls the methodology in. The dated why behind each
-piece — and what was rejected — is [`decisions.md`](decisions.md),
-history split out so this reference stays a short read.
+piece — and what was rejected — is [`decisions/`](decisions/README.md),
+one numbered file per decision, history split out so this reference stays
+a short read.
 
 ## Folder layout an adopting project ends up with
 
@@ -16,7 +17,7 @@ history split out so this reference stays a short read.
 docs/
   about.md            # shared context — what the project is, precedes the fork
   product/            # business rules, chapter by chapter — stakeholder-facing
-  technical/          # architecture, testing, subsystems — one decisions.md per subsystem
+  technical/          # architecture, testing, subsystems — decisions per subsystem, or one file each
 work/
   tasks/              # the queue — front-matter only, no technical detail
   specs/              # the detail of one change — EARS criteria, proposed doc deltas
@@ -321,7 +322,8 @@ adopter pins the tag it targets.
 
 ## Decisions
 
-In [`decisions.md`](decisions.md) — the dated why behind each piece of
-machinery and what was rejected, append-only. This heading stays so old
-links keep resolving; the entries live there.
+In [`decisions/`](decisions/README.md) — the dated why behind each piece
+of machinery and what was rejected, append-only, one numbered file per
+decision with the index carrying the chronology. This heading stays so
+old links keep resolving; the entries live there.
 

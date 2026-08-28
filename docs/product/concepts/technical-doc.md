@@ -25,9 +25,16 @@ an edit to the original — the record of what was once true is as valuable
 as what is true now.
 
 A project may organize this per-subsystem (one `decisions.md` file per
-technical section) or as a single chronological log across the whole
-project. Both are legitimate; [Adoption](../adoption.md) covers when the
-choice needs to be written down as a decision itself.
+technical section), as a single chronological log across the whole
+project, or as **one file per decision** — numbered in the order taken,
+with an index carrying the chronology. All three are legitimate, and the
+third earns its extra files only once a log grows past what anyone
+re-reads: it makes appending an entry a new file rather than an edit to a
+file every other change also appends to. Whichever shape, the number or
+filename is identity — never reused, never renumbered, and a superseded
+decision keeps its place while the entry replacing it names it.
+[Adoption](../adoption.md) covers when the choice needs to be written
+down as a decision itself.
 
 ## Normative sections
 

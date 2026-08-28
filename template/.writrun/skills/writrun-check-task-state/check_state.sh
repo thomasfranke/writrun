@@ -34,7 +34,7 @@
 # Exit codes: 0 clean; 1 a rule was violated; 3 usage error or git failed.
 #
 # Portable awk/sed only — no gawk extensions. See the standing rule in
-# docs/technical/decisions.md.
+# docs/technical/decisions/.
 
 set -euo pipefail
 

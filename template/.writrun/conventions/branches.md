@@ -34,5 +34,5 @@ around it; WritRun neither knows nor cares what happens beyond it.
   to where it started. `spec/NNNN-short-name` is still resolved, for
   branches opened before this rule; it is no longer written.
 - `<type>/short-name` (e.g. `fix/broken-anchor`) — trivial work, which is
-  a commit and never a task; `main` is protected, so even a typo rides a
-  branch and a PR.
+  a commit and never a task; nothing lands on `main` except through a
+  branch and a PR, so even a typo rides one.
