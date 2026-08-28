@@ -1,7 +1,7 @@
 ---
 id: spec-0008
 task_ref: task-0011
-status: approved
+status: implemented
 created: 2026-08-28T00:00:00Z
 ---
 
@@ -80,4 +80,40 @@ form in `technical/README.md`.
 
 ## Outcome
 
-(filled when the task completes)
+Built as planned, all four steps. The suite went from 169 to 176 case
+files.
+
+Step 4 earned its place: `pipeline_lib.sh` and `mirror_lib.sh` write
+`created` into every generated task and spec, and had they stayed on
+bare dates the fixtures would have kept passing while testing the old
+contract — a whole suite quietly grading the wrong shape.
+
+Three notes, one of them a divergence:
+
+- **The existing `bad_date_rejected_test.sh` was tightened, not left
+  alone.** It asserted the message contained `YYYY-MM-DD`, which is a
+  *substring* of the new `YYYY-MM-DDTHH:MM:SSZ` — so it passed against
+  both the old code and the new, discriminating nothing. It now asserts
+  the full expected shape. Worth recording because the case looked green
+  throughout and was the one case that had stopped meaning anything.
+
+- **Criterion 5 got a case that reads this repository, not a fixture.**
+  Every other case builds a temp queue; "every file in `work/` carries
+  timestamps" is a claim about the real tree, so
+  `repository_queue_is_canonical_test.sh` runs the check against
+  `REPO_ROOT` and additionally asserts that no file is left holding a
+  bare date. CI already runs the same check on the repository, but the
+  suite is where the claim belongs when a spec makes it.
+
+- **`completed` on this task is a real time, not `T00:00:00Z`.** The
+  migration normalized files whose precision was never recorded; a field
+  written now knows the hour, and writing midnight would discard a fact
+  the decision entry only accepted losing where it was already lost.
+
+Not done here, and deliberately: `queued` and `merged` do not exist yet
+(task-0009), and `spec-0006` still specifies them as `YYYY-MM-DD`. That
+spec is stale against the schema and must be amended through `draft`
+before task-0009 is implemented — which is this spec's Scope talking
+("anything a concurrent change adds must be written in the new shape from
+the start rather than migrated twice"), now with the ground prepared for
+it.
