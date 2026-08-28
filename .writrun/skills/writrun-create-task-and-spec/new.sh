@@ -329,7 +329,7 @@ doc_ref: ${doc_ref}
 priority: ${priority}
 depends_on: ${depends_list}
 milestone: ${milestone}
-created: $(date +%Y-%m-%d)
+created: $(date -u +%Y-%m-%dT%H:%M:%SZ)
 completed: null
 EOF
       if [[ -n "$tpl_ext" ]]; then printf '%s\n' "$tpl_ext"; fi
@@ -397,7 +397,7 @@ EOF
 id: ${id}
 task_ref: ${task_id}
 status: draft
-created: $(date +%Y-%m-%d)
+created: $(date -u +%Y-%m-%dT%H:%M:%SZ)
 EOF
       if [[ -n "$tpl_ext" ]]; then printf '%s\n' "$tpl_ext"; fi
       printf '%s\n\n' "---"

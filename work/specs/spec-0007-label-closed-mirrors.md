@@ -1,8 +1,8 @@
 ---
 id: spec-0007
 task_ref: task-0010
-status: approved
-created: 2026-08-28
+status: draft
+created: 2026-08-28T00:00:00Z
 ---
 
 # spec-0007 — Label closed mirrors and re-derive after approval

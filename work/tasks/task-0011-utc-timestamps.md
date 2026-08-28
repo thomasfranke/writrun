@@ -1,14 +1,14 @@
 ---
 id: task-0011
-status: pending
+status: completed
 blocked_reason: null
 spec_ref: [spec-0008]
 doc_ref: technical/README.md#front-matter-is-canonical
 priority: medium
 depends_on: []
 milestone: null
-created: 2026-08-28
-completed: null
+created: 2026-08-28T00:00:00Z
+completed: 2026-08-28T21:14:19Z
 ---
 
 # Record queue dates as UTC timestamps
