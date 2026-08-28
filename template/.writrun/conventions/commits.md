@@ -9,8 +9,11 @@
   `skills`, `ci`, `tests`, `agents`.
 - Example: `docs(product): add the coverage-rule concept chapter`.
 - Squash-only means the PR title is the commit that lands, so an
-  implementing change's summary ends with its `[TASK-NNNN]` tag — see
-  [prs.md](prs.md).
+  implementing change's subject opens with its `[TASK-NNNN]` tags and the
+  `type(scope):` follows them — see [prs.md](prs.md). The prefix is
+  deliberately outside Conventional Commits' grammar: this repository
+  reads its history by eye and by `git log --grep`, and neither is a
+  strict parser.
 - Trivial work is a commit, never a task (principle 6).
 
 The one commit the machinery makes — `writrun approve`'s recording flip —

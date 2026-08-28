@@ -60,3 +60,4 @@ and only ever by appending a row.
 | [0043](0043-the-merge-is-this.md) | 2026-08-28 | the merge is this repository's assenting act, because its maintainer cannot review his own pull requests. |
 | [0044](0044-a-proposed-task-and.md) | 2026-08-28 | a proposed task and a queued one stop sharing a label. |
 | [0045](0045-one-decision-per-file.md) | 2026-08-28 | one decision per file, numbered — reversing part of 0037. |
+| [0046](0046-the-task-tag-leads.md) | 2026-08-28 | the task tag leads the title, one bracket per task. |

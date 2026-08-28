@@ -58,7 +58,7 @@ does not exist yet.
   change — landing them apart would ship something half-true. Branch
   name: `task/NNNN-short-name`, after the task being worked — the lead
   one, when the PR carries several — whether that task has one spec,
-  many, or none; the PR title's `[TASK-NNNN]` tag names every task the
+  many, or none; the `[TASK-NNNN]` tags leading the PR title name every task the
   PR carries. The task is what the branch is named after because the
   task is what is being worked: a spec is one task's elaboration, and
   `spec_ref` is 0..N, so a spec-named branch would force an arbitrary
