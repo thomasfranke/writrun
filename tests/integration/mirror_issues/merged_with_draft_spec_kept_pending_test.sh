@@ -8,7 +8,7 @@ setup_forge
 export PR_STATE=closed PR_MERGED=true
 added_task task-001 "Held by its spec" spec-001
 added_spec spec-001 task-001 draft
-forge_issue 12 open "writrun:task,status:pending" "task-001 — Held by its spec"
+forge_issue 12 open "writrun:task,status:proposed" "task-001 — Held by its spec"
 check "a merged task with a draft spec is not ready" 0 \
   "task-001 merged with a spec still draft — kept pending" \
   -- bash "$MIRROR_ISSUES" o/r 7

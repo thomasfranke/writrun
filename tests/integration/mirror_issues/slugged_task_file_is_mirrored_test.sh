@@ -23,7 +23,7 @@ completed: null
 EOF
 check "a slugged task file is mirrored at open" 0 "Created issue for task-0004" \
   -- bash "$MIRROR_ISSUES" o/r 7
-forge_told "the mirror is born pending" \
-  "-f labels[]=writrun:task -f labels[]=status:pending"
+forge_told "the mirror is born proposed" \
+  "-f labels[]=writrun:task -f labels[]=status:proposed"
 
 finish
