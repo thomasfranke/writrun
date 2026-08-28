@@ -106,7 +106,7 @@ doc_ref: null
 priority: medium
 depends_on: []
 milestone: null
-created: 2026-08-23
+created: 2026-08-23T00:00:00Z
 completed: null
 ---
 
@@ -121,7 +121,7 @@ added_spec() {
 id: $1
 task_ref: $2
 status: $3
-created: 2026-08-23
+created: 2026-08-23T00:00:00Z
 ---
 
 # $1 — test
@@ -136,7 +136,7 @@ base_spec() {
 id: $1
 task_ref: $2
 status: approved
-created: 2026-08-23
+created: 2026-08-23T00:00:00Z
 ---
 
 # $1 — test

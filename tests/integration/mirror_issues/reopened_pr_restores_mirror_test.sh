@@ -10,7 +10,7 @@ check "a reopened PR restores its mirror" 0 "task-001 reopened with #7" \
   -- bash "$MIRROR_ISSUES" o/r 7
 forge_told "the mirror is reopened" \
   "PATCH repos/o/r/issues/12 -f state=open"
-forge_told "and reset to pending" \
-  "PUT repos/o/r/issues/12/labels -f labels[]=writrun:task -f labels[]=status:pending"
+forge_told "and reset to proposed" \
+  "PUT repos/o/r/issues/12/labels -f labels[]=writrun:task -f labels[]=status:proposed"
 
 finish

@@ -7,8 +7,8 @@ doc_ref: technical/README.md#task-schema
 priority: high
 depends_on: []
 milestone: null
-created: 2026-08-28
-completed: 2026-08-28
+created: 2026-08-28T00:00:00Z
+completed: 2026-08-28T00:00:00Z
 ---
 
 # Keep queue ids unique across open pull requests

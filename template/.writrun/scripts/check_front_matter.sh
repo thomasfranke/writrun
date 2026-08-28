@@ -114,11 +114,20 @@ check_list() {   # check_list <file> <block> <field> <item-prefix>
 }
 
 check_date() {   # check_date <file> <block> <field> <null-ok>
+  # An RFC 3339 UTC timestamp, and `Z` is the only spelling accepted.
+  # That is the load-bearing half: every reader here is line-based, and
+  # with one spelling a lexicographic sort of these strings is a
+  # chronological sort. Allowing `+02:00` alongside `Z` would keep `sort`
+  # looking correct while being wrong for exactly the entries that
+  # crossed a timezone (docs/technical/decisions/0049-...). A bare date
+  # is rejected for the reason that rule exists: it cannot order two
+  # entries made the same day, which is most of them in an active queue.
   local val
   val=$(get "$2" "$3")
   [ "$4" = "null-ok" ] && [ "$val" = "null" ] && return 0
-  printf '%s' "$val" | grep -qE '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' \
-    || fail "$1" "field '$3' is '$val' — expected YYYY-MM-DD$([ "$4" = "null-ok" ] && printf ' or null')"
+  printf '%s' "$val" \
+    | grep -qE '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$' \
+    || fail "$1" "field '$3' is '$val' — expected YYYY-MM-DDTHH:MM:SSZ$([ "$4" = "null-ok" ] && printf ' or null')"
   return 0
 }
 

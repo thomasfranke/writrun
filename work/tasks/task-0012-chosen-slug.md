@@ -7,7 +7,7 @@ doc_ref: technical/README.md#task-schema
 priority: low
 depends_on: []
 milestone: null
-created: 2026-08-28
+created: 2026-08-28T00:00:00Z
 completed: null
 ---
 

@@ -2,7 +2,7 @@
 id: spec-0006
 task_ref: task-0009
 status: approved
-created: 2026-08-28
+created: 2026-08-28T00:00:00Z
 ---
 
 # spec-0006 — Stamp queued and merged

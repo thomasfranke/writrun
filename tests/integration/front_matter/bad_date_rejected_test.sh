@@ -20,7 +20,7 @@ completed: null
 
 # A task with a local-format date
 EOF
-check "a malformed date is named" 1 "YYYY-MM-DD" \
+check "a malformed date is named" 1 "expected YYYY-MM-DDTHH:MM:SSZ" \
   -- bash "$CI_SCRIPTS/check_front_matter.sh"
 
 finish
