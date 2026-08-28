@@ -8,29 +8,28 @@ counting as non-compliance.
 
 Adoption is progressive. Each level adds to the one before it, and a project
 declares which it is at in
-[`.writrun/conventions/settings.json`](../../.writrun/conventions/settings.json).
+[`settings.json`](../../.writrun/conventions/settings.json).
 
 | Level | Adds | Needs |
 |---|---|---|
-| `docs` | the docs and the queue, as markdown | nothing but files |
-| `flow` | branches, pull requests, the CI checks, merge as assent | a forge |
-| `mirror` | the GitHub Issues mirror | Issues |
+| `tasks-and-specs` | the docs and the queue, as markdown | nothing but files |
+| `pull-requests` | branches, pull requests, the CI checks, merge as assent | a forge |
+| `github-issues` | the Issues mirror | Issues |
 
-**`docs` is the minimum bar below**, and it is a complete adoption: the
-audience split, the queue, the schemas and the four gates are all satisfiable
-with files alone. What the higher levels add is *mechanical enforcement* of
-things a person otherwise does deliberately.
-
-The levels are ordered and cumulative, which is why the setting is one value
-and not three switches: `mirror` without `flow` would ask for a projection
+Ordered and cumulative, which is why the setting is one value and not three
+switches: `github-issues` without `pull-requests` would ask for a projection
 that pull-request events drive, with no pull requests to drive it.
 
-Each level's rules live in its own folder —
-[`pipeline/`](pipeline/README.md) is true at every level,
-[`flow/`](flow/README.md) and [`mirror/`](mirror/README.md) are what the
-other two add.
+Each level's rules live in the folder of its name —
+[`pipeline.md`](pipeline.md) is true at every level; what the other two
+add is marked there.
 
-## Minimum bar
+## Level `tasks-and-specs` — the minimum bar
+
+**This level is a complete adoption**, not a partial one. The audience
+split, the queue, the schemas and the four gates are all satisfiable with
+files alone; what the higher levels add is *mechanical enforcement* of
+things a person otherwise does deliberately.
 
 All of the following, or the project is *adopting*, not *adopted*:
 
@@ -58,6 +57,23 @@ much of the spirit it otherwise follows. [TOM](#worked-example-tom) is the
 concrete case: strong `about.md`-equivalent, strong technical layer, real
 per-feature product rules — and no task/spec pipeline at all. That gap
 alone is what keeps it from claiming adoption today.
+
+## Level `pull-requests`
+
+Adds branches, pull requests and the CI checks — and with them, a merge
+that can carry assent. Nothing here is required to claim adoption; what it
+buys is that the rules above stop depending on anybody remembering them.
+
+The four gates do not change, only who executes them: below this level a
+person performs each directly, at it the machinery records what the person
+decided. Its rules are in [`pipeline.md`](pipeline.md#flow-2--approval).
+
+## Level `github-issues`
+
+Adds the mirror: the queue projected into Issues, one direction only, for
+people who read it in a browser. The files stay the authority at every
+level, so a project that never turns this on loses no guarantee — only a
+window. Its rules are in [`pipeline.md`](pipeline.md#flows-and-statuses).
 
 ## Mandatory core vs. documented variant
 

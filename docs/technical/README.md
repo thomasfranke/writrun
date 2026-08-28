@@ -210,14 +210,14 @@ never touches it.
 
 ```json
 {
-  "level": "mirror",
+  "level": "github-issues",
   "pr_title_style": "conventional"
 }
 ```
 
 | Key | Values | Read by |
 |---|---|---|
-| `level` | `docs` / `flow` / `mirror` | the workflows, and agents |
+| `level` | `tasks-and-specs` / `pull-requests` / `github-issues` | the workflows, and agents |
 | `pr_title_style` | `conventional` / `bracketed` | agents only |
 
 **Every key is present, always** — the same reason the front matter carries
@@ -229,17 +229,17 @@ configuration without knowing the defaults.
 Ordered and cumulative, so one value rather than three switches. Each level
 stops the machinery the one below it does not need:
 
-- `docs` — no workflow runs. The four scripts still run as ordinary
+- `tasks-and-specs` — no workflow runs. The four scripts still run as ordinary
   commands, so every guarantee they carry survives; what stops is the
   *enforcement*, which a person then performs deliberately.
-- `flow` — `writrun check` and `writrun approve` run.
-- `mirror` — adds `writrun issues` and `writrun progress`.
+- `pull-requests` — `writrun check` and `writrun approve` run.
+- `github-issues` — adds `writrun issues` and `writrun progress`.
 
 **The four human gates are core at every level.** A gate asks for *a human
 decision, recorded*, never for a pull request specifically
-([gates](../product/pipeline/gates.md)). At `docs` a person performs each
+([gates](../product/pipeline.md#human-gates)). At `tasks-and-specs` a person performs each
 directly and names how in their `AGENTS.md`, which Adoption already requires.
-No check can verify that, which is why it is stated here: `level: docs` is
+No check can verify that, which is why it is stated here: `level: tasks-and-specs` is
 not permission to drop them.
 
 ### `pr_title_style`
@@ -283,7 +283,7 @@ Two things the file may never do: carry a key that switches off anything in
 Adoption's **core** list, and carry reasoning — that stays in
 `.writrun/conventions/*.md`, and nothing is stated in both.
 
-**A setting controls; it never merely describes.** `level: docs` means the
+**A setting controls; it never merely describes.** `level: tasks-and-specs` means the
 workflows stop, not that a reader is told they were deleted. The alternative
 is the failure [`0041`](decisions/0041-the-issues-mirror-is.md) named when it
 rejected a flag: two ways to say one thing, free to disagree.

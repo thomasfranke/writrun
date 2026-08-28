@@ -27,7 +27,7 @@ conventions prose, which the authoring change already rewrote.
 ## Steps
 
 1. Ship `.writrun/conventions/settings.json` with the two documented keys at
-   their current values (`level: mirror`, `pr_title_style: conventional`).
+   their current values (`level: github-issues`, `pr_title_style: conventional`).
 2. `read_setting.sh <key>` — prints the value, or the documented default
    when the file or key is absent. Absence is not an error: an adopter who
    deletes the file keeps working, the same posture `list_tasks.sh` takes
@@ -40,8 +40,8 @@ conventions prose, which the authoring change already rewrote.
 4. Wire it into `writrun-check.yml` as its own read-only job.
 5. Each of the four workflows gains a first step that reads `level` and
    stops the job below the level it needs: `writrun-check` and
-   `writrun-approve` need `flow`, `writrun-issues` and `writrun-progress`
-   need `mirror`. The files stay installed and inert — the setting is what
+   `writrun-approve` need `pull-requests`, `writrun-issues` and `writrun-progress`
+   need `github-issues`. The files stay installed and inert — the setting is what
    turns them off, not deleting them, which is the reversal of 0041 this
    implements.
 
@@ -58,11 +58,11 @@ conventions prose, which the authoring change already rewrote.
   on one line, a duplicated key), the system shall reject it.
 - When a key names a rule Adoption lists as core, the system shall reject
   it.
-- When `level` is `docs`, no writrun workflow shall act, and each shall
+- When `level` is `tasks-and-specs`, no writrun workflow shall act, and each shall
   report why.
-- When `level` is `flow`, `writrun check` and `writrun approve` shall act and
+- When `level` is `pull-requests`, `writrun check` and `writrun approve` shall act and
   the two mirror workflows shall not.
-- When `level` is `mirror`, all four shall behave exactly as they do today.
+- When `level` is `github-issues`, all four shall behave exactly as they do today.
 
 ## Edge cases
 
@@ -71,7 +71,7 @@ conventions prose, which the authoring change already rewrote.
 - Trailing comma on the last key: invalid JSON, and the check must say so
   rather than silently reading the file anyway.
 - `jq` absent from `PATH`: everything works, because nothing calls it.
-- An adopter who deletes the workflows *and* leaves `level: mirror` —
+- An adopter who deletes the workflows *and* leaves `level: github-issues` —
   allowed. Deleting a workflow was always permitted and the setting cannot
   resurrect a file that is gone; the key controls what runs, not what exists.
 

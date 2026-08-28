@@ -7,14 +7,14 @@ the Issues mirror, so a project wanting only the docs-and-queue discipline had
 no stated path — and read 31K of pipeline describing machinery it would never
 run. The methodology was more invasive than it needed to be.
 
-Adoption becomes three ordered levels — `docs`, `flow`, `mirror` — each
+Adoption becomes three ordered levels — `tasks-and-specs`, `pull-requests`, `github-issues` — each
 adding to the one before. `docs` is the existing minimum bar and a complete
 adoption: the audience split, the queue, the schemas and the four gates are
 all satisfiable with files alone. The higher levels add *mechanical
 enforcement* of what a person otherwise does deliberately.
 
 One ordered value rather than three switches, because the levels are
-cumulative: `mirror` without `flow` would ask for a projection that
+cumulative: `github-issues` without `pull-requests` would ask for a projection that
 pull-request events drive, with no pull requests to drive it. A shape that
 cannot express the incoherent case needs no check for it.
 
@@ -22,7 +22,7 @@ cannot express the incoherent case needs no check for it.
 for *a human decision, recorded*, never for a pull request specifically. At
 `docs` a person performs each directly and names how in their `AGENTS.md`,
 which Adoption already requires of every adopter. No check can verify that,
-which is why the schema states it: `level: docs` is not permission to drop
+which is why the schema states it: `level: tasks-and-specs` is not permission to drop
 them.
 
 **Where the choice lives.** `.writrun/conventions/settings.json` — values
@@ -51,7 +51,7 @@ entry rejected "a config flag the workflows read at runtime" because "two
 files an adopter deletes need no switch, and a switch would be a second way
 to say what absence already says." Correct for the world it judged, where
 deletion was the mechanism and a flag could only *describe* it. Here the
-level **controls**: `level: docs` is what stops the workflows, and deletion
+level **controls**: `level: tasks-and-specs` is what stops the workflows, and deletion
 stops being the mechanism — one way to say it, not two.
 
 The second key, `pr_title_style`, chooses between `conventional` and
