@@ -1,38 +1,42 @@
 name: writrun approve
 
-# Records the `draft -> approved` transition once a maintainer has approved
-# the pull request. The human decision is the review; this only writes it
-# down (docs/product/pipeline.md#human-gates).
+# Records the `draft -> approved` transition once the maintainer has
+# assented. **Here the assenting act is the merge**, not an approving
+# review (docs/product/pipeline.md#flow-2--approval, and this repository's
+# own answer in AGENTS.md): every pull request here is authored by its
+# maintainer, and no forge lets a person approve their own, so a
+# review-based gate would never be satisfiable — and an unsatisfiable gate
+# gets worked around, which is worse than no gate.
 #
-# Best-effort by design. It writes to the pull request's own branch, never
-# to `main` — so a protected `main` needs no bypass, no App token, no PAT.
-# The trade-off is that it cannot serve a fork: GITHUB_TOKEN has no write
-# access to another repository's branch, and no setting changes that. Fork
-# contributors record the transition by hand after approval instead
-# (CONTRIBUTING.md), and `writrun check` — the mandatory half, which runs
-# everywhere — verifies against the PR's actual reviews that an approval
-# authorizing it exists.
+# The gate loses no strength. Only an account with write access can merge,
+# so the merge *is* the proof the old `author_association` filter stood in
+# for; a second test would assert something the forge already guarantees.
 #
-# Three settings this depends on:
+# `pull_request_target`, not `pull_request`: only the former carries a
+# write token when the head is a fork. That is a gain, not a workaround —
+# the review-based flow had to skip fork pull requests entirely, and this
+# one serves them like any other, because by the time it runs the code is
+# already on the base branch. Nothing from the head is checked out or
+# executed here; the only input taken from the event is a pair of SHAs.
+#
+# What this depends on:
 #   - Actions must have write permission (Settings > Actions > General >
 #     Workflow permissions). That setting is a ceiling; the `permissions:`
 #     block below cannot rise above it.
-#   - "Dismiss stale pull request approvals when new commits are pushed"
-#     must be OFF on the protected branch, or this push dismisses the very
-#     approval it just recorded.
-#   - Branch protection must not bind administrators while `writrun check`
-#     is a required check. The push below uses GITHUB_TOKEN, and pushes
-#     made with it trigger no workflow runs — which is what keeps this from
-#     looping, but also means no check ever reports on the flip commit, so
-#     a merge gated on required checks would wait forever. The maintainer's
-#     squash-merge is an administrator waving through a commit no check
-#     re-ran: acceptable because the commit is deterministic and the checks
-#     passed on the exact state it was derived from
+#   - **The base branch must accept a push from the Actions token.** The
+#     flip now lands on the base branch itself, after the merge — which
+#     this repository allows because `main` is unprotected. Protecting it
+#     later means letting this token through, or the recording stops and
+#     specs stay `draft` after their merge.
+#   - Pushes made with GITHUB_TOKEN trigger no workflow runs. That is what
+#     keeps this from looping, and it means no check reports on the flip
+#     commit — acceptable because the commit is deterministic and the
+#     checks passed on the exact state it was derived from
 #     (docs/technical/decisions/).
 
 on:
-  pull_request_review:
-    types: [submitted]
+  pull_request_target:
+    types: [closed]
 
 permissions:
   contents: write
@@ -40,31 +44,31 @@ permissions:
 
 jobs:
   approve-specs:
-    # The author_association filter is what makes "approved" mean "approved
-    # by someone with authority". On a public repo, any account can submit
-    # an approving review — it never counts toward branch protection, but
-    # the event fires all the same, and without this filter it would write
-    # the transition and sign the commit with a name that had no say.
-    if: >-
-      github.event.review.state == 'approved' &&
-      github.event.pull_request.head.repo.full_name == github.repository &&
-      contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.review.author_association)
+    # Merged, not merely closed. A pull request abandoned without merging
+    # carried no assent, and its specs stay draft.
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: ${{ github.event.pull_request.base.ref }}
           fetch-depth: 0
 
-      - name: Flip draft specs the review approved
+      - name: Flip draft specs the merge approved
         # Which specs qualify — added by the PR, or returned approved→draft
         # by the PR itself (an amendment) — is documented in the script,
         # which the test suite's integration tier executes.
+        #
+        # The range is derived from the merge commit, never from the head
+        # branch: a merge may already have deleted it, and for a squash
+        # merge the head's commits do not exist on the base at all.
         id: flip
+        env:
+          MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
         run: |
           set -euo pipefail
           out=$(bash .writrun/scripts/flip_approved_specs.sh \
-            "origin/${{ github.event.pull_request.base.ref }}...HEAD")
+            "${MERGE_SHA}~1...${MERGE_SHA}")
           printf '%s\n' "$out"
           if [ -n "$out" ]; then
             echo "changed=1" >> "$GITHUB_OUTPUT"
@@ -78,12 +82,20 @@ jobs:
         # adopting project's own commit convention — nothing in WritRun
         # parses commit messages.
         env:
-          COMMIT_TITLE: "chore(specs): record approval from PR review"
+          COMMIT_TITLE: "chore(specs): record approval from the merge"
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          MERGED_BY: ${{ github.event.pull_request.merged_by.login }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
+          set -euo pipefail
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add work/specs
           git commit \
             -m "$COMMIT_TITLE" \
-            -m "Approved by @${{ github.event.review.user.login }} in review of #${{ github.event.pull_request.number }}."
-          git push origin HEAD:"${{ github.event.pull_request.head.ref }}"
+            -m "Assent given by @${MERGED_BY} merging #${PR_NUMBER}."
+          # Another change may have landed between the merge and this run.
+          # Rebase onto it rather than force: the flip is an addition to
+          # the branch's history, never a replacement of it.
+          git pull --rebase origin "$BASE_REF"
+          git push origin "HEAD:${BASE_REF}"
