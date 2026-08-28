@@ -6,7 +6,7 @@
 setup_forge
 export PR_HEAD_REF="fix/typo"
 check "an unrelated branch reflects nothing" 0 \
-  'Branch "fix/typo" names no task; nothing to reflect.' \
+  'Neither the title nor branch "fix/typo" names a task' \
   -- bash "$REFLECT_PROGRESS" o/r 7
 forge_untouched "the forge is not consulted at all"
 

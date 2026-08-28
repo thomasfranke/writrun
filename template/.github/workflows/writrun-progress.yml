@@ -44,13 +44,14 @@ jobs:
 
       - name: Reflect the pull request onto the mirror
         # The PR's fields go through env, never inline interpolation —
-        # the head branch name is a fork's to choose.
+        # the title and head branch name are a fork's to choose.
         env:
           GH_TOKEN: ${{ github.token }}
           PR_STATE: ${{ github.event.pull_request.state }}
           PR_DRAFT: ${{ github.event.pull_request.draft }}
           PR_MERGED: ${{ github.event.pull_request.merged }}
           PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
           bash .writrun/scripts/reflect_progress.sh \
             "${{ github.repository }}" \
