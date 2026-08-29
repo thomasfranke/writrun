@@ -1,6 +1,6 @@
 ---
 id: task-0017
-status: in-progress
+status: completed
 blocked_reason: null
 spec_ref: [spec-0014]
 doc_ref: product/pipeline.md#flows-and-statuses
@@ -8,7 +8,7 @@ priority: medium
 depends_on: []
 milestone: null
 created: 2026-08-28T00:00:00Z
-completed: null
+completed: 2026-08-29T01:32:41Z
 ---
 
 # Stop a stale mirror from blocking a task's own
