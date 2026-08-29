@@ -8,8 +8,9 @@
 setup_forge
 added_task task-001 "Mine"
 forge_issue 12 open "writrun:task,status:pending" "[TASK-001] Someone else's" 99
+forge_pr_state 99 open
 check "a foreign tag-titled mirror is named, not taken" 0 \
-  "id collision; not touching it" \
+  "mirrored by #99, which is still open" \
   -- bash "$MIRROR_ISSUES" o/r 7
 forge_not_told "no duplicate issue is created" \
   "POST repos/o/r/issues -f title="
