@@ -8,7 +8,9 @@ priority: medium
 depends_on: []
 milestone: null
 created: 2026-08-28T00:00:00Z
+queued: 2026-08-28T14:14:59Z
 completed: 2026-08-28T21:33:48Z
+merged: 2026-08-28T21:38:03Z
 ---
 
 # Label closed mirrors and re-derive after approval

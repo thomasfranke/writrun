@@ -8,7 +8,9 @@ priority: low
 depends_on: []
 milestone: null
 created: 2026-08-28T00:00:00Z
+queued: 2026-08-28T14:32:41Z
 completed: 2026-08-29T17:17:21Z
+merged: 2026-08-29T17:24:03Z
 ---
 
 # Take the subject slug as an argument

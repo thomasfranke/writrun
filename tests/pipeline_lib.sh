@@ -185,7 +185,9 @@ priority: medium
 depends_on: []
 milestone: null
 created: 2026-08-22T00:00:00Z
+queued: null
 completed: ${4:-null}
+merged: null
 ---
 
 # Test task $1

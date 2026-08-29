@@ -8,7 +8,9 @@ priority: medium
 depends_on: []
 milestone: null
 created: 2026-08-28T00:00:00Z
+queued: null
 completed: null
+merged: null
 ---
 
 # Check that a doc_ref resolves
