@@ -10,7 +10,7 @@ milestone: null
 created: 2026-08-28T00:00:00Z
 queued: 2026-08-28T14:10:59Z
 completed: 2026-08-29T17:34:12Z
-merged: null
+merged: 2026-08-29T17:38:35Z
 ---
 
 # Stamp queued and merged on the task
