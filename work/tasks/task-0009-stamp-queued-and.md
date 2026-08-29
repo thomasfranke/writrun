@@ -1,6 +1,6 @@
 ---
 id: task-0009
-status: pending
+status: in-progress
 blocked_reason: null
 spec_ref: [spec-0006]
 doc_ref: technical/README.md#task-schema
