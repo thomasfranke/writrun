@@ -10,7 +10,7 @@ milestone: null
 created: 2026-08-28T00:00:00Z
 queued: 2026-08-29T18:51:36Z
 completed: 2026-08-29T19:09:57Z
-merged: null
+merged: 2026-08-29T20:55:56Z
 ---
 
 # Stop reporting green when git failed
