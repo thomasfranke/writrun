@@ -10,7 +10,7 @@ task_file task-0001 pending ""
 commit_all
 
 check "a merge adds a task and stamps queued" 0 "stamped queued" \
-  -- bash "$CI_SCRIPTS/stamp_task_dates.sh" HEAD~1...HEAD 2026-08-29T12:00:00Z
+  -- bash "$CI_SCRIPTS/pull-requests/stamp_task_dates.sh" HEAD~1...HEAD 2026-08-29T12:00:00Z
 if grep -qx "queued: 2026-08-29T12:00:00Z" work/tasks/task-0001.md; then
   echo "ok    with the timestamp it was given"; pass=$((pass + 1))
 else

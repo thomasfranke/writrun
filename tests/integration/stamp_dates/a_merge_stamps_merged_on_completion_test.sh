@@ -12,7 +12,7 @@ sed -i.bak 's/^status: in-progress$/status: completed/' work/tasks/task-0001.md 
 commit_all
 
 check "completing a task stamps merged" 0 "stamped merged" \
-  -- bash "$CI_SCRIPTS/stamp_task_dates.sh" HEAD~1...HEAD 2026-08-29T12:00:00Z
+  -- bash "$CI_SCRIPTS/pull-requests/stamp_task_dates.sh" HEAD~1...HEAD 2026-08-29T12:00:00Z
 if grep -qx "merged: 2026-08-29T12:00:00Z" work/tasks/task-0001.md; then
   echo "ok    with the timestamp it was given"; pass=$((pass + 1))
 else
@@ -28,7 +28,7 @@ commit_all
 printf '\nA body line quoting the schema:\n\nstatus: completed\n' >> work/tasks/task-0002.md
 commit_all
 check "a body quoting a status is not a transition" 0 "" \
-  -- bash "$CI_SCRIPTS/stamp_task_dates.sh" HEAD~1...HEAD 2026-08-29T12:00:00Z
+  -- bash "$CI_SCRIPTS/pull-requests/stamp_task_dates.sh" HEAD~1...HEAD 2026-08-29T12:00:00Z
 if grep -qx "merged: null" work/tasks/task-0002.md; then
   echo "ok    and nothing was stamped"; pass=$((pass + 1))
 else

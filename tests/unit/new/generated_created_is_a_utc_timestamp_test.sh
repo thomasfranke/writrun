@@ -18,6 +18,6 @@ else
   fail=$((fail + 1))
 fi
 check "and the generated queue passes its own check" 0 "all canonical" \
-  -- bash "$CI_SCRIPTS/check_front_matter.sh"
+  -- bash "$CHECK_FRONT_MATTER"
 
 finish

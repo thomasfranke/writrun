@@ -26,6 +26,6 @@ merged: null
 # A task stamped with an offset
 TASK
 check "an offset is not Z, and is rejected" 1 "expected YYYY-MM-DDTHH:MM:SSZ" \
-  -- bash "$CI_SCRIPTS/check_front_matter.sh"
+  -- bash "$CHECK_FRONT_MATTER"
 
 finish

@@ -11,6 +11,6 @@ forge_pr 9 added work/tasks/task-0007-theirs.md
 task_file task-0007 pending ""
 commit_all
 check "an id another open pull request adds is rejected, named" 1 "#9" \
-  -- bash "$CI_SCRIPTS/check_unique_ids.sh" main...HEAD o/r 7
+  -- bash "$CI_SCRIPTS/pull-requests/check_unique_ids.sh" main...HEAD o/r 7
 
 finish

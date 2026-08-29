@@ -23,6 +23,6 @@ merged: null
 # A task with a quoted value
 EOF
 check "a quoted value is outside the contract" 1 "is quoted" \
-  -- bash "$CI_SCRIPTS/check_front_matter.sh"
+  -- bash "$CHECK_FRONT_MATTER"
 
 finish

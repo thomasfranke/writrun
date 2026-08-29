@@ -58,7 +58,7 @@ direction — that reader belongs in `product/` instead.
 
 Like a product doc, a technical doc describes the system **as it is
 today**, and changes in the same two directions
-[Pipeline](../pipeline.md#two-ways-a-permanent-doc-changes) names: it is
+[Pipeline](../tasks-and-specs/authoring.md#two-ways-a-permanent-doc-changes) names: it is
 **authored** when a decision is taken before anything implements it, and it
 **closes the loop** when a completed [task](task.md) whose [spec](spec.md)
 listed the change in its **Proposed technical changes** section updates the

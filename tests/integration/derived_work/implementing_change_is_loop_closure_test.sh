@@ -10,6 +10,6 @@ spec_file spec-001 task-001 implemented
 printf 'now true\n' >> docs/product/chapter.md
 commit_all
 check "an implementing change edits docs as loop closure" 0 "loop closure" \
-  -- bash "$CI_SCRIPTS/check_derived_work.sh" main...HEAD
+  -- bash "$CI_SCRIPTS/pull-requests/check_derived_work.sh" main...HEAD
 
 finish

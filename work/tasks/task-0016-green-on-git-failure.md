@@ -1,0 +1,29 @@
+---
+id: task-0016
+status: pending
+blocked_reason: null
+spec_ref: [spec-0013]
+doc_ref: product/tasks-and-specs/gates.md
+priority: high
+depends_on: []
+milestone: null
+created: 2026-08-28T00:00:00Z
+queued: null
+completed: null
+merged: null
+---
+
+# Stop reporting green when git failed
+
+Five scripts absorb a failed `git diff` into an empty result and exit 0.
+The output is indistinguishable from an honest "nothing matched":
+`check_recorded_approvals.sh` announces that no approval needs verifying,
+`check_derived_work.sh` that there is nothing to declare — while the
+command that would have told them otherwise never ran.
+
+Two of the five are gates. A gate that passes because git failed is worse
+than no gate: it reports a guarantee it did not check.
+
+Priority is high because level `tasks-and-specs` makes it reachable. Without
+branches, `main...HEAD` is empty by construction, so `check_state.sh`
+prints OK having read nothing.

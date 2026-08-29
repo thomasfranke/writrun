@@ -13,7 +13,7 @@ task_file task-0002 pending ""
 task_file task-0003 completed ""
 commit_all
 
-bash "$CI_SCRIPTS/stamp_task_dates.sh" HEAD~1...HEAD 2026-08-29T12:00:00Z > "$WORK/out" 2>&1
+bash "$CI_SCRIPTS/pull-requests/stamp_task_dates.sh" HEAD~1...HEAD 2026-08-29T12:00:00Z > "$WORK/out" 2>&1
 
 want() {   # want <name> <file> <line>
   if grep -qx "$3" "$2"; then

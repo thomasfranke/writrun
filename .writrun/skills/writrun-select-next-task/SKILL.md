@@ -38,7 +38,7 @@ answer — don't shortcut or reorder these steps.
      and the spec is stale: do not implement either side. Surface the
      conflict — the spec is amended to match the doc, returned to `draft`
      in the same change, and re-approved before any code is written
-     (docs/product/pipeline.md#when-the-doc-moves-ahead-of-the-queue).
+     (docs/product/tasks-and-specs/conflicts.md#when-the-doc-moves-ahead-of-the-queue).
    - If `spec_ref` is empty and the task body plus `doc_ref` do not
      add up to a sufficient brief, stop and ask the user whether to draft a
      spec first (see the `writrun-create-task-and-spec` skill) rather than guessing

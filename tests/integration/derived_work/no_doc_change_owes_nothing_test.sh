@@ -5,6 +5,6 @@ setup
 task_file task-001 pending ""
 commit_all
 check "a change outside docs/ owes no declaration" 0 "nothing to declare" \
-  -- bash "$CI_SCRIPTS/check_derived_work.sh" main...HEAD
+  -- bash "$CI_SCRIPTS/pull-requests/check_derived_work.sh" main...HEAD
 
 finish

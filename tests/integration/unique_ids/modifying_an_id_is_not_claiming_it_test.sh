@@ -9,6 +9,6 @@ forge_pr 9 modified work/tasks/task-0007-theirs.md
 task_file task-0007 pending ""
 commit_all
 check "another pull request's modification is not a claim" 0 "No id collides" \
-  -- bash "$CI_SCRIPTS/check_unique_ids.sh" main...HEAD o/r 7
+  -- bash "$CI_SCRIPTS/pull-requests/check_unique_ids.sh" main...HEAD o/r 7
 
 finish

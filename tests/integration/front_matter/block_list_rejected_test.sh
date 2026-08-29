@@ -25,6 +25,6 @@ merged: null
 # A task with a block list
 EOF
 check "a block list is outside the contract" 1 "spec_ref" \
-  -- bash "$CI_SCRIPTS/check_front_matter.sh"
+  -- bash "$CHECK_FRONT_MATTER"
 
 finish

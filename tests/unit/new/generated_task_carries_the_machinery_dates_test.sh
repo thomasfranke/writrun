@@ -33,6 +33,6 @@ else
 fi
 
 check "and the result is canonical" 0 "all canonical" \
-  -- bash "$CI_SCRIPTS/check_front_matter.sh"
+  -- bash "$CHECK_FRONT_MATTER"
 
 finish

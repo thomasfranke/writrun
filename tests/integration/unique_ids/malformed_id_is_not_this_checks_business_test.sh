@@ -9,6 +9,6 @@ stub_forge
 printf -- '---\nid: task-0007\n---\n' > work/tasks/task-seven.md
 commit_all
 check "a malformed queue filename is left to the canonical check" 0 "adds no queue file" \
-  -- bash "$CI_SCRIPTS/check_unique_ids.sh" main...HEAD o/r 7
+  -- bash "$CI_SCRIPTS/pull-requests/check_unique_ids.sh" main...HEAD o/r 7
 
 finish

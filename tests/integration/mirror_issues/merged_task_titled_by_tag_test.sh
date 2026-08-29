@@ -3,7 +3,7 @@
 
 # The mirror's title is the tag a pull request title carries, so one
 # search for `[TASK-0004]` finds the task in the queue, in the PR, and in
-# the mirror at once (docs/product/pipeline.md#flows-and-statuses).
+# the mirror at once (docs/product/github-issues/README.md).
 setup_forge
 export PR_STATE=closed PR_MERGED=true
 added_task task-0004 "Name queue files by id and subject"

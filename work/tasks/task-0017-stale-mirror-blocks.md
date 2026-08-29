@@ -3,7 +3,7 @@ id: task-0017
 status: completed
 blocked_reason: null
 spec_ref: [spec-0014]
-doc_ref: product/pipeline.md#flows-and-statuses
+doc_ref: product/github-issues/README.md
 priority: medium
 depends_on: []
 milestone: null

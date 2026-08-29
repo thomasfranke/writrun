@@ -8,7 +8,7 @@ setup
 task_file task-001 pending spec-001
 spec_file spec-001 task-001 draft
 check "a null in a nullable date field is accepted" 0 "all canonical" \
-  -- bash "$CI_SCRIPTS/check_front_matter.sh"
+  -- bash "$CHECK_FRONT_MATTER"
 if grep -q '^completed: null$' work/tasks/task-001.md; then
   echo "ok    and the field really was null"; pass=$((pass + 1))
 else

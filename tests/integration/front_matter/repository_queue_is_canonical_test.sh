@@ -8,7 +8,7 @@
 
 cd "$REPO_ROOT" || exit 1
 check "the repository's own queue is canonical" 0 "all canonical" \
-  -- bash "$REPO_ROOT/.writrun/scripts/check_front_matter.sh"
+  -- bash "$REPO_ROOT/.writrun/skills/writrun-check-front-matter/check_front_matter.sh"
 
 n=$(grep -hcE '^(created|completed): [0-9]{4}-[0-9]{2}-[0-9]{2}$' \
       work/tasks/*.md work/specs/*.md 2>/dev/null | paste -sd+ - | bc)

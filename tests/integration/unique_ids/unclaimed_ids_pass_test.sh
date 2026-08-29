@@ -8,6 +8,6 @@ task_file task-0007 pending spec-0007
 spec_file spec-0007 task-0007 draft
 commit_all
 check "ids nobody else claims pass" 0 "No id collides" \
-  -- bash "$CI_SCRIPTS/check_unique_ids.sh" main...HEAD o/r 7
+  -- bash "$CI_SCRIPTS/pull-requests/check_unique_ids.sh" main...HEAD o/r 7
 
 finish

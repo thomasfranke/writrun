@@ -9,17 +9,17 @@ task_file task-001 pending ""
 sed -i.bak 's/^queued: null$/queued: 2026-08-29/' work/tasks/task-001.md && rm -f work/tasks/*.bak
 check "a bare date in queued is malformed" 1 \
   "field 'queued' is '2026-08-29'" \
-  -- bash "$CI_SCRIPTS/check_front_matter.sh"
+  -- bash "$CHECK_FRONT_MATTER"
 
 task_file task-001 pending ""
 sed -i.bak 's/^merged: null$/merged: 2026-08-29T12:00:00+02:00/' work/tasks/task-001.md && rm -f work/tasks/*.bak
 check "and an offset in merged is too" 1 \
   "field 'merged' is '2026-08-29T12:00:00+02:00'" \
-  -- bash "$CI_SCRIPTS/check_front_matter.sh"
+  -- bash "$CHECK_FRONT_MATTER"
 
 # Null stays legitimate: a task nobody has merged has no such moment.
 task_file task-001 pending ""
 check "null in either is accepted" 0 "all canonical" \
-  -- bash "$CI_SCRIPTS/check_front_matter.sh"
+  -- bash "$CHECK_FRONT_MATTER"
 
 finish

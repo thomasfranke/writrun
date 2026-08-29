@@ -33,7 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: gate
-        run: bash .writrun/scripts/level_gate.sh pull-requests
+        run: bash .writrun/scripts/pull-requests/level_gate.sh pull-requests
 
   lifecycle:
     name: task and spec transitions
@@ -51,7 +51,7 @@ jobs:
         # The lifecycle rules below read front matter line-based; this
         # step is what makes that legitimate — the canonical shape is
         # enforced here, not assumed there. Reasoning in the script.
-        run: bash .writrun/scripts/check_front_matter.sh
+        run: bash .writrun/skills/writrun-check-front-matter/check_front_matter.sh
 
       - name: Check lifecycle transitions
         run: |
@@ -62,7 +62,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          bash .writrun/scripts/check_recorded_approvals.sh \
+          bash .writrun/scripts/pull-requests/check_recorded_approvals.sh \
             "origin/${{ github.base_ref }}...HEAD" \
             "${{ github.repository }}" \
             "${{ github.event.pull_request.number }}"
@@ -79,7 +79,7 @@ jobs:
 
       - name: Check spec deltas
         run: |
-          bash .writrun/scripts/check_promised_deltas.sh \
+          bash .writrun/scripts/pull-requests/check_promised_deltas.sh \
             "origin/${{ github.base_ref }}...HEAD"
 
   impact:
@@ -94,7 +94,7 @@ jobs:
 
       - name: Name the queued tasks this doc change touches
         run: |
-          bash .writrun/scripts/check_queue_impact.sh \
+          bash .writrun/scripts/pull-requests/check_queue_impact.sh \
             "origin/${{ github.base_ref }}...HEAD"
 
   ids:
@@ -113,7 +113,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          bash .writrun/scripts/check_unique_ids.sh \
+          bash .writrun/scripts/pull-requests/check_unique_ids.sh \
             "origin/${{ github.base_ref }}...HEAD" \
             "${{ github.repository }}" \
             "${{ github.event.pull_request.number }}"
@@ -134,7 +134,7 @@ jobs:
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
         run: |
-          bash .writrun/scripts/check_derived_work.sh \
+          bash .writrun/scripts/pull-requests/check_derived_work.sh \
             "origin/${{ github.base_ref }}...HEAD"
 
   settings:
@@ -149,4 +149,4 @@ jobs:
         # read_setting.sh reads this file with sed; the restriction that
         # makes that legitimate is enforced here, not assumed there. Same
         # relationship check_front_matter.sh has with the front matter.
-        run: bash .writrun/scripts/check_settings.sh
+        run: bash .writrun/scripts/pull-requests/check_settings.sh

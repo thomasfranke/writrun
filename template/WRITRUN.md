@@ -7,7 +7,8 @@ copied from; `.writrun/VERSION` records it.
 
 ## The flows, in one line each
 
-Happy path (drawn in full in WritRun's `docs/product/pipeline.md`):
+Happy path (drawn in full, indexed from WritRun's
+`docs/product/tasks-and-specs/README.md`):
 
 1. **Authoring** — a human writes a rule in `docs/`, declares it finished
    (a gate); the agent derives tasks + draft specs and opens the PR.
@@ -48,6 +49,7 @@ All in `.writrun/skills/`, invoked per `AGENTS.md`:
 | `writrun-create-task-and-spec` | Scaffolds schema-correct tasks and specs (`new.sh`); covers when a spec is warranted. |
 | `writrun-check-spec-deltas` | The merge contract: the diff touched every doc the spec promised, and nothing else permanent. |
 | `writrun-check-task-state` | The lifecycle gates: no forbidden status transition in the diff. |
+| `writrun-check-front-matter` | The file-shape contract: every queue file in canonical front-matter form — run it on anything written by hand. |
 
 ## Templates
 

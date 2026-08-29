@@ -8,7 +8,7 @@ stub_forge
 printf 'a rule\n' >> docs/product/chapter.md
 commit_all
 check "a change adding no queue file passes" 0 "adds no queue file" \
-  -- bash "$CI_SCRIPTS/check_unique_ids.sh" main...HEAD o/r 7
+  -- bash "$CI_SCRIPTS/pull-requests/check_unique_ids.sh" main...HEAD o/r 7
 forge_untouched "and the forge was never consulted"
 
 finish

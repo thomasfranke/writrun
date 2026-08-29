@@ -6,6 +6,6 @@ printf 'rule\n' >> docs/product/chapter.md
 task_file task-001 pending ""
 commit_all
 check "an authoring change with derived tasks passes" 0 "Derived work present" \
-  -- bash "$CI_SCRIPTS/check_derived_work.sh" main...HEAD
+  -- bash "$CI_SCRIPTS/pull-requests/check_derived_work.sh" main...HEAD
 
 finish

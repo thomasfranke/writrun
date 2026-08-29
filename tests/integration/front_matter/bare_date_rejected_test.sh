@@ -25,6 +25,6 @@ merged: null
 # A task carrying the old shape
 TASK
 check "a bare date is no longer canonical" 1 "expected YYYY-MM-DDTHH:MM:SSZ" \
-  -- bash "$CI_SCRIPTS/check_front_matter.sh"
+  -- bash "$CHECK_FRONT_MATTER"
 
 finish

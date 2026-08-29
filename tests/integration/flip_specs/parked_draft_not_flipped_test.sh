@@ -10,7 +10,7 @@ commit_all
 git checkout -q main; git merge -q feature; git checkout -q feature
 printf 'still being shaped\n' >> work/specs/spec-001.md
 commit_all
-out=$(bash "$CI_SCRIPTS/flip_approved_specs.sh" main...HEAD)
+out=$(bash "$CI_SCRIPTS/pull-requests/flip_approved_specs.sh" main...HEAD)
 if [ -z "$out" ] && grep -q '^status: draft$' work/specs/spec-001.md; then
   echo "ok    a spec parked in draft on main is not flipped by an edit"; pass=$((pass + 1))
 else

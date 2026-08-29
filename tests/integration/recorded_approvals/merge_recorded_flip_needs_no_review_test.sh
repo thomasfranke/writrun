@@ -17,13 +17,13 @@ git checkout -q main
 git merge -q --squash feature
 git commit -qm "squash: add spec-0001"
 # The workflow's own commit: the flip, recorded on the base branch.
-bash "$CI_SCRIPTS/flip_approved_specs.sh" "HEAD~1...HEAD" >/dev/null
+bash "$CI_SCRIPTS/pull-requests/flip_approved_specs.sh" "HEAD~1...HEAD" >/dev/null
 git add work/specs
 git commit -qm "chore(specs): record approval from the merge"
 git checkout -qb later
 printf '# Product\n\n## Scope\n\nlater work\n' > docs/product/chapter.md
 commit_all
 check "a merge-recorded flip leaves nothing for the review check" 0 "No approval recorded" \
-  -- bash "$CI_SCRIPTS/check_recorded_approvals.sh" main...HEAD o/r 1
+  -- bash "$CI_SCRIPTS/pull-requests/check_recorded_approvals.sh" main...HEAD o/r 1
 
 finish

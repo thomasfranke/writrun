@@ -109,7 +109,7 @@ That closing loop is what makes the docs stay true after the agent is done
 
 How the pipeline actually runs — step by step, with every actor named —
 is the five flows and their special cases, drawn in full in
-[Pipeline](docs/product/pipeline.md#flows-and-statuses): **the flows
+[Pipeline](docs/product/tasks-and-specs/README.md): **the flows
 there are the source of truth for the mechanics**, on the permanent
 side of the repository, where the checks that keep docs honest can see
 them. The human gates sit where the flows draw them: a rule declared
@@ -138,7 +138,7 @@ and is re-approved; work discovered mid-flight enters as a `queue/` PR
 adding only task and spec; `blocked` names its reason and waits for a
 human; a PR closed unmerged releases nothing because nothing was
 reserved — same gates, drawn separately in
-[the same chapter](docs/product/pipeline.md#special-flows).
+[the same chapter](docs/product/tasks-and-specs/conflicts.md).
 
 ## Repository setup
 

@@ -1,0 +1,132 @@
+# Authoring: how a rule enters the docs
+
+## Flow 1 — Authoring
+
+A rule is written before anything implements it. **The human writes the rule
+and nothing else** — the tasks and specs it derives are generated, the
+branch and the PR are opened for them, and the mirroring Issue appears on
+its own. Everything below the rule is derived, which is the whole claim this
+methodology makes.
+
+One thing no event can detect is that the rule is *finished*. A human writes
+a rule over many edits and nothing distinguishes the last one, so the
+handoff is an explicit signal, not an inference: invoking
+`writrun-create-task-and-spec` — or marking the authoring PR ready for review — is
+the human declaring the doc done. A forgotten handoff is caught
+mechanically: `writrun check` fails any PR that changes a permanent doc
+without either adding the tasks it derives or declaring "Derived work:
+none" in the PR body.
+
+```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#0d1117','primaryColor':'#161b22','primaryTextColor':'#e6edf3','primaryBorderColor':'#8b949e','lineColor':'#ffffff','secondaryColor':'#161b22','tertiaryColor':'#161b22','fontSize':'14px'}}}%%
+flowchart LR
+    A["HUMAN<br/>Edit permanent doc<br/>product · technical · about"]
+    B["AGENT<br/>writrun-create-task-and-spec<br/>generates task: pending<br/>and spec: draft"]
+    C["AGENT<br/>Branch docs/name · open PR<br/>Derived work listed"]
+    D["CI<br/>writrun check<br/>derived work in the diff<br/>or declared none"]
+    E["CI<br/>writrun issues<br/>Creates the GitHub Issue<br/>labelled status:proposed"]
+    A -->|"gate: doc declared finished"| B --> C --> D
+    C --> E
+```
+
+
+## Two ways a permanent doc changes
+
+A permanent doc changes at two points in the loop, and they are not the
+same act. Confusing them is how a project ends up either unable to write
+down a decision it has just made, or shipping behaviour its docs never
+mention.
+
+- **Authoring** (step 1) — someone decides a rule that is not yet true
+  anywhere and writes it down. The doc is the input: the work to satisfy it
+  derives *from* the doc, and no task precedes the change. This is the only
+  point where a permanent doc moves ahead of the system it describes.
+- **Loop closure** (step 5) — a completed task updates the doc it derived
+  from, in the same change that ships the behaviour, bounded by its spec's
+  **Proposed changes** contract.
+
+What separates them is direction, not size. Authoring states something the
+system does not do yet; loop closure records something it now does. A single
+change that tries to be both — closing the loop on one rule while quietly
+introducing another — is two changes, and is split into two.
+
+**Authoring closes the loop in advance, and the derived task must not close
+it twice.** A task that exists because a rule was authored is there to bring
+the code up to a doc that already states the rule. Its spec's **Proposed
+product changes** is legitimately "none" — not an omission, and not a gap in
+the contract: the doc was updated first, which is what authoring *is*. Loop
+closure is for the other kind of task, the one that originated in the code
+or the machinery, where no doc has said yet what the system now does. An
+agent that "helpfully" re-edits a chapter the authoring change already wrote
+is re-deciding a rule it was given, and the delta check will reject the
+change as undeclared.
+
+**Both modes leave the doc in the present tense.** A permanent doc is never
+a plan and never a changelog, in either direction. Authoring writes the rule
+as a rule, not as an intention: the doc says what the system does, and the
+[task queue](../concepts/task.md) is what records that the system has not
+caught up yet. That separation is the whole reason a doc can lead
+implementation without becoming a roadmap — the gap lives in the queue,
+where it is tracked and closed, rather than in the prose, where it would
+quietly become permanent.
+
+Neither mode is exempt from review: a permanent doc never merges on agent
+approval alone, whichever direction it changed in.
+
+
+## Declaring derived work
+
+An authoring change names every task and spec derived from it, in the
+change itself.
+
+Approving a rule is approving the work that rule commits the project to. A
+reviewer shown only the new prose is being asked to decide half of
+something — the sentence is cheap to agree with, and the queue it creates is
+where the cost actually lands. Naming both in one place is what makes the
+decision reviewable as one decision.
+
+An authoring change that derives no work — a clarification, a rewording, a
+rule the system already satisfies — states that explicitly. An empty
+declaration and a forgotten one look identical otherwise.
+
+The declaration is what was known at review time, not a closed set. Work
+discovered later is tracked normally, against the rule it derives from; the
+list is not a claim that nothing else will follow.
+
+
+## Work discovered mid-flight
+
+Not every task descends from a fresh rule. Work found in the code or the
+machinery — already authorized by a doc that exists — is **tracked**: a
+change that only adds task and spec, touches no permanent doc, and
+implements nothing. The third kind of change, next to authoring and
+implementing (`AGENTS.md`). Its branch prefix is `queue/` on purpose: a
+tracking PR records work, it is not working it, and must not read as in
+flight.
+
+```mermaid
+%%{init: {'theme':'base','themeVariables':{'background':'#0d1117','primaryColor':'#161b22','primaryTextColor':'#e6edf3','primaryBorderColor':'#8b949e','lineColor':'#ffffff','secondaryColor':'#161b22','tertiaryColor':'#161b22','fontSize':'14px'}}}%%
+flowchart LR
+    A["AGENT or HUMAN<br/>work found in code or machinery<br/>an existing doc authorizes it"]
+    B["AGENT<br/>writrun-create-task-and-spec<br/>task: pending · spec: draft"]
+    C["AGENT<br/>Branch queue/name · open PR<br/>names the rule it derives from"]
+    D["Flow 2 takes over<br/>approval · merge · status:ready"]
+    A --> B --> C --> D
+```
+
+## Criteria
+
+- When a rule is authored into a permanent doc, the change shall not
+  require a task to precede it.
+- When a rule is being authored, no task or spec shall be derived from it
+  until a human has declared the rule finished.
+- When a permanent doc is authored ahead of the system it describes, the
+  doc shall state the rule in the present tense, and the gap shall be
+  recorded as a task rather than as prose in the doc.
+- When a change authors a rule into a permanent doc, that change shall name
+  every task and spec derived from it, or state explicitly that none were.
+- When a change would both close the loop on one rule and author another,
+  it shall be split into two changes.
+- When a task completes, its diff shall touch every path listed in its
+  spec's Proposed-changes sections in the same change, and shall not touch
+  a permanent doc that isn't listed there.

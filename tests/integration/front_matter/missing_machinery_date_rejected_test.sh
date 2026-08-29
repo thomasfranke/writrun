@@ -24,10 +24,10 @@ merged: null
 # A task missing its queued field
 EOF2
 check "a task without queued is malformed" 1 "queued" \
-  -- bash "$CI_SCRIPTS/check_front_matter.sh"
+  -- bash "$CHECK_FRONT_MATTER"
 
 sed -i.bak 's/^merged: null$/queued: null/' work/tasks/task-001.md && rm -f work/tasks/*.bak
 check "and one without merged is too" 1 "merged" \
-  -- bash "$CI_SCRIPTS/check_front_matter.sh"
+  -- bash "$CHECK_FRONT_MATTER"
 
 finish

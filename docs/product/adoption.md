@@ -6,23 +6,24 @@ counting as non-compliance.
 
 ## Three levels
 
-Adoption is progressive. Each level adds to the one before it, and a project
-declares which it is at in
+Adoption is progressive. Each level adds machinery on top of the one before
+it and changes nothing beneath, and a project declares which it is at in
 [`settings.json`](../../.writrun/conventions/settings.json).
 
-| Level | Adds | Needs |
-|---|---|---|
-| `tasks-and-specs` | the docs and the queue, as markdown | nothing but files |
-| `pull-requests` | branches, pull requests, the CI checks, merge as assent | a forge |
-| `github-issues` | the Issues mirror | Issues |
+| Level | Adds | Needs | Its chapter |
+|---|---|---|---|
+| `tasks-and-specs` | the docs and the queue, as markdown | nothing but files | [Tasks and specs](tasks-and-specs/README.md) |
+| `pull-requests` | branches, pull requests, the CI checks, merge as assent | a forge | [Pull requests](pull-requests/README.md) |
+| `github-issues` | the Issues mirror | Issues | [GitHub issues](github-issues/README.md) |
 
 Ordered and cumulative, which is why the setting is one value and not three
 switches: `github-issues` without `pull-requests` would ask for a projection
 that pull-request events drive, with no pull requests to drive it.
 
-Each level's rules live in the folder of its name —
-[`pipeline.md`](pipeline.md) is true at every level; what the other two
-add is marked there.
+**Each level's rules live in the folder of its name**, and the base level's
+chapter stays true at every level. A rule marked with a level binds projects
+at that level and above; a rule carrying no level belongs to
+`tasks-and-specs` and binds every adopter.
 
 ## Level `tasks-and-specs` — the minimum bar
 
@@ -57,23 +58,6 @@ much of the spirit it otherwise follows. [TOM](#worked-example-tom) is the
 concrete case: strong `about.md`-equivalent, strong technical layer, real
 per-feature product rules — and no task/spec pipeline at all. That gap
 alone is what keeps it from claiming adoption today.
-
-## Level `pull-requests`
-
-Adds branches, pull requests and the CI checks — and with them, a merge
-that can carry assent. Nothing here is required to claim adoption; what it
-buys is that the rules above stop depending on anybody remembering them.
-
-The four gates do not change, only who executes them: below this level a
-person performs each directly, at it the machinery records what the person
-decided. Its rules are in [`pipeline.md`](pipeline.md#flow-2--approval).
-
-## Level `github-issues`
-
-Adds the mirror: the queue projected into Issues, one direction only, for
-people who read it in a browser. The files stay the authority at every
-level, so a project that never turns this on loses no guarantee — only a
-window. Its rules are in [`pipeline.md`](pipeline.md#flows-and-statuses).
 
 ## Mandatory core vs. documented variant
 
@@ -138,9 +122,10 @@ actually prevents drift.
 
 ## Skills namespacing
 
-WritRun ships as four skills — `writrun-select-next-task`,
+WritRun ships as five skills — `writrun-select-next-task`,
 `writrun-create-task-and-spec`, `writrun-check-spec-deltas`,
-`writrun-check-task-state` — and they live in **WritRun's own home**,
+`writrun-check-task-state`, `writrun-check-front-matter` — and they live
+in **WritRun's own home**,
 `.writrun/skills/`, never mixed into the project's skill folder. A project
 that keeps its own repo-maintenance skills (swoop's `swoop-git-workflow`
 and `swoop-pr-writer` are the real example, in its `.ai/skills/`) keeps
@@ -162,6 +147,6 @@ is unmissable at the path *and* at the name.
   ephemeral split, task holds no technical detail, spec's Proposed-changes
   contract, identity-never-order, the four named human gates), the project
   shall not claim adoption regardless of how much of the rest it follows.
-- When WritRun's four skills are installed, they shall live under
+- When WritRun's five skills are installed, they shall live under
   `.writrun/skills/`, apart from the project's own skill folder, and no
   skill across the two sets shall share a name.

@@ -22,9 +22,9 @@ NEW_SH="$REPO_ROOT/.writrun/skills/writrun-create-task-and-spec/new.sh"
 # The workflow step scripts — what the integration tier exercises, the same
 # way the unit tier exercises the skills.
 CI_SCRIPTS="$REPO_ROOT/.writrun/scripts"
-READ_SETTING="$CI_SCRIPTS/read_setting.sh"
-CHECK_SETTINGS="$CI_SCRIPTS/check_settings.sh"
-LEVEL_GATE="$CI_SCRIPTS/level_gate.sh"
+READ_SETTING="$CI_SCRIPTS/pull-requests/read_setting.sh"
+CHECK_SETTINGS="$CI_SCRIPTS/pull-requests/check_settings.sh"
+LEVEL_GATE="$CI_SCRIPTS/pull-requests/level_gate.sh"
 WORKFLOWS="$REPO_ROOT/.github/workflows"
 
 # settings_file — the whole settings file, from stdin. Written verbatim,
@@ -34,6 +34,10 @@ settings_file() {
   mkdir -p .writrun/conventions
   cat > .writrun/conventions/settings.json
 }
+
+# check_front_matter runs on files alone, so it is a skill rather than a
+# CI script — it is the one check available at every adoption level.
+CHECK_FRONT_MATTER="$REPO_ROOT/.writrun/skills/writrun-check-front-matter/check_front_matter.sh"
 
 # stub_gh <n> — put a fake `gh` on PATH that answers every invocation with
 # <n>, standing in for the forge's count of authorized approving reviews.

@@ -8,6 +8,6 @@ printf '# work/tasks — the queue\n\nProse, not front matter.\n' > work/tasks/R
 printf '# work/specs — the detail\n\nProse, not front matter.\n' > work/specs/README.md
 task_file task-001 pending ""
 check "READMEs are not queue entries" 0 "all canonical" \
-  -- bash "$CI_SCRIPTS/check_front_matter.sh"
+  -- bash "$CHECK_FRONT_MATTER"
 
 finish

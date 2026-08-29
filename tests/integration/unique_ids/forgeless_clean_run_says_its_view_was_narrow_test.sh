@@ -10,6 +10,6 @@ forge_unavailable
 task_file task-0007 pending ""
 commit_all
 check "a clean pass without the forge reports its narrow view" 0 "did not answer" \
-  -- bash "$CI_SCRIPTS/check_unique_ids.sh" main...HEAD o/r 7
+  -- bash "$CI_SCRIPTS/pull-requests/check_unique_ids.sh" main...HEAD o/r 7
 
 finish

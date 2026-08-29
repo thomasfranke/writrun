@@ -20,6 +20,6 @@ completed: null
 # A task missing its milestone field
 EOF
 check "an omitted field is named" 1 "milestone" \
-  -- bash "$CI_SCRIPTS/check_front_matter.sh"
+  -- bash "$CHECK_FRONT_MATTER"
 
 finish

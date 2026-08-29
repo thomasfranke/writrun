@@ -10,6 +10,6 @@ spec_file spec-0001 task-0004 draft
 mv work/tasks/task-0004.md work/tasks/task-0004-queue-file-names.md
 mv work/specs/spec-0001.md work/specs/spec-0001-queue-file-names.md
 check "a slugged queue file is canonical" 0 "all canonical" \
-  -- bash "$CI_SCRIPTS/check_front_matter.sh"
+  -- bash "$CHECK_FRONT_MATTER"
 
 finish

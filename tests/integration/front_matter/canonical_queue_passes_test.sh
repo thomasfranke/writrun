@@ -7,6 +7,6 @@ setup
 task_file task-001 pending spec-001
 spec_file spec-001 task-001 draft
 check "a canonical queue passes" 0 "all canonical" \
-  -- bash "$CI_SCRIPTS/check_front_matter.sh"
+  -- bash "$CHECK_FRONT_MATTER"
 
 finish
