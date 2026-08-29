@@ -37,9 +37,18 @@ stub_gh() {
 # real scripts request, so the shell logic under test sees exactly what
 # CI would (the same contract mirror_lib.sh's forge holds):
 #
-#   gh pr list --json number  -> $FORGE_DIR/pr_numbers
-#   gh pr list --json files   -> $FORGE_DIR/pr_paths
-#   gh api .../pulls/N/files  -> $FORGE_DIR/pr_N_added
+#   gh pr list --json number        -> $FORGE_DIR/pr_numbers
+#   gh api .../pulls/N/files        -> $FORGE_DIR/pr_N_paths
+#   ... --jq '...status == "added"' -> $FORGE_DIR/pr_N_added
+#
+# The two consumers of the file list want different halves of it: the
+# check selects the added files, the generator reads every path. The jq
+# expression is what tells them apart, the same way it does at the real
+# endpoint.
+#
+# **The list is paged, because that is the bug this stub has to be able
+# to reproduce**: without `--paginate` the caller sees $FORGE_PAGE
+# entries and no sign that more exist.
 #
 # Touch $FORGE_DIR/unavailable and every call fails, which is what no
 # network, no auth, and no remote all look like from the caller's side.
@@ -49,7 +58,9 @@ stub_forge() {
   FORGE_LOG="$WORK/forge/gh.log"
   mkdir -p "$FORGE_DIR"
   : > "$FORGE_LOG"
-  export FORGE_DIR FORGE_LOG
+  # GitHub's own page size for a pull request's file list.
+  FORGE_PAGE=100
+  export FORGE_DIR FORGE_LOG FORGE_PAGE
 
   mkdir -p "$WORK/stub-bin"
   cat > "$WORK/stub-bin/gh" <<'GH'
@@ -65,12 +76,23 @@ case "${1:-}" in
     done
     case "$field" in
       number) cat "$FORGE_DIR/pr_numbers" 2>/dev/null ;;
-      files)  cat "$FORGE_DIR/pr_paths"   2>/dev/null ;;
     esac
     ;;
   api)
     n=$(printf '%s' "${2:-}" | sed -n 's|.*/pulls/\([0-9][0-9]*\)/files$|\1|p')
-    [ -n "$n" ] && cat "$FORGE_DIR/pr_${n}_added" 2>/dev/null
+    [ -n "$n" ] || exit 0
+    jq=""; prev=""; paginate=""
+    for a in "$@"; do
+      [ "$prev" = "--jq" ] && jq="$a"
+      [ "$a" = "--paginate" ] && paginate=yes
+      prev="$a"
+    done
+    case "$jq" in
+      *added*) src="$FORGE_DIR/pr_${n}_added" ;;
+      *)       src="$FORGE_DIR/pr_${n}_paths" ;;
+    esac
+    [ -e "$src" ] || exit 0
+    if [ -n "$paginate" ]; then cat "$src"; else head -n "$FORGE_PAGE" "$src"; fi
     ;;
 esac
 exit 0
@@ -82,12 +104,24 @@ GH
 # forge_pr <number> <added|modified> <path> — one file on one open pull
 # request. The number joins the open list once; the path is visible to the
 # generator either way, and only an added one is a claim the check reads.
+# Files land in the order they are declared, which is the order the pages
+# come in.
 forge_pr() {
   grep -qxF "$1" "$FORGE_DIR/pr_numbers" 2>/dev/null \
     || printf '%s\n' "$1" >> "$FORGE_DIR/pr_numbers"
-  printf '%s\n' "$3" >> "$FORGE_DIR/pr_paths"
+  printf '%s\n' "$3" >> "$FORGE_DIR/pr_${1}_paths"
   [ "$2" = added ] && printf '%s\n' "$3" >> "$FORGE_DIR/pr_${1}_added"
   return 0
+}
+
+# forge_pr_filler <number> <count> — <count> modified files on one open
+# pull request, to push what follows them onto a later page.
+forge_pr_filler() {
+  local i=1
+  while [ "$i" -le "$2" ]; do
+    forge_pr "$1" modified "docs/filler-${i}.md"
+    i=$((i + 1))
+  done
 }
 
 # forge_unavailable — no `gh` answer at all, from here on.
