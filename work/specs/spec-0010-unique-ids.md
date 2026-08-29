@@ -1,8 +1,8 @@
 ---
 id: spec-0010
 task_ref: task-0013
-status: approved
-created: 2026-08-28
+status: implemented
+created: 2026-08-28T00:00:00Z
 ---
 
 # spec-0010 — Keep queue ids unique across open pull requests
@@ -82,4 +82,50 @@ none — the same authoring change covered `technical/README.md`.
 
 ## Outcome
 
-(filled when the task completes)
+Built as planned: prevention in `new.sh`, detection in
+`.writrun/scripts/check_unique_ids.sh`, wired into `writrun-check.yml` as
+a read-only `ids` job on the token the other jobs already use. The suite
+went from 150 case files to 161 for this spec's own work, and to 162 with
+the folded fix below.
+
+Verified against the live forge before merge, which is worth recording
+because it caught the bug in the act. `new.sh` in this checkout minted
+`task-0015`, not `task-0014`: open pull request #29 already claims
+`task-0014` and `spec-0011`, and no branch here can see them. The old
+generator would have minted `0014` and collided at whichever of the two
+merged second. The check, run against a probe commit that added
+`task-0013-duplicate`, `task-0014-collide`, and `spec-0011-collide`,
+named all three claimants correctly — the base branch for the first, #29
+for the other two.
+
+Three divergences:
+
+- **The two halves ask the forge different questions.** Step 1 and step 2
+  read as one lookup shared by both. They are not. The check needs each
+  file's `status`, since a modification is not a claim (its own edge
+  case), and only the per-pull-request file list carries it — so it pays
+  one call per open pull request. The generator needs an upper bound, not
+  an accusation: it asks `gh pr list --json files` once, for every path
+  open pull requests touch, added or modified. Folding a modified path in
+  can only agree with what the tree already said, so the coarser question
+  is not merely cheaper, it is strictly safe.
+
+- **The narrow-view report is on stderr, and the check makes one too.**
+  Step 1 asked only that `new.sh` say which of the two answers it gave.
+  The forge-less line is a caveat about what was *not* seen, so it goes to
+  stderr while the forge-wide line goes to stdout. The check inherited the
+  same treatment, which the steps did not mention: a clean pass whose
+  forge half never ran says so, because reporting it as simply clean is
+  how the collision this task exists for got merged.
+
+- **`check_deltas.sh` was fixed in this change, which its scope did not
+  cover.** Its spec resolver read `find work/specs -iname "<id>.md"`,
+  which matches no spec the generator now writes — every slugged file, so
+  every spec from `spec-0006` on. It returned exit 3 ("spec not found")
+  for `spec-0010`, and the completion flow cannot proceed on anything but
+  0, so the blocker was total: no task in the queue could be completed.
+  The one-line fix and its case existed on an unpushed local branch,
+  `fix/spec-deltas-slug-resolution`. Landing it separately first was the
+  option that kept one kind per change; the maintainer chose to fold it in
+  rather than gate this task behind a second merge, and it rides here as
+  its own `fix(skills):` commit.

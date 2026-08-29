@@ -71,3 +71,4 @@ appending a row.
 | [0049](tasks-and-specs/0049-dates-are-utc-timestamps.md) | 2026-08-28 | `tasks-and-specs` | every queue date is a UTC timestamp, spelled with Z. |
 | [0050](tasks-and-specs/0050-the-subject-slug-is-chosen.md) | 2026-08-28 | `tasks-and-specs` | the filename's subject slug is chosen, not sliced off the title. |
 | [0051](pull-requests/0051-an-id-is-unique-across-open-prs.md) | 2026-08-28 | `pull-requests` | an id is unique across open pull requests, not just across a branch. |
+| [0052](tasks-and-specs/0052-settings-carry-the-choice.md) | 2026-08-28 | `tasks-and-specs` | adoption is levelled, and settings.json carries which level. |

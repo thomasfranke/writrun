@@ -2,11 +2,12 @@
 # new.sh — scaffolds a schema-correct task or spec file.
 #
 # Usage:
-#   new.sh task "<title>" [--priority high|medium|low] \
+#   new.sh task "<title>" [--slug words-here] \
+#                          [--priority high|medium|low] \
 #                          [--depends-on task-nnn[,task-mmm...]] \
 #                          [--doc-ref path/to/doc.md#anchor] \
 #                          [--milestone name]
-#   new.sh spec task-nnn "<title>"
+#   new.sh spec task-nnn "<title>" [--slug words-here]
 #
 # Run from the repository root — paths are relative to work/tasks and
 # work/specs there.
@@ -23,6 +24,14 @@
 #
 # `new.sh spec` also appends the new spec's id to its task's spec_ref list
 # — appends, never overwrites existing entries.
+#
+# The next id is minted above the queue, the history, *and* every open pull
+# request — an id is unique across all three
+# (docs/technical/README.md#task-schema). Consulting the forge is
+# best-effort by design: no `gh`, no network, or no auth mints from this
+# checkout alone, exactly as before, and says so. A narrower view is not
+# wrong, it is narrower — and a silently narrower scan is how two branches
+# cut from the same main both claimed 0009 here.
 #
 # Body templates resolve in three layers — the project's shape wins:
 #   1. .writrun/conventions/templates/{task,spec}.md   — the project customized
@@ -44,6 +53,64 @@
 # Exit codes: 0 success; 3 usage error or an invalid project template.
 
 set -euo pipefail
+
+# --- what open pull requests already claim --------------------------------
+#
+# FORGE_VIEW is `forge` once open pull requests have answered, `local`
+# otherwise; FORGE_PATHS holds every path they touch. Never called from
+# inside a command substitution — the subshell would swallow both.
+FORGE_VIEW=local
+FORGE_PATHS=""
+
+# forge_scan — asks the forge for the paths open pull requests touch,
+# added *or* modified. Coarser than the collision check downstream, and
+# deliberately: a generator needs an upper bound, not an accusation. A
+# modified queue file's id is already on the branch this checkout reads,
+# so folding it in can only agree with what the tree said.
+#
+# The open numbers, then each pull request's file list — the same
+# question check_unique_ids.sh asks, minus the per-file `status` it needs
+# and this does not. One call per open pull request instead of one call
+# total, because the single `gh pr list --json files` this replaced was
+# cheaper and wrong: that field stops at 100 files per pull request and
+# says nothing when it does, so a larger diff hides every queue file it
+# adds past the cut. spec-0010's Outcome called the coarser question
+# "strictly safe"; the cap is the case that argument missed.
+#
+# All or nothing: a call that fails leaves the view local rather than
+# quietly narrow, since a scan that under-reports without saying so is
+# the exact failure the uniqueness rule exists to prevent.
+forge_scan() {
+  command -v gh >/dev/null 2>&1 || return 0
+  local numbers paths files n
+  # gh defaults to 30 open pull requests, and the id this misses is
+  # exactly the one worth seeing.
+  numbers=$(gh pr list --state open --limit 200 --json number \
+    --jq '.[].number' 2>/dev/null) || return 0
+  paths=""
+  for n in $numbers; do
+    # --paginate is the point: a pull request's own file list is paged
+    # too, and the queue file may sit on any page of it.
+    files=$(gh api "repos/{owner}/{repo}/pulls/${n}/files" --paginate \
+      --jq '.[].filename' 2>/dev/null) || return 0
+    paths="${paths}${files}
+"
+  done
+  FORGE_VIEW=forge
+  FORGE_PATHS="$paths"
+  return 0
+}
+
+# mint_report — what the id above was minted against, printed after the
+# file so an id claimed elsewhere is never reported as simply "created".
+mint_report() {
+  if [ "$FORGE_VIEW" = forge ]; then
+    echo "Minted above the queue, its history, and every open pull request."
+  else
+    echo "Minted from this checkout only — no forge answered, so an id an" >&2
+    echo "open pull request already claims would not have been seen." >&2
+  fi
+}
 
 next_id() {
   # next_id <dir> <prefix>  — e.g. next_id work/tasks task
@@ -74,14 +141,30 @@ next_id() {
     done < <(git log --diff-filter=A --name-only --pretty=format: -- "$dir" 2>/dev/null)
   fi
 
+  # An open pull request holds numbers no branch here can see: it may be
+  # a fork's, and even from this repository it reaches this checkout only
+  # once fetched. Its paths are the third input, and the one the tree and
+  # the history cannot stand in for.
+  if [ -n "$FORGE_PATHS" ]; then
+    while IFS= read -r f; do
+      case "$f" in "$dir"/*) bump "$f" ;; esac
+    done <<EOF
+$FORGE_PATHS
+EOF
+  fi
+
   printf "%04d" $((max + 1))
 }
 
-# slugify <title> — the filename's subject: an extremely short kebab-case
-# echo of the title, at most three words. Identity lives in the id, so a
-# slug that loses nuance costs nothing; it exists to make a directory
-# listing readable. Prints nothing when the title has no usable word,
-# and the caller then writes a bare-id filename.
+# slugify <title> — the filename's subject, **derived**: an extremely short
+# kebab-case echo of the title, at most three words. This is the fallback,
+# not the default — whoever creates the file chooses those words with
+# --slug, because "which task is this, among these" is a judgement about
+# the queue rather than a string operation on the title
+# (docs/technical/README.md#task-schema). Identity lives in the id, so a
+# derived slug that loses nuance costs nothing; it exists to make a
+# directory listing readable. Prints nothing when the title has no usable
+# word, and the caller then writes a bare-id filename.
 slugify() {
   printf '%s' "$1" \
     | tr '[:upper:]' '[:lower:]' \
@@ -95,6 +178,35 @@ slugify() {
         }
         print s
       }'
+}
+
+# check_slug <slug> — the shape the filename contract allows: lowercase
+# alphanumerics and single interior hyphens, no leading or trailing one.
+# Refused here, where it is typed, rather than written and discovered by
+# check_front_matter.sh at the merge — the same reason a project template
+# that would fail that check is refused at generation.
+#
+# Leading digits followed by a hyphen are refused separately, and the
+# message says why: `task-0004-2-of-3.md` reads as id 4 to a human and to
+# every prefix resolver in this repository, which take the digits after
+# the prefix and stop at the first hyphen. A slug may hold digits — it
+# may not open with the one shape that is already the id's.
+check_slug() {
+  local slug="$1"
+  if [ -z "$slug" ]; then
+    echo "--slug was given an empty string — omit the flag to derive one from the title" >&2
+    exit 3
+  fi
+  if printf '%s' "$slug" | grep -qE '^[0-9]+-'; then
+    echo "--slug '${slug}' opens with digits and a hyphen, which reads as a continuation of the id" >&2
+    echo "The id is the digits after the prefix, up to the first hyphen — a slug in that shape is unresolvable." >&2
+    exit 3
+  fi
+  if ! printf '%s' "$slug" | grep -qE '^[a-z0-9]+(-[a-z0-9]+)*$'; then
+    echo "--slug '${slug}' is outside the filename contract" >&2
+    echo "Lowercase alphanumerics and single interior hyphens, no leading or trailing hyphen." >&2
+    exit 3
+  fi
 }
 
 # queue_file <dir> <prefix> <id> — the file whose id is <id>, whatever
@@ -204,8 +316,8 @@ EOF
 }
 
 usage() {
-  echo "Usage: new.sh task \"<title>\" [--priority high|medium|low] [--depends-on task-nnn,...] [--doc-ref path#anchor] [--milestone name]" >&2
-  echo "       new.sh spec task-nnn \"<title>\"" >&2
+  echo "Usage: new.sh task \"<title>\" [--slug words-here] [--priority high|medium|low] [--depends-on task-nnn,...] [--doc-ref path#anchor] [--milestone name]" >&2
+  echo "       new.sh spec task-nnn \"<title>\" [--slug words-here]" >&2
   exit 3
 }
 
@@ -222,8 +334,10 @@ case "$cmd" in
     depends_on=""
     doc_ref=null
     milestone=null
+    slug_given=""
     while [[ $# -gt 0 ]]; do
       case "$1" in
+        --slug) slug_given="${2-}"; slug_chosen=1; shift 2 ;;
         --priority) priority="$2"; shift 2 ;;
         --depends-on) depends_on="$2"; shift 2 ;;
         --doc-ref) doc_ref="$2"; shift 2 ;;
@@ -237,8 +351,14 @@ case "$cmd" in
       *) echo "Invalid --priority '$priority' — expected high, medium, or low" >&2; exit 3 ;;
     esac
 
+    # Validate before the forge is consulted: a refusal must cost nothing
+    # and touch nothing, and an id minted for a file never written is an
+    # id the next run would mint again anyway.
+    if [[ -n "${slug_chosen:-}" ]]; then check_slug "$slug_given"; fi
+
+    forge_scan
     id="task-$(next_id work/tasks task)"
-    slug=$(slugify "$title")
+    if [[ -n "${slug_chosen:-}" ]]; then slug="$slug_given"; else slug=$(slugify "$title"); fi
     file="work/tasks/${id}${slug:+-$slug}.md"
     [[ -e "$file" ]] && { echo "$file already exists" >&2; exit 3; }
 
@@ -271,7 +391,7 @@ doc_ref: ${doc_ref}
 priority: ${priority}
 depends_on: ${depends_list}
 milestone: ${milestone}
-created: $(date +%Y-%m-%d)
+created: $(date -u +%Y-%m-%dT%H:%M:%SZ)
 completed: null
 EOF
       if [[ -n "$tpl_ext" ]]; then printf '%s\n' "$tpl_ext"; fi
@@ -288,6 +408,7 @@ EOF
       fi
     } > "$file"
     echo "Created ${file} (${id})"
+    mint_report
     ;;
 
   spec)
@@ -295,6 +416,15 @@ EOF
     task_id="${1:-}"
     title="${2:-}"
     [[ -z "$task_id" || -z "$title" ]] && usage
+    shift 2
+    slug_given=""
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --slug) slug_given="${2-}"; slug_chosen=1; shift 2 ;;
+        *) echo "Unknown flag: $1" >&2; exit 3 ;;
+      esac
+    done
+    if [[ -n "${slug_chosen:-}" ]]; then check_slug "$slug_given"; fi
 
     task_file=$(queue_file work/tasks task "$task_id")
     [[ -n "$task_file" && -f "$task_file" ]] \
@@ -304,8 +434,9 @@ EOF
     # `task-001` must still record the reference the queue actually holds.
     task_id=$(sed -n 's/^id: *//p' "$task_file" | head -n1 | sed 's/[[:space:]]*$//')
 
+    forge_scan
     id="spec-$(next_id work/specs spec)"
-    slug=$(slugify "$title")
+    if [[ -n "${slug_chosen:-}" ]]; then slug="$slug_given"; else slug=$(slugify "$title"); fi
     file="work/specs/${id}${slug:+-$slug}.md"
     [[ -e "$file" ]] && { echo "$file already exists" >&2; exit 3; }
 
@@ -337,7 +468,7 @@ EOF
 id: ${id}
 task_ref: ${task_id}
 status: draft
-created: $(date +%Y-%m-%d)
+created: $(date -u +%Y-%m-%dT%H:%M:%SZ)
 EOF
       if [[ -n "$tpl_ext" ]]; then printf '%s\n' "$tpl_ext"; fi
       printf '%s\n\n' "---"
@@ -406,6 +537,7 @@ EOF
     ' "$task_file" > "${task_file}.tmp" && mv "${task_file}.tmp" "$task_file"
 
     echo "Created ${file} (${id}), appended to ${task_file}'s spec_ref"
+    mint_report
     ;;
 
   *)

@@ -1,14 +1,14 @@
 ---
 id: task-0012
-status: pending
+status: completed
 blocked_reason: null
 spec_ref: [spec-0009]
 doc_ref: technical/README.md#task-schema
 priority: low
 depends_on: []
 milestone: null
-created: 2026-08-28
-completed: null
+created: 2026-08-28T00:00:00Z
+completed: 2026-08-29T17:17:21Z
 ---
 
 # Take the subject slug as an argument

@@ -74,6 +74,44 @@ first_heading() {
   printf '%s\n' "$1" | sed -n 's/^# //p' | head -n1 | sed 's/[[:space:]]*$//'
 }
 
+# A mirror's title names its task, and that is how a mirror is found —
+# there is no stored number anywhere. The rule now spells the name as the
+# tag a pull request title carries, `[TASK-NNNN] <task title>`
+# (docs/product/github-issues/README.md), so one search for the tag
+# finds the task in the queue, in the PR, and in the mirror at once.
+#
+# Every lookup below still reads the `task-NNNN — ` prefix that predates
+# the rule. A mirror minted before it must be *found*, because a lookup
+# that only knows the new shape does not report a miss — it mints a
+# second mirror for a task that already has one.
+
+# id_of_title <title> — the task id a mirror's title names, lowercased and
+# at whatever width the title spells it; nothing for a title that names no
+# task, which is every foreign Issue the `writrun:task` filter let through.
+id_of_title() {
+  printf '%s' "$1" | sed -n \
+    -e 's/^\[\([Tt][Aa][Ss][Kk]-[0-9][0-9]*\)\].*/\1/p' \
+    -e 's/^\([Tt][Aa][Ss][Kk]-[0-9][0-9]*\)[[:space:]].*/\1/p' \
+    | head -n1 | tr '[:upper:]' '[:lower:]'
+}
+
+# num_of_id <task-id> — the number in `task-0006`, leading zeros dropped.
+# Comparisons are on the number, never the text: the id is the number, not
+# how many zeroes precede it, so a mirror titled at one width is still
+# found by an id spelled at another.
+num_of_id() {
+  printf '%s' "$1" | tr '[:upper:]' '[:lower:]' \
+    | sed -n 's/^task-0*\([0-9][0-9]*\)$/\1/p'
+}
+
+# tag_of_id <task-id> — the title's prefix: the id uppercased in brackets,
+# character for character the tag its pull request title carries. The id's
+# own width is kept rather than padded to four — `task-004` is that task's
+# id, and a mirror is a projection of the file, never a correction of it.
+tag_of_id() {
+  printf '[%s]' "$(printf '%s' "$1" | tr '[:lower:]' '[:upper:]')"
+}
+
 # Pass 1 — the spec statuses the diff itself carries, "id status" lines.
 # "Ready for development" is derived, never stored: pending task, every
 # spec approved. The mirror's label must derive it the same way — a spec
@@ -135,20 +173,29 @@ EOF
 # One list, fetched once, two lookups on it. Identity — the id prefix in
 # the title, never a stored number — decides whether a mirror exists at
 # all. Ownership — the "Introduced by" line this script writes into every
-# body — decides whether this PR may reopen or retire it: an id collision
-# with another PR's mirror is named in the log, never adopted.
+# body — decides whether this PR may reopen or retire it, and the line is
+# only worth as much as the pull request it names: a mirror another *open*
+# pull request owns is named in the log and never touched, while one whose
+# owner is gone is adopted (docs/product/github-issues/README.md —
+# the file is the authority and the mirror is a projection of it, so a
+# task with a file and no reachable mirror is the one state this
+# reconciliation may not leave behind).
 ISSUES=$(gh api "repos/${REPO}/issues?labels=writrun:task&state=all&per_page=100" \
   --paginate \
   --jq '.[] | [.number, .state, ((.labels // []) | map(.name) | join(",")), (.title | @base64), ((.body // "") | @base64)] | @tsv')
 
 issue_row_of() {   # issue_row_of <task-id> — "number<TAB>state<TAB>body-b64"
-  local num state labels tb bb t
+  local num state labels tb bb t tn want
+  want=$(num_of_id "$1")
+  [ -n "$want" ] || return 0
   while IFS="$TAB" read -r num state labels tb bb; do
     [ -n "$num" ] || continue
     t=$(printf '%s' "$tb" | b64_decode)
-    case "$t" in
-      "$1 "*) printf '%s\t%s\t%s\n' "$num" "$state" "$bb"; return 0 ;;
-    esac
+    tn=$(num_of_id "$(id_of_title "$t")")
+    [ -n "$tn" ] || continue
+    if [ "$tn" -eq "$want" ] 2>/dev/null; then
+      printf '%s\t%s\t%s\n' "$num" "$state" "$bb"; return 0
+    fi
   done <<EOF
 $ISSUES
 EOF
@@ -156,8 +203,67 @@ EOF
 }
 
 OWN_LINE="| Introduced by | #${PR} |"
+# `|` is literal in a basic regex, so the line matches as written.
+OWN_RE='^| Introduced by | #[0-9][0-9]* |'
 is_mine() {   # is_mine <body-b64>
   printf '%s' "$1" | b64_decode | grep -qF "$OWN_LINE"
+}
+
+# owner_of <body-b64> — the pull request number the mirror's ownership
+# line names. Nothing when the body carries no such line, which is the
+# same answer as "nobody": a line this script did not write is a line
+# nobody is working behind.
+owner_of() {
+  printf '%s' "$1" | b64_decode \
+    | sed -n 's/^| Introduced by | #\([0-9][0-9]*\) |.*/\1/p' | head -n1
+}
+
+# pr_is_open <number> — does the forge still call that pull request open?
+# **This is the whole ownership question.** A mirror belongs to the pull
+# request that introduced it only while that pull request is live; once it
+# is closed or merged, nobody is working behind the line it left, and a
+# refusal to touch the mirror only means the task never gets one. A number
+# the forge does not know answers the same way, for the same reason.
+pr_is_open() {
+  local st
+  st=$(gh api "repos/${REPO}/pulls/${1}" --jq '.state' 2>/dev/null) || return 1
+  [ "$st" = "open" ]
+}
+
+# adopt_mirror <issue> <body-b64> — rewrite the ownership line to this
+# pull request. Only the line: the body is the mirror's, and adopting is
+# taking responsibility for it, not rewriting what it says.
+adopt_mirror() {
+  local body
+  body=$(printf '%s' "$2" | b64_decode)
+  if printf '%s\n' "$body" | grep -q "$OWN_RE"; then
+    body=$(printf '%s\n' "$body" | sed "s/^| Introduced by | #[0-9][0-9]* |.*/${OWN_LINE}/")
+  else
+    body="${body}"$'\n'"${OWN_LINE}"
+  fi
+  gh api -X PATCH "repos/${REPO}/issues/${1}" -f "body=${body}" >/dev/null
+}
+
+# clear_status <issue> <labels-csv> — a retired mirror keeps every label
+# except its place in the pipeline, for the same reason a completed one
+# does (docs/product/github-issues/labels.md): the close and its
+# reason are the terminal state, and a `status:` label left on top of them
+# contradicts it.
+clear_status() {
+  local kept l args
+  kept=$(printf '%s\n' "$2" | tr ',' '\n' | grep -v '^status:' | sed '/^$/d' || true)
+  args=()
+  while IFS= read -r l; do
+    [ -n "$l" ] || continue
+    args+=(-f "labels[]=$l")
+  done <<EOF
+$kept
+EOF
+  if [ "${#args[@]}" -eq 0 ]; then
+    gh api -X DELETE "repos/${REPO}/issues/${1}/labels" >/dev/null
+    return 0
+  fi
+  gh api -X PUT "repos/${REPO}/issues/${1}/labels" "${args[@]}" >/dev/null
 }
 
 ensure_label() {   # ensure_label <name> <color> <description>
@@ -185,16 +291,17 @@ esac
 
 if [ "$open" = "true" ]; then
   ensure_label "writrun:task" "1d76db" "Mirrors a work/tasks/ entry"
-  ensure_label "status:pending" "fbca04" "Task exists; its specs are not approved yet"
+  ensure_label "status:proposed" "ededed" "A pull request proposes this task; it is not in the queue yet"
+  ensure_label "status:pending" "fbca04" "In the queue, with a spec it references not yet approved"
   ensure_label "status:ready" "0e8a16" "Ready for development: task pending, specs approved"
 fi
 
 # Every task the diff adds gets a mirror in the right state.
-LIVE_IDS=""
+LIVE_NUMS=""
 while IFS="$TAB" read -r tid fname priority milestone refs ttitle; do
   [ -n "$tid" ] || continue
   [ "$refs" = "-" ] && refs=""
-  LIVE_IDS="${LIVE_IDS} ${tid}"
+  LIVE_NUMS="${LIVE_NUMS} $(num_of_id "$tid")"
 
   row=$(issue_row_of "$tid")
 
@@ -207,8 +314,17 @@ while IFS="$TAB" read -r tid fname priority milestone refs ttitle; do
       echo "${tid}: author lacks authority — mirror deferred to merge."
       continue
     fi
-    lbl=status:ready
-    if [ "$open" = "true" ] || ! is_ready $refs; then lbl=status:pending; fi
+    # Three states, not two. An open pull request only *proposes* the
+    # task — it may still close unmerged, and the mirror retires with it,
+    # so the queue does not hold it yet. A merged one puts it in the
+    # queue, ready or not (docs/product/github-issues/labels.md).
+    if [ "$open" = "true" ]; then
+      lbl=status:proposed
+    elif is_ready $refs; then
+      lbl=status:ready
+    else
+      lbl=status:pending
+    fi
     body=$(printf '%s\n' \
       "Mirrors [\`${fname}\`](${PR_HTML_URL}/files), which is the authority." \
       "Edits made here are **not** written back to the file." \
@@ -222,7 +338,7 @@ while IFS="$TAB" read -r tid fname priority milestone refs ttitle; do
       "Becomes ready for development when #${PR} merges and every" \
       "spec in its \`spec_ref\` is \`approved\`.")
     gh api -X POST "repos/${REPO}/issues" \
-      -f "title=${tid} — ${ttitle}" \
+      -f "title=$(tag_of_id "$tid") ${ttitle}" \
       -f "labels[]=writrun:task" \
       -f "labels[]=${lbl}" \
       -f "body=${body}" >/dev/null
@@ -238,19 +354,40 @@ while IFS="$TAB" read -r tid fname priority milestone refs ttitle; do
   istate=$(printf '%s' "$row" | cut -f2)
   ibody=$(printf '%s' "$row" | cut -f3)
 
+  # Three answers to "whose mirror is this", not two. Mine: proceed.
+  # Somebody's, and that somebody is still open: refuse, exactly as
+  # before — two live pull requests must never fight over one mirror.
+  # Nobody's — the introducing pull request closed, merged, or never
+  # existed: adopt it, because refusing leaves the task with no mirror at
+  # all and nothing ever creates one.
+  adopted=false
   if ! is_mine "$ibody"; then
-    echo "WARNING: ${tid} is already mirrored by a different PR — id collision; not touching it."
-    continue
+    owner=$(owner_of "$ibody")
+    if [ -n "$owner" ] && pr_is_open "$owner"; then
+      echo "WARNING: ${tid} is mirrored by #${owner}, which is still open — not touching it."
+      continue
+    fi
+    adopt_mirror "$num" "$ibody"
+    adopted=true
+    if [ -n "$owner" ]; then
+      echo "${tid}: adopted stale mirror #${num} — #${owner} is no longer open."
+    else
+      echo "${tid}: adopted unowned mirror #${num} — no pull request introduced it."
+    fi
   fi
 
   if [ "$open" = "true" ]; then
     # A reopened PR finds its mirrors closed as orphans; they are not
-    # orphans any more.
-    if [ "$istate" = "closed" ]; then
+    # orphans any more. An adopted mirror gets the same treatment
+    # whatever state it was in: its labels were the old owner's, and
+    # this pass is what re-derives them.
+    if [ "$istate" = "closed" ] || [ "$adopted" = "true" ]; then
+      # Reopened means open, and open means proposed — the task is back
+      # to being offered, not back in the queue.
       gh api -X PATCH "repos/${REPO}/issues/${num}" -f state=open >/dev/null
       gh api -X PUT "repos/${REPO}/issues/${num}/labels" \
-        -f "labels[]=writrun:task" -f "labels[]=status:pending" >/dev/null
-      echo "${tid} reopened with #${PR}"
+        -f "labels[]=writrun:task" -f "labels[]=status:proposed" >/dev/null
+      [ "$adopted" = "true" ] || echo "${tid} reopened with #${PR}"
     else
       echo "${tid} already mirrored; nothing to do."
     fi
@@ -258,6 +395,12 @@ while IFS="$TAB" read -r tid fname priority milestone refs ttitle; do
   fi
 
   if [ "$merged" = "true" ]; then
+    # A mirror adopted while closed is reopened here too — the labels
+    # below say where the task is, and a closed issue wearing one of them
+    # says it twice and disagrees with itself.
+    if [ "$adopted" = "true" ] && [ "$istate" = "closed" ]; then
+      gh api -X PATCH "repos/${REPO}/issues/${num}" -f state=open >/dev/null
+    fi
     if is_ready $refs; then
       gh api -X PUT "repos/${REPO}/issues/${num}/labels" \
         -f "labels[]=writrun:task" -f "labels[]=status:ready" >/dev/null
@@ -282,10 +425,12 @@ while IFS="$TAB" read -r num istate labels tb bb; do
   [ -n "$num" ] || continue
   [ "$istate" = "open" ] || continue
   is_mine "$bb" || continue
-  oid=$(printf '%s' "$tb" | b64_decode | cut -d' ' -f1)
+  oid=$(id_of_title "$(printf '%s' "$tb" | b64_decode)")
+  [ -n "$oid" ] || continue
   if [ "$closed_unmerged" != "true" ]; then
-    case " $LIVE_IDS " in *" $oid "*) continue ;; esac
+    case " $LIVE_NUMS " in *" $(num_of_id "$oid") "*) continue ;; esac
   fi
+  clear_status "$num" "$labels"
   gh api -X PATCH "repos/${REPO}/issues/${num}" \
     -f state=closed -f state_reason=not_planned >/dev/null
   if [ "$closed_unmerged" = "true" ]; then

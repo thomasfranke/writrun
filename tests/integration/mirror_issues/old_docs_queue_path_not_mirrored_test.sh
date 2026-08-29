@@ -17,8 +17,8 @@ added_task task-002 "The real queue entry"
 check "the work/ path is the queue" 0 "Created issue for task-002" \
   -- bash "$MIRROR_ISSUES" o/r 7
 forge_not_told "the old docs/ path is not mirrored" \
-  "-f title=task-001"
+  "-f title=[TASK-001]"
 forge_told "the work/ path is mirrored" \
-  "-f title=task-002 — The real queue entry"
+  "-f title=[TASK-002] The real queue entry"
 
 finish

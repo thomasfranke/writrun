@@ -1,14 +1,14 @@
 ---
 id: task-0013
-status: pending
+status: completed
 blocked_reason: null
 spec_ref: [spec-0010]
 doc_ref: technical/README.md#task-schema
 priority: high
 depends_on: []
 milestone: null
-created: 2026-08-28
-completed: null
+created: 2026-08-28T00:00:00Z
+completed: 2026-08-28T00:00:00Z
 ---
 
 # Keep queue ids unique across open pull requests

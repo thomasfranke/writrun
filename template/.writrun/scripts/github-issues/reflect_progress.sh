@@ -160,6 +160,35 @@ ensure_label() {   # ensure_label <name> <color> <description>
   fi
 }
 
+# clear_status <issue> <labels-csv> — the mirror keeps everything except
+# its place in the pipeline.
+#
+# **A closed mirror carries no `status:` label**
+# (docs/product/github-issues/labels.md). Every label in that table
+# names a place *inside* the pipeline, so any of them on a closed issue is
+# a leftover from the step before last — and a leftover is not merely
+# useless, it is false: an issue closed as completed reading
+# `status:in-review` says the maintainer is still the blocker. The close
+# and its reason are the terminal state, and the forge records those
+# rather than anyone having to remember to write them.
+clear_status() {
+  local kept l args
+  kept=$(printf '%s\n' "$2" | tr ',' '\n' | grep -v '^status:' | sed '/^$/d' || true)
+  args=()
+  while IFS= read -r l; do
+    [ -n "$l" ] || continue
+    args+=(-f "labels[]=$l")
+  done <<EOF
+$kept
+EOF
+  if [ "${#args[@]}" -eq 0 ]; then
+    # PUT needs a list to set; DELETE is how the forge spells "none".
+    gh api -X DELETE "repos/${REPO}/issues/${1}/labels" >/dev/null
+    return 0
+  fi
+  gh api -X PUT "repos/${REPO}/issues/${1}/labels" "${args[@]}" >/dev/null
+}
+
 set_status() {   # set_status <issue> <labels-csv> <status-label>
   local kept l args
   kept=$(printf '%s\n' "$2" | tr ',' '\n' | grep -v '^status:' | sed '/^$/d' || true)
@@ -199,10 +228,16 @@ reflect_one() {
   while IFS="$TAB" read -r n istate labels tb bb; do
     [ -n "$n" ] || continue
     t=$(printf '%s' "$tb" | b64_decode | tr '[:upper:]' '[:lower:]')
-    # A mirror's title opens with the task's id. Match on its number so a
-    # mirror titled at one width is still found by a tag spelling it at
-    # another — the id is the number, not how many zeroes precede it.
-    tn=$(printf '%s' "$t" | sed -n 's/^task-0*\([0-9][0-9]*\) .*/\1/p')
+    # A mirror's title opens with the task's tag, `[TASK-NNNN]` — and
+    # with the bare `task-NNNN ` prefix on any mirror minted before that
+    # rule, which must still be found rather than reported missing.
+    # Match on the number so a mirror titled at one width is still found
+    # by a tag spelling it at another — the id is the number, not how
+    # many zeroes precede it. `$t` is already lowercased above.
+    tn=$(printf '%s' "$t" | sed -n \
+      -e 's/^\[task-0*\([0-9][0-9]*\)\].*/\1/p' \
+      -e 's/^task-0*\([0-9][0-9]*\)[[:space:]].*/\1/p' \
+      | head -n1)
     [ -n "$tn" ] || continue
     if [ "$tn" -eq "$num" ] 2>/dev/null; then
       issue_num="$n"; issue_labels="$labels"; break
@@ -263,6 +298,9 @@ EOF
     return 0
   fi
 
+  # Stripped as part of closing, never afterwards: a mirror already closed
+  # is not reopened to correct its labels.
+  clear_status "$issue_num" "$issue_labels"
   gh api -X PATCH "repos/${REPO}/issues/${issue_num}" \
     -f state=closed -f state_reason=completed >/dev/null
   echo "${task_id} completed — Issue #${issue_num} closed"

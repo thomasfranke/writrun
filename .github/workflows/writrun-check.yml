@@ -21,8 +21,24 @@ permissions:
   pull-requests: read
 
 jobs:
+  gate:
+    name: adoption level
+    runs-on: ubuntu-latest
+    # The level gates the whole workflow rather than each job, and it is a
+    # job rather than a first step so a project below the level starts no
+    # runner at all. It always succeeds: a job that did not run is not a
+    # failure, and level_gate.sh says which of the two happened.
+    outputs:
+      run: ${{ steps.gate.outputs.run }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: gate
+        run: bash .writrun/scripts/pull-requests/level_gate.sh pull-requests
+
   lifecycle:
     name: task and spec transitions
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -53,6 +69,8 @@ jobs:
 
   deltas:
     name: promised doc deltas
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -66,6 +84,8 @@ jobs:
 
   impact:
     name: queue impact
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -77,8 +97,31 @@ jobs:
           bash .writrun/scripts/pull-requests/check_queue_impact.sh \
             "origin/${{ github.base_ref }}...HEAD"
 
+  ids:
+    name: queue ids are unique
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The check compares what the range adds against what the base
+          # branch already holds, so both ends must be present.
+          fetch-depth: 0
+
+      - name: No id another change already claims
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bash .writrun/scripts/pull-requests/check_unique_ids.sh \
+            "origin/${{ github.base_ref }}...HEAD" \
+            "${{ github.repository }}" \
+            "${{ github.event.pull_request.number }}"
+
   derived:
     name: derived work declared
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -93,3 +136,17 @@ jobs:
         run: |
           bash .writrun/scripts/pull-requests/check_derived_work.sh \
             "origin/${{ github.base_ref }}...HEAD"
+
+  settings:
+    name: settings are canonical
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: The settings file holds the shape a line-based reader sees
+        # read_setting.sh reads this file with sed; the restriction that
+        # makes that legitimate is enforced here, not assumed there. Same
+        # relationship check_front_matter.sh has with the front matter.
+        run: bash .writrun/scripts/pull-requests/check_settings.sh

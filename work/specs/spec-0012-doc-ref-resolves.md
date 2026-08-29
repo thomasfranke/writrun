@@ -2,7 +2,7 @@
 id: spec-0012
 task_ref: task-0015
 status: draft
-created: 2026-08-28
+created: 2026-08-28T00:00:00Z
 ---
 
 # spec-0012 — Check that a doc_ref resolves

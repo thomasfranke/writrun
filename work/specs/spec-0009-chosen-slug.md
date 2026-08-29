@@ -1,8 +1,8 @@
 ---
 id: spec-0009
 task_ref: task-0012
-status: approved
-created: 2026-08-28
+status: implemented
+created: 2026-08-28T00:00:00Z
 ---
 
 # spec-0009 — Take the subject slug as an argument
@@ -75,4 +75,39 @@ none — the same authoring change covered `technical/README.md`.
 
 ## Outcome
 
-(filled when the task completes)
+Done as specified. `new.sh task` and `new.sh spec` both take `--slug` and
+use it verbatim; `check_slug` refuses anything outside the filename
+contract, and separately refuses leading digits followed by a hyphen with
+a message that says what breaks. The derivation is untouched — it is no
+longer trying to be good, only to be present.
+
+Seven cases across two files in the `new` suite: the chosen slug on both
+subcommands, the derivation still running when the flag is absent, the two
+edge cases the spec named (a slug another id already carries, a long one),
+every refusal shape, and one assertion that the queue is empty after all
+of them.
+
+Three divergences:
+
+- **`--slug` is shown unbracketed in SKILL.md.** Step 5 asks the skill to
+  say that choosing is the default. Saying it while the synopsis shows
+  `[--slug ...]` alongside every genuinely optional flag would have been
+  contradicted by the shape an agent actually copies, so the flag is
+  written as though required and the paragraph under it explains that it
+  is not. The failure that motivated the rule is named there by filename —
+  `task-0009-stamp-queued-and.md`, which breaks mid-phrase — because "what
+  a good slug is" is not derivable from the rule alone.
+
+- **The slug is validated before the forge is consulted.** The steps put
+  no order on it. Validating first means a refusal makes no network call
+  and mints no id, which matters because an id minted for a file never
+  written is one the next run mints again — harmless, but it would put a
+  forge round trip behind a typo.
+
+- **`new.sh spec` now refuses an unknown flag.** It previously read
+  exactly two positionals and ignored anything after them, so
+  `new.sh spec task-0001 "Title" --slugg x` created the file with a
+  derived slug and said nothing. Parsing flags there at all is what this
+  change adds, and a parser that silently drops what it does not
+  understand is the failure mode the flag exists to remove. `new.sh task`
+  already behaved this way; the two subcommands now agree.

@@ -6,7 +6,7 @@
 setup_forge
 export PR_STATE=closed PR_MERGED=true
 added_task task-001 "Now ready" spec-001
-forge_issue 12 open "writrun:task,status:pending" "task-001 — Now ready"
+forge_issue 12 open "writrun:task,status:proposed" "task-001 — Now ready"
 check "a merged task with vouched specs is ready" 0 \
   "task-001 is ready for development" \
   -- bash "$MIRROR_ISSUES" o/r 7

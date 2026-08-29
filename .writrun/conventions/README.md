@@ -21,8 +21,16 @@ opener) validates against whatever they say.
 One rule spans them all in this repository: **English everywhere** —
 code, comments, commits, documentation.
 
-When tooling needs these files machine-readably — a commit-msg hook
-validating types and scopes, a PR opener checking the title rule — the
-pattern is the same as everywhere else in WritRun: front-matter will
-carry the data, prose the reasoning. One file, two audiences, nothing
-duplicated.
+Tooling needs these choices machine-readably — the scripts already act on
+some of them — so the data lives in [`settings.json`](settings.json) and
+these `.md` files carry the reasoning: what the options are and why a
+project would pick one. **Nothing is stated in both.** A value here that
+also sits in the settings file is a value that will eventually disagree
+with itself; if you find one, the settings file wins and the prose is the
+bug.
+
+That split was always the plan; the file is JSON rather than the
+front-matter this once predicted, because it is edited by people who have
+not read WritRun's front-matter contract and JSON is the shape they
+already know. See
+[`decisions/0052`](../../docs/technical/decisions/0052-settings-carry-the-choice.md).

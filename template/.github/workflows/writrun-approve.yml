@@ -40,13 +40,29 @@ on:
 
 permissions:
   contents: write
+  issues: write
   pull-requests: read
 
 jobs:
+  gate:
+    name: adoption level
+    runs-on: ubuntu-latest
+    # The level gates the whole workflow rather than each job, and it is a
+    # job rather than a first step so a project below the level starts no
+    # runner at all. It always succeeds: a job that did not run is not a
+    # failure, and level_gate.sh says which of the two happened.
+    outputs:
+      run: ${{ steps.gate.outputs.run }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: gate
+        run: bash .writrun/scripts/pull-requests/level_gate.sh pull-requests
+
   approve-specs:
     # Merged, not merely closed. A pull request abandoned without merging
     # carried no assent, and its specs stay draft.
-    if: github.event.pull_request.merged == true
+    needs: gate
+    if: github.event.pull_request.merged == true && needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -75,6 +91,12 @@ jobs:
           else
             echo "changed=0" >> "$GITHUB_OUTPUT"
           fi
+          # The spec files themselves, for the re-derivation below: which
+          # tasks this merge approved is exactly what it just decided, and
+          # re-deriving that from the range a second time would be a
+          # second chance to disagree with itself.
+          specs=$(printf '%s\n' "$out" | sed -n 's/^approved //p' | tr '\n' ' ')
+          echo "specs=${specs}" >> "$GITHUB_OUTPUT"
 
       - name: Commit
         if: steps.flip.outputs.changed == '1'
@@ -99,3 +121,21 @@ jobs:
           # the branch's history, never a replacement of it.
           git pull --rebase origin "$BASE_REF"
           git push origin "HEAD:${BASE_REF}"
+
+      - name: Re-derive the label of every task this merge approved
+        if: steps.flip.outputs.changed == '1'
+        # Sequential in the same job, and deliberately *after* the commit:
+        # the script reads the queue from disk, and the flip is only in
+        # the queue once it has been written there. Reading the merge's
+        # own diff instead is what made `status:ready` unreachable —
+        # right for what the merge carried, wrong for what it caused
+        # (docs/product/github-issues/labels.md).
+        #
+        # A label is not a file, so nothing here is committed or pushed;
+        # this step cannot race the push above because it follows it.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          bash .writrun/scripts/github-issues/rederive_labels.sh \
+            "${{ github.repository }}" ${{ steps.flip.outputs.specs }}

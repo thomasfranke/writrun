@@ -22,6 +22,18 @@ NEW_SH="$REPO_ROOT/.writrun/skills/writrun-create-task-and-spec/new.sh"
 # The workflow step scripts — what the integration tier exercises, the same
 # way the unit tier exercises the skills.
 CI_SCRIPTS="$REPO_ROOT/.writrun/scripts"
+READ_SETTING="$CI_SCRIPTS/pull-requests/read_setting.sh"
+CHECK_SETTINGS="$CI_SCRIPTS/pull-requests/check_settings.sh"
+LEVEL_GATE="$CI_SCRIPTS/pull-requests/level_gate.sh"
+WORKFLOWS="$REPO_ROOT/.github/workflows"
+
+# settings_file — the whole settings file, from stdin. Written verbatim,
+# because half of what the check exists for is the shapes a generator
+# would never produce.
+settings_file() {
+  mkdir -p .writrun/conventions
+  cat > .writrun/conventions/settings.json
+}
 
 # check_front_matter runs on files alone, so it is a skill rather than a
 # CI script — it is the one check available at every adoption level.
@@ -34,6 +46,112 @@ stub_gh() {
   printf '#!/usr/bin/env bash\necho %s\n' "$1" > "$WORK/stub-bin/gh"
   chmod +x "$WORK/stub-bin/gh"
   export PATH="$WORK/stub-bin:$PATH"
+}
+
+# stub_forge — a fake `gh` that answers the two questions the id checks
+# ask, and records every call. Reads are served post-jq, the shape the
+# real scripts request, so the shell logic under test sees exactly what
+# CI would (the same contract mirror_lib.sh's forge holds):
+#
+#   gh pr list --json number        -> $FORGE_DIR/pr_numbers
+#   gh api .../pulls/N/files        -> $FORGE_DIR/pr_N_paths
+#   ... --jq '...status == "added"' -> $FORGE_DIR/pr_N_added
+#
+# The two consumers of the file list want different halves of it: the
+# check selects the added files, the generator reads every path. The jq
+# expression is what tells them apart, the same way it does at the real
+# endpoint.
+#
+# **The list is paged, because that is the bug this stub has to be able
+# to reproduce**: without `--paginate` the caller sees $FORGE_PAGE
+# entries and no sign that more exist.
+#
+# Touch $FORGE_DIR/unavailable and every call fails, which is what no
+# network, no auth, and no remote all look like from the caller's side.
+# Call after setup — it lives in the repository setup created.
+stub_forge() {
+  FORGE_DIR="$WORK/forge"
+  FORGE_LOG="$WORK/forge/gh.log"
+  mkdir -p "$FORGE_DIR"
+  : > "$FORGE_LOG"
+  # GitHub's own page size for a pull request's file list.
+  FORGE_PAGE=100
+  export FORGE_DIR FORGE_LOG FORGE_PAGE
+
+  mkdir -p "$WORK/stub-bin"
+  cat > "$WORK/stub-bin/gh" <<'GH'
+#!/usr/bin/env bash
+printf '%s\n' "$*" >> "$FORGE_LOG"
+[ -e "$FORGE_DIR/unavailable" ] && exit 1
+case "${1:-}" in
+  pr)
+    field=""; prev=""
+    for a in "$@"; do
+      [ "$prev" = "--json" ] && field="$a"
+      prev="$a"
+    done
+    case "$field" in
+      number) cat "$FORGE_DIR/pr_numbers" 2>/dev/null ;;
+    esac
+    ;;
+  api)
+    n=$(printf '%s' "${2:-}" | sed -n 's|.*/pulls/\([0-9][0-9]*\)/files$|\1|p')
+    [ -n "$n" ] || exit 0
+    jq=""; prev=""; paginate=""
+    for a in "$@"; do
+      [ "$prev" = "--jq" ] && jq="$a"
+      [ "$a" = "--paginate" ] && paginate=yes
+      prev="$a"
+    done
+    case "$jq" in
+      *added*) src="$FORGE_DIR/pr_${n}_added" ;;
+      *)       src="$FORGE_DIR/pr_${n}_paths" ;;
+    esac
+    [ -e "$src" ] || exit 0
+    if [ -n "$paginate" ]; then cat "$src"; else head -n "$FORGE_PAGE" "$src"; fi
+    ;;
+esac
+exit 0
+GH
+  chmod +x "$WORK/stub-bin/gh"
+  export PATH="$WORK/stub-bin:$PATH"
+}
+
+# forge_pr <number> <added|modified> <path> — one file on one open pull
+# request. The number joins the open list once; the path is visible to the
+# generator either way, and only an added one is a claim the check reads.
+# Files land in the order they are declared, which is the order the pages
+# come in.
+forge_pr() {
+  grep -qxF "$1" "$FORGE_DIR/pr_numbers" 2>/dev/null \
+    || printf '%s\n' "$1" >> "$FORGE_DIR/pr_numbers"
+  printf '%s\n' "$3" >> "$FORGE_DIR/pr_${1}_paths"
+  [ "$2" = added ] && printf '%s\n' "$3" >> "$FORGE_DIR/pr_${1}_added"
+  return 0
+}
+
+# forge_pr_filler <number> <count> — <count> modified files on one open
+# pull request, to push what follows them onto a later page.
+forge_pr_filler() {
+  local i=1
+  while [ "$i" -le "$2" ]; do
+    forge_pr "$1" modified "docs/filler-${i}.md"
+    i=$((i + 1))
+  done
+}
+
+# forge_unavailable — no `gh` answer at all, from here on.
+forge_unavailable() { : > "$FORGE_DIR/unavailable"; }
+
+# forge_untouched <name> — not a single call reached the forge.
+forge_untouched() {
+  if [ -s "$FORGE_LOG" ]; then
+    printf 'FAIL  %s\n      expected no gh call at all\n' "$1"
+    sed 's/^/      | /' "$FORGE_LOG"
+    fail=$((fail + 1))
+  else
+    printf 'ok    %s\n' "$1"; pass=$((pass + 1))
+  fi
 }
 
 # A repository with docs/ and one commit on main. cd's into it.
@@ -66,7 +184,7 @@ doc_ref: null
 priority: medium
 depends_on: []
 milestone: null
-created: 2026-08-22
+created: 2026-08-22T00:00:00Z
 completed: ${4:-null}
 ---
 
@@ -80,7 +198,7 @@ spec_file() {   # spec_file <id> <task> <status> [promised-path]
 id: $1
 task_ref: $2
 status: $3
-created: 2026-08-22
+created: 2026-08-22T00:00:00Z
 ---
 
 # $1 — test

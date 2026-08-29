@@ -4,7 +4,33 @@ What a project must have, at minimum, to claim it follows WritRun — and
 where a project is free to shape that structure differently without it
 counting as non-compliance.
 
-## Minimum bar
+## Three levels
+
+Adoption is progressive. Each level adds machinery on top of the one before
+it and changes nothing beneath, and a project declares which it is at in
+[`settings.json`](../../.writrun/conventions/settings.json).
+
+| Level | Adds | Needs | Its chapter |
+|---|---|---|---|
+| `tasks-and-specs` | the docs and the queue, as markdown | nothing but files | [Tasks and specs](tasks-and-specs/README.md) |
+| `pull-requests` | branches, pull requests, the CI checks, merge as assent | a forge | [Pull requests](pull-requests/README.md) |
+| `github-issues` | the Issues mirror | Issues | [GitHub issues](github-issues/README.md) |
+
+Ordered and cumulative, which is why the setting is one value and not three
+switches: `github-issues` without `pull-requests` would ask for a projection
+that pull-request events drive, with no pull requests to drive it.
+
+**Each level's rules live in the folder of its name**, and the base level's
+chapter stays true at every level. A rule marked with a level binds projects
+at that level and above; a rule carrying no level belongs to
+`tasks-and-specs` and binds every adopter.
+
+## Level `tasks-and-specs` — the minimum bar
+
+**This level is a complete adoption**, not a partial one. The audience
+split, the queue, the schemas and the four gates are all satisfiable with
+files alone; what the higher levels add is *mechanical enforcement* of
+things a person otherwise does deliberately.
 
 All of the following, or the project is *adopting*, not *adopted*:
 
@@ -33,24 +59,6 @@ concrete case: strong `about.md`-equivalent, strong technical layer, real
 per-feature product rules — and no task/spec pipeline at all. That gap
 alone is what keeps it from claiming adoption today.
 
-## Adoption levels
-
-The methodology is adopted in **levels**, each named after the chapter
-that defines it. Each level adds machinery on top of the one before it
-and changes nothing beneath:
-
-1. **`tasks-and-specs`** — the base level: the [minimum bar](#minimum-bar)
-   above, run entirely on files — no forge, no CI required.
-   [Tasks and specs](tasks-and-specs/README.md) is its chapter, and stays
-   true at every level.
-2. **`pull-requests`** — adds branches, pull requests, CI, and the merge
-   as recorded assent. [Pull requests](pull-requests/README.md).
-3. **`github-issues`** — adds the GitHub Issues mirror.
-   [GitHub issues](github-issues/README.md).
-
-A rule marked with a level binds projects at that level and above; a rule
-carrying no level belongs to `tasks-and-specs` and binds every adopter.
-
 ## Mandatory core vs. documented variant
 
 Two different kinds of divergence from what this methodology describes, and
@@ -70,10 +78,20 @@ they are not judged the same way:
   is organized by concept or by feature, id prefixes, whether a spec is
   mandatory for every task or only for the ones [Task](concepts/task.md)'s
   own guidance flags. A project is free to choose either side of any of
-  these — the requirement is that the choice is stated somewhere a reader
-  would look for it (that project's own `about.md` or its `product/` /
-  `technical/` index), not left to be reverse-engineered from the file
-  tree.
+  these — the requirement is that the choice is **stated, not left to be
+  reverse-engineered from the file tree**.
+
+  **Where it is stated is
+  [`settings.json`](../../.writrun/conventions/settings.json).** "Somewhere a
+  reader would look" was honest about the obligation and vague about the
+  address. One known path ends the hunt, and the machinery reads the same
+  statement the reader does — so a choice cannot be declared in one place and
+  contradicted by what the tooling does.
+
+  Two limits. It carries **only what this section leaves open** — a key
+  switching off something from the core list is refused, not discouraged. And
+  it holds **values, never reasoning**: why a project chose a side stays in
+  its prose.
 
 ## Worked example: TOM
 

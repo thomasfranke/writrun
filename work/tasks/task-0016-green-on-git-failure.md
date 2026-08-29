@@ -7,7 +7,7 @@ doc_ref: product/tasks-and-specs/gates.md
 priority: high
 depends_on: []
 milestone: null
-created: 2026-08-28
+created: 2026-08-28T00:00:00Z
 completed: null
 ---
 

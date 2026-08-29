@@ -26,18 +26,30 @@ drift this script exists to make impossible:
 
 ```bash
 bash .writrun/skills/writrun-create-task-and-spec/new.sh task "<title>" \
+  --slug <two-or-three-words> \
   [--priority high|medium|low] \
   [--depends-on task-nnnn,task-mmmm] \
   [--doc-ref path/to/doc.md#anchor] \
   [--milestone name]
 ```
 
+**Choose the slug. Deriving it is the fallback, not the default.** It is
+shown above without brackets for that reason: `--slug` is the one argument
+you are expected to think about, because "which task is this, among these"
+is a judgement about the queue and not a string operation on the title. The
+derivation takes the title's first three words, which is why
+`work/tasks/` grew `task-0009-stamp-queued-and.md` — a filename that breaks
+mid-phrase and tells a reader scanning the directory nothing. Two or three
+words that name the *subject*: `stamp-queue-dates`, not the title's opening.
+
+Omit it and the derivation runs, unchanged. It is there so the generator
+works when nobody chose, never as the outcome to aim for.
+
 It finds the highest existing `task-nnnn` id and increments it (never reuses
 or renumbers one, even if a task was later deleted), and writes
-`work/tasks/task-nnnn-<subject>.md` — the id plus an extremely short
-kebab-case echo of the title, which makes a directory listing readable
-without ever being identity — with every field present explicitly, an
-empty list never the same as an omitted field:
+`work/tasks/task-nnnn-<subject>.md` — the id plus the subject slug, which
+makes a directory listing readable without ever being identity — with every
+field present explicitly, an empty list never the same as an omitted field:
 
 ```yaml
 ---
@@ -101,15 +113,19 @@ missing one costs an agent guessing at scope.
 Same generator, second subcommand:
 
 ```bash
-bash .writrun/skills/writrun-create-task-and-spec/new.sh spec task-nnnn "<title>"
+bash .writrun/skills/writrun-create-task-and-spec/new.sh spec task-nnnn "<title>" \
+  --slug <two-or-three-words>
 ```
+
+`--slug` means the same thing here, and is chosen for the same reason.
 
 `task_ref` must point at a task that already exists — the script refuses
 otherwise, because a spec is never created before its task; it resolves the
 argument by number, so any spelling of the task's id finds it, and records
 the id the task file itself carries. It finds the
 highest existing `spec-nnnn` id and increments it, writes
-`work/specs/spec-nnnn-<subject>.md` — named the same way a task is — with
+`work/specs/spec-nnnn-<subject>.md` — named the same way a task is, slug
+included — with
 `status: draft` and a body skeleton (Scope,
 Steps, Acceptance criteria, Edge cases, Tests required, Definition of Done,
 and both Proposed-changes sections defaulted to "none"), and **appends**

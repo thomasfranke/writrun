@@ -72,6 +72,14 @@ Commit messages, branch names, PR titles, and task/spec style follow
 writing; it is this repository's own convention and every project you
 work in may have rewritten it.
 
+**The values live in
+[`settings.json`](.writrun/conventions/settings.json); the `.md` files
+explain them.** Read the settings before writing a branch name, a commit
+subject or a PR title — the tag, the branch prefixes and the label names
+are settings, not constants, and a project you work in may hold different
+ones. Where the two ever disagree, the settings file is what the machinery
+obeys, so it is what you obey.
+
 When you edit anything under `docs/`, check `work/tasks/` for
 non-completed tasks whose `doc_ref` points into the files you are
 editing, and name them to the human while the edit is still in front of

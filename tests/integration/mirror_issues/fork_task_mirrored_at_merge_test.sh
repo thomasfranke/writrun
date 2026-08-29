@@ -11,6 +11,6 @@ check "the deferred mirror is created at merge" 0 \
   "Created issue for task-001 (ready)" \
   -- bash "$MIRROR_ISSUES" o/r 7
 forge_told "and it is born ready" \
-  "POST repos/o/r/issues -f title=task-001 — From a fork -f labels[]=writrun:task -f labels[]=status:ready"
+  "POST repos/o/r/issues -f title=[TASK-001] From a fork -f labels[]=writrun:task -f labels[]=status:ready"
 
 finish
