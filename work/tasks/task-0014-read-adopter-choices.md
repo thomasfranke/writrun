@@ -1,6 +1,6 @@
 ---
 id: task-0014
-status: pending
+status: in-progress
 blocked_reason: null
 spec_ref: [spec-0011]
 doc_ref: technical/README.md#settings
