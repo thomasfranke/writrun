@@ -173,8 +173,13 @@ EOF
 # One list, fetched once, two lookups on it. Identity — the id prefix in
 # the title, never a stored number — decides whether a mirror exists at
 # all. Ownership — the "Introduced by" line this script writes into every
-# body — decides whether this PR may reopen or retire it: an id collision
-# with another PR's mirror is named in the log, never adopted.
+# body — decides whether this PR may reopen or retire it, and the line is
+# only worth as much as the pull request it names: a mirror another *open*
+# pull request owns is named in the log and never touched, while one whose
+# owner is gone is adopted (docs/product/pipeline.md#flows-and-statuses —
+# the file is the authority and the mirror is a projection of it, so a
+# task with a file and no reachable mirror is the one state this
+# reconciliation may not leave behind).
 ISSUES=$(gh api "repos/${REPO}/issues?labels=writrun:task&state=all&per_page=100" \
   --paginate \
   --jq '.[] | [.number, .state, ((.labels // []) | map(.name) | join(",")), (.title | @base64), ((.body // "") | @base64)] | @tsv')
@@ -198,8 +203,45 @@ EOF
 }
 
 OWN_LINE="| Introduced by | #${PR} |"
+# `|` is literal in a basic regex, so the line matches as written.
+OWN_RE='^| Introduced by | #[0-9][0-9]* |'
 is_mine() {   # is_mine <body-b64>
   printf '%s' "$1" | b64_decode | grep -qF "$OWN_LINE"
+}
+
+# owner_of <body-b64> — the pull request number the mirror's ownership
+# line names. Nothing when the body carries no such line, which is the
+# same answer as "nobody": a line this script did not write is a line
+# nobody is working behind.
+owner_of() {
+  printf '%s' "$1" | b64_decode \
+    | sed -n 's/^| Introduced by | #\([0-9][0-9]*\) |.*/\1/p' | head -n1
+}
+
+# pr_is_open <number> — does the forge still call that pull request open?
+# **This is the whole ownership question.** A mirror belongs to the pull
+# request that introduced it only while that pull request is live; once it
+# is closed or merged, nobody is working behind the line it left, and a
+# refusal to touch the mirror only means the task never gets one. A number
+# the forge does not know answers the same way, for the same reason.
+pr_is_open() {
+  local st
+  st=$(gh api "repos/${REPO}/pulls/${1}" --jq '.state' 2>/dev/null) || return 1
+  [ "$st" = "open" ]
+}
+
+# adopt_mirror <issue> <body-b64> — rewrite the ownership line to this
+# pull request. Only the line: the body is the mirror's, and adopting is
+# taking responsibility for it, not rewriting what it says.
+adopt_mirror() {
+  local body
+  body=$(printf '%s' "$2" | b64_decode)
+  if printf '%s\n' "$body" | grep -q "$OWN_RE"; then
+    body=$(printf '%s\n' "$body" | sed "s/^| Introduced by | #[0-9][0-9]* |.*/${OWN_LINE}/")
+  else
+    body="${body}"$'\n'"${OWN_LINE}"
+  fi
+  gh api -X PATCH "repos/${REPO}/issues/${1}" -f "body=${body}" >/dev/null
 }
 
 # clear_status <issue> <labels-csv> — a retired mirror keeps every label
@@ -312,21 +354,40 @@ while IFS="$TAB" read -r tid fname priority milestone refs ttitle; do
   istate=$(printf '%s' "$row" | cut -f2)
   ibody=$(printf '%s' "$row" | cut -f3)
 
+  # Three answers to "whose mirror is this", not two. Mine: proceed.
+  # Somebody's, and that somebody is still open: refuse, exactly as
+  # before — two live pull requests must never fight over one mirror.
+  # Nobody's — the introducing pull request closed, merged, or never
+  # existed: adopt it, because refusing leaves the task with no mirror at
+  # all and nothing ever creates one.
+  adopted=false
   if ! is_mine "$ibody"; then
-    echo "WARNING: ${tid} is already mirrored by a different PR — id collision; not touching it."
-    continue
+    owner=$(owner_of "$ibody")
+    if [ -n "$owner" ] && pr_is_open "$owner"; then
+      echo "WARNING: ${tid} is mirrored by #${owner}, which is still open — not touching it."
+      continue
+    fi
+    adopt_mirror "$num" "$ibody"
+    adopted=true
+    if [ -n "$owner" ]; then
+      echo "${tid}: adopted stale mirror #${num} — #${owner} is no longer open."
+    else
+      echo "${tid}: adopted unowned mirror #${num} — no pull request introduced it."
+    fi
   fi
 
   if [ "$open" = "true" ]; then
     # A reopened PR finds its mirrors closed as orphans; they are not
-    # orphans any more.
-    if [ "$istate" = "closed" ]; then
+    # orphans any more. An adopted mirror gets the same treatment
+    # whatever state it was in: its labels were the old owner's, and
+    # this pass is what re-derives them.
+    if [ "$istate" = "closed" ] || [ "$adopted" = "true" ]; then
       # Reopened means open, and open means proposed — the task is back
       # to being offered, not back in the queue.
       gh api -X PATCH "repos/${REPO}/issues/${num}" -f state=open >/dev/null
       gh api -X PUT "repos/${REPO}/issues/${num}/labels" \
         -f "labels[]=writrun:task" -f "labels[]=status:proposed" >/dev/null
-      echo "${tid} reopened with #${PR}"
+      [ "$adopted" = "true" ] || echo "${tid} reopened with #${PR}"
     else
       echo "${tid} already mirrored; nothing to do."
     fi
@@ -334,6 +395,12 @@ while IFS="$TAB" read -r tid fname priority milestone refs ttitle; do
   fi
 
   if [ "$merged" = "true" ]; then
+    # A mirror adopted while closed is reopened here too — the labels
+    # below say where the task is, and a closed issue wearing one of them
+    # says it twice and disagrees with itself.
+    if [ "$adopted" = "true" ] && [ "$istate" = "closed" ]; then
+      gh api -X PATCH "repos/${REPO}/issues/${num}" -f state=open >/dev/null
+    fi
     if is_ready $refs; then
       gh api -X PUT "repos/${REPO}/issues/${num}/labels" \
         -f "labels[]=writrun:task" -f "labels[]=status:ready" >/dev/null

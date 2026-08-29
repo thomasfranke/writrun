@@ -56,6 +56,16 @@ while [ $# -gt 0 ]; do
 done
 case "$method $path" in
   "GET repos/"*"/pulls/"*"/files") cat "$FAKE_GH_DIR/pr_files" 2>/dev/null ;;
+  "GET repos/"*"/pulls/"*)
+    # One pull request's own state. A number nothing declared is one the
+    # forge does not know, and it answers the way the real one does.
+    n=$(printf '%s' "$path" | sed -n 's|.*/pulls/\([0-9][0-9]*\)$|\1|p')
+    if [ -n "$n" ] && [ -e "$FAKE_GH_DIR/pr_${n}_state" ]; then
+      cat "$FAKE_GH_DIR/pr_${n}_state"
+    else
+      echo "gh: Not Found (HTTP 404)" >&2
+      exit 1
+    fi ;;
   "GET repos/"*"/issues?"*)        cat "$FAKE_GH_DIR/issues" 2>/dev/null ;;
   "POST repos/"*"/labels")
     if [ -e "$FAKE_GH_DIR/labels_422" ]; then
@@ -167,14 +177,27 @@ completed: null
 EOF
 }
 
+# forge_pr_state <number> <open|closed> — what the forge says about one
+# pull request. A number no case declares is a number the forge does not
+# know, which is a different fact and answers 404.
+forge_pr_state() {
+  printf '%s\n' "$2" > "$FAKE_GH_DIR/pr_${1}_state"
+}
+
 # forge_issue <number> <state> <labels-csv> <title> [introduced-by-pr] —
 # one row of the forge's writrun:task issue list, its body carrying the
-# ownership line mirror_issues.sh writes and reads back.
+# ownership line mirror_issues.sh writes and reads back. Pass `none` as
+# the fifth argument for a body that carries no ownership line at all —
+# an issue nothing in this machinery wrote.
 forge_issue() {
   local body
-  body=$(printf '%s\n' \
-    "Mirrors a task file, which is the authority." \
-    "| Introduced by | #${5:-7} |")
+  if [ "${5:-}" = "none" ]; then
+    body="Mirrors a task file, which is the authority."
+  else
+    body=$(printf '%s\n' \
+      "Mirrors a task file, which is the authority." \
+      "| Introduced by | #${5:-7} |")
+  fi
   printf '%s\t%s\t%s\t%s\t%s\n' \
     "$1" "$2" "$3" \
     "$(printf '%s' "$4" | b64)" \

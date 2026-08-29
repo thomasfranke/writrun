@@ -79,4 +79,50 @@ none — nothing under `docs/technical/` describes the ownership line.
 
 ## Outcome
 
-(filled when the task completes)
+Done as specified. `mirror_issues.sh` now answers "whose mirror is this"
+with three values instead of two — mine, a live pull request's, and
+nobody's. `owner_of` reads the number out of the `| Introduced by | #N |`
+line, `pr_is_open` asks the forge for that pull request's state, and
+`adopt_mirror` rewrites the ownership line to the current pull request.
+A mirror an open pull request owns is still refused untouched; everything
+else — closed, merged, a number the forge does not know, or no line at
+all — is adopted, relabelled by the pass that would have labelled a fresh
+mirror, and reopened when it was closed.
+
+Six cases in the mirror suite: the two refusal cases that already existed,
+rewritten to declare their owner open, plus adoption of a stale mirror
+(with the unknown-number edge folded in), of an unowned one, of a closed
+one at merge, and a case pinning that this pull request's *own* mirror
+takes none of the new path — no state read, no body rewrite, no
+relabelling.
+
+Three divergences:
+
+- **The refusal's message changed, so two existing cases changed with
+  it.** Step 4 asked the two events to be spelled apart, which the old
+  wording ("id collision; not touching it") could not do once adoption
+  existed — it named a cause that is no longer the reason to refuse. The
+  refusal now names the pull request that is still open, and
+  `id_collision_not_adopted_test.sh` and
+  `foreign_tag_titled_mirror_not_adopted_test.sh` assert that instead.
+  Both also had to declare `#99` open: with the forge silent about it,
+  the mirror is stale by this spec's own rule and the refusal they exist
+  for would never fire. That is the rule working, not a test weakened to
+  fit it.
+
+- **Reopening lives in the two branches that relabel, not in the
+  adoption.** Step 3 lists reopening as part of adopting. Doing it there
+  would reopen a mirror on a pull request that is closed unmerged, which
+  the orphan sweep then closes again in the same run — churn that says
+  two contradictory things to anyone watching the issue. So adoption
+  rewrites the ownership line only; the open path reopens as it already
+  did for its own mirrors, and the merge path gained the same reopen for
+  an adopted mirror that was closed. The observable behaviour is what
+  criterion 4 asks for.
+
+- **An adopted mirror is relabelled even when it was already open.** The
+  spec says "label it as the reconcile pass would have", and the pass
+  only relabels a mirror it had to reopen. The labels on an adopted
+  mirror were the previous owner's, derived from a pull request that no
+  longer carries the task, so they are as stale as the ownership line —
+  re-deriving them is the same act as taking the mirror over.
