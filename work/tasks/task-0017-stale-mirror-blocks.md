@@ -1,6 +1,6 @@
 ---
 id: task-0017
-status: pending
+status: in-progress
 blocked_reason: null
 spec_ref: [spec-0014]
 doc_ref: product/pipeline.md#flows-and-statuses
