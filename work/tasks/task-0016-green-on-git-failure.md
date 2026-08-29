@@ -1,6 +1,6 @@
 ---
 id: task-0016
-status: pending
+status: in-progress
 blocked_reason: null
 spec_ref: [spec-0013]
 doc_ref: product/tasks-and-specs/gates.md
