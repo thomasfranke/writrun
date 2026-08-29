@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 # check_front_matter.sh — every queue file's front matter is canonical.
 #
-# Usage: check_front_matter.sh [task-dir] [spec-dir]
-#   Defaults: work/tasks work/specs. Validates every task-*.md and
-#   spec-*.md in the working tree; READMEs are skipped.
+# Usage: check_front_matter.sh [task-dir] [spec-dir] [docs-dir]
+#   Defaults: work/tasks work/specs docs. Validates every task-*.md and
+#   spec-*.md in the working tree; READMEs are skipped. All three are
+#   relative to the working directory, and deliberately the same base: a
+#   cwd wrong enough to hide `docs/` has already hidden the queue, so the
+#   check finds nothing to complain about rather than complaining about
+#   everything.
 #
 # Every reader in this methodology is line-based on purpose — plain
 # bash/awk/sed, no YAML parser, no runtime dependency. YAML, though,
@@ -41,6 +45,7 @@ set -euo pipefail
 
 TASK_DIR="${1:-work/tasks}"
 SPEC_DIR="${2:-work/specs}"
+DOCS_DIR="${3:-docs}"
 
 status=0
 checked=0
@@ -190,7 +195,19 @@ check_task() {   # check_task <file>
   if [ "$ref" != "null" ]; then
     case "$ref" in
       docs/*) fail "$f" "doc_ref starts with docs/ — paths are written relative to docs/" ;;
-      *.md|*.md#*) ;;
+      *.md|*.md#*)
+        # **The path, never the anchor.** Reverse traceability is only a
+        # grep if the file is really there, and a doc_ref pointing at
+        # nothing passed every check until now. The anchor is left
+        # unverified on purpose: a heading can be renamed without moving
+        # the file, and matching one means parsing markdown, which every
+        # reader in this methodology refuses to do. So this proves the
+        # file, not the section — a limit worth stating rather than a gap
+        # to close later.
+        target="${DOCS_DIR}/${ref%%#*}"
+        [ -f "$target" ] \
+          || fail "$f" "doc_ref '$ref' names no file — ${target} does not exist"
+        ;;
       *) fail "$f" "doc_ref '$ref' is not null or a .md path (optionally with #anchor)" ;;
     esac
   fi
