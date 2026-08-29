@@ -118,7 +118,9 @@ priority: medium
 depends_on: []
 milestone: null
 created: 2026-08-23T00:00:00Z
+queued: null
 completed: null
+merged: null
 ---
 
 # $2
@@ -170,7 +172,9 @@ priority: medium
 depends_on: []
 milestone: null
 created: 2026-08-23T00:00:00Z
+queued: null
 completed: null
+merged: null
 ---
 
 # Task $1

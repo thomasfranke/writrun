@@ -1,7 +1,7 @@
 ---
 id: spec-0006
 task_ref: task-0009
-status: approved
+status: implemented
 created: 2026-08-28T00:00:00Z
 ---
 
@@ -127,4 +127,51 @@ rather than migrated twice."*
 
 ## Outcome
 
-(filled when the task completes)
+Done as specified. `new.sh` writes both fields as `null` in the documented
+order; `check_front_matter.sh` requires them and holds them to the one
+date shape; `stamp_task_dates.sh` writes them from a merge range;
+`writrun-approve.yml` runs it beside the flip and commits `work/` once for
+both. Every task file in the queue was back-filled from the merge that
+earned each date — 26 queue files canonical, and the stamps agree with the
+forge to the second (task-0018 `2026-08-29T02:44:13Z`, task-0014
+`...T17:15:35Z`, task-0012 `...T17:24:03Z`). Six tasks have `merged: null`
+because no such merge exists yet, which is the honest value.
+
+Four divergences, and the first is a correction to this spec:
+
+- **`--date=format-local:`, not `--date=format:`.** Step 4 prescribes
+  `TZ=UTC0 git show -s --format=%cd --date=format:%Y-%m-%dT%H:%M:%SZ`.
+  `format:` renders a commit in **its own** timezone and `TZ` does not
+  reach it, so that expression appends a literal `Z` to a local time. On
+  this repository's merge of #44 it yields `2026-08-28T23:44:13Z` where
+  the forge says `2026-08-29T02:44:13Z` — three hours wrong, and wrong in
+  exactly the way 0049 exists to prevent, since a `Z` that is not UTC
+  makes a lexicographic sort look chronological while being wrong for
+  every entry that crossed an offset. `format-local:` reads `TZ`, so
+  `TZ=UTC0` gives real UTC. The amendment that produced this spec was
+  itself about this class of error and reached for the wrong spelling of
+  the fix; the back-fill was redone with the right one.
+
+- **The recording commit was retitled, and the convention with it.** Step
+  4 makes one commit carry the flip *and* the stamps, which leaves
+  `chore(specs): record approval from the merge` describing half of what
+  it does. `COMMIT_TITLE` is now `chore(queue): record what the merge
+  decided`, and `.writrun/conventions/commits.md` — which points at that
+  variable and tells an adopter to keep the two in step — says so. Not a
+  permanent doc, so the Definition of Done holds.
+
+- **Three test fixtures and nine inline ones gained the fields.** The
+  steps name the queue's own files; they do not mention that
+  `pipeline_lib.sh`'s `task_file`, `mirror_lib.sh`'s `added_task` and
+  `base_task`, and every hand-written task block in the `front_matter`
+  suite are task front matter too. The moment the canonical shape requires
+  a field, a fixture without it tests the wrong rejection — the `bare
+  date` case would have failed for a missing field and still passed, which
+  is a case that no longer proves what it claims.
+
+- **A file missing the field is skipped, not repaired.** Step 3 says only
+  overwrite a `null`; it does not say what to do with a field that is
+  absent entirely. `stamp_task_dates.sh` reports it on stderr and moves
+  on, because inserting a field is a shape decision and
+  `check_front_matter.sh` is what owns the shape — a stamper that quietly
+  fixed malformed files would hide exactly what the check exists to name.

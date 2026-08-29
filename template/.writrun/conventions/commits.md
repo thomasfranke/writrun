@@ -27,6 +27,8 @@ and by `git log --grep`, and neither is a strict parser.
 
 - Trivial work is a commit, never a task (principle 6).
 
-The one commit the machinery makes — `writrun approve`'s recording flip —
-has its title as a variable at the top of `writrun-approve.yml`; edit it
-to match whatever this file says.
+The one commit the machinery makes — `writrun approve` recording what a
+merge decided: the specs it approved, and the `queued`/`merged` dates it
+earned — has its title as a variable in `writrun-approve.yml`; edit it to
+match whatever this file says. It is one commit because it records one
+event.

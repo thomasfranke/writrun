@@ -1,6 +1,6 @@
 ---
 id: task-0009
-status: pending
+status: completed
 blocked_reason: null
 spec_ref: [spec-0006]
 doc_ref: technical/README.md#task-schema
@@ -8,7 +8,9 @@ priority: medium
 depends_on: []
 milestone: null
 created: 2026-08-28T00:00:00Z
-completed: null
+queued: 2026-08-28T14:10:59Z
+completed: 2026-08-29T17:34:12Z
+merged: null
 ---
 
 # Stamp queued and merged on the task
