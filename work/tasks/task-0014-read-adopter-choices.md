@@ -1,6 +1,6 @@
 ---
 id: task-0014
-status: in-progress
+status: completed
 blocked_reason: null
 spec_ref: [spec-0011]
 doc_ref: technical/README.md#settings
@@ -8,7 +8,7 @@ priority: medium
 depends_on: [task-0006, task-0008, task-0010, task-0013]
 milestone: null
 created: 2026-08-28T00:00:00Z
-completed: null
+completed: 2026-08-29T03:27:50Z
 ---
 
 # Read adopter choices from a settings file
