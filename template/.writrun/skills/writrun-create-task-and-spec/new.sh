@@ -65,15 +65,36 @@ FORGE_PATHS=""
 # added *or* modified. Coarser than the collision check downstream, and
 # deliberately: a generator needs an upper bound, not an accusation. A
 # modified queue file's id is already on the branch this checkout reads,
-# so folding it in can only agree with what the tree said — while the one
-# extra call per pull request that `status` would cost buys nothing.
+# so folding it in can only agree with what the tree said.
+#
+# The open numbers, then each pull request's file list — the same
+# question check_unique_ids.sh asks, minus the per-file `status` it needs
+# and this does not. One call per open pull request instead of one call
+# total, because the single `gh pr list --json files` this replaced was
+# cheaper and wrong: that field stops at 100 files per pull request and
+# says nothing when it does, so a larger diff hides every queue file it
+# adds past the cut. spec-0010's Outcome called the coarser question
+# "strictly safe"; the cap is the case that argument missed.
+#
+# All or nothing: a call that fails leaves the view local rather than
+# quietly narrow, since a scan that under-reports without saying so is
+# the exact failure the uniqueness rule exists to prevent.
 forge_scan() {
   command -v gh >/dev/null 2>&1 || return 0
-  local paths
+  local numbers paths files n
   # gh defaults to 30 open pull requests, and the id this misses is
   # exactly the one worth seeing.
-  paths=$(gh pr list --state open --limit 200 --json files \
-    --jq '.[].files[]?.path' 2>/dev/null) || return 0
+  numbers=$(gh pr list --state open --limit 200 --json number \
+    --jq '.[].number' 2>/dev/null) || return 0
+  paths=""
+  for n in $numbers; do
+    # --paginate is the point: a pull request's own file list is paged
+    # too, and the queue file may sit on any page of it.
+    files=$(gh api "repos/{owner}/{repo}/pulls/${n}/files" --paginate \
+      --jq '.[].filename' 2>/dev/null) || return 0
+    paths="${paths}${files}
+"
+  done
   FORGE_VIEW=forge
   FORGE_PATHS="$paths"
   return 0

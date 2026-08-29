@@ -1,7 +1,7 @@
 ---
 id: spec-0015
 task_ref: task-0018
-status: approved
+status: implemented
 created: 2026-08-28T00:00:00Z
 ---
 
@@ -79,4 +79,63 @@ describe how the generator asks.
 
 ## Outcome
 
-(filled when the task completes)
+Done as specified. `forge_scan` asks `gh pr list --json number` for the
+open pull requests, then `gh api repos/{owner}/{repo}/pulls/N/files
+--paginate --jq '.[].filename'` for each one's paths. The 100-file cap
+that hid a 168-file pull request's whole queue contribution is gone: the
+generator now mints above a queue file wherever it sits in a diff.
+
+Four cases in the `new` suite, one per criterion — a queue file on the
+105th file of a pull request, several open pull requests folded in at
+once (tasks and specs numbered apart), an unavailable forge, and an empty
+open list. The stub was checked against the defect rather than only
+against the fix: with `--paginate` removed from the call the page case
+fails and the other three still pass, which is what makes it a test of
+this change and not of the stub.
+
+`spec-0010`'s Outcome argued the coarser question — one
+`gh pr list --json files` for every path — was "strictly safe". It is
+safe about *modified* files, which is what that paragraph was reasoning
+about, and wrong about completeness: the field it used stops at 100 files
+per pull request without saying so. The correction is recorded here and
+in `forge_scan`'s comment; that spec's body is history and stays as
+written.
+
+Four divergences:
+
+- **A partial forge answer is treated as no answer.** Criterion 3 names
+  the forge not answering; it does not say what a scan that answers for
+  three pull requests and fails on the fourth should report. The scan is
+  all or nothing — any failed call leaves `FORGE_VIEW` local and
+  `FORGE_PATHS` empty. Keeping the paths already collected would mint
+  higher, but the mint report would then claim a forge-wide view it did
+  not have, and a scan that under-reports its own narrowness is the whole
+  failure this task exists for.
+
+- **The endpoint is addressed with `gh api`'s `{owner}/{repo}`
+  placeholders**, where `check_unique_ids.sh` interpolates the
+  `owner/repo` it is passed. The generator takes no such argument and
+  should not grow one for this: it already infers the repository the same
+  way `gh pr list` does, and if that inference fails, so did the call
+  that precedes it.
+
+- **The stub had to model the page boundary, not just the per-PR list.**
+  Step 5 asked for a per-pull-request file list and a case spanning more
+  than one page. A list the stub always serves whole cannot express that
+  case — nothing would distinguish a paged call from an unpaged one. So
+  `stub_forge` serves `$FORGE_PAGE` (100, GitHub's own) entries unless
+  `--paginate` is passed, and it tells the two consumers apart by their
+  jq expression, since both now read the same endpoint for different
+  halves of it.
+
+- **Two bare `created` dates were widened here, which this scope did not
+  cover.** `task-0014` and `spec-0011` merged with PR #29 after the
+  timestamp migration and were never migrated — the concurrent change
+  `spec-0008`'s Scope predicted. `make tests` had been red on `main`
+  since, on `repository_queue_is_canonical_test.sh` and on the release
+  path that runs the suite, so this spec's Definition of Done was
+  unreachable without touching them. Offered a separate fix PR or a
+  fold-in, the maintainer chose the fold-in; it rides as its own untagged
+  `fix(schema):` commit. Widening `spec-0011` edits a body under an
+  approval, so it returns to `draft` in that commit and
+  `flip_approved_specs.sh` flips it back on the merge.
