@@ -1,7 +1,7 @@
 ---
 id: spec-0012
 task_ref: task-0015
-status: approved
+status: implemented
 created: 2026-08-28T00:00:00Z
 ---
 
@@ -67,4 +67,35 @@ statement checkable.
 
 ## Outcome
 
-(filled when the task completes)
+Done as specified. `check_task` resolves the path part of a non-null
+`doc_ref` against `docs/` and fails when it is not a file, naming both the
+value as written and the path it resolved to — the fix is repointing, and
+that needs the old value visible. The anchor is left unverified, and the
+script says why where the rule lives rather than only here.
+
+Nine assertions across two case files in the `front_matter` suite: the
+four criteria, plus the two edge cases the spec named and one it did not
+(an anchor on a path that is missing). **The repository's own 30 queue
+files pass**, which is the part worth recording — the rule was written
+against a queue that had just been rearranged by the level split, and
+every `doc_ref` in it survived, including the one repointed by hand when
+`product/pipeline.md` was split into chapters.
+
+Two divergences:
+
+- **`docs` became a third positional argument** rather than a constant.
+  The edge case asks that a wrong cwd not turn every `doc_ref` into a
+  failure, and says to prefer the base the rest of the script uses. That
+  base is the working directory, since `work/tasks` and `work/specs` are
+  already relative to it — so the answer is consistency, not cleverness:
+  a cwd wrong enough to hide `docs/` has already hidden the queue, and the
+  script then checks nothing rather than failing everything. Making it an
+  argument states that base instead of burying it.
+
+- **A directory named `chapter` is caught by the older rule, not this
+  one.** The spec's first edge case expects a directory to be rejected as
+  "not a file". It is — but only when it is named like one
+  (`folder.md`); a plain directory name has no `.md` suffix and the shape
+  rule rejects it first, with its own message. Both cases are covered and
+  both messages are asserted, because which rule speaks is what a reader
+  fixing the file will act on.
