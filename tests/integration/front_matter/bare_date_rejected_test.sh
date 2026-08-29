@@ -17,7 +17,9 @@ priority: medium
 depends_on: []
 milestone: null
 created: 2026-08-23
+queued: null
 completed: null
+merged: null
 ---
 
 # A task carrying the old shape

@@ -8,7 +8,9 @@ priority: high
 depends_on: []
 milestone: null
 created: 2026-08-28T00:00:00Z
+queued: 2026-08-28T14:37:44Z
 completed: 2026-08-28T00:00:00Z
+merged: 2026-08-28T20:14:25Z
 ---
 
 # Keep queue ids unique across open pull requests

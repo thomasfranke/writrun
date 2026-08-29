@@ -8,7 +8,9 @@ priority: medium
 depends_on: [task-0006, task-0008, task-0010, task-0013]
 milestone: null
 created: 2026-08-28T00:00:00Z
+queued: 2026-08-28T23:01:30Z
 completed: 2026-08-29T03:27:50Z
+merged: 2026-08-29T17:15:35Z
 ---
 
 # Read adopter choices from a settings file

@@ -98,13 +98,40 @@ jobs:
           specs=$(printf '%s\n' "$out" | sed -n 's/^approved //p' | tr '\n' ' ')
           echo "specs=${specs}" >> "$GITHUB_OUTPUT"
 
+      - name: Stamp the dates this merge earned
+        # The machinery's two dates, written where the merge can be seen
+        # — a hand-written one would have to be typed before the event it
+        # records (docs/product/pipeline.md#flows-and-statuses). Same
+        # range the flip used, and the merge commit's **own** time rather
+        # than the moment this workflow happened to run, so the queue
+        # orders by what happened and not by how busy the runners were.
+        id: stamp
+        env:
+          MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          set -euo pipefail
+          # `format-local`, not `format`: the latter renders the commit
+          # in **its own** timezone and would append a `Z` to a local
+          # time — a timestamp that sorts wrong by exactly the offset it
+          # lies about, which is the failure 0049 exists to prevent.
+          when=$(TZ=UTC0 git show -s --format=%cd \
+            --date=format-local:%Y-%m-%dT%H:%M:%SZ "${MERGE_SHA}")
+          out=$(bash .writrun/scripts/stamp_task_dates.sh \
+            "${MERGE_SHA}~1...${MERGE_SHA}" "$when")
+          printf '%s\n' "$out"
+          if [ -n "$out" ]; then
+            echo "changed=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=0" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Commit
-        if: steps.flip.outputs.changed == '1'
+        if: steps.flip.outputs.changed == '1' || steps.stamp.outputs.changed == '1'
         # COMMIT_TITLE is the adopter's to edit: it only has to satisfy the
         # adopting project's own commit convention — nothing in WritRun
         # parses commit messages.
         env:
-          COMMIT_TITLE: "chore(specs): record approval from the merge"
+          COMMIT_TITLE: "chore(queue): record what the merge decided"
           BASE_REF: ${{ github.event.pull_request.base.ref }}
           MERGED_BY: ${{ github.event.pull_request.merged_by.login }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -112,7 +139,11 @@ jobs:
           set -euo pipefail
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add work/specs
+          # `work/` and not `work/specs`: the flip and the stamps are one
+          # commit, because they record one event — the merge that just
+          # happened — and two commits would let a reader believe the
+          # queue passed through a state where only half of it was true.
+          git add work
           git commit \
             -m "$COMMIT_TITLE" \
             -m "Assent given by @${MERGED_BY} merging #${PR_NUMBER}."

@@ -18,7 +18,9 @@ priority: medium
 depends_on: []
 milestone: null
 created: 2026-08-23T09:14:00+02:00
+queued: null
 completed: null
+merged: null
 ---
 
 # A task stamped with an offset

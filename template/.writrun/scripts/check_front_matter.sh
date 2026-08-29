@@ -153,7 +153,7 @@ check_task() {   # check_task <file>
     return 0
   fi
   check_shape "$f" "$block"
-  for field in id status blocked_reason spec_ref doc_ref priority depends_on milestone created completed; do
+  for field in id status blocked_reason spec_ref doc_ref priority depends_on milestone created queued completed merged; do
     require_once "$f" "$block" "$field"
   done
   check_id "$f" "$block"
@@ -195,8 +195,13 @@ check_task() {   # check_task <file>
     esac
   fi
 
+  # Four dates, one shape. `created` is the only one a task always has;
+  # the machinery's two and `completed` are null until the event each
+  # records happens (docs/product/pipeline.md#flows-and-statuses).
   check_date "$f" "$block" created strict
+  check_date "$f" "$block" queued null-ok
   check_date "$f" "$block" completed null-ok
+  check_date "$f" "$block" merged null-ok
   return 0
 }
 
