@@ -31,7 +31,23 @@ permissions:
   pull-requests: read
 
 jobs:
+  gate:
+    name: adoption level
+    runs-on: ubuntu-latest
+    # The level gates the whole workflow rather than each job, and it is a
+    # job rather than a first step so a project below the level starts no
+    # runner at all. It always succeeds: a job that did not run is not a
+    # failure, and level_gate.sh says which of the two happened.
+    outputs:
+      run: ${{ steps.gate.outputs.run }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: gate
+        run: bash .writrun/scripts/level_gate.sh github-issues
+
   mirror:
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
     steps:
       # Base branch only — never the PR's code (see the header note).
