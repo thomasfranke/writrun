@@ -1,6 +1,6 @@
 ---
 id: task-0015
-status: in-progress
+status: completed
 blocked_reason: null
 spec_ref: [spec-0012]
 doc_ref: technical/README.md#task-schema
@@ -9,7 +9,7 @@ depends_on: []
 milestone: null
 created: 2026-08-28T00:00:00Z
 queued: 2026-08-29T18:51:36Z
-completed: null
+completed: 2026-08-29T19:14:39Z
 merged: null
 ---
 
