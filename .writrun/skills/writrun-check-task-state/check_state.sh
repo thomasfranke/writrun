@@ -49,6 +49,17 @@ if ! CHANGED=$(git diff --name-only "$DIFF_RANGE" 2>"$err_tmp"); then
 fi
 rm -f "$err_tmp"
 
+# **A range that selects no commits is not a change that moved nothing.**
+# Without branches — which is every project at level `tasks-and-specs` —
+# `main...HEAD` is empty by construction, so this check would print OK
+# having read nothing and vouched for it. Only the range forms are
+# tested: a bare ref means "against the working tree", where "no commits
+# selected" says nothing (spec-0013).
+RANGE_COMMITS=""
+case "$DIFF_RANGE" in
+  *..*) RANGE_COMMITS=$(git rev-list --count "$DIFF_RANGE" 2>/dev/null || true) ;;
+esac
+
 # The base side of the range — what `git diff` itself compares against:
 # the merge base for the three-dot form, the left rev for two-dot, the
 # rev itself when the diff is against the working tree.
@@ -151,6 +162,13 @@ for f in $CHANGED; do
 done
 
 if [ "$status" -eq 0 ]; then
+  if [ "$RANGE_COMMITS" = "0" ]; then
+    echo "The range ${DIFF_RANGE} selects no commits — nothing was checked." >&2
+    echo "That is not a pass. A check that read nothing has vouched for" >&2
+    echo "nothing, and reporting it as clean is the failure this refusal" >&2
+    echo "exists to prevent. Name the range the change actually spans." >&2
+    exit 3
+  fi
   echo "OK — no forbidden lifecycle transition in ${DIFF_RANGE}"
 fi
 

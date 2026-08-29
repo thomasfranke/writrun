@@ -63,7 +63,11 @@ case "$RANGE" in
   *...*)
     left="${RANGE%%...*}"
     right="${RANGE##*...}"
-    BASE=$(git merge-base "${left:-HEAD}" "${right:-HEAD}")
+    if ! BASE=$(git merge-base "${left:-HEAD}" "${right:-HEAD}" 2>&1); then
+      echo "git merge-base ${left:-HEAD} ${right:-HEAD} failed:" >&2
+      printf '%s\n' "$BASE" | head -n 2 >&2
+      exit 3
+    fi
     ;;
   *..*) BASE="${RANGE%%..*}" ;;
   *)    BASE="$RANGE" ;;
@@ -93,14 +97,40 @@ queue_id() {
 
 # --- what this change claims ---------------------------------------------
 
+# git_read <label> <git-args...> — runs git and leaves its stdout in
+# GIT_OUT. On failure it prints what git said and exits 3, because a
+# check that could not read its input must never report the empty result
+# as a clean one: `$(git … || true)` yields exactly the same empty string
+# whether nothing matched or nothing ran, and two of these checks are
+# gates (spec-0013).
+#
+# **Never call this inside a command substitution.** The `exit` would end
+# only the subshell, and the caller would go on reading the empty value
+# this exists to prevent — the very shape of the bug being removed.
+GIT_OUT=""
+git_read() {
+  local label="$1" err
+  shift
+  err=$(mktemp "${TMPDIR:-/tmp}/writrun-git.XXXXXX")
+  if ! GIT_OUT=$(git "$@" 2>"$err"); then
+    echo "${label} failed:" >&2
+    head -n 2 "$err" >&2
+    rm -f "$err"
+    exit 3
+  fi
+  rm -f "$err"
+}
+
 mine=""
+git_read "git diff --name-only --diff-filter=A ${RANGE} -- work/tasks work/specs" \
+  diff --name-only --diff-filter=A "$RANGE" -- 'work/tasks/*.md' 'work/specs/*.md'
 while IFS= read -r f; do
   [ -n "$f" ] || continue
   k=$(queue_id "$f")
   [ -n "$k" ] || continue
   mine="${mine}${k}${TAB}${f}"$'\n'
 done <<EOF
-$(git diff --name-only --diff-filter=A "$RANGE" -- 'work/tasks/*.md' 'work/specs/*.md' || true)
+$GIT_OUT
 EOF
 
 if [ -z "$mine" ]; then
@@ -111,13 +141,15 @@ fi
 # --- what the base branch already holds -----------------------------------
 
 held=""
+git_read "git ls-tree -r --name-only ${BASE} -- work/tasks work/specs" \
+  ls-tree -r --name-only "$BASE" -- work/tasks work/specs
 while IFS= read -r f; do
   [ -n "$f" ] || continue
   k=$(queue_id "$f")
   [ -n "$k" ] || continue
   held="${held}${k}${TAB}${f}"$'\n'
 done <<EOF
-$(git ls-tree -r --name-only "$BASE" -- work/tasks work/specs 2>/dev/null || true)
+$GIT_OUT
 EOF
 
 # --- what other open pull requests claim ----------------------------------

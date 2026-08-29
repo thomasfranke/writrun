@@ -50,7 +50,11 @@ case "$RANGE" in
   *...*)
     left="${RANGE%%...*}"
     right="${RANGE##*...}"
-    BASE=$(git merge-base "${left:-HEAD}" "${right:-HEAD}")
+    if ! BASE=$(git merge-base "${left:-HEAD}" "${right:-HEAD}" 2>&1); then
+      echo "git merge-base ${left:-HEAD} ${right:-HEAD} failed:" >&2
+      printf '%s\n' "$BASE" | head -n 2 >&2
+      exit 3
+    fi
     ;;
   *..*) BASE="${RANGE%%..*}" ;;
   *)    BASE="$RANGE" ;;
@@ -85,20 +89,48 @@ stamp() {
   echo "stamped ${field} on ${f}"
 }
 
+# git_read <label> <git-args...> — runs git and leaves its stdout in
+# GIT_OUT. On failure it prints what git said and exits 3, because a
+# check that could not read its input must never report the empty result
+# as a clean one: `$(git … || true)` yields exactly the same empty string
+# whether nothing matched or nothing ran, and two of these checks are
+# gates (spec-0013).
+#
+# **Never call this inside a command substitution.** The `exit` would end
+# only the subshell, and the caller would go on reading the empty value
+# this exists to prevent — the very shape of the bug being removed.
+GIT_OUT=""
+git_read() {
+  local label="$1" err
+  shift
+  err=$(mktemp "${TMPDIR:-/tmp}/writrun-git.XXXXXX")
+  if ! GIT_OUT=$(git "$@" 2>"$err"); then
+    echo "${label} failed:" >&2
+    head -n 2 "$err" >&2
+    rm -f "$err"
+    exit 3
+  fi
+  rm -f "$err"
+}
+
 # A task added by the range entered the queue at this merge — and if it
 # arrived already completed (tracked work shipped with its own change),
 # the same merge took its work too.
+git_read "git diff --name-only --diff-filter=A ${RANGE} -- work/tasks" \
+  diff --name-only --diff-filter=A "$RANGE" -- 'work/tasks/*.md'
 while IFS= read -r f; do
   [ -n "$f" ] || continue
   [ -f "$f" ] || continue
   stamp "$f" queued
   if [ "$(fm_field status < "$f")" = "completed" ]; then stamp "$f" merged; fi
 done <<EOF
-$(git diff --name-only --diff-filter=A "$RANGE" -- 'work/tasks/*.md' || true)
+$GIT_OUT
 EOF
 
 # A task the range modified is stamped only for the transition it
 # actually made: already completed at the base is not a completion here.
+git_read "git diff --name-only --diff-filter=M ${RANGE} -- work/tasks" \
+  diff --name-only --diff-filter=M "$RANGE" -- 'work/tasks/*.md'
 while IFS= read -r f; do
   [ -n "$f" ] || continue
   [ -f "$f" ] || continue
@@ -107,7 +139,7 @@ while IFS= read -r f; do
   if [ "$was" = "completed" ]; then continue; fi
   stamp "$f" merged
 done <<EOF
-$(git diff --name-only --diff-filter=M "$RANGE" -- 'work/tasks/*.md' || true)
+$GIT_OUT
 EOF
 
 exit 0

@@ -1,6 +1,6 @@
 ---
 id: task-0016
-status: pending
+status: completed
 blocked_reason: null
 spec_ref: [spec-0013]
 doc_ref: product/tasks-and-specs/gates.md
@@ -9,7 +9,7 @@ depends_on: []
 milestone: null
 created: 2026-08-28T00:00:00Z
 queued: 2026-08-29T18:51:36Z
-completed: null
+completed: 2026-08-29T19:09:57Z
 merged: null
 ---
 
