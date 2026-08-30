@@ -32,7 +32,9 @@ find "$TESTS_DIR" -name '*_test.sh' -print | sed 's|/[^/]*$||' | sort -u \
   echo "${dir#"$TESTS_DIR"/}"
   for case_file in "$dir"/*_test.sh; do
     [ -e "$case_file" ] || continue
-    bash "$case_file"
+    # stdin closed: the discovery list feeds this loop through a pipe,
+    # and a case that reads stdin would silently eat the rest of it.
+    bash "$case_file" < /dev/null
     echo "case:$?" >> "$TESTS_DIR/.tally"
   done
   echo
