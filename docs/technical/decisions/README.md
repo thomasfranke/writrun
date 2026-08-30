@@ -72,3 +72,5 @@ appending a row.
 | [0050](tasks-and-specs/0050-the-subject-slug-is-chosen.md) | 2026-08-28 | `tasks-and-specs` | the filename's subject slug is chosen, not sliced off the title. |
 | [0051](pull-requests/0051-an-id-is-unique-across-open-prs.md) | 2026-08-28 | `pull-requests` | an id is unique across open pull requests, not just across a branch. |
 | [0052](tasks-and-specs/0052-settings-carry-the-choice.md) | 2026-08-28 | `tasks-and-specs` | adoption is levelled, and settings.json carries which level. |
+| [0053](tasks-and-specs/0053-settings-at-the-root.md) | 2026-08-30 | `tasks-and-specs` | settings move to WritRun's root and section by stage — reversing part of 0052. |
+| [0054](tasks-and-specs/0054-the-adopter-governs-the-agent.md) | 2026-08-30 | `tasks-and-specs` | the adopter's settings govern the agent's git conduct. |
