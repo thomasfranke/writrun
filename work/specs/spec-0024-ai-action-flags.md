@@ -1,7 +1,7 @@
 ---
 id: spec-0024
 task_ref: task-0020
-status: approved
+status: implemented
 created: 2026-08-30T13:16:11Z
 ---
 
@@ -103,4 +103,20 @@ platform's harness owns its own ask.
 
 ## Outcome
 
-_(fill after execution)_
+Built as specified: `"auto_commit": true` sits in `"stage_1"` and
+`"auto_pr": true` in `"stage_2"`, both documented as defaults in
+`read_setting.sh`, both value-checked as `true`/`false` and
+present-always in `check_settings.sh`. `commits.md` and `prs.md` carry
+the ask-first contract: the agent composes the whole message, or the
+complete title and body, presents it, and acts only on an explicit yes,
+per action and never as a session-wide grant — and the flags outrank the
+agent platform's own autonomy mode, because a setting that only bound an
+agent already asking would control nothing. `prs.md` states that
+`auto_pr` holds the draft that reports a task as taken too: the flag
+gates the action, not the reason for it. The machinery's own commit and
+every workflow-driven write stay untouched, stated in `commits.md` where
+that commit is already described.
+
+Divergence: none. The conduct criteria are agent-bound prose
+(decision 0028); the suite proves the keys are read, checked and
+mirrored, not that an agent obeyed them.

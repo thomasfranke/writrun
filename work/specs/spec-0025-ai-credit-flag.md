@@ -1,7 +1,7 @@
 ---
 id: spec-0025
 task_ref: task-0020
-status: approved
+status: implemented
 created: 2026-08-30T13:16:14Z
 ---
 
@@ -92,4 +92,14 @@ adopter's git configuration, never this flag's.
 
 ## Outcome
 
-_(fill after execution)_
+Built as specified: `"credit_ai": true` sits in `"stage_1"`, defaulted in
+`read_setting.sh`, value-checked and present-always in
+`check_settings.sh`. `commits.md` states the no-credit contract for commit
+messages — no co-author trailer, no session URL, no tool mention — and
+that an instruction from the agent's own platform to append one yields to
+this file, the same precedence `auto_commit` states. `prs.md` carries the
+same for a pull request body. Authorship and committer identity stay git
+configuration, nobody else's commits are touched, and nothing rewrites
+history: the flag binds from the write after the flip.
+
+Divergence: none.
