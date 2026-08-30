@@ -1,8 +1,8 @@
 ---
 id: task-0020
-status: ready
+status: in-progress
 blocked_reason: null
-taken_by: null
+taken_by: thomasfranke
 spec_ref: [spec-0022, spec-0023, spec-0024, spec-0025]
 doc_ref: technical/README.md#settings
 priority: medium
