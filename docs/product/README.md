@@ -23,9 +23,9 @@ of those nouns are redefined downstream:
 | 3 | [`concepts/technical-doc.md`](concepts/technical-doc.md) | What a technical doc is, and the link-don't-restate rule. |
 | 4 | [`concepts/task.md`](concepts/task.md) | What a task is: the request, its two invariants (identity ≠ order, no technical detail). |
 | 5 | [`concepts/spec.md`](concepts/spec.md) | What a spec is: the elaboration, its lifecycle, the approval gate, the doc-delta contract. |
-| 6 | [`tasks-and-specs/`](tasks-and-specs/README.md) | The docs → task → spec → code flow and where humans gate it. True at every level. |
-| 7 | [`pull-requests/`](pull-requests/README.md) | What branches, pull requests and CI add — level `pull-requests`. |
-| 8 | [`github-issues/`](github-issues/README.md) | What the GitHub Issues mirror adds — level `github-issues`. |
+| 6 | [`tasks-and-specs/`](tasks-and-specs/README.md) | The docs → task → spec → code flow and where humans gate it. Stage 1 — true at every stage. |
+| 7 | [`pull-requests/`](pull-requests/README.md) | What branches, pull requests and CI add — Stage 2. |
+| 8 | [`github-issues/`](github-issues/README.md) | What the GitHub Issues mirror adds — Stage 3. |
 | 9 | [`adoption.md`](adoption.md) | What a project must have, at minimum, to claim adoption. |
 
 Every chapter above traces to a concrete case, not an invented example: the

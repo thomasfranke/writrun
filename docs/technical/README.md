@@ -41,8 +41,9 @@ not about folder names.
 ```yaml
 ---
 id: task-0005                      # immutable identity, never an ordering
-status: pending                    # pending | in-progress | blocked | completed
+status: backlog                    # backlog | ready | in-progress | in-review | done — machinery-written; blocked | dropped — hand-written
 blocked_reason: null               # required non-null when status: blocked; null otherwise
+taken_by: null                     # machinery only: login of the open PR's author; null when nobody has it
 spec_ref: [spec-0004]              # list — zero, one, or many specs
 doc_ref: product/concepts/task.md#two-invariants   # any path under docs/; null only when the task originates in code or machinery, not in a doc
 priority: medium                   # high | medium | low
@@ -110,12 +111,13 @@ Two different kinds of "can't start", kept structurally apart:
 
 - **`depends_on`** — blocked *by another task in this queue*. Resolves itself:
   the selection algorithm skips the task until every dependency is
-  `completed`. Machine-checkable, no human judgement needed.
+  `done`. Machine-checkable, no human judgement needed.
 - **`status: blocked`** — blocked *by something outside the queue*: an
   unanswered decision, an upstream release, a spike whose result could
   invalidate the plan. Requires a non-null `blocked_reason` stating what
   unblocks it. Only a human (or an agent explicitly told the blocker is gone)
-  moves it back to `pending`.
+  moves it back — to `ready` when its every spec is `approved`, to
+  `backlog` otherwise.
 
 A task never uses `blocked` for something `depends_on` can express — if the
 blocker is a task, it's a dependency.
@@ -203,43 +205,43 @@ generates this form, so the contract costs nothing on the happy path.
 ## Settings
 
 `.writrun/conventions/settings.json` holds the choices
-[Adoption](../product/adoption.md#three-levels) leaves open — values only, no
+[Adoption](../product/adoption.md#three-stages) leaves open — values only, no
 prose — read by both the machinery and the agents. It sits in `conventions/`
 because that folder is the project's from adoption onward and `writ update`
 never touches it.
 
 ```json
 {
-  "level": "github-issues",
+  "stage": 3,
   "pr_title_style": "conventional"
 }
 ```
 
 | Key | Values | Read by |
 |---|---|---|
-| `level` | `tasks-and-specs` / `pull-requests` / `github-issues` | the workflows, and agents |
+| `stage` | `1` / `2` / `3` | the workflows, and agents |
 | `pr_title_style` | `conventional` / `bracketed` | agents only |
 
 **Every key is present, always** — the same reason the front matter carries
 `null` fields rather than omitting them: a reader sees the whole
 configuration without knowing the defaults.
 
-### `level`
+### `stage`
 
-Ordered and cumulative, so one value rather than three switches. Each level
+Ordered and cumulative, so one value rather than three switches. Each stage
 stops the machinery the one below it does not need:
 
-- `tasks-and-specs` — no workflow runs. The four scripts still run as ordinary
-  commands, so every guarantee they carry survives; what stops is the
-  *enforcement*, which a person then performs deliberately.
-- `pull-requests` — `writrun check` and `writrun approve` run.
-- `github-issues` — adds `writrun issues` and `writrun progress`.
+- `1` (tasks and specs) — no workflow runs. The four scripts still run as
+  ordinary commands, so every guarantee they carry survives; what stops is
+  the *enforcement*, which a person then performs deliberately.
+- `2` (pull requests) — `writrun check` and `writrun approve` run.
+- `3` (GitHub issues) — adds `writrun issues` and `writrun progress`.
 
-**The four human gates are core at every level.** A gate asks for *a human
+**The four human gates are core at every stage.** A gate asks for *a human
 decision, recorded*, never for a pull request specifically
-([gates](../product/tasks-and-specs/gates.md)). At `tasks-and-specs` a person performs each
+([gates](../product/tasks-and-specs/gates.md)). At Stage 1 a person performs each
 directly and names how in their `AGENTS.md`, which Adoption already requires.
-No check can verify that, which is why it is stated here: `level: tasks-and-specs` is
+No check can verify that, which is why it is stated here: `stage: 1` is
 not permission to drop them.
 
 ### `pr_title_style`
@@ -268,7 +270,8 @@ multi-task pull request to reporting one task, silently.
 JSON permits nesting, arrays and free-form whitespace; a line-based reader
 sees none of it and would misread in silence. So the file is restricted to
 what such a reader can see — a flat object, one `"key": value` per line,
-two-space indent, values `true`, `false`, or a double-quoted string — and
+two-space indent, values `true`, `false`, an unquoted integer, or a
+double-quoted string — and
 `check_settings.sh` enforces it. The subset is ordinary JSON that any editor
 or `jq` reads.
 
@@ -283,7 +286,7 @@ Two things the file may never do: carry a key that switches off anything in
 Adoption's **core** list, and carry reasoning — that stays in
 `.writrun/conventions/*.md`, and nothing is stated in both.
 
-**A setting controls; it never merely describes.** `level: tasks-and-specs` means the
+**A setting controls; it never merely describes.** `stage: 1` means the
 workflows stop, not that a reader is told they were deleted. The alternative
 is the failure [`0041`](decisions/0041-the-issues-mirror-is.md) named when it
 rejected a flag: two ways to say one thing, free to disagree.
@@ -292,28 +295,37 @@ rejected a flag: two ways to say one thing, free to disagree.
 
 Deterministic, independent of file layout on disk:
 
-0. **Resume before selecting.** If any task has `status: in-progress` with no
-   active owner (for a single-agent setup: not owned by this session), resume
-   it — do not pick new work while started work sits unfinished. Only when no
-   resumable task exists does selection proceed.
+0. **Resume before selecting.** If any task has `status: in-progress` or
+   `in-review` with no open pull request working it (the machinery keeps
+   the two in step with the forge, so a lasting mismatch is work someone
+   abandoned without the forge hearing about it — for a single-agent
+   setup: not owned by this session), resume it — do not pick new work
+   while started work sits unfinished. Only when no resumable task
+   exists does selection proceed.
 1. Read the front-matter of every task.
-2. Keep those with `status: pending` — `blocked` is excluded here by
-   construction, with no extra rule needed.
-3. Keep those whose every `depends_on` entry has `status: completed`.
-4. Keep those whose every `spec_ref` entry has `status: approved` or
-   `implemented`. A task with a spec still in `draft` is not authorized
-   work: the approval gate has not been passed, so selecting it would hand
-   an agent a brief nobody assented to. A task with an empty `spec_ref`
-   passes this step by construction.
+2. Keep those with `status: ready` — `backlog`, `blocked` and the
+   in-flight and terminal states are excluded here by construction, with
+   no extra rule needed.
+3. Keep those whose every `depends_on` entry has `status: done`.
+4. Confirm every `spec_ref` entry holds `status: approved` or
+   `implemented` — at Stage 2+ the machinery already wrote `ready` from
+   exactly that fact, so this is a cross-check; at Stage 1, where
+   statuses move by hand, it is the gate itself. A task with a spec
+   still in `draft` is not authorized work: the approval gate has not
+   been passed, so selecting it would hand an agent a brief nobody
+   assented to. A task with an empty `spec_ref` passes this step by
+   construction.
 5. Sort by `priority` — `high`, then `medium`, then `low`.
 6. Break ties by `created` ascending, then by `id` ascending.
 7. Take the first. Read every entry in `spec_ref` (if any) and `doc_ref`
    (if set) before writing any code.
 
-Steps 2 and 4 are what "ready for development" means, and it is derived, never
-stored: a task is ready when it is `pending` and every spec it references is
-`approved`. No status records it, because a status that duplicates a derivable
-fact is a status that will eventually disagree with it.
+`ready` is stored, and steps 2–4 still agree by construction: the
+machinery derives the flip from the same facts step 4 re-checks
+([statuses](../product/tasks-and-specs/statuses.md)). The cross-check is
+deliberate — a stored status that could silently disagree with the facts
+it summarizes is exactly what the old derive-don't-store rule feared, so
+the algorithm keeps reading both and stops loudly on a mismatch.
 
 **Steps 2–4 are eligibility; steps 5–6 are only order**, and the two bind
 differently. The filters bind everyone: a task that is `blocked`,
@@ -388,7 +400,7 @@ for how the two sets stay apart by path and by prefix:
   [Front matter is canonical](#front-matter-is-canonical) is a checked
   contract, not an assumption — `check_front_matter.sh` validates every
   queue file against it, on files alone, no git and no forge, which makes
-  it the one check available at every adoption level.
+  it the one check available at every adoption stage.
 
 The whole adoption kit ships as [`template/`](../../template), one folder
 **shaped exactly like the destination root** — that is what a template
@@ -424,9 +436,9 @@ and exit codes, and the handful of grep-level markers the machinery reads
 — the `## Derived work` heading in a PR body, the two Proposed-changes
 headings in a spec, a task file's `# ` title line, a `task-nnn` /
 `spec-nnn` id at the start of a branch name, and the labels the machinery
-owns and filters on: `writrun:task` and the four `status:*` values
-(`pending`, `ready`, `in-review`, `in-progress`) — renaming any of these
-means adapting the workflows. One carve-out runs the other way:
+owns and filters on: `writrun:task` and the `status:*` values
+(`proposed`, `backlog`, `ready`, `in-progress`, `in-review`, `blocked`)
+— renaming any of these means adapting the workflows. One carve-out runs the other way:
 `docs/writrun-instructions.md` is process metadata, not project truth —
 no task derives from it and every check ignores it. **Everything else about
 commits, pull requests, and task/spec style is the adopter's convention,

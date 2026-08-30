@@ -35,7 +35,7 @@ flowchart LR
     A["AGENT or HUMAN<br/>blocker found outside the queue<br/>task: → blocked + blocked_reason"]
     B["QUEUE<br/>selection skips it<br/>the lister names the reason"]
     C["HUMAN<br/>declares the blocker gone"]
-    D["AGENT<br/>task: → pending<br/>normal selection resumes"]
+    D["AGENT<br/>task: → ready, or backlog<br/>if a spec is still draft<br/>normal selection resumes"]
     A --> B --> C --> D
 ```
 

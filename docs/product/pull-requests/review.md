@@ -10,21 +10,23 @@ and that no status moved through a gate it should not have. Whether the
 code works is the adopting project's own pipeline's answer; WritRun does
 not duplicate it or stand in for it.
 
-Each task the PR carries has its mirror follow it: `status:in-progress`
-while the PR is still a draft, `status:in-review` once it is marked ready,
-closed once a merge carries the task to `completed`. **`in-review` is a label of its own
-rather than part of `in-progress`** because the two ask opposite things of
-the maintainer — one means leave the worker alone, the other means the
-maintainer is the blocker.
+Each task the PR carries has the queue on `main` — and its mirror —
+follow it: `in-progress` while the PR is still a draft, `in-review` once
+it is marked ready, back to `in-progress` when a review requests
+changes, `done` once a merge carries the task's `completed` date
+([statuses](../tasks-and-specs/statuses.md)). **`in-review` is a state of
+its own rather than part of `in-progress`** because the two ask opposite
+things of the maintainer — one means leave the worker alone, the other
+means the maintainer is the blocker.
 
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'background':'#0d1117','primaryColor':'#161b22','primaryTextColor':'#e6edf3','primaryBorderColor':'#8b949e','lineColor':'#ffffff','secondaryColor':'#161b22','tertiaryColor':'#161b22','fontSize':'14px'}}}%%
 flowchart LR
     P["PR opened<br/>(flow 4)"]
     G["CI<br/>writrun check<br/>re-runs both checks"]
-    G2["CI<br/>writrun progress<br/>mirror: status:in-review"]
+    G2["CI<br/>writrun progress<br/>main: task → in-review<br/>mirror: status:in-review"]
     H["MAINTAINER<br/>Review · squash-merge"]
-    I["CI<br/>writrun progress<br/>mirror closed"]
+    I["CI<br/>main: task → done<br/>mirror closed completed"]
     P --> G --> H --> I
     P --> G2
 ```
@@ -32,16 +34,18 @@ flowchart LR
 
 ## The pull request dies
 
-The unhappy half of review: closed without merging. Nothing was reserved,
-so nothing needs releasing — the queue on `main` never changed.
+The unhappy half of review: closed without merging. Nothing was
+reserved, so nothing entitles anyone — and the machinery unwinds what it
+wrote: the task returns to `ready` on `main`, `taken_by` clears, and the
+work is anyone's again.
 
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'background':'#0d1117','primaryColor':'#161b22','primaryTextColor':'#e6edf3','primaryBorderColor':'#8b949e','lineColor':'#ffffff','secondaryColor':'#161b22','tertiaryColor':'#161b22','fontSize':'14px'}}}%%
 flowchart LR
     A["MAINTAINER<br/>closes the PR unmerged"]
     B["CI<br/>writrun issues<br/>authoring mirrors closed<br/>not planned · reopen restores"]
-    C["CI<br/>writrun progress<br/>implementation task<br/>mirror: → status:ready"]
-    D["Queue unchanged on main<br/>the task is anyone's again"]
+    C["CI<br/>writrun progress<br/>main: task → ready · taken_by null<br/>mirror: → status:ready"]
+    D["The task is anyone's again"]
     A --> B --> D
     A --> C --> D
 ```

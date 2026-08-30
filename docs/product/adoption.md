@@ -4,32 +4,43 @@ What a project must have, at minimum, to claim it follows WritRun — and
 where a project is free to shape that structure differently without it
 counting as non-compliance.
 
-## Three levels
+## Three stages
 
-Adoption is progressive. Each level adds machinery on top of the one before
+Adoption is progressive. Each stage adds machinery on top of the one before
 it and changes nothing beneath, and a project declares which it is at in
-[`settings.json`](../../.writrun/conventions/settings.json).
+[`settings.json`](../../.writrun/conventions/settings.json): `stage: 1`,
+`2` or `3`.
 
-| Level | Adds | Needs | Its chapter |
-|---|---|---|---|
-| `tasks-and-specs` | the docs and the queue, as markdown | nothing but files | [Tasks and specs](tasks-and-specs/README.md) |
-| `pull-requests` | branches, pull requests, the CI checks, merge as assent | a forge | [Pull requests](pull-requests/README.md) |
-| `github-issues` | the Issues mirror | Issues | [GitHub issues](github-issues/README.md) |
+| Stage | Name | Adds | Needs | Its chapter |
+|---|---|---|---|---|
+| 1 | tasks and specs | the docs and the queue, as markdown | nothing but files | [Stage 1 — tasks and specs](tasks-and-specs/README.md) |
+| 2 | pull requests | branches, pull requests, the CI checks, merge as assent | a forge | [Stage 2 — pull requests](pull-requests/README.md) |
+| 3 | GitHub issues | the Issues mirror | Issues | [Stage 3 — GitHub issues](github-issues/README.md) |
+
+**The stage is in the name of everything that belongs to one.** A folder,
+doc chapter, script directory or test suite that exists for exactly one
+stage carries it as a `stage-N-` prefix (`stage-2-pull-requests/`), so a
+reader knows what a project at their stage may ignore without opening
+anything. What serves every stage — the skills, the shared concepts, this
+chapter — carries no prefix, and stage-naming it would be a lie: a
+`stage-1` label on a check that CI also runs at stage 2 misleads in both
+directions. Workflows keep their functional names for the same reason,
+and state their stage where they gate on it.
 
 Ordered and cumulative, which is why the setting is one value and not three
-switches: `github-issues` without `pull-requests` would ask for a projection
-that pull-request events drive, with no pull requests to drive it.
+switches: Stage 3 without Stage 2 would ask for a projection that
+pull-request events drive, with no pull requests to drive it.
 
-**Each level's rules live in the folder of its name**, and the base level's
-chapter stays true at every level. A rule marked with a level binds projects
-at that level and above; a rule carrying no level belongs to
-`tasks-and-specs` and binds every adopter.
+**Each stage's rules live in the folder of its name**, and Stage 1's
+chapter stays true at every stage. A rule marked with a stage binds
+projects at that stage and above; a rule carrying no stage belongs to
+Stage 1 and binds every adopter.
 
-## Level `tasks-and-specs` — the minimum bar
+## Stage 1 — the minimum bar
 
-**This level is a complete adoption**, not a partial one. The audience
+**This stage is a complete adoption**, not a partial one. The audience
 split, the queue, the schemas and the four gates are all satisfiable with
-files alone; what the higher levels add is *mechanical enforcement* of
+files alone; what the higher stages add is *mechanical enforcement* of
 things a person otherwise does deliberately.
 
 All of the following, or the project is *adopting*, not *adopted*:
