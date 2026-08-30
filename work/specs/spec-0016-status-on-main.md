@@ -175,4 +175,8 @@ edge listens on `pull_request_review` (no `_target` variant exists —
 it runs on base code with the same posture); landing derives
 ready-or-backlog at exit time per the review's finding rather than
 assuming the state the task left. Every edge and echo is
-integration-tested.
+integration-tested. A second finding landed live, from this task's own
+amendment: only a **carried** task lands — the merge that took its work
+(head branch id, title tags) — never a merge that merely touched its
+spec, or an amendment landing mid-flight would pull a worked task back
+to ready while its pull request stands open; regression-tested.

@@ -4,21 +4,29 @@
 # belongs, on the working tree, in the same recording commit as the spec
 # flips and date stamps (product/stage-1-tasks-and-specs/statuses.md).
 #
-# Usage: record_task_status.sh <diff-range> [head-task-id]
-#   The optional id is the merged branch's own task (task/NNNN-*), so a
-#   merge whose diff never touched the task file still lands it.
+# Usage: record_task_status.sh <diff-range> [carried-task-id...]
+#   The carried ids are the tasks whose work this merge took — the head
+#   branch's own (task/NNNN-*) and every [TASK-NNNN] tag leading the
+#   merged title — so a merge whose diff never touched a task file
+#   still lands it.
 #
 # Per task in scope — added or modified by the range, referenced by a
-# spec the range touched, or named as the head branch's — one of three
-# moves, in this order:
+# spec the range touched, or carried — one of three moves, in this
+# order:
 #
-#   done    its `completed` date is written and `merged` is stamped:
-#           the worker declared finishing and the merge took the work.
-#           `taken_by` stays — the record of who completed it.
-#   land    it is in flight with no declaration: one spec of several is
+#   done    its `completed` date is written: the worker declared
+#           finishing and the merge took the work. `taken_by` stays —
+#           the record of who completed it.
+#   land    carried, in flight, no declaration: one spec of several is
 #           work taken, not finished — to ready, or backlog if any of
 #           its specs is draft, derived now, never assumed. taken_by
-#           cleared.
+#           cleared. **Only a carried task lands**: a merge that merely
+#           touches an in-flight task's spec — an amendment landing
+#           while the work rides another, still-open pull request —
+#           says nothing about that work, and a task it pulled back to
+#           ready would read as free while somebody's PR is open. The
+#           in-flight state belongs to the task's own pull request's
+#           events, and to no other merge.
 #   settle  it rests in backlog or ready: re-derived from its specs as
 #           they now stand — the approval this merge recorded, or the
 #           amendment it landed, may have moved the answer. An empty
@@ -34,8 +42,9 @@
 
 set -euo pipefail
 
-RANGE="${1:?usage: record_task_status.sh <diff-range> [head-task-id]}"
-HEAD_TASK="${2:-}"
+RANGE="${1:?usage: record_task_status.sh <diff-range> [carried-task-id...]}"
+shift
+CARRIED_IDS="$*"
 
 err=$(mktemp "${TMPDIR:-/tmp}/writrun-git.XXXXXX")
 if ! CHANGED=$(git diff --name-only "$RANGE" 2>"$err"); then
@@ -96,17 +105,24 @@ while IFS= read -r f; do
 done <<EOF
 $CHANGED
 EOF
-if [ -n "$HEAD_TASK" ]; then
-  num=$(printf '%s' "$HEAD_TASK" | sed -E 's/^task-0*//; s/[^0-9].*$//')
-  if [ -n "$num" ]; then
-    tf=$(find work/tasks \( -iname "task-*${num}.md" -o -iname "task-*${num}-*.md" \) 2>/dev/null \
-      | while IFS= read -r c; do
-          cid=$(basename "$c" .md | sed -E 's/^task-0*//; s/[^0-9].*$//')
-          [ "$cid" = "$num" ] && printf '%s\n' "$c"
-        done | head -n1)
-    [ -n "$tf" ] && add_scope "$tf"
-  fi
-fi
+CARRIED_FILES=""
+for cid in $CARRIED_IDS; do
+  num=$(printf '%s' "$cid" | sed -E 's/^task-0*//; s/[^0-9].*$//')
+  [ -n "$num" ] || continue
+  tf=$(find work/tasks \( -iname "task-*${num}.md" -o -iname "task-*${num}-*.md" \) 2>/dev/null \
+    | while IFS= read -r c; do
+        cid2=$(basename "$c" .md | sed -E 's/^task-0*//; s/[^0-9].*$//')
+        [ "$cid2" = "$num" ] && printf '%s\n' "$c"
+      done | head -n1)
+  [ -n "$tf" ] || continue
+  add_scope "$tf"
+  CARRIED_FILES="$CARRIED_FILES $tf"
+done
+
+is_carried() {
+  case " $CARRIED_FILES " in *" $1 "*) return 0 ;; esac
+  return 1
+}
 
 for f in $SCOPE; do
   st=$(fm_field status "$f")
@@ -122,10 +138,15 @@ for f in $SCOPE; do
 
   case "$st" in
     in-progress|in-review)
-      dest=$(resting "$f")
-      set_field "$f" status "$dest"
-      set_field "$f" taken_by null
-      echo "moved ${f}: ${st} -> ${dest}"
+      # Only the merge that carried this task's work lands it; any
+      # other merge leaves the in-flight state to the task's own pull
+      # request's events.
+      if is_carried "$f"; then
+        dest=$(resting "$f")
+        set_field "$f" status "$dest"
+        set_field "$f" taken_by null
+        echo "moved ${f}: ${st} -> ${dest}"
+      fi
       ;;
     backlog|ready)
       dest=$(resting "$f")

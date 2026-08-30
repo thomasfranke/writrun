@@ -13,7 +13,7 @@ spec_file spec-001 task-001 implemented
 commit_all
 
 check "a partial merge lands the task on ready" 0 "in-progress -> ready" \
-  -- bash "$CI_SCRIPTS/stage-2-pull-requests/record_task_status.sh" HEAD~1...HEAD
+  -- bash "$CI_SCRIPTS/stage-2-pull-requests/record_task_status.sh" HEAD~1...HEAD task-001
 grep -qx "taken_by: null" work/tasks/task-001.md \
   && { echo "ok    and clears taken_by"; pass=$((pass+1)); } \
   || { echo "FAIL  and clears taken_by"; fail=$((fail+1)); }

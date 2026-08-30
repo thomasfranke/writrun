@@ -135,14 +135,26 @@ jobs:
         env:
           MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
           PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
           set -euo pipefail
-          head_task=""
+          # The tasks whose work this merge took: the head branch's own
+          # id plus every [TASK-NNNN] tag leading the title. Both are a
+          # fork's to write, both parsed as data — digits only survive.
+          carried=""
           case "$PR_HEAD_REF" in
-            task/[0-9]*) head_task=$(printf '%s' "$PR_HEAD_REF" | sed -E 's|^task/([0-9]+).*|task-\1|') ;;
+            task/[0-9]*) carried=$(printf '%s' "$PR_HEAD_REF" | sed -E 's|^task/([0-9]+).*|task-\1|') ;;
           esac
+          rest="$PR_TITLE"
+          while :; do
+            rest=$(printf '%s' "$rest" | sed 's/^[[:space:]]*//')
+            tg=$(printf '%s' "$rest" | sed -n 's/^\[[Tt][Aa][Ss][Kk]-0*\([0-9][0-9]*\)\].*/\1/p')
+            [ -n "$tg" ] || break
+            carried="$carried task-$tg"
+            rest=$(printf '%s' "$rest" | sed 's/^\[[Tt][Aa][Ss][Kk]-[0-9][0-9]*\]//')
+          done
           out=$(bash .writrun/scripts/stage-2-pull-requests/record_task_status.sh \
-            "${MERGE_SHA}~1...${MERGE_SHA}" "$head_task")
+            "${MERGE_SHA}~1...${MERGE_SHA}" $carried)
           printf '%s\n' "$out"
           if [ -n "$out" ]; then
             echo "changed=1" >> "$GITHUB_OUTPUT"
