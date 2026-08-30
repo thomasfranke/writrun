@@ -103,9 +103,20 @@ status=0
 
 # Check every promised path was actually touched — per spec, so the report
 # names which contract went unhonoured.
+#
+# A promise ending in `/` names a folder — the shape a rename or a
+# chapter-wide sweep is promised in. It is honoured when the diff touches
+# anything under it, and it declares everything under it.
 for id in $SPEC_LIST; do
   while IFS= read -r p; do
     [[ -z "$p" ]] && continue
+    if [[ "$p" == */ ]]; then
+      if ! grep -q "^${p}" <<< "$CHANGED_FILES"; then
+        echo "MISSING: ${id}'s promised change under '$p' not found in diff" >&2
+        status=1
+      fi
+      continue
+    fi
     if ! grep -qxF "$p" <<< "$CHANGED_FILES"; then
       echo "MISSING: ${id}'s promised change to '$p' not found in diff" >&2
       status=1
@@ -123,7 +134,16 @@ while IFS= read -r f; do
   [[ "$f" == "docs/writrun-instructions.md" ]] && continue
   case "$f" in
     docs/*)
-      if ! grep -qxF "$f" <<< "$ALL_PROMISED"; then
+      declared=false
+      if grep -qxF "$f" <<< "$ALL_PROMISED"; then
+        declared=true
+      else
+        while IFS= read -r p; do
+          [[ "$p" == */ ]] || continue
+          case "$f" in "$p"*) declared=true; break ;; esac
+        done <<< "$ALL_PROMISED"
+      fi
+      if [[ "$declared" != "true" ]]; then
         echo "UNDECLARED: '$f' was modified but not listed in the Proposed changes of ${SPEC_IDS}" >&2
         # Both failures print; the exit code reports MISSING when both are
         # present, since a forgotten doc update is the drift this exists to

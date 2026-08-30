@@ -68,10 +68,10 @@ does not exist yet.
   implement, so naming it after one would misdescribe it. See
   [Pipeline](docs/product/stage-1-tasks-and-specs/authoring.md#two-ways-a-permanent-doc-changes) for
   which kind of change you have.
-- **Take a task only when it is ready.** `pending`, and every spec it
-  references `approved`. A task whose spec is still `draft` has not passed
-  the approval gate — leave it, and say so rather than reporting an empty
-  queue.
+- **Take a task only when it is `ready`.** The machinery wrote that
+  status from the fact that every spec it references is `approved` —
+  cross-check it. A `backlog` task has not passed the approval gate —
+  leave it, and say so rather than reporting an empty queue.
 - **Taking it means opening its draft PR**, before the work starts — a
   branch on your machine is invisible to everyone else, and the draft is
   the signal that the task is under way. It reserves nothing; it reports.
@@ -93,8 +93,10 @@ does not exist yet.
   authoring change:** that ships no behaviour and has no spec to check
   against, so its permanent-doc edit would report UNDECLARED. CI makes the
   same distinction automatically.
-- Set the spec's `status` to `implemented` and the task's `status` to
-  `completed`, with today's `completed` date.
+- Set the spec's `status` to `implemented` and write the task's
+  `completed` date (UTC timestamp). **Leave the task's `status` line
+  alone** — it is the machinery's, and the merge is what flips it to
+  `done` when it lands your date.
 - **Then** run [`writrun-check-task-state`](.writrun/skills/writrun-check-task-state/SKILL.md) —
   after those status changes, not before. It rejects the transitions the
   human gates exist to prevent, above all a PR that approves its own spec,
@@ -183,10 +185,10 @@ it.
 4. **One spec per PR is the recommended shape** — it is what the
    template's singular "Implements spec-NNNN" assumes. A task with
    several specs completes across several
-   PRs, one spec each, the task reaching `completed` in the last; a merge
-   that implements a spec without completing its task is fine, and lands
-   the task on `main` as `in-progress`, where the lister surfaces it as
-   work to resume. When the specs are facets of one atomic change, a
+   PRs, one spec each, the task reaching `done` at the last one's merge; a
+   merge that implements a spec without finishing its task is fine, and
+   the machinery lands the task back on `ready`, where the lister
+   surfaces it as work to resume. When the specs are facets of one atomic change, a
    single PR implementing all of them is also legitimate — the checks
    verify the real contract either way: every implemented spec's promises
    honoured in full, every touched permanent doc promised by at least one
@@ -223,10 +225,11 @@ from.
 - `writrun issues` mirrors new tasks into GitHub Issues, one direction
   only. **The file under `work/tasks/` is the authority.** An edit made in
   an Issue is not written back.
-- `writrun progress` moves the mirror as the PR does: `status:in-review`
-  while open, closed when a merge carries the task to `completed`, back to
-  `status:ready` if the PR closes unmerged. Without it a finished task keeps
-  an open mirror labelled in-progress long after the work landed.
+- `writrun progress` writes the PR's events onto `main` (status and
+  `taken_by`) and moves the mirror with them: `status:in-review` while
+  open, closed when a merge lands the worker's `completed` date, back to
+  `status:ready` if the PR closes unmerged. Without it a finished task
+  keeps an open mirror labelled in-progress long after the work landed.
 
 **Task is the noun; a GitHub Issue is only the mirror.** `work/tasks/` is
 the authority and an edit made in the mirror is never written back. Where a

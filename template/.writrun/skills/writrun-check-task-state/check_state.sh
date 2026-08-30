@@ -86,8 +86,11 @@ esac
 status=0
 
 # The stage gates rules E and F: below Stage 2 no machinery exists to own
-# the status line, so hand moves are the contract, not a violation.
-STAGE=$(bash .writrun/scripts/stage-2-pull-requests/read_setting.sh stage 2>/dev/null || printf '3')
+# the status line, so hand moves are the contract, not a violation. The
+# reader resolves next to this script (the settings file it reads is the
+# working directory's); absent either, the documented default applies.
+READ_SETTING="$(cd "$(dirname "$0")" && pwd)/../../scripts/stage-2-pull-requests/read_setting.sh"
+STAGE=$(bash "$READ_SETTING" stage 2>/dev/null || printf '3')
 case "$STAGE" in 1|2|3) ;; *) STAGE=3 ;; esac
 
 ADDED=$(git diff --name-only --diff-filter=A "$DIFF_RANGE" 2>/dev/null || true)
@@ -239,27 +242,43 @@ for f in $CHANGED; do
           fi
         fi
       done
-      if [ "$all_implemented" = "true" ] && [ -n "$refs" ] \
-        && { [ "$cd_new" = "null" ] || [ -z "$cd_new" ]; } \
-        && printf '%s\n' "$CHANGED" | grep -q "^work/specs/"; then
-        # Only when this very diff finished the last spec — a task whose
-        # specs were already all implemented at the base is history.
-        for ref in $refs; do
-          [ -n "$ref" ] || continue
-          spec=$(find work/specs \
-            \( -iname "${ref}.md" -o -iname "${ref}-*.md" \) 2>/dev/null | head -n1)
-          [ -n "$spec" ] || continue
-          if printf '%s\n' "$CHANGED" | grep -qxF "$spec" \
-            && [ "$(fm_base "$spec" status)" != "implemented" ]; then
-            echo "INCONSISTENT: this diff implements ${f}'s last spec but leaves its completed date null." >&2
-            echo "  The date is the declaration the merge turns into done — write it." >&2
-            status=1
-            break
-          fi
-        done
-      fi
       ;;
   esac
+done
+
+# The other half of rule C, keyed on the specs rather than the task: the
+# diff that implements a task's *last* unimplemented spec writes the
+# task's completed date, or no merge can ever move the task to done. The
+# task file itself may be untouched by the diff, so this pass starts
+# from the changed specs.
+checked_tasks=""
+for f in $CHANGED; do
+  case "$f" in work/specs/*.md) ;; *) continue ;; esac
+  [ -f "$f" ] || continue
+  [ "$(fm_now "$f" status)" = "implemented" ] || continue
+  [ "$(fm_base "$f" status)" != "implemented" ] || continue
+  tref=$(fm_now "$f" task_ref)
+  [ -n "$tref" ] || continue
+  case " $checked_tasks " in *" $tref "*) continue ;; esac
+  checked_tasks="$checked_tasks $tref"
+  tf=$(find work/tasks \
+    \( -iname "${tref}.md" -o -iname "${tref}-*.md" \) 2>/dev/null | head -n1)
+  [ -n "$tf" ] || continue
+  cd_now=$(fm_now "$tf" completed)
+  [ "$cd_now" = "null" ] || [ -z "$cd_now" ] || continue
+  all_done=true
+  for ref in $(fm_now "$tf" spec_ref | tr -d '[]' | tr ',' ' '); do
+    [ -n "$ref" ] || continue
+    sp=$(find work/specs \
+      \( -iname "${ref}.md" -o -iname "${ref}-*.md" \) 2>/dev/null | head -n1)
+    [ -n "$sp" ] || { all_done=false; break; }
+    [ "$(fm_now "$sp" status)" = "implemented" ] || { all_done=false; break; }
+  done
+  if [ "$all_done" = "true" ]; then
+    echo "INCONSISTENT: this diff implements ${tf}'s last spec but leaves its completed date null." >&2
+    echo "  The date is the declaration the merge turns into done — write it." >&2
+    status=1
+  fi
 done
 
 if [ "$status" -eq 0 ]; then

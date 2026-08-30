@@ -46,7 +46,7 @@ asking an LLM to review its own diff.
 3. Read the exit code and output:
    - **0 / "OK"** — every promised path was touched, nothing undeclared in
      `docs/product/` or `docs/technical/` was modified. Safe to mark the
-     spec `implemented` and the task `completed` (see the
+     spec `implemented` and write the task's `completed` date (see the
      `writrun-create-task-and-spec` skill for how).
    - **1 / "MISSING"** — a path listed in Proposed changes was not touched.
      Either the doc update was forgotten, or the spec's promise was wrong
@@ -66,8 +66,8 @@ asking an LLM to review its own diff.
 
 ## Never
 
-- Never mark a spec `implemented` or a task `completed` on an exit code
-  other than 0.
+- Never mark a spec `implemented` or write a task's `completed` date on
+  an exit code other than 0.
 - Never treat a MISSING or UNDECLARED result as something to quietly fix by
   editing the spec's Proposed changes to match whatever the diff happened to
   do — that defeats the point of the contract. Surface the mismatch and let
