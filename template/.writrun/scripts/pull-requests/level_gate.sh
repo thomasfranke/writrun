@@ -10,7 +10,7 @@
 # The levels are ordered and cumulative, which is why one value gates four
 # workflows: `github-issues` without `pull-requests` would ask for a
 # projection that pull-request events drive, with no pull requests to drive
-# it (product/adoption.md#three-levels).
+# it (product/adoption.md#three-stages).
 #
 #   tasks-and-specs   no workflow runs
 #   pull-requests     writrun check, writrun approve
@@ -66,5 +66,5 @@ fi
 echo "level is '${HERE}', which stops below '${NEED}' — not running."
 echo "This job is off because .writrun/conventions/settings.json says so,"
 echo "not because anything failed. Raise 'level' to turn it on"
-echo "(docs/product/adoption.md#three-levels)."
+echo "(docs/product/adoption.md#three-stages)."
 report false
