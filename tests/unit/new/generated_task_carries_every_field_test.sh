@@ -4,8 +4,9 @@
 setup
 bash "$NEW_SH" task "A tracked thing" --priority high >/dev/null 2>&1
 if [ -f work/tasks/task-0001-a-tracked-thing.md ] &&
-   grep -q '^status: pending$'      work/tasks/task-0001-a-tracked-thing.md &&
+   grep -q '^status: backlog$'      work/tasks/task-0001-a-tracked-thing.md &&
    grep -q '^blocked_reason: null$' work/tasks/task-0001-a-tracked-thing.md &&
+   grep -q '^taken_by: null$'      work/tasks/task-0001-a-tracked-thing.md &&
    grep -q '^spec_ref: \[\]$'       work/tasks/task-0001-a-tracked-thing.md &&
    grep -q '^priority: high$'       work/tasks/task-0001-a-tracked-thing.md &&
    grep -q '^completed: null$'      work/tasks/task-0001-a-tracked-thing.md; then

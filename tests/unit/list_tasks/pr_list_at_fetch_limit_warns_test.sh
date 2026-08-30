@@ -5,7 +5,7 @@
 # missing row reports a taken task as free — so hitting the limit is
 # said out loud instead of passed off as a complete answer.
 setup
-task_file task-001 pending ""
+task_file task-001 ready ""
 mkdir -p "$WORK/stub-bin"
 cat > "$WORK/stub-bin/gh" <<'GH'
 #!/usr/bin/env bash

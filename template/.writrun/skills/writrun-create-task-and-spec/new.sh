@@ -250,7 +250,7 @@ body_template_for() {
 }
 
 # The contract fields — the script's to write, never a template's.
-TASK_CONTRACT="id status blocked_reason spec_ref doc_ref priority depends_on milestone created completed"
+TASK_CONTRACT="id status blocked_reason taken_by spec_ref doc_ref priority depends_on milestone created completed"
 SPEC_CONTRACT="id task_ref status created"
 
 # template_extensions — stdin: a rendered template. Prints the lines of
@@ -384,8 +384,9 @@ case "$cmd" in
       cat <<EOF
 ---
 id: ${id}
-status: pending
+status: backlog
 blocked_reason: null
+taken_by: null
 spec_ref: []
 doc_ref: ${doc_ref}
 priority: ${priority}

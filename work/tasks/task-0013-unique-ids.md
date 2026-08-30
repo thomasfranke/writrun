@@ -1,7 +1,8 @@
 ---
 id: task-0013
-status: completed
+status: done
 blocked_reason: null
+taken_by: null
 spec_ref: [spec-0010]
 doc_ref: technical/README.md#task-schema
 priority: high

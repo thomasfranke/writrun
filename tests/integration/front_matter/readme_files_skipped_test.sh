@@ -6,7 +6,7 @@
 setup
 printf '# work/tasks — the queue\n\nProse, not front matter.\n' > work/tasks/README.md
 printf '# work/specs — the detail\n\nProse, not front matter.\n' > work/specs/README.md
-task_file task-001 pending ""
+task_file task-001 ready ""
 check "READMEs are not queue entries" 0 "all canonical" \
   -- bash "$CHECK_FRONT_MATTER"
 

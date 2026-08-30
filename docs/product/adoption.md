@@ -13,9 +13,9 @@ it and changes nothing beneath, and a project declares which it is at in
 
 | Stage | Name | Adds | Needs | Its chapter |
 |---|---|---|---|---|
-| 1 | tasks and specs | the docs and the queue, as markdown | nothing but files | [Stage 1 — tasks and specs](tasks-and-specs/README.md) |
-| 2 | pull requests | branches, pull requests, the CI checks, merge as assent | a forge | [Stage 2 — pull requests](pull-requests/README.md) |
-| 3 | GitHub issues | the Issues mirror | Issues | [Stage 3 — GitHub issues](github-issues/README.md) |
+| 1 | tasks and specs | the docs and the queue, as markdown | nothing but files | [Stage 1 — tasks and specs](stage-1-tasks-and-specs/README.md) |
+| 2 | pull requests | branches, pull requests, the CI checks, merge as assent | a forge | [Stage 2 — pull requests](stage-2-pull-requests/README.md) |
+| 3 | GitHub issues | the Issues mirror | Issues | [Stage 3 — GitHub issues](stage-3-github-issues/README.md) |
 
 **The stage is in the name of everything that belongs to one.** A folder,
 doc chapter, script directory or test suite that exists for exactly one

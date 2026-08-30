@@ -36,7 +36,12 @@ and state comparison in a diff is objective, so it is checked by
 |---|---|
 | `FORBIDDEN: … draft -> approved` | The change approves its own spec. Approval is a human gate — leave the spec in `draft`. |
 | `FORBIDDEN: … draft -> implemented` | Approval was skipped entirely. A spec is authorized to be implemented only once approved. |
-| `INCONSISTENT: … completed but … is 'X'` | A task is being completed while one of its specs is not `implemented`. Fill that spec's Outcome in the same change. |
+| `FORBIDDEN: … moves X -> Y on a branch` | The five working states have one writer — the machinery, on the authority branch. Leave the status line; the forge writes it (Stage 2+). |
+| `FORBIDDEN: … edits taken_by` | Same single writer. Who has a task is the forge's record, never a branch's claim (Stage 2+). |
+| `FORBIDDEN: … -> blocked` / `blocked -> …` | `blocked` pairs with `backlog` and `ready` only — an in-flight task's blocker is visible on its pull request. |
+| `FORBIDDEN: … dropped -> …` | `dropped` is terminal. New work is a new task. |
+| `INCONSISTENT: … writes its completed date but … is 'X'` | The finishing declaration was written while a spec is not `implemented`. Fill that spec's Outcome in the same change. |
+| `INCONSISTENT: … implements … last spec but leaves its completed date null` | The date is what the merge turns into `done` — write it in the same change. |
 | `BROKEN: … resolves to no file` | A `spec_ref` entry points at a spec that does not exist. |
 
 ## Never
@@ -45,7 +50,10 @@ and state comparison in a diff is objective, so it is checked by
   approve the spec verbally and then writing the field anyway. The gate is
   satisfied by a recorded approval of the change, not by permission relayed
   through the agent that wanted it.
-- Never resolve an `INCONSISTENT` result by reverting the task to
-  `in-progress` and shipping anyway — finish the spec's Outcome instead.
+- Never resolve an `INCONSISTENT` result by blanking the `completed`
+  date and shipping anyway — finish the spec's Outcome instead.
+- Never resolve a `FORBIDDEN` status move by hand-editing `main`
+  afterwards. The machinery writes that line from forge events; if it
+  reads wrong, the event is what is missing.
 - Never skip the check because the change touched no code. A change that
   only edits front-matter is exactly what this check is for.

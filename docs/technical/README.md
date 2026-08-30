@@ -90,7 +90,7 @@ merged: null                       # machinery only: the merge that took the wor
   between directories as work progresses, so `git log` stays readable without
   `--follow`.
 - **Four dates, and who writes each is part of the contract** — the table
-  is in [`product/tasks-and-specs/statuses.md`](../product/tasks-and-specs/statuses.md).
+  is in [`product/stage-1-tasks-and-specs/statuses.md`](../product/stage-1-tasks-and-specs/statuses.md).
   `created` and `completed` are a person's, written on the branch;
   `queued` and `merged` are the machinery's, written after the merge each
   records. A date recording a merge is never hand-written: it would have
@@ -239,7 +239,7 @@ stops the machinery the one below it does not need:
 
 **The four human gates are core at every stage.** A gate asks for *a human
 decision, recorded*, never for a pull request specifically
-([gates](../product/tasks-and-specs/gates.md)). At Stage 1 a person performs each
+([gates](../product/stage-1-tasks-and-specs/gates.md)). At Stage 1 a person performs each
 directly and names how in their `AGENTS.md`, which Adoption already requires.
 No check can verify that, which is why it is stated here: `stage: 1` is
 not permission to drop them.
@@ -261,7 +261,7 @@ not the checks and not the release notes, which the forge generates from
 pull requests.
 
 **The `[TASK-NNNN]` tag is in both and is not settable.** It is how
-`reflect_progress.sh` and `list_tasks.sh` learn which tasks a pull request
+the machinery and `list_tasks.sh` learn which tasks a pull request
 carries, and a branch name holds one id: a title without it reduces a
 multi-task pull request to reporting one task, silently.
 
@@ -326,7 +326,7 @@ Deterministic, independent of file layout on disk:
 
 `ready` is stored, and steps 2–4 still agree by construction: the
 machinery derives the flip from the same facts step 4 re-checks
-([statuses](../product/tasks-and-specs/statuses.md)). The cross-check is
+([statuses](../product/stage-1-tasks-and-specs/statuses.md)). The cross-check is
 deliberate — a stored status that could silently disagree with the facts
 it summarizes is exactly what the old derive-don't-store rule feared, so
 the algorithm keeps reading both and stops loudly on a mismatch.

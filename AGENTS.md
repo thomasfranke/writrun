@@ -20,17 +20,23 @@ this repo, "active owner" for its resume step means **this session**: any
 `in-progress` task not started by you in the current session is resumable,
 and you resume it before selecting new work.
 
-A task is available only when it is `pending` **and** every spec in its
-`spec_ref` is `approved`. A draft spec has not passed the approval gate, so
-the task is not authorized work — if every task is held back that way, say
-so rather than reporting an empty queue.
+A task is available only when it is `ready` — the machinery wrote that
+from the fact that every spec in its `spec_ref` is `approved`, and the
+selection algorithm cross-checks the two rather than trusting either
+alone. A `backlog` task has not passed the approval gate, so it is not
+authorized work — if every task is held back that way, say so rather
+than reporting an empty queue.
 
 **Taking a task ends with its draft pull request open, not with the
-branch created.** Branch as `task/NNNN-short-name`, set the task
-`in-progress`, push, and open the PR as a draft *before* implementing —
-the branch is invisible until it reaches the forge, and the draft is
-what moves the mirror to `status:in-progress`. Mark it ready for review
-when the work is done, which moves the mirror to `status:in-review`.
+branch created.** Branch as `task/NNNN-short-name`, push, and open the
+PR as a draft *before* implementing — the branch is invisible until it
+reaches the forge, and the draft is the event the machinery answers by
+writing `in-progress` and your login onto `main` and moving the mirror
+to `status:in-progress`. **Touch the task's status line never**: it has
+one writer, and it is not you
+(docs/product/stage-1-tasks-and-specs/statuses.md). Mark the PR ready
+for review when the work is done — that is what moves the task to
+`in-review`.
 
 ## Creating tasks and specs
 
@@ -47,7 +53,7 @@ and the line-based readers silently misread anything else.
 ## Which kind of change you have
 
 Two, and they are not handled the same way — see
-[`tasks-and-specs/authoring.md`](docs/product/tasks-and-specs/authoring.md#two-ways-a-permanent-doc-changes).
+[`tasks-and-specs/authoring.md`](docs/product/stage-1-tasks-and-specs/authoring.md#two-ways-a-permanent-doc-changes).
 
 | | Authoring | Tracking | Implementing |
 |---|---|---|---|
@@ -92,7 +98,7 @@ re-approved. Never edit an approved spec's body while it stays
 ## Human gates — explicit, per principle 7
 
 This is this repo's concrete answer to the general rule in
-[`docs/product/tasks-and-specs/gates.md`](docs/product/tasks-and-specs/gates.md)
+[`docs/product/stage-1-tasks-and-specs/gates.md`](docs/product/stage-1-tasks-and-specs/gates.md)
 — every adopting project states its own version of this table.
 
 | Transition | Who |
@@ -111,8 +117,9 @@ This is this repo's concrete answer to the general rule in
    demands it, update the spec's proposal first.
 3. Run [`writrun-check-spec-deltas`](.writrun/skills/writrun-check-spec-deltas/SKILL.md). Do not
    proceed on anything other than exit 0.
-4. Fill the spec's **Outcome** section, including divergences, and set
-   spec `status: implemented`, task `status: completed`, `completed` date
+4. Fill the spec's **Outcome** section, including divergences, set spec
+   `status: implemented`, and write the task's `completed` date — never
+   its status; the merge flips it to `done` when it lands your date
    (also covered by `writrun-create-task-and-spec`).
 5. Run [`writrun-check-task-state`](.writrun/skills/writrun-check-task-state/SKILL.md), **after**
    step 4 and not before. Every rule it has is about a transition, and the
@@ -126,7 +133,7 @@ This is this repo's concrete answer to the general rule in
   must resolve).
 - Never rename or move a task or spec file. Identity is never order.
 - Never track trivial work. A typo is a commit.
-- Never leave a task `in-progress` at the end of a session without either
-  completing it or noting its state in the task body for the next session to
-  resume from.
+- Never leave a task in flight at the end of a session without either
+  finishing it or noting its state in the task body for the next session
+  to resume from.
 

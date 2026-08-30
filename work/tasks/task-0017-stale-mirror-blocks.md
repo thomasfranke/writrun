@@ -1,9 +1,10 @@
 ---
 id: task-0017
-status: completed
+status: done
 blocked_reason: null
+taken_by: null
 spec_ref: [spec-0014]
-doc_ref: product/github-issues/README.md
+doc_ref: product/stage-3-github-issues/README.md
 priority: medium
 depends_on: []
 milestone: null

@@ -1,7 +1,7 @@
 ---
 id: spec-0019
 task_ref: task-0019
-status: approved
+status: implemented
 created: 2026-08-30T03:05:33Z
 ---
 
@@ -94,4 +94,11 @@ status in one commit; check-task-state rejects a branch-side edit.
 
 ## Outcome
 
-_(fill after execution)_
+Built as specified: the field sits after `blocked_reason`, the
+generator emits it null, `check_front_matter.sh` validates it (bare
+login or null; non-null only in flight or on done), every queue file
+migrated, the flip script writes it in the same edit as the status
+line, and `check_state.sh` rejects a branch editing it. The close-
+without-merge path re-derives the holder from the newest surviving
+pull request rather than skipping — the review's finding. Divergence:
+none.

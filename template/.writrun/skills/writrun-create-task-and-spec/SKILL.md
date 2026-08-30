@@ -54,8 +54,9 @@ field present explicitly, an empty list never the same as an omitted field:
 ```yaml
 ---
 id: task-nnnn
-status: pending
+status: backlog
 blocked_reason: null
+taken_by: null
 spec_ref: []
 doc_ref: null            # or --doc-ref's value
 priority: medium              # or --priority's value
@@ -167,7 +168,10 @@ manual `spec_ref` append on the task file.
    Proposed changes sections to match reality after the fact — the
    divergence is the record.
 2. Set the spec's `status: implemented`.
-3. Set the task's `status: completed` and fill `completed` with today's date.
+3. Fill the task's `completed` date (a UTC timestamp) — and touch its
+   `status` line **never**: from Stage 2 up that line is the machinery's,
+   and the merge is what flips the task to `done` when it lands your
+   date (product/stage-1-tasks-and-specs/statuses.md).
 
 ## Never
 

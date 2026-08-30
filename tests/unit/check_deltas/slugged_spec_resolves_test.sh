@@ -7,7 +7,7 @@
 # the range rather than at the resolver. Every sibling resolver already
 # accepts both shapes; this one must too.
 setup
-task_file task-0001 completed spec-0001 2026-08-28
+task_file task-0001 done spec-0001 2026-08-28
 spec_file spec-0001 task-0001 implemented
 mv work/specs/spec-0001.md work/specs/spec-0001-a-subject.md
 commit_all

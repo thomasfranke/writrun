@@ -1,15 +1,16 @@
 ---
 id: task-0019
-status: pending
+status: in-progress
 blocked_reason: null
+taken_by: null
 spec_ref: [spec-0016, spec-0017, spec-0018, spec-0019, spec-0020, spec-0021]
-doc_ref: product/tasks-and-specs/statuses.md#criteria
+doc_ref: product/stage-1-tasks-and-specs/statuses.md#criteria
 priority: high
 depends_on: []
 milestone: null
 created: 2026-08-30T02:57:59Z
 queued: 2026-08-30T03:47:10Z
-completed: null
+completed: 2026-08-30T05:00:59Z
 merged: null
 ---
 

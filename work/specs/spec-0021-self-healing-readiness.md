@@ -1,7 +1,7 @@
 ---
 id: spec-0021
 task_ref: task-0019
-status: approved
+status: implemented
 created: 2026-08-30T03:33:06Z
 ---
 
@@ -98,4 +98,15 @@ path stays red without a commit.
 
 ## Outcome
 
-_(fill after execution)_
+Built as specified: `release-readiness.yml` is one job, three phases —
+regenerate, heal (`.github/scripts/readiness_heal.sh`: commit and push
+with the rebase-not-force pattern when the sync changed anything, loud
+when it cannot), verdict (the full suite on the healed tree, in the
+same run, since a GITHUB_TOKEN push triggers none). Permissions rose
+to `contents: write`; the fast template gate folded into phase 1. The
+e2e tier proves drift healed-and-pushed, no-drift committing nothing,
+and a failed push staying red. Divergence: the heal logic lives in
+.github/scripts/ (repo-own, never shipped) so the suite can execute
+it, rather than inline YAML. A review pass switched the drift test to
+`git status --porcelain` — a sync that creates a file is drift `git
+diff` cannot see.

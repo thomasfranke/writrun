@@ -1,7 +1,8 @@
 ---
 id: task-0014
-status: completed
+status: done
 blocked_reason: null
+taken_by: null
 spec_ref: [spec-0011]
 doc_ref: technical/README.md#settings
 priority: medium

@@ -4,39 +4,45 @@ name: release readiness
 # branch releases are cut from, so every push to it — including one that
 # lands without a pull request — gets a releasability verdict here.
 #
+# **A red main that a script can fix is the bot's to fix**
+# (docs/technical/README.md#distribution). Three phases, one job:
+# regenerate (the template sync), heal (commit the regeneration when it
+# changed anything, with the same token and rebase-not-force pattern the
+# queue recording uses), verdict (the full suite, on the tree as
+# pushed). A GITHUB_TOKEN push triggers no new runs — which is why the
+# verdict runs here, in the run that healed, rather than waiting for a
+# run the sync commit will never cause. Red is reserved for what
+# regeneration cannot repair.
+#
 # The cut itself deliberately stays local (`make release`): the stamp
 # commit cannot be pushed to a protected main by GITHUB_TOKEN, and the
 # tokens that could are the dependency this project rejects. The script
 # re-runs these same guards before tagging.
 #
-# YAML here is wiring only; both jobs execute things the suite already
-# owns.
+# YAML here is wiring only; every phase executes things the suite
+# already owns.
 
 on:
   push:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  template:
-    # The named gate: regenerating the template must change nothing. A
-    # divergence breaks this pipeline by name, before any release — the
-    # same drift `make release` refuses locally. This is the suite's own
-    # mirror case run alone, for a fast signal; the full suite below
-    # runs it again with everything else.
-    name: template in sync
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Template mirrors the root byte for byte
-        run: bash tests/unit/template/mirrors_root_test.sh
-
-  suite:
+  readiness:
     name: script suite
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run tests
+        with:
+          fetch-depth: 0
+
+      - name: Regenerate what a script owns
+        run: make template-sync
+
+      - name: Heal — commit the regeneration, if it changed anything
+        run: bash .github/scripts/readiness_heal.sh main
+
+      - name: Verdict — the full suite, on the healed tree
         run: bash tests/run.sh

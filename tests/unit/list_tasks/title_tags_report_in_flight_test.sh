@@ -7,8 +7,8 @@
 # branch happens to name, and the other is handed to the next person who
 # asks what is available.
 setup
-task_file task-0004 pending ""
-task_file task-0005 pending ""
+task_file task-0004 ready ""
+task_file task-0005 ready ""
 export WRITRUN_PR_LIST="$(printf '7\ttask/0004-two-at-once\tdana\t[TASK-0004][TASK-0005] feat(mirror): reconcile in one pass')"
 out=$(bash "$LIST_TASKS" 2>&1)
 if printf '%s' "$out" | grep -q "task-0004 *#7 by @dana" &&

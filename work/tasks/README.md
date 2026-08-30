@@ -22,5 +22,5 @@ is a commit, not a task — see principle 6 in [`about.md`](../../docs/about.md)
 
 Do not choose work by reading this README or by directory listing order. Run
 the [selection algorithm](../../docs/technical/README.md#task-selection-algorithm):
-resume `in-progress` first, then filter, sort, and take the first. Read every
+resume abandoned in-flight work first, then filter to `ready`, sort, and take the first. Read every
 referenced spec and product anchor before writing code.

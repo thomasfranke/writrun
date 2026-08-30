@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # mirror_lib.sh — the fixture behind every case that exercises the mirror
-# scripts (.writrun/scripts/github-issues/mirror_issues.sh, reflect_progress.sh).
+# scripts (.writrun/scripts/stage-3-github-issues/mirror_issues.sh, project_pr_tasks.sh).
 #
 # The forge is a fake `gh` on PATH: reads are served from canned files —
 # the post-jq row shape the real scripts request, so the shell logic under
@@ -13,14 +13,14 @@
 
 . "$(dirname "${BASH_SOURCE[0]}")/harness.sh"
 
-MIRROR_ISSUES="$REPO_ROOT/.writrun/scripts/github-issues/mirror_issues.sh"
-REFLECT_PROGRESS="$REPO_ROOT/.writrun/scripts/github-issues/reflect_progress.sh"
-REDERIVE_LABELS="$REPO_ROOT/.writrun/scripts/github-issues/rederive_labels.sh"
+MIRROR_ISSUES="$REPO_ROOT/.writrun/scripts/stage-3-github-issues/mirror_issues.sh"
+PROJECT_PR="$REPO_ROOT/.writrun/scripts/stage-3-github-issues/project_pr_tasks.sh"
+REDERIVE_LABELS="$REPO_ROOT/.writrun/scripts/stage-3-github-issues/rederive_labels.sh"
 
 b64() { base64 | tr -d '\n'; }
 
 # A working directory shaped like the base-branch checkout the workflows
-# run from (reflect_progress resolves spec branches through work/specs/),
+# run from (the projection resolves tasks through work/tasks/),
 # plus the fake forge. cd's into it. Default PR: #7, open, not draft, by
 # an OWNER — cases override the exported PR_* fields they are about.
 setup_forge() {
@@ -142,7 +142,7 @@ EOF
 }
 
 # base_spec <id> <task-ref> [status] — a spec as it already exists on the
-# base branch, for reflect_progress's branch resolution and for the
+# base branch, for the projection's resolution and for the
 # readers that derive a label from the queue. Defaults to approved.
 base_spec() {
   cat > "work/specs/$1.md" <<EOF

@@ -1,7 +1,7 @@
 ---
 id: spec-0018
 task_ref: task-0019
-status: approved
+status: implemented
 created: 2026-08-30T03:04:06Z
 ---
 
@@ -135,4 +135,21 @@ green in their new homes.
 
 ## Outcome
 
-_(fill after execution)_
+Built as specified, with two divergences worth their record. The
+promises: as first approved they named the three folders on one bullet
+and missed the five sibling docs the link sweep touches — amended
+through `draft` and re-approved (see Amendment history) before this
+completion; and `check_deltas.sh` now honours a folder promise (a path
+ending in `/` covers everything under it), which is the shape this
+spec's own contract was written in. The rename itself: `git mv` of the
+five folders, every link and `doc_ref` swept, `stage: 3` as an unquoted
+integer with `stage_gate.sh` gating by number, the status vocabulary
+migrated across schema, generator, checks, every queue file and the
+mirror labels, and the stage-bound integration suites grouped under
+`stage-N/` with recursive discovery in `run.sh` (which now closes each
+case's stdin — the discovery pipe was readable by the cases it fed).
+`level_gate.sh` is gone; `rg` for the old names finds history only.
+A review pass added the migration bridge: a settings file still saying
+`level` keeps the choice it made (the reader maps the old vocabulary,
+the shape check names the rename) — an adopter's full opt-out must not
+wake to every workflow on because a key changed names under them.

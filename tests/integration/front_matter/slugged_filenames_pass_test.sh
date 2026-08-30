@@ -5,7 +5,7 @@
 # check has to accept it, or nothing generated after the rule could
 # merge. The id is still what identity is read from.
 setup
-task_file task-0004 pending spec-0001
+task_file task-0004 ready spec-0001
 spec_file spec-0001 task-0004 draft
 mv work/tasks/task-0004.md work/tasks/task-0004-queue-file-names.md
 mv work/specs/spec-0001.md work/specs/spec-0001-queue-file-names.md

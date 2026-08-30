@@ -1,6 +1,6 @@
 ---
 name: writrun-select-next-task
-description: Use this skill when picking what to work on next in a project that follows the WritRun methodology — when the user asks "what should I work on", "what's next", "pick up where we left off", or before starting any implementation work in a repo with a work/tasks/ folder. Also use at the start of any session in such a repo, before writing code, to check for resumable in-progress work.
+description: Use this skill when picking what to work on next in a project that follows the WritRun methodology — when the user asks "what should I work on", "what's next", "pick up where we left off", or before starting any implementation work in a repo with a work/tasks/ folder. Also use at the start of any session in such a repo, before writing code, to check for resumable in-flight work.
 ---
 
 # Select next task
@@ -12,20 +12,26 @@ answer — don't shortcut or reorder these steps.
 ## Steps
 
 0. **Resume before selecting.** Read the front-matter of every task file.
-   If any task has `status: in-progress` and its owner is not the current
-   session (single-agent projects: any `in-progress` task at all, since
-   there is only one possible owner), stop here and resume that task
-   instead of selecting new work. Only proceed to step 1 if none exists.
+   If any task is `in-progress` or `in-review` with no open pull request
+   working it — the machinery keeps those two in step with the forge, so
+   a lasting mismatch is work abandoned without the forge hearing about
+   it — or its open pull request is this session's own, stop here and
+   resume that task instead of selecting new work. One whose open pull
+   request belongs to someone else is theirs, however stale: name it,
+   never take it over on your own. Only proceed to step 1 if no
+   resumable task exists.
 
 1. Read the front-matter of every task in `work/tasks/`.
-2. Keep only tasks with `status: pending`. (This excludes `blocked` tasks
-   automatically — do not add a separate filter for them.)
+2. Keep only tasks with `status: ready`. (This excludes `backlog`,
+   `blocked` and everything in flight or terminal automatically — do not
+   add separate filters for them.)
 3. Discard any task where `depends_on` lists a task that is not
-   `status: completed`.
-4. Discard any task where `spec_ref` lists a spec that is not
-   `status: approved` or `status: implemented`. A draft spec has not passed
-   the approval gate, so the task is not authorized work — leave it. A task
-   with an empty `spec_ref` survives this step.
+   `status: done`.
+4. Cross-check: every spec in `spec_ref` must be `status: approved` or
+   `status: implemented`. From Stage 2 up the machinery wrote `ready`
+   from exactly that fact, so a disagreement is a mismatch to surface
+   loudly, not to silently resolve; at Stage 1 this step is the gate
+   itself. A task with an empty `spec_ref` survives this step.
 5. Sort what remains by `priority`: `high`, then `medium`, then `low`.
 6. Break ties by `created` ascending, then by `id` ascending.
 7. Take the first task. Before writing any code:
@@ -38,7 +44,7 @@ answer — don't shortcut or reorder these steps.
      and the spec is stale: do not implement either side. Surface the
      conflict — the spec is amended to match the doc, returned to `draft`
      in the same change, and re-approved before any code is written
-     (docs/product/tasks-and-specs/conflicts.md#when-the-doc-moves-ahead-of-the-queue).
+     (docs/product/stage-1-tasks-and-specs/conflicts.md#when-the-doc-moves-ahead-of-the-queue).
    - If `spec_ref` is empty and the task body plus `doc_ref` do not
      add up to a sufficient brief, stop and ask the user whether to draft a
      spec first (see the `writrun-create-task-and-spec` skill) rather than guessing
@@ -75,10 +81,11 @@ and the next section applies.
 
 ## Someone may already be on it
 
-WritRun has no claim mechanism — reserving work is a tracker's job, not this
-methodology's, and `work/tasks/` cannot carry the answer anyway: a task
-someone started an hour ago stays `pending` in `main` until their pull
-request merges.
+WritRun has no claim mechanism — reserving work is a tracker's job, not
+this methodology's. The queue on `main` does say who has a task — the
+machinery writes `in-progress` and `taken_by` the moment a draft pull
+request opens — but there is a window of seconds before that recording
+commit lands, and a checkout may be stale.
 
 What the lister can see is work already **in flight** — an open pull request
 for a task. Take that seriously: it is not a lock, and nothing stops two
@@ -103,31 +110,29 @@ Those three are gates, and being asked directly does not open them.
 
 ## Where step 0 can actually see
 
-In a pull-request workflow, `in-progress` rides on the worker's branch and
-reaches `main` only at merge — normally as `completed` already. The one
-exception that does land on `main` is a partial merge: a PR that
-implemented one spec of several without completing the task leaves it
-`in-progress` there, and step 0 sees it like any other file. Otherwise, on
-a clean `main` checkout, step 0 finds nothing by construction. Know where
-the signal really lives:
+From Stage 2 up, `main` is the complete mirror: the machinery writes
+`in-progress` onto it the moment a draft pull request opens, so an
+in-flight task is visible on any current checkout. What step 0
+distinguishes is whether the forge still shows an open pull request for
+it — with one, the task is someone's (the In flight section); with
+none, the flight state is stale and the task is resumable. Two places
+the file cannot see:
 
-- **Your own working copy** — step 0 fires when you are on the work branch,
-  or in a project that commits to `main` directly without PRs.
-- **Someone else's unfinished work with a PR open** — the lister's
-  **In flight** section, not step 0.
+- **The recording window** — a draft opened seconds ago, its commit not
+  yet on `main`. The lister's forge query covers it.
 - **A branch never pushed or pushed without a PR** — visible nowhere.
-  This is the hiding place a project closes by opening the pull request
-  as a draft when the task is taken, before the work starts; where that
-  is the rule, a taken task always has a PR to be seen through. When
-  resuming on a machine or repo you share, check `git branch` (and
-  `git branch -r`) before concluding nothing is unfinished.
+  This is the hiding place the taking flow closes by opening the pull
+  request as a draft before the work starts; when resuming on a machine
+  or repo you share, check `git branch` (and `git branch -r`) before
+  concluding nothing is unfinished.
 
 ## Never
 
 - Never pick a task by directory listing order, filename, or "the one that
   looks easiest" — when *you* are choosing, only by the algorithm above.
-- Never select a `blocked` task. If every `pending` task is blocked or
-  dependency-gated, say so plainly instead of picking one anyway.
+- Never select a `blocked` or `backlog` task. If everything is blocked,
+  dependency-gated, or waiting on approval, say so plainly instead of
+  picking one anyway.
 - Never skip step 0 — but know its reach (above): an abandoned
   `in-progress` task must be surfaced before anything new is picked up,
   and on a `main` checkout the place it shows is the In flight section or

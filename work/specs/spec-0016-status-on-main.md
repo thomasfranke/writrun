@@ -1,7 +1,7 @@
 ---
 id: spec-0016
 task_ref: task-0019
-status: approved
+status: implemented
 created: 2026-08-30T02:58:05Z
 ---
 
@@ -162,4 +162,29 @@ regression).
 
 ## Outcome
 
-_(fill after execution)_
+Built as specified, with the machine split in two scripts rather than
+one: `flip_task_status.sh` (the live edges — take, review, rework,
+land) and `record_task_status.sh` (the merge's moves — done, land,
+settle), because the two run from different workflows with different
+inputs. `apply_pr_event.sh` wires events to edges and holds the
+survivor query and the draft guard on `review_requested`;
+`writrun-progress.yml` gained the Stage-2 `record` job committing to
+main beside the Stage-3 mirror job, and `writrun-approve.yml` calls the
+recorder in its existing commit. Divergences: the `changes_requested`
+edge listens on `pull_request_review` (no `_target` variant exists —
+it runs on base code with the same posture); landing derives
+ready-or-backlog at exit time per the review's finding rather than
+assuming the state the task left. Every edge and echo is
+integration-tested. A second finding landed live, from this task's own
+amendment: only a **carried** task lands — the merge that took its work
+(head branch id, title tags) — never a merge that merely touched its
+spec, or an amendment landing mid-flight would pull a worked task back
+to ready while its pull request stands open; regression-tested. A
+review pass then hardened the machinery: the shared helpers moved into
+`queue_lib.sh` (one resolver, immune to the pipefail death its clones
+carried), the survivor query matches by number rather than spelling,
+the workflow reads results from $GITHUB_OUTPUT instead of scraping
+prose, review events pin their checkouts to the default branch and
+skip fork reviews (read-only tokens), and the mirror job projects the
+recorded file via `project_pr_tasks.sh` — `reflect_progress.sh`'s
+private second derivation is retired.

@@ -68,7 +68,7 @@ The flow is a loop, not a line. A spec names every permanent doc its
 finished change will touch, and the diff that completes the task must touch
 all of them — so the docs it was derived from stay true to what shipped.
 Drawn in full, with the human gates on it, in
-[`product/tasks-and-specs/README.md`](product/tasks-and-specs/README.md).
+[`product/stage-1-tasks-and-specs/README.md`](product/stage-1-tasks-and-specs/README.md).
 
 ## Vocabulary
 

@@ -1,9 +1,10 @@
 ---
 id: task-0016
-status: completed
+status: done
 blocked_reason: null
+taken_by: null
 spec_ref: [spec-0013]
-doc_ref: product/tasks-and-specs/gates.md
+doc_ref: product/stage-1-tasks-and-specs/gates.md
 priority: high
 depends_on: []
 milestone: null
