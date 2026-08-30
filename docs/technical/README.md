@@ -204,27 +204,53 @@ generates this form, so the contract costs nothing on the happy path.
 
 ## Settings
 
-`.writrun/conventions/settings.json` holds the choices
+`.writrun/settings.json` holds the choices
 [Adoption](../product/adoption.md#three-stages) leaves open — values only, no
-prose — read by both the machinery and the agents. It sits in `conventions/`
-because that folder is the project's from adoption onward and `writ update`
-never touches it.
+prose — read by both the machinery and the agents. It sits at the root of
+WritRun's own home because it is the first file a reader or a tool goes
+looking for: the one address ends the hunt. The file is the project's from
+adoption onward and `writ update` never touches it — the same exemption
+`conventions/` carries, stated for this file by name now that it no longer
+lives there. (Until the machinery catches up with this section, the file
+still sits at its old address, `.writrun/conventions/settings.json`; the
+reader honours a file left there, and `check_settings.sh` names the move.)
+
+**The choices are sectioned by stage** — the same rule that put the stage
+on folder names ([Adoption](../product/adoption.md#three-stages)): one
+top-level `stage`, the single global switch, then one object per stage
+holding the keys that stage's readers act on, so a reader knows which
+choices their stage may ignore without knowing each key. A section exists
+only when it holds a documented key — no empty placeholder objects.
 
 ```json
 {
   "stage": 3,
-  "pr_title_style": "conventional"
+  "stage_1": {
+    "auto_commit": true,
+    "credit_ai": true
+  },
+  "stage_2": {
+    "auto_pr": true,
+    "pr_title_style": "conventional"
+  }
 }
 ```
 
-| Key | Values | Read by |
-|---|---|---|
-| `stage` | `1` / `2` / `3` | the workflows, and agents |
-| `pr_title_style` | `conventional` / `bracketed` | agents only |
+| Key | Section | Values | Read by |
+|---|---|---|---|
+| `stage` | top level | `1` / `2` / `3` | the workflows, and agents |
+| `auto_commit` | `stage_1` | `true` / `false` | agents only |
+| `credit_ai` | `stage_1` | `true` / `false` | agents only |
+| `auto_pr` | `stage_2` | `true` / `false` | agents only |
+| `pr_title_style` | `stage_2` | `conventional` / `bracketed` | agents only |
 
 **Every key is present, always** — the same reason the front matter carries
 `null` fields rather than omitting them: a reader sees the whole
-configuration without knowing the defaults.
+configuration without knowing the defaults. Each key's documented default
+is the behaviour from before the key existed, so a project without the
+file, or without the key, behaves exactly as it did: `stage` defaults to
+`3`, `pr_title_style` to `conventional`, and the three conduct flags to
+`true`.
 
 ### `stage`
 
@@ -265,19 +291,64 @@ the machinery and `list_tasks.sh` learn which tasks a pull request
 carries, and a branch name holds one id: a title without it reduces a
 multi-task pull request to reporting one task, silently.
 
+### `auto_commit` and `auto_pr`
+
+The adopter's word on the agent's own git actions. `true` — the default,
+and the behaviour from before the keys existed — lets the agent commit
+(`auto_commit`) and open pull requests (`auto_pr`) on its own as its flow
+requires. `false` gates the action, never the work: the agent still
+composes the full commit message, or the pull request's complete title and
+body, then presents it and acts only on an explicit yes. Approval is per
+action, never a session-wide grant.
+
+**The flags outrank the agent platform's own autonomy mode.** An agent
+running auto-accept, autonomous, or any mode in which its harness would
+not ask, still stops: the platform's mode governs what the *harness*
+asks, these flags govern what the *adopter* allowed — a setting that only
+bound an agent already asking would control nothing, and a setting
+controls (below). `auto_commit` sits in `stage_1` because commits exist
+for every adopter; `auto_pr` in `stage_2` because pull requests begin
+there. Neither flag touches the one commit the machinery makes nor any
+workflow-driven write — those are not the agent's actions.
+
+### `credit_ai`
+
+The adopter's word on the agent's self-credit. `true` — the default, the
+behaviour from before the key existed — leaves the agent's commits and
+pull request bodies carrying whatever credit its platform appends: a
+`Co-Authored-By:` trailer, a session link, a generated-with line. `false`
+means everything the agent writes into git and the forge carries the
+change alone — no co-author trailer, no session URL, no tool mention; the
+message reads as any other in the history. An instruction from the
+agent's own platform to append credit yields to this file, with the same
+precedence the conduct flags above state. The flag speaks only to what
+the agent writes: authorship identity stays git configuration, other
+authors' commits are untouched, and nothing rewrites history — the flag
+binds from the write after the flip.
+
 ### The shape is a checked contract
 
-JSON permits nesting, arrays and free-form whitespace; a line-based reader
-sees none of it and would misread in silence. So the file is restricted to
-what such a reader can see — a flat object, one `"key": value` per line,
-two-space indent, values `true`, `false`, an unquoted integer, or a
-double-quoted string — and
-`check_settings.sh` enforces it. The subset is ordinary JSON that any editor
-or `jq` reads.
+JSON permits arbitrary nesting, arrays and free-form whitespace; a
+line-based reader sees none of it and would misread in silence. So the
+file is restricted to what such a reader can see — a two-level object and
+nothing deeper. At the top level: scalar pairs (`"stage": 3`) and stage
+sections, each opened by a two-space-indented `"stage_N": {` line of its
+own and closed by a two-space `}` line of its own. Inside a section:
+scalar pairs at four spaces. Every pair is one `"key": value` line,
+values `true`, `false`, an unquoted integer, or a double-quoted string —
+and `check_settings.sh` enforces all of it, including that every
+documented key sits in its documented home. The subset is ordinary JSON
+that any editor or `jq` reads.
+
+`read_setting.sh` addresses a sectioned key through its section —
+`read_setting.sh stage_2.pr_title_style` — and a top-level key bare:
+`read_setting.sh stage`. The address, not the name, is a key's identity.
 
 What the restriction buys is that no script needs `jq`, which would be this
 project's first runtime dependency (see the non-goal in
-[`about.md`](../about.md#non-goals--equally-important)). Strictness is scoped
+[`about.md`](../about.md#non-goals--equally-important)): one nesting level,
+entered and left on lines of fixed shape, is still sed/awk territory.
+Strictness is scoped
 to where the risk is: keys a workflow parses are shape-checked; keys only an
 agent reads are checked for value alone, since an agent reads JSON the way it
 reads prose.
