@@ -8,7 +8,9 @@ setup
 settings_file <<'JSON'
 {
   "level": "tasks-and-specs",
-  "pr_title_style": "conventional"
+  "stage_2": {
+    "pr_title_style": "conventional"
+  }
 }
 JSON
 check "the old full opt-out still reads as stage 1" 0 "1" \
@@ -21,7 +23,9 @@ check "while the check names the rename" 1 "'level' was renamed" \
 settings_file <<'JSON'
 {
   "level": "pull-requests",
-  "pr_title_style": "conventional"
+  "stage_2": {
+    "pr_title_style": "conventional"
+  }
 }
 JSON
 check "the middle level maps to stage 2" 0 "2" \

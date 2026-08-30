@@ -10,7 +10,14 @@ spec_file spec-001 task-001 approved
 settings_file <<'JSON'
 {
   "stage": 1,
-  "pr_title_style": "conventional"
+  "stage_1": {
+    "auto_commit": true,
+    "credit_ai": true
+  },
+  "stage_2": {
+    "auto_pr": true,
+    "pr_title_style": "conventional"
+  }
 }
 JSON
 commit_all
