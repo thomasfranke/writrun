@@ -1,0 +1,11 @@
+{
+  "stage": 3,
+  "stage_1": {
+    "auto_commit": true,
+    "credit_ai": true
+  },
+  "stage_2": {
+    "auto_pr": true,
+    "pr_title_style": "bracketed"
+  }
+}

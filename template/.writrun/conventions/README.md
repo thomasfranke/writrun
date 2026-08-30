@@ -22,9 +22,9 @@ One rule spans them all in this repository: **English everywhere** —
 code, comments, commits, documentation.
 
 Tooling needs these choices machine-readably — the scripts already act on
-some of them — so the data lives in [`settings.json`](settings.json) and
-these `.md` files carry the reasoning: what the options are and why a
-project would pick one. **Nothing is stated in both.** A value here that
+some of them — so the data lives in [`settings.json`](../settings.json),
+at the root of WritRun's home, and these `.md` files carry the reasoning:
+what the options are and why a project would pick one. **Nothing is stated in both.** A value here that
 also sits in the settings file is a value that will eventually disagree
 with itself; if you find one, the settings file wins and the prose is the
 bug.
@@ -32,5 +32,8 @@ bug.
 That split was always the plan; the file is JSON rather than the
 front-matter this once predicted, because it is edited by people who have
 not read WritRun's front-matter contract and JSON is the shape they
-already know. See
-[`decisions/0052`](../../docs/technical/decisions/0052-settings-carry-the-choice.md).
+already know. It no longer lives in this folder — the update exemption
+`conventions/` carries moved onto the file by name when it took the root
+address. See
+[`decisions/0052`](../../docs/technical/decisions/tasks-and-specs/0052-settings-carry-the-choice.md)
+and [`decisions/0053`](../../docs/technical/decisions/tasks-and-specs/0053-settings-at-the-root.md).
