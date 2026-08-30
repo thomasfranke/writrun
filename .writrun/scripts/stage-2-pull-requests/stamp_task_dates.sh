@@ -16,8 +16,10 @@
 #
 #   queued  — the range **adds** the task file. The merge is what put it
 #             in the queue.
-#   merged  — the range moves the task **to `completed`**. The merge is
-#             what took its work.
+#   merged  — the range writes the task's **`completed` date** — the
+#             worker's declaration of finishing. The merge is what took
+#             its work; the status flip it implies is
+#             record_task_status.sh's, in the same recording commit.
 #
 # The transition is read from the front matter at the range's two ends,
 # never from the diff text — the rule check_state.sh and
@@ -113,30 +115,38 @@ git_read() {
   rm -f "$err"
 }
 
+# is_dated <file> — the task carries a written completed date.
+is_dated() {
+  local v
+  v=$(fm_field completed < "$1")
+  [ -n "$v" ] && [ "$v" != "null" ]
+}
+
 # A task added by the range entered the queue at this merge — and if it
-# arrived already completed (tracked work shipped with its own change),
-# the same merge took its work too.
+# arrived with its completed date already written (tracked work shipped
+# with its own change), the same merge took its work too.
 git_read "git diff --name-only --diff-filter=A ${RANGE} -- work/tasks" \
   diff --name-only --diff-filter=A "$RANGE" -- 'work/tasks/*.md'
 while IFS= read -r f; do
   [ -n "$f" ] || continue
   [ -f "$f" ] || continue
   stamp "$f" queued
-  if [ "$(fm_field status < "$f")" = "completed" ]; then stamp "$f" merged; fi
+  if is_dated "$f"; then stamp "$f" merged; fi
 done <<EOF
 $GIT_OUT
 EOF
 
-# A task the range modified is stamped only for the transition it
-# actually made: already completed at the base is not a completion here.
+# A task the range modified is stamped only for the declaration it
+# actually carried: a date already written at the base is history, not a
+# finishing here.
 git_read "git diff --name-only --diff-filter=M ${RANGE} -- work/tasks" \
   diff --name-only --diff-filter=M "$RANGE" -- 'work/tasks/*.md'
 while IFS= read -r f; do
   [ -n "$f" ] || continue
   [ -f "$f" ] || continue
-  [ "$(fm_field status < "$f")" = "completed" ] || continue
-  was=$(git show "${BASE}:${f}" 2>/dev/null | fm_field status || true)
-  if [ "$was" = "completed" ]; then continue; fi
+  is_dated "$f" || continue
+  was=$(git show "${BASE}:${f}" 2>/dev/null | fm_field completed || true)
+  if [ -n "$was" ] && [ "$was" != "null" ]; then continue; fi
   stamp "$f" merged
 done <<EOF
 $GIT_OUT

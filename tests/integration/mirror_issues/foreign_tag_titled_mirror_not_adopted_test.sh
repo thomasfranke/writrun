@@ -7,7 +7,7 @@
 # has to hold.
 setup_forge
 added_task task-001 "Mine"
-forge_issue 12 open "writrun:task,status:pending" "[TASK-001] Someone else's" 99
+forge_issue 12 open "writrun:task,status:backlog" "[TASK-001] Someone else's" 99
 forge_pr_state 99 open
 check "a foreign tag-titled mirror is named, not taken" 0 \
   "mirrored by #99, which is still open" \

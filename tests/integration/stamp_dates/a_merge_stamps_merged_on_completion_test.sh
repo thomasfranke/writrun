@@ -8,7 +8,7 @@ setup
 git checkout -q main
 task_file task-0001 in-progress ""
 commit_all
-sed -i.bak 's/^status: in-progress$/status: completed/' work/tasks/task-0001.md && rm -f work/tasks/*.bak
+sed -i.bak 's/^completed: null$/completed: 2026-08-29T10:00:00Z/' work/tasks/task-0001.md && rm -f work/tasks/*.bak
 commit_all
 
 check "completing a task stamps merged" 0 "stamped merged" \
@@ -23,9 +23,9 @@ fi
 # may quote `status: completed` at column 0, and this repository's docs do.
 setup
 git checkout -q main
-task_file task-0002 pending ""
+task_file task-0002 ready ""
 commit_all
-printf '\nA body line quoting the schema:\n\nstatus: completed\n' >> work/tasks/task-0002.md
+printf '\nA body line quoting the schema:\n\ncompleted: 2026-08-29T10:00:00Z\n' >> work/tasks/task-0002.md
 commit_all
 check "a body quoting a status is not a transition" 0 "" \
   -- bash "$CI_SCRIPTS/stage-2-pull-requests/stamp_task_dates.sh" HEAD~1...HEAD 2026-08-29T12:00:00Z

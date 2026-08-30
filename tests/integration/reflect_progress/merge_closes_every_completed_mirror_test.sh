@@ -13,7 +13,7 @@ forge_issue 23 open "writrun:task,status:in-review" "task-0005 — Second"
 pr_patch modified "work/tasks/task-0004.md" <<'EOF'
 @@ -1,3 +1,3 @@
 -status: in-progress
-+status: completed
++completed: 2026-08-29T10:00:00Z
 EOF
 pr_patch modified "work/tasks/task-0005.md" <<'EOF'
 @@ -1,3 +1,3 @@

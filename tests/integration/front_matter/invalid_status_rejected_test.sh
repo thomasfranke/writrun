@@ -4,7 +4,7 @@
 # The status vocabulary is closed — "these values and no others". An
 # invented one would fall through every filter as if held back forever.
 setup
-task_file task-001 done ""
+task_file task-001 someday ""
 check "an invented status is named" 1 "not a task status" \
   -- bash "$CHECK_FRONT_MATTER"
 

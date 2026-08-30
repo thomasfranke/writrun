@@ -7,7 +7,7 @@
 # and exiting 0.
 setup
 git checkout -q main
-task_file task-0001 pending ""
+task_file task-0001 ready ""
 commit_all
 
 check "an unreadable range is refused, with git's own words" 3 "fatal:" \

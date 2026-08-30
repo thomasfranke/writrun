@@ -5,7 +5,7 @@
 # change returned approved→draft is assented to by the same merge, so it
 # flips back and the net status on the base branch is unchanged.
 setup
-task_file task-0001 pending spec-0001
+task_file task-0001 ready spec-0001
 spec_file spec-0001 task-0001 approved
 commit_all
 git checkout -q main

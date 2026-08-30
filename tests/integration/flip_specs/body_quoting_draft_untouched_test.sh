@@ -4,7 +4,7 @@
 # A spec documenting the methodology can quote `status: draft` in its
 # body; only the front-matter block is the record.
 setup
-task_file task-001 pending spec-001
+task_file task-001 ready spec-001
 spec_file spec-001 task-001 draft
 printf 'status: draft\n' >> work/specs/spec-001.md
 commit_all

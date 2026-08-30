@@ -5,7 +5,7 @@
 # approval — nothing to verify; the gate comes later, at the review.
 setup
 stub_gh 0
-task_file task-001 pending spec-001
+task_file task-001 ready spec-001
 spec_file spec-001 task-001 approved
 commit_all
 git checkout -q main; git merge -q feature; git checkout -q feature

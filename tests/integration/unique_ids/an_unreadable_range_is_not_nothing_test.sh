@@ -6,7 +6,7 @@
 # file" — a clean pass on a collision check that never looked.
 setup
 stub_forge
-task_file task-0007 pending ""
+task_file task-0007 ready ""
 commit_all
 
 check "an unreadable range is refused, with git's own words" 3 "fatal:" \

@@ -5,7 +5,7 @@
 # its spec promised. Reading nothing and reporting "not applicable" is the
 # shape of a promise silently unkept.
 setup
-task_file task-001 completed spec-001
+task_file task-001 done spec-001
 spec_file spec-001 task-001 implemented
 commit_all
 

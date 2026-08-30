@@ -5,7 +5,7 @@
 # after a maintainer approved the PR) and self-approval look identical.
 # CI's writrun check settles it against the PR's actual reviews.
 setup
-task_file task-001 pending spec-001
+task_file task-001 ready spec-001
 spec_file spec-001 task-001 approved
 commit_all
 check "a spec born approved passes locally (CI judges the review)" 0 "OK" \

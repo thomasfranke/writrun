@@ -5,7 +5,7 @@
 # write when the work is finished, and until then the honest value is
 # `null` — not a timestamp invented to satisfy a checker.
 setup
-task_file task-001 pending spec-001
+task_file task-001 ready spec-001
 spec_file spec-001 task-001 draft
 check "a null in a nullable date field is accepted" 0 "all canonical" \
   -- bash "$CHECK_FRONT_MATTER"

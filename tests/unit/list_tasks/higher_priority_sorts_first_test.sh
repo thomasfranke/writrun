@@ -2,8 +2,8 @@
 . "$(dirname "$0")/../../pipeline_lib.sh"
 
 setup
-task_file task-001 pending ""
-task_file task-002 pending ""
+task_file task-001 ready ""
+task_file task-002 ready ""
 sed -i.bak 's/^priority: medium$/priority: high/' work/tasks/task-002.md
 rm -f work/tasks/task-002.md.bak
 out=$(bash "$LIST_TASKS" 2>&1)

@@ -7,7 +7,7 @@
 # for a lifecycle nothing read.
 setup
 git checkout -q main
-task_file task-001 pending ""
+task_file task-001 ready ""
 commit_all
 
 check "an empty range is refused, not passed" 3 "selects no commits" \

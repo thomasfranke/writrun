@@ -63,7 +63,7 @@ for t in work/tasks/*.md; do
   [ -f "$t" ] || continue
   case "$(basename "$t")" in README.md|readme.md) continue ;; esac
   st=$(sed -n 's/^status: *//p' "$t" | head -n1)
-  [ "$st" = "completed" ] && continue
+  case "$st" in done|dropped) continue ;; esac
   ref=$(sed -n 's/^doc_ref: *//p' "$t" | head -n1)
   [ -n "$ref" ] && [ "$ref" != "null" ] || continue
   file="docs/${ref%%#*}"

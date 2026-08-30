@@ -6,7 +6,7 @@
 # so somebody is behind it and the collision is named, never adopted.
 setup_forge
 added_task task-001 "Mine"
-forge_issue 12 open "writrun:task,status:pending" "task-001 — Someone else's" 99
+forge_issue 12 open "writrun:task,status:backlog" "task-001 — Someone else's" 99
 forge_pr_state 99 open
 check "a foreign mirror with the same id is named" 0 \
   "mirrored by #99, which is still open" \

@@ -2,7 +2,7 @@
 . "$(dirname "$0")/../../mirror_lib.sh"
 
 # The merge carried the task to completed — the diff says so with an
-# actual `+status: completed` line — so the mirror closes, done.
+# actual `+completed: 2026-08-29T10:00:00Z` line — so the mirror closes, done.
 setup_forge
 export PR_STATE=closed PR_MERGED=true PR_HEAD_REF="spec/003-search"
 base_spec spec-003 task-005
@@ -11,7 +11,7 @@ pr_patch modified "work/tasks/task-005.md" <<'EOF'
 @@ -2,2 +2,2 @@
  id: task-005
 -status: in-progress
-+status: completed
++completed: 2026-08-29T10:00:00Z
 EOF
 check "a completing merge closes the mirror" 0 \
   "task-005 completed — Issue #31 closed" \

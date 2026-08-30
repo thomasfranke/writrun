@@ -5,7 +5,7 @@
 # wins: every label names a place inside the pipeline, and a closed mirror
 # is out of it.
 setup_forge
-base_task task-0005 pending spec-0003
+base_task task-0005 ready spec-0003
 base_spec spec-0003 task-0005 approved
 forge_issue 31 closed "writrun:task" "[TASK-0005] Already closed"
 check "a closed mirror is not relabelled" 0 "is closed — no label is written" \

@@ -8,9 +8,9 @@ setup
 git checkout -q main
 task_file task-0001 in-progress ""
 commit_all
-sed -i.bak 's/^status: in-progress$/status: completed/' work/tasks/task-0001.md && rm -f work/tasks/*.bak
-task_file task-0002 pending ""
-task_file task-0003 completed ""
+sed -i.bak 's/^completed: null$/completed: 2026-08-29T10:00:00Z/' work/tasks/task-0001.md && rm -f work/tasks/*.bak
+task_file task-0002 ready ""
+task_file task-0003 done "" 2026-08-29T09:00:00Z
 commit_all
 
 bash "$CI_SCRIPTS/stage-2-pull-requests/stamp_task_dates.sh" HEAD~1...HEAD 2026-08-29T12:00:00Z > "$WORK/out" 2>&1

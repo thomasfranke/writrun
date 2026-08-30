@@ -6,7 +6,7 @@
 # the most dangerous empty answer in the repository.
 setup
 stub_forge
-task_file task-001 pending spec-001
+task_file task-001 ready spec-001
 spec_file spec-001 task-001 approved
 commit_all
 

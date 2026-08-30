@@ -11,8 +11,8 @@ added_task task-001 "Caught up at merge" spec-001
 added_spec spec-001 task-001 draft
 check "a merge creates the mirror it never had" 0 "Created issue for task-001" \
   -- bash "$MIRROR_ISSUES" o/r 7
-forge_told "labelled pending, because a spec is still draft" \
-  "-f labels[]=writrun:task -f labels[]=status:pending"
+forge_told "labelled backlog, because a spec is still draft" \
+  "-f labels[]=writrun:task -f labels[]=status:backlog"
 forge_not_told "and never proposed" \
   "-f labels[]=status:proposed"
 

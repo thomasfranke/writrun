@@ -5,7 +5,7 @@
 # modifies a task without completing it earned neither field.
 setup
 git checkout -q main
-task_file task-0001 pending ""
+task_file task-0001 ready ""
 commit_all
 printf 'a docs change\n' > docs/product/chapter.md
 commit_all
@@ -23,7 +23,7 @@ else
 fi
 
 # A task already completed on the base branch did not complete here.
-sed -i.bak 's/^status: pending$/status: completed/' work/tasks/task-0001.md && rm -f work/tasks/*.bak
+sed -i.bak 's/^completed: null$/completed: 2026-08-29T10:00:00Z/' work/tasks/task-0001.md && rm -f work/tasks/*.bak
 commit_all
 bash "$CI_SCRIPTS/stage-2-pull-requests/stamp_task_dates.sh" HEAD~1...HEAD 2026-08-29T12:00:00Z >/dev/null
 printf 'a later edit\n' >> work/tasks/task-0001.md

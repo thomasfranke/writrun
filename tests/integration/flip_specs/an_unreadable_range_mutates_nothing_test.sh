@@ -5,7 +5,7 @@
 # swallowed failure here does not merely misreport — it records no
 # approval at all, silently, on a merge that granted one.
 setup
-task_file task-001 pending spec-001
+task_file task-001 ready spec-001
 spec_file spec-001 task-001 draft
 commit_all
 

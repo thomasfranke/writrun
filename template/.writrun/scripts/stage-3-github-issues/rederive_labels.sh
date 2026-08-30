@@ -11,7 +11,7 @@
 # Why this exists: `status:ready` was unreachable. The mirror derived it
 # from the spec statuses in the merged pull request's *diff*, where they
 # are still `draft` — because that same merge is what approves them. So
-# every task merged this way sat on `status:pending` with its specs
+# every task merged this way sat on the backlog label with its specs
 # approved, and no later event ever corrected it.
 #
 # **Reading the diff is right for what the merge carried; it is wrong for
@@ -66,32 +66,31 @@ queue_file() {
 }
 
 # label_for <task-file> — the label this task deserves from the queue on
-# disk, or nothing when the machinery should not touch it.
+# disk, or nothing when the mirror should close or stay closed instead.
 #
-# Only a `pending` task is re-derived. `in-progress` and the states that
-# follow it belong to reflect_progress.sh, which knows something the queue
-# does not: whether a pull request is open. Overwriting those from here
-# would tell a worker's mirror it is available again, on the strength of
-# an approval that changed nothing about who is working it.
+# The file is the truth: the machinery writes every working state onto
+# the authority branch as its forge event lands, so the label restates
+# the stored status, one to one
+# (docs/product/stage-3-github-issues/labels.md). The two terminal
+# states return nothing here — a closed mirror carries no status label,
+# and closing is close_for's answer.
 label_for() {
-  local tf status refs r sf ss
-  status=$(fm "$1" status)
-  [ "$status" = "pending" ] || return 0
-  refs=$(fm "$1" spec_ref | sed 's/^\[//; s/\]$//; s/,/ /g')
-  for r in $refs; do
-    [ -n "$r" ] || continue
-    sf=$(queue_file work/specs spec "$r")
-    # A ref that resolves to nothing is not an approval. Say pending
-    # rather than guessing; the canonical check owns the broken ref.
-    [ -n "$sf" ] || { printf 'status:pending'; return 0; }
-    ss=$(fm "$sf" status)
-    case "$ss" in
-      approved|implemented) ;;
-      *) printf 'status:pending'; return 0 ;;
-    esac
-  done
-  # No refs at all is approved by construction — nothing is holding it.
-  printf 'status:ready'
+  case "$(fm "$1" status)" in
+    backlog)     printf 'status:backlog' ;;
+    ready)       printf 'status:ready' ;;
+    in-progress) printf 'status:in-progress' ;;
+    in-review)   printf 'status:in-review' ;;
+    blocked)     printf 'status:blocked' ;;
+  esac
+}
+
+# close_for <task-file> — the close reason a terminal status implies, or
+# nothing for a task still in the pipeline.
+close_for() {
+  case "$(fm "$1" status)" in
+    done)    printf 'completed' ;;
+    dropped) printf 'not_planned' ;;
+  esac
 }
 
 if [ "$#" -eq 0 ]; then
@@ -143,8 +142,15 @@ ensure_label() {   # ensure_label <name> <color> <description>
 
 seen=""
 for sf in "$@"; do
-  [ -f "$sf" ] || continue
-  tref=$(fm "$sf" task_ref)
+  # A spec file names its task; a task file or bare task id names itself
+  # — the callers pass whichever the merge put in front of them.
+  case "$(basename "$sf")" in
+    task-*)
+      tref=$(basename "$sf" .md | sed -E 's/^(task-[0-9]+).*/\1/') ;;
+    *)
+      [ -f "$sf" ] || continue
+      tref=$(fm "$sf" task_ref) ;;
+  esac
   [ -n "$tref" ] || continue
   tnum=$(num_of_id "$tref")
   [ -n "$tnum" ] || continue
@@ -159,7 +165,8 @@ for sf in "$@"; do
   fi
 
   want=$(label_for "$tf")
-  if [ -z "$want" ]; then
+  closing=$(close_for "$tf")
+  if [ -z "$want" ] && [ -z "$closing" ]; then
     echo "${tref} is $(fm "$tf" status) — its label is not this step's to write."
     continue
   fi
@@ -193,11 +200,35 @@ EOF
     continue
   fi
 
+  # A terminal status closes the mirror: the close and its reason are
+  # the state, and no status label survives it.
+  if [ -n "$closing" ]; then
+    kept=$(printf '%s\n' "$labels" | tr ',' '\n' | grep -v '^status:' | sed '/^$/d' || true)
+    args=()
+    while IFS= read -r l; do
+      [ -n "$l" ] || continue
+      args+=(-f "labels[]=$l")
+    done <<EOF
+$kept
+EOF
+    gh api -X PUT "repos/${REPO}/issues/${num}/labels" ${args[@]+"${args[@]}"} >/dev/null
+    gh api -X PATCH "repos/${REPO}/issues/${num}" \
+      -f state=closed -f "state_reason=${closing}" >/dev/null
+    echo "${tref} → mirror #${num} closed as ${closing}"
+    continue
+  fi
+
   case "$want" in
     status:ready)
-      ensure_label "status:ready" "0e8a16" "Ready for development: task pending, specs approved" ;;
-    status:pending)
-      ensure_label "status:pending" "fbca04" "In the queue, with a spec it references not yet approved" ;;
+      ensure_label "status:ready" "0e8a16" "Ready for development — waiting for someone to take it" ;;
+    status:backlog)
+      ensure_label "status:backlog" "fbca04" "In the queue, with a spec it references not yet approved" ;;
+    status:in-progress)
+      ensure_label "status:in-progress" "bfd4f2" "Someone is working on it; leave the worker alone" ;;
+    status:in-review)
+      ensure_label "status:in-review" "d93f0b" "A pull request is open and waiting on review" ;;
+    status:blocked)
+      ensure_label "status:blocked" "b60205" "Stalled by something outside the queue — blocked_reason says what" ;;
   esac
   set_status "$num" "$labels" "$want"
   echo "${tref} → ${want} (re-derived from the queue)"

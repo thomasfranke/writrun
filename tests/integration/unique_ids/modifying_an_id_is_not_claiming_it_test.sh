@@ -6,7 +6,7 @@
 setup
 stub_forge
 forge_pr 9 modified work/tasks/task-0007-theirs.md
-task_file task-0007 pending ""
+task_file task-0007 ready ""
 commit_all
 check "another pull request's modification is not a claim" 0 "No id collides" \
   -- bash "$CI_SCRIPTS/stage-2-pull-requests/check_unique_ids.sh" main...HEAD o/r 7

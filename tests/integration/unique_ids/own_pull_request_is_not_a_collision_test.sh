@@ -8,7 +8,7 @@
 setup
 stub_forge
 forge_pr 7 added work/tasks/task-0007.md
-task_file task-0007 pending ""
+task_file task-0007 ready ""
 commit_all
 check "a pull request does not collide with itself" 0 "No id collides" \
   -- bash "$CI_SCRIPTS/stage-2-pull-requests/check_unique_ids.sh" main...HEAD o/r 7

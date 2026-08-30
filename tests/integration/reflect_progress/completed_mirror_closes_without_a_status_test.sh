@@ -13,7 +13,7 @@ forge_issue 31 open "writrun:task,status:in-review" "[TASK-0005] Finished"
 pr_patch modified "work/tasks/task-0005.md" <<'PATCH'
 @@ -1,4 +1,4 @@
 -status: in-progress
-+status: completed
++completed: 2026-08-29T10:00:00Z
 PATCH
 check "a completed task closes its mirror" 0 "completed — Issue #31 closed" \
   -- bash "$REFLECT_PROGRESS" o/r 7

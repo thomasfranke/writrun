@@ -5,7 +5,7 @@
 # its promises are not checked against this diff — a change that would
 # otherwise fail MISSING on a contract nobody invoked.
 setup
-task_file task-001 pending spec-001
+task_file task-001 ready spec-001
 spec_file spec-001 task-001 draft product/chapter.md
 commit_all
 git checkout -q main; git merge -q feature; git checkout -q feature

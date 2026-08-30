@@ -158,15 +158,15 @@ check_task() {   # check_task <file>
     return 0
   fi
   check_shape "$f" "$block"
-  for field in id status blocked_reason spec_ref doc_ref priority depends_on milestone created queued completed merged; do
+  for field in id status blocked_reason taken_by spec_ref doc_ref priority depends_on milestone created queued completed merged; do
     require_once "$f" "$block" "$field"
   done
   check_id "$f" "$block"
 
   st=$(get "$block" status)
   case "$st" in
-    pending|in-progress|blocked|completed) ;;
-    *) fail "$f" "status '$st' is not a task status (pending|in-progress|blocked|completed)" ;;
+    backlog|ready|in-progress|in-review|done|blocked|dropped) ;;
+    *) fail "$f" "status '$st' is not a task status (backlog|ready|in-progress|in-review|done|blocked|dropped)" ;;
   esac
 
   # blocked and blocked_reason come paired, both ways: a blocked task
@@ -178,6 +178,20 @@ check_task() {   # check_task <file>
   fi
   if [ "$st" != "blocked" ] && [ -n "$reason" ] && [ "$reason" != "null" ]; then
     fail "$f" "blocked_reason is set but status is '$st' — null unless blocked"
+  fi
+
+  # taken_by is the machinery's record of who has the task: a forge
+  # login while a pull request works it, kept on done as who completed
+  # it, null everywhere else — a login on a task nobody has is a claim
+  # the forge never made.
+  taken=$(get "$block" taken_by)
+  if [ "$taken" != "null" ]; then
+    printf '%s' "$taken" | grep -qE '^[A-Za-z0-9-]+(\[bot\])?$' \
+      || fail "$f" "taken_by '$taken' is not a bare forge login or null"
+    case "$st" in
+      in-progress|in-review|done) ;;
+      *) fail "$f" "taken_by is set but status is '$st' — a login only while a PR works the task, or on done" ;;
+    esac
   fi
 
   pr=$(get "$block" priority)

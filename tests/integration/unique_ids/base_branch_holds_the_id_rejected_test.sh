@@ -5,7 +5,7 @@
 # whoever put it there holds it and this change renumbers.
 setup
 stub_forge
-task_file task-0007 pending ""
+task_file task-0007 ready ""
 commit_all
 git checkout -q main; git merge -q feature; git checkout -q feature
 cp work/tasks/task-0007.md work/tasks/task-0007-again.md

@@ -1,7 +1,8 @@
 ---
 id: task-0011
-status: completed
+status: done
 blocked_reason: null
+taken_by: null
 spec_ref: [spec-0008]
 doc_ref: technical/README.md#front-matter-is-canonical
 priority: medium

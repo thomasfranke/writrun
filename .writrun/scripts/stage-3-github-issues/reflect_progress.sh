@@ -267,7 +267,7 @@ EOF
   if [ "$PR_MERGED" != "true" ]; then
     # Closed without merging. The work is not done, and nothing reserves
     # the task — it is available again.
-    ensure_label "status:ready" "0e8a16" "Ready for development: task pending, specs approved"
+    ensure_label "status:ready" "0e8a16" "Ready for development — waiting for someone to take it"
     set_status "$issue_num" "$issue_labels" "status:ready"
     echo "${task_id} → status:ready (#${PR} closed unmerged)"
     return 0
@@ -276,14 +276,17 @@ EOF
   # Merged. The Issue closes only if the merge actually completed *this*
   # task — a PR can merge partial work, or complete one carried task and
   # not another, and closing then would hide a task still outstanding.
-  # The completion keys on an actual `+status: completed` line in the
-  # merged diff's patch text for this task's own file.
+  # The completion keys on the worker's declaration in the merged diff's
+  # patch text for this task's own file: a `+completed:` line writing a
+  # real date. The status flip itself is the machinery's, after the
+  # merge — the diff never carries it (statuses.md).
   completed=false
   while IFS="$TAB" read -r fstatus fname fpatch; do
     [ -n "$fname" ] || continue
     printf '%s' "$fname" | tr '[:upper:]' '[:lower:]' \
       | grep -qE "^work/tasks/task-0*${num}(-[a-z0-9-]+)?\.md$" || continue
-    if printf '%s' "$fpatch" | b64_decode | grep -qxF '+status: completed'; then
+    if printf '%s' "$fpatch" | b64_decode \
+      | grep -qE '^\+completed: [0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$'; then
       completed=true
     fi
     break

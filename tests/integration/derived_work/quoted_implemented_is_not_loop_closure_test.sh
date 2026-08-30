@@ -6,7 +6,7 @@
 # reads the front matter at both ends of the range, and this spec's never
 # left draft — so the doc edit still owes its derived-work declaration.
 setup
-task_file task-001 pending spec-001
+task_file task-001 ready spec-001
 spec_file spec-001 task-001 draft
 commit_all
 git checkout -q main; git merge -q feature; git checkout -q feature

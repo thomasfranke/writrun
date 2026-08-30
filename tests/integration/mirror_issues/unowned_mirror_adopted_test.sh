@@ -6,7 +6,7 @@
 # the only move that gets the task a mirror it can reach.
 setup_forge
 added_task task-001 "Mine now"
-forge_issue 12 open "writrun:task,status:pending" "task-001 — Nobody's" none
+forge_issue 12 open "writrun:task,status:backlog" "task-001 — Nobody's" none
 check "a mirror with no ownership line is adopted" 0 \
   "adopted unowned mirror #12" \
   -- bash "$MIRROR_ISSUES" o/r 7

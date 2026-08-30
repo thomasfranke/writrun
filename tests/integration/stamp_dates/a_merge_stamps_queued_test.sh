@@ -6,7 +6,7 @@
 # its own time, and the field a person left null is what it fills.
 setup
 git checkout -q main
-task_file task-0001 pending ""
+task_file task-0001 ready ""
 commit_all
 
 check "a merge adds a task and stamps queued" 0 "stamped queued" \

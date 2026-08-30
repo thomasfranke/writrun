@@ -1,37 +1,31 @@
 name: writrun progress
 
-# Moves the mirrored Issue as its pull request moves: into review when one
-# opens, closed when one merges the task to completion, back to where it
-# was when one closes without merging.
-#
-# Without this the mirror rots at exactly the moment it matters. `writrun
-# issues` only reacts to task files a pull request *adds*, and an
-# implementation PR adds none — it modifies a task that already exists. So
-# a completed task would keep an open Issue labelled in-progress forever,
-# long after the work landed.
+# The forge's in-flight events, written where they belong: the task's
+# status line on the base branch (Stage 2), and the mirrored Issue's
+# label (Stage 3). One workflow because they answer the same events;
+# two jobs because they are two stages, gated separately.
 #
 # Every step's logic lives in .writrun/scripts/, where the test suite's
-# integration tier executes it — YAML here only wires events onto scripts.
-# The reasoning (in-review vs. in-progress, relabel-only, the completion
-# test on the merged diff) is documented in reflect_progress.sh itself.
+# integration tier executes it — YAML here only wires events onto
+# scripts. The edge table (which event moves which status where, and why
+# an echo writes nothing) is flip_task_status.sh and
+# product/stage-1-tasks-and-specs/statuses.md; the mirror reasoning is
+# reflect_progress.sh.
 #
-# Runs on pull_request_target for `issues: write` on fork PRs too. Safe
-# here because the PR's code is never checked out or executed: the
-# checkout below takes the BASE branch — actions/checkout's default on
-# pull_request_target — which also gives the script the base tree's own
-# work/specs/ files to resolve a spec branch through.
+# Runs on pull_request_target for write tokens on fork PRs too. Safe
+# here because the PR's code is never checked out or executed: both jobs
+# take the BASE branch, and the PR's fields travel through env as data.
+# Pushes made with GITHUB_TOKEN trigger no workflow runs, which is what
+# keeps the recording from looping.
 
-# A draft is not waiting on review — someone is working. The mirror says
-# which of the two is true at every moment of the PR's life: draft means
-# `status:in-progress` (leave the worker alone), ready means
-# `status:in-review` (the maintainer is the blocker), and the two
-# conversion events flip between them.
 on:
   pull_request_target:
-    types: [opened, reopened, ready_for_review, converted_to_draft, closed]
+    types: [opened, reopened, ready_for_review, converted_to_draft, review_requested, closed]
+  pull_request_review:
+    types: [submitted]
 
 permissions:
-  contents: read
+  contents: write
   issues: write
   pull-requests: read
 
@@ -39,20 +33,79 @@ jobs:
   gate:
     name: adoption stage
     runs-on: ubuntu-latest
-    # The level gates the whole workflow rather than each job, and it is a
-    # job rather than a first step so a project below the level starts no
-    # runner at all. It always succeeds: a job that did not run is not a
-    # failure, and stage_gate.sh says which of the two happened.
+    # The stage gates the whole workflow rather than each job, and it is
+    # a job rather than a first step so a project below the stage starts
+    # no runner at all. It always succeeds: a job that did not run is not
+    # a failure, and stage_gate.sh says which of the two happened. Two
+    # outputs because the two jobs below sit at different stages.
     outputs:
-      run: ${{ steps.gate.outputs.run }}
+      record: ${{ steps.gate2.outputs.run }}
+      mirror: ${{ steps.gate3.outputs.run }}
     steps:
       - uses: actions/checkout@v4
-      - id: gate
+      - id: gate2
+        run: bash .writrun/scripts/stage-2-pull-requests/stage_gate.sh 2
+      - id: gate3
         run: bash .writrun/scripts/stage-2-pull-requests/stage_gate.sh 3
+
+  record:
+    name: status on main
+    needs: gate
+    if: needs.gate.outputs.record == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      # Base branch only — never the PR's code (see the header note).
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+
+      - name: Apply the event to the task's status line
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_DRAFT: ${{ github.event.pull_request.draft }}
+          PR_MERGED: ${{ github.event.pull_request.merged }}
+          # pull_request_review carries its verdict here; every
+          # pull_request_target event leaves it empty.
+          REVIEW_STATE: ${{ github.event.review.state }}
+        run: |
+          set -euo pipefail
+          if [ -n "${REVIEW_STATE}" ]; then
+            # Only a changes_requested review moves anything; approvals
+            # and comments say nothing about who the blocker is.
+            [ "${REVIEW_STATE}" = "changes_requested" ] || {
+              echo "review '${REVIEW_STATE}' moves no status"; exit 0; }
+            bash .writrun/scripts/stage-2-pull-requests/apply_pr_event.sh changes_requested
+          else
+            bash .writrun/scripts/stage-2-pull-requests/apply_pr_event.sh \
+              "${{ github.event.action }}"
+          fi
+
+      - name: Commit
+        env:
+          BASE_REF: ${{ github.event.repository.default_branch }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          git diff --quiet -- work/tasks && { echo "nothing moved"; exit 0; }
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add work/tasks
+          git commit \
+            -m "chore(queue): record what the forge just did" \
+            -m "Pull request #${PR_NUMBER}, event ${{ github.event.action }}."
+          # Another recording may have landed between checkout and here.
+          # Rebase onto it rather than force: this is an addition to the
+          # branch's history, never a replacement of it.
+          git pull --rebase origin "$BASE_REF"
+          git push origin "HEAD:${BASE_REF}"
 
   reflect:
     needs: gate
-    if: needs.gate.outputs.run == 'true'
+    if: needs.gate.outputs.mirror == 'true' && github.event.pull_request
     runs-on: ubuntu-latest
     steps:
       # Base branch only — never the PR's code (see the header note).

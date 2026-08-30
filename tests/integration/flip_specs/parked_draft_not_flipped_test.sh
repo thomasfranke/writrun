@@ -4,7 +4,7 @@
 # A spec deliberately parked in draft on main, merely edited by the PR,
 # earns nothing from the PR's approval.
 setup
-task_file task-001 pending spec-001
+task_file task-001 ready spec-001
 spec_file spec-001 task-001 draft
 commit_all
 git checkout -q main; git merge -q feature; git checkout -q feature

@@ -5,7 +5,7 @@
 # any more.
 setup_forge
 added_task task-001 "Back again"
-forge_issue 12 closed "writrun:task,status:pending" "task-001 — Back again"
+forge_issue 12 closed "writrun:task,status:backlog" "task-001 — Back again"
 check "a reopened PR restores its mirror" 0 "task-001 reopened with #7" \
   -- bash "$MIRROR_ISSUES" o/r 7
 forge_told "the mirror is reopened" \

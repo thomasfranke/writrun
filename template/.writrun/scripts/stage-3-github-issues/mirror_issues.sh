@@ -292,8 +292,8 @@ esac
 if [ "$open" = "true" ]; then
   ensure_label "writrun:task" "1d76db" "Mirrors a work/tasks/ entry"
   ensure_label "status:proposed" "ededed" "A pull request proposes this task; it is not in the queue yet"
-  ensure_label "status:pending" "fbca04" "In the queue, with a spec it references not yet approved"
-  ensure_label "status:ready" "0e8a16" "Ready for development: task pending, specs approved"
+  ensure_label "status:backlog" "fbca04" "In the queue, with a spec it references not yet approved"
+  ensure_label "status:ready" "0e8a16" "Ready for development — waiting for someone to take it"
 fi
 
 # Every task the diff adds gets a mirror in the right state.
@@ -323,7 +323,7 @@ while IFS="$TAB" read -r tid fname priority milestone refs ttitle; do
     elif is_ready $refs; then
       lbl=status:ready
     else
-      lbl=status:pending
+      lbl=status:backlog
     fi
     body=$(printf '%s\n' \
       "Mirrors [\`${fname}\`](${PR_HTML_URL}/files), which is the authority." \
@@ -407,8 +407,8 @@ while IFS="$TAB" read -r tid fname priority milestone refs ttitle; do
       echo "${tid} is ready for development"
     else
       gh api -X PUT "repos/${REPO}/issues/${num}/labels" \
-        -f "labels[]=writrun:task" -f "labels[]=status:pending" >/dev/null
-      echo "${tid} merged with a spec still draft — kept pending"
+        -f "labels[]=writrun:task" -f "labels[]=status:backlog" >/dev/null
+      echo "${tid} merged with a spec still draft — kept backlog"
     fi
   fi
 done <<EOF

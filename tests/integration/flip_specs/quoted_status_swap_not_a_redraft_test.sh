@@ -5,7 +5,7 @@
 # diff lines into the change — but the front matter never moved, so
 # nothing qualifies for a flip.
 setup
-task_file task-001 pending spec-001
+task_file task-001 ready spec-001
 spec_file spec-001 task-001 approved
 printf 'status: approved\n' >> work/specs/spec-001.md
 commit_all

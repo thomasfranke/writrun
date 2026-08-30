@@ -125,8 +125,37 @@ jobs:
             echo "changed=0" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Move the tasks this merge decided
+        # After the flips and the stamps, in the same working tree: done
+        # where the merge carried the worker's completed date, back to
+        # rest where it carried partial work, backlog -> ready where the
+        # approvals it recorded made a task ready. One event, one commit
+        # (product/stage-1-tasks-and-specs/statuses.md).
+        id: status
+        env:
+          MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -euo pipefail
+          head_task=""
+          case "$PR_HEAD_REF" in
+            task/[0-9]*) head_task=$(printf '%s' "$PR_HEAD_REF" | sed -E 's|^task/([0-9]+).*|task-\1|') ;;
+          esac
+          out=$(bash .writrun/scripts/stage-2-pull-requests/record_task_status.sh \
+            "${MERGE_SHA}~1...${MERGE_SHA}" "$head_task")
+          printf '%s\n' "$out"
+          if [ -n "$out" ]; then
+            echo "changed=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=0" >> "$GITHUB_OUTPUT"
+          fi
+          # The moved task ids, for the label re-derivation below — the
+          # same no-second-derivation rule the spec list follows.
+          tasks=$(printf '%s\n' "$out" | sed -n 's|^moved work/tasks/\(task-[0-9]*\).*|\1|p' | sort -u | tr '\n' ' ')
+          echo "tasks=${tasks}" >> "$GITHUB_OUTPUT"
+
       - name: Commit
-        if: steps.flip.outputs.changed == '1' || steps.stamp.outputs.changed == '1'
+        if: steps.flip.outputs.changed == '1' || steps.stamp.outputs.changed == '1' || steps.status.outputs.changed == '1'
         # COMMIT_TITLE is the adopter's to edit: it only has to satisfy the
         # adopting project's own commit convention — nothing in WritRun
         # parses commit messages.
@@ -153,8 +182,8 @@ jobs:
           git pull --rebase origin "$BASE_REF"
           git push origin "HEAD:${BASE_REF}"
 
-      - name: Re-derive the label of every task this merge approved
-        if: steps.flip.outputs.changed == '1'
+      - name: Re-derive the label of every task this merge moved
+        if: steps.flip.outputs.changed == '1' || steps.status.outputs.changed == '1'
         # Sequential in the same job, and deliberately *after* the commit:
         # the script reads the queue from disk, and the flip is only in
         # the queue once it has been written there. Reading the merge's
@@ -169,4 +198,4 @@ jobs:
         run: |
           set -euo pipefail
           bash .writrun/scripts/stage-3-github-issues/rederive_labels.sh \
-            "${{ github.repository }}" ${{ steps.flip.outputs.specs }}
+            "${{ github.repository }}" ${{ steps.flip.outputs.specs }} ${{ steps.status.outputs.tasks }}

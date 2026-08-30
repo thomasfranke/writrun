@@ -2,7 +2,7 @@
 . "$(dirname "$0")/../../pipeline_lib.sh"
 
 setup
-task_file task-001 completed "" 2026-08-22
+task_file task-001 done "" 2026-08-22
 sed -i.bak 's|^doc_ref: null$|doc_ref: product/chapter.md#scope|' work/tasks/task-001.md
 rm -f work/tasks/task-001.md.bak
 commit_all

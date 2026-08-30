@@ -5,7 +5,7 @@
 # later merge touching the same file must not restate it as its own.
 setup
 git checkout -q main
-task_file task-0001 pending ""
+task_file task-0001 ready ""
 sed -i.bak 's/^queued: null$/queued: 2026-08-01T09:00:00Z/' work/tasks/task-0001.md && rm -f work/tasks/*.bak
 commit_all
 

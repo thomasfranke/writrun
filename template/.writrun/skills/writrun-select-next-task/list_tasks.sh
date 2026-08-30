@@ -5,8 +5,8 @@
 #   bash .writrun/skills/writrun-select-next-task/list_tasks.sh
 #
 # Eligibility is steps 2–4 of the selection algorithm
-# (docs/technical/README.md#task-selection-algorithm): `pending`, every
-# `depends_on` completed, every `spec_ref` approved or implemented. Those
+# (docs/technical/README.md#task-selection-algorithm): `ready`, every
+# `depends_on` done, every `spec_ref` approved or implemented. Those
 # are the gates, and they bind everyone.
 #
 # The order printed is steps 5–6 — priority, then `created`, then `id`. For
@@ -78,7 +78,7 @@ rank() {
 # --- what is already in flight -------------------------------------------
 #
 # The queue files cannot answer this. A task someone started an hour ago is
-# still `pending` in `main` until their pull request merges, so a lister
+# briefly still resting in `main` until the recording commit lands, so a lister
 # that reads only files hands the same task to the next person who asks.
 #
 # This is not a claim and WritRun has no claim mechanism — reserving work is
@@ -194,38 +194,59 @@ for f in "$TASK_DIR"/*.md; do
   cr=$(field "$f" created)
   tt=$(title "$f")
 
-  # Step 0 — an unfinished task outranks anything selectable.
-  if [ "$st" = "in-progress" ]; then
-    resumable="${resumable}${id}|${tt}"$'\n'
+  # Step 0 — an in-flight task with no open pull request is work someone
+  # abandoned without the forge hearing about it; resume it before
+  # selecting anything new. One with an open pull request is theirs,
+  # however stale — named as in flight, never hidden, and taking it over
+  # is a human decision (technical/README.md#task-selection-algorithm).
+  if [ "$st" = "in-progress" ] || [ "$st" = "in-review" ]; then
+    who=$(taken_by "$id")
+    if [ -n "$who" ]; then
+      inflight="${inflight}${id}|${who}|${tt}"$'\n'
+    else
+      resumable="${resumable}${id}|${tt}"$'\n'
+    fi
     continue
   fi
 
-  # Done is not held back — it is out of the running entirely, and listing
-  # it as an obstacle would grow with the project until it buried the part
-  # that needs attention.
-  [ "$st" = "completed" ] && continue
+  # Done and dropped are not held back — they are out of the running
+  # entirely, and listing them as obstacles would grow with the project
+  # until it buried the part that needs attention.
+  [ "$st" = "done" ] && continue
+  [ "$st" = "dropped" ] && continue
 
-  if [ "$st" != "pending" ]; then
+  if [ "$st" != "ready" ] && [ "$st" != "backlog" ]; then
     reason="$st"
     [ "$st" = "blocked" ] && reason="blocked: $(field "$f" blocked_reason)"
     held="${held}${id}|${reason}"$'\n'
     continue
   fi
 
+  # The stored status summarizes the specs; the algorithm re-reads both
+  # and stops loudly on a mismatch rather than trusting either side
+  # alone (technical/README.md#task-selection-algorithm).
   why=""
   for d in $(list_field "$f" depends_on); do
     [ -n "$d" ] || continue
     ds=$(task_status "$d")
-    [ "$ds" = "completed" ] || why="${why}waiting on ${d} (${ds}); "
+    [ "$ds" = "done" ] || why="${why}waiting on ${d} (${ds}); "
   done
+  specs_hold=""
   for s in $(list_field "$f" spec_ref); do
     [ -n "$s" ] || continue
     ss=$(spec_status "$s")
     case "$ss" in
       approved|implemented) ;;
-      *) why="${why}${s} is ${ss}; " ;;
+      *) specs_hold="${specs_hold}${s} is ${ss}; " ;;
     esac
   done
+  if [ "$st" = "ready" ] && [ -n "$specs_hold" ]; then
+    why="${why}MISMATCH — stored ready but ${specs_hold}"
+  elif [ "$st" = "backlog" ] && [ -z "$specs_hold" ] && [ -z "$why" ]; then
+    why="MISMATCH — stored backlog but every spec is approved; "
+  else
+    why="${why}${specs_hold}"
+  fi
 
   if [ -n "$why" ]; then
     held="${held}${id}|${why%; }"$'\n'

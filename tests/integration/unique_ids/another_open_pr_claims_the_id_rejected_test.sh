@@ -8,7 +8,7 @@
 setup
 stub_forge
 forge_pr 9 added work/tasks/task-0007-theirs.md
-task_file task-0007 pending ""
+task_file task-0007 ready ""
 commit_all
 check "an id another open pull request adds is rejected, named" 1 "#9" \
   -- bash "$CI_SCRIPTS/stage-2-pull-requests/check_unique_ids.sh" main...HEAD o/r 7

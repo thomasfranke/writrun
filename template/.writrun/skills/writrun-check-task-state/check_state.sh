@@ -4,17 +4,27 @@
 # Usage:
 #   check_state.sh [<diff-range>]      # default: main...HEAD
 #
-# Four rules, all derivable from the range alone:
+# The rules, all derivable from the range alone:
 #
 #   A. A change may not move a spec draft -> approved. That transition is a
 #      human gate (docs/product/stage-1-tasks-and-specs/gates.md); a pull request
 #      approving its own spec is the exact thing the gate exists to stop.
 #   B. A spec may not reach `implemented` from `draft`. Work is authorized
 #      by approval, so an implemented spec was approved at some point first.
-#   C. A task may not reach `completed` while any spec in its spec_ref is
-#      not `implemented`.
+#   C. A task's `completed` date may not be written while any spec in its
+#      spec_ref is not `implemented` — and the diff that implements a
+#      task's last spec writes the date, or the task can never reach done.
 #   D. A spec may not enter the tree already `implemented`. No legitimate
 #      path produces a spec born past both gates.
+#   E. (Stage 2+) A branch may not move a task between the machinery's
+#      five working states — backlog, ready, in-progress, in-review,
+#      done. That line has one writer, and it is not a branch
+#      (docs/product/stage-1-tasks-and-specs/statuses.md).
+#   F. (Stage 2+) A branch may not edit `taken_by` — same single writer.
+#   G. A hand move touching `blocked` is legal only between `blocked`
+#      and `backlog` or `ready`; an in-flight task cannot be blocked.
+#   H. `dropped` is terminal: reachable by hand from any non-terminal
+#      state, left by nothing.
 #
 # A transition is read from the front matter at the two ends of the range
 # — the file as the base knew it against the file as it is now — never
@@ -75,6 +85,11 @@ esac
 
 status=0
 
+# The stage gates rules E and F: below Stage 2 no machinery exists to own
+# the status line, so hand moves are the contract, not a violation.
+STAGE=$(bash .writrun/scripts/stage-2-pull-requests/read_setting.sh stage 2>/dev/null || printf '3')
+case "$STAGE" in 1|2|3) ;; *) STAGE=3 ;; esac
+
 ADDED=$(git diff --name-only --diff-filter=A "$DIFF_RANGE" 2>/dev/null || true)
 
 # is_added <file> — was the file created by this diff?
@@ -132,28 +147,114 @@ for f in $CHANGED; do
     work/tasks/*.md)
       [ -f "$f" ] || continue
 
-      # C — a completed task has no unimplemented spec left behind. The
-      # trigger is the task *reaching* completed in this range; one that
-      # was already completed at the base is history, not a transition.
       new=$(fm_now "$f" status)
       old=$(fm_base "$f" status)
-      if [ "$new" = "completed" ] && [ "$old" != "completed" ]; then
-        refs=$(fm_now "$f" spec_ref | tr -d '[]' | tr ',' ' ')
-        for ref in $refs; do
-          [ -n "$ref" ] || continue
-          # <id>.md or <id>-<subject>.md — the subject slug is not identity.
-          spec=$(find work/specs \
-            \( -iname "${ref}.md" -o -iname "${ref}-*.md" \) 2>/dev/null | head -n1)
-          if [ -z "$spec" ]; then
-            echo "BROKEN: ${f} lists ${ref} in spec_ref, which resolves to no file." >&2
+
+      # E — the five working states have one writer, and it is the
+      # machinery on the authority branch, never a branch. Only from
+      # Stage 2 up: with no forge there is no machinery, and statuses
+      # stay hand-moved.
+      if [ "$STAGE" -ge 2 ] && [ -n "$old" ] && [ "$new" != "$old" ]; then
+        case "$old" in backlog|ready|in-progress|in-review|done)
+          case "$new" in backlog|ready|in-progress|in-review|done)
+            echo "FORBIDDEN: ${f} moves ${old} -> ${new} on a branch." >&2
+            echo "  The working states are the machinery's, written on the" >&2
+            echo "  authority branch from forge events — a branch never edits" >&2
+            echo "  the status line (statuses.md). Leave it; the forge writes it." >&2
             status=1
-            continue
-          fi
-          spec_status=$(fm_now "$spec" status)
-          if [ "$spec_status" != "implemented" ]; then
-            echo "INCONSISTENT: ${f} is completed but ${ref} is '${spec_status}'." >&2
+            ;;
+          esac ;;
+        esac
+      fi
+
+      # F — taken_by is the same single writer's.
+      if [ "$STAGE" -ge 2 ] && ! is_added "$f"; then
+        tb_new=$(fm_now "$f" taken_by)
+        tb_old=$(fm_base "$f" taken_by)
+        if [ -n "$tb_old" ] && [ "$tb_new" != "$tb_old" ]; then
+          echo "FORBIDDEN: ${f} edits taken_by ('${tb_old}' -> '${tb_new}') on a branch." >&2
+          echo "  Who has a task is the forge's record, machinery-written." >&2
+          status=1
+        fi
+      fi
+
+      # G — blocked pairs with backlog/ready only. An in-flight task has
+      # an open pull request; what stalls it is visible there, and the
+      # status table draws no such edge.
+      if [ "$new" = "blocked" ] && [ -n "$old" ] && [ "$old" != "blocked" ]; then
+        case "$old" in
+          backlog|ready) ;;
+          *)
+            echo "FORBIDDEN: ${f} moves ${old} -> blocked." >&2
+            echo "  blocked is reachable from backlog or ready only (statuses.md)." >&2
+            status=1
+            ;;
+        esac
+      fi
+      if [ "$old" = "blocked" ] && [ "$new" != "blocked" ] && [ -n "$new" ]; then
+        case "$new" in
+          backlog|ready) ;;
+          *)
+            echo "FORBIDDEN: ${f} moves blocked -> ${new}." >&2
+            echo "  A released task returns to backlog or ready (statuses.md)." >&2
+            status=1
+            ;;
+        esac
+      fi
+
+      # H — dropped is terminal.
+      if [ "$old" = "dropped" ] && [ "$new" != "dropped" ] && [ -n "$new" ]; then
+        echo "FORBIDDEN: ${f} moves dropped -> ${new} — dropped is terminal." >&2
+        echo "  A dropped task stays dropped; new work is a new task." >&2
+        status=1
+      fi
+
+      # C — the completed date is the worker's declaration of finishing,
+      # and it may only be written once every referenced spec is
+      # implemented. The reverse binds too: the diff that implements a
+      # task's last spec writes the date, or no merge can ever move the
+      # task to done.
+      cd_new=$(fm_now "$f" completed)
+      cd_old=$(fm_base "$f" completed)
+      refs=$(fm_now "$f" spec_ref | tr -d '[]' | tr ',' ' ')
+      all_implemented=true
+      for ref in $refs; do
+        [ -n "$ref" ] || continue
+        # <id>.md or <id>-<subject>.md — the subject slug is not identity.
+        spec=$(find work/specs \
+          \( -iname "${ref}.md" -o -iname "${ref}-*.md" \) 2>/dev/null | head -n1)
+        if [ -z "$spec" ]; then
+          echo "BROKEN: ${f} lists ${ref} in spec_ref, which resolves to no file." >&2
+          status=1
+          all_implemented=false
+          continue
+        fi
+        spec_status=$(fm_now "$spec" status)
+        if [ "$spec_status" != "implemented" ]; then
+          all_implemented=false
+          if [ "$cd_new" != "null" ] && [ -n "$cd_new" ] && [ "$cd_old" = "null" ]; then
+            echo "INCONSISTENT: ${f} writes its completed date but ${ref} is '${spec_status}'." >&2
             echo "  Fill the spec's Outcome and set it to implemented in this change." >&2
             status=1
+          fi
+        fi
+      done
+      if [ "$all_implemented" = "true" ] && [ -n "$refs" ] \
+        && { [ "$cd_new" = "null" ] || [ -z "$cd_new" ]; } \
+        && printf '%s\n' "$CHANGED" | grep -q "^work/specs/"; then
+        # Only when this very diff finished the last spec — a task whose
+        # specs were already all implemented at the base is history.
+        for ref in $refs; do
+          [ -n "$ref" ] || continue
+          spec=$(find work/specs \
+            \( -iname "${ref}.md" -o -iname "${ref}-*.md" \) 2>/dev/null | head -n1)
+          [ -n "$spec" ] || continue
+          if printf '%s\n' "$CHANGED" | grep -qxF "$spec" \
+            && [ "$(fm_base "$spec" status)" != "implemented" ]; then
+            echo "INCONSISTENT: this diff implements ${f}'s last spec but leaves its completed date null." >&2
+            echo "  The date is the declaration the merge turns into done — write it." >&2
+            status=1
+            break
           fi
         done
       fi

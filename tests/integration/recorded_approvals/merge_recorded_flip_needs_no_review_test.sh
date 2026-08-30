@@ -10,7 +10,7 @@
 # cannot review his own.
 setup
 stub_gh 0
-task_file task-0001 pending spec-0001
+task_file task-0001 ready spec-0001
 spec_file spec-0001 task-0001 draft
 commit_all
 git checkout -q main

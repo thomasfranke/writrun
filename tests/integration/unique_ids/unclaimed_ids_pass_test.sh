@@ -4,7 +4,7 @@
 setup
 stub_forge
 forge_pr 9 added work/tasks/task-0009-theirs.md
-task_file task-0007 pending spec-0007
+task_file task-0007 ready spec-0007
 spec_file spec-0007 task-0007 draft
 commit_all
 check "ids nobody else claims pass" 0 "No id collides" \
