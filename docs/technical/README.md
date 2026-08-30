@@ -424,6 +424,21 @@ suite in `.github/workflows/tests.yml` and the release-readiness
 pipeline on `main`, `.github/workflows/release-readiness.yml` — is not
 part of the kit and stays home.
 
+**A red `main` that a script can fix is the bot's to fix.** The
+readiness pipeline separates two kinds of failure. Drift a
+deterministic regeneration repairs — the template out of sync with the
+root it mirrors — it repairs itself: the pipeline runs the
+regeneration and, when that produces a diff, commits the sync to
+`main` with the same token and the same rebase-not-force pattern the
+queue recording uses. Because a `GITHUB_TOKEN` push triggers no new
+runs, the same job then re-runs the suite itself, so the verdict on
+the healed tree lands in the run that healed it. Readiness goes red
+only for what regeneration cannot repair — a genuine breakage that
+needs thought. A pipeline that fails asking a person to run
+`make template-sync` is a machine demanding a human do a machine's
+job, which is the failure the queue recording already refuses
+everywhere else.
+
 **Skills are the plumbing; a CLI is welcome porcelain — in its own repo.**
 Nothing above forbids a human-facing command line (`writ list`,
 `writ init`, `writ doctor` — the binary is `writ`, per About); it forbids
