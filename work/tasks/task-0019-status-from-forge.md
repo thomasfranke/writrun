@@ -1,6 +1,6 @@
 ---
 id: task-0019
-status: in-progress
+status: done
 blocked_reason: null
 taken_by: null
 spec_ref: [spec-0016, spec-0017, spec-0018, spec-0019, spec-0020, spec-0021]
@@ -11,7 +11,7 @@ milestone: null
 created: 2026-08-30T02:57:59Z
 queued: 2026-08-30T03:47:10Z
 completed: 2026-08-30T05:00:59Z
-merged: null
+merged: 2026-08-30T13:07:01Z
 ---
 
 # Task status on main is written by the machinery, from forge events
