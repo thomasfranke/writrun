@@ -107,4 +107,6 @@ to `contents: write`; the fast template gate folded into phase 1. The
 e2e tier proves drift healed-and-pushed, no-drift committing nothing,
 and a failed push staying red. Divergence: the heal logic lives in
 .github/scripts/ (repo-own, never shipped) so the suite can execute
-it, rather than inline YAML.
+it, rather than inline YAML. A review pass switched the drift test to
+`git status --porcelain` — a sync that creates a file is drift `git
+diff` cannot see.

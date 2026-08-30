@@ -27,6 +27,16 @@ else
   echo "FAIL  the heal reached the remote"; fail=$((fail+1))
 fi
 
+# A file the sync CREATES is drift too — git diff alone cannot see it.
+printf 'brand new\n' > template/kit/new_file.txt
+check "a created file under template is healed" 0 "healed — template sync committed to main" \
+  -- bash "$HEAL" main
+if git --git-dir="$remote" show main:template/kit/new_file.txt >/dev/null 2>&1; then
+  echo "ok    and the new file reached the remote"; pass=$((pass+1))
+else
+  echo "FAIL  and the new file reached the remote"; fail=$((fail+1))
+fi
+
 git remote remove origin
 printf 'kit v3\n' > template/kit/file.txt
 check "a heal that cannot push is loud, not shrugged at" 1 "" \

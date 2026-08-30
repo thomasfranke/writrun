@@ -24,8 +24,9 @@ set -uo pipefail
 
 TESTS_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-pass=0
-fail=0
+# Truncated up front: an interrupted run leaves this file behind, and
+# appending to a stale one would inflate the next run's totals.
+: > "$TESTS_DIR/.tally"
 
 find "$TESTS_DIR" -name '*_test.sh' -print | sed 's|/[^/]*$||' | sort -u \
 | while IFS= read -r dir; do

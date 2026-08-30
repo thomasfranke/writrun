@@ -149,3 +149,7 @@ mirror labels, and the stage-bound integration suites grouped under
 `stage-N/` with recursive discovery in `run.sh` (which now closes each
 case's stdin — the discovery pipe was readable by the cases it fed).
 `level_gate.sh` is gone; `rg` for the old names finds history only.
+A review pass added the migration bridge: a settings file still saying
+`level` keeps the choice it made (the reader maps the old vocabulary,
+the shape check names the rename) — an adopter's full opt-out must not
+wake to every workflow on because a key changed names under them.

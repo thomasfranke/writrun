@@ -101,6 +101,8 @@ while IFS= read -r line || [ -n "$line" ]; do
   done
 
   case "$key" in
+    level)
+      fault "'level' was renamed: declare 'stage' (1|2|3) instead — the reader honours the old value meanwhile, but only this check will tell you" ;;
     stage)
       case " $STAGES " in
         *" $val "*) ;;

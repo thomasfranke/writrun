@@ -115,4 +115,6 @@ pass over specs, since the task file may be absent from the diff.
 treats an in-flight task with no open PR as resumable while naming
 someone else's stale draft instead of hiding it. The three skills'
 SKILL.md files, `AGENTS.md` and `CONTRIBUTING.md` teach the new flow.
-Divergence: none of substance.
+A review pass added the birth rules: a task the diff creates enters
+as `backlog` (or `blocked`), holderless, and cannot arrive
+dated-with-unimplemented-specs. Divergence: none of substance.

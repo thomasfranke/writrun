@@ -261,7 +261,7 @@ not the checks and not the release notes, which the forge generates from
 pull requests.
 
 **The `[TASK-NNNN]` tag is in both and is not settable.** It is how
-`reflect_progress.sh` and `list_tasks.sh` learn which tasks a pull request
+the machinery and `list_tasks.sh` learn which tasks a pull request
 carries, and a branch name holds one id: a title without it reduces a
 multi-task pull request to reporting one task, silently.
 

@@ -25,7 +25,7 @@ gated() {   # gated <workflow> <required-level>
     awk -v job="  $j:" '
       $0 == job { inj = 1; next }
       inj && /^  [a-z]/ { exit }
-      inj && /needs: gate/ { found = 1 }
+      inj && /needs: \[?gate/ { found = 1 }
       END { exit(found ? 0 : 1) }
     ' "$f" || ungated="$ungated $j"
   done

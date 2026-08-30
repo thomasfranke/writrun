@@ -179,4 +179,12 @@ integration-tested. A second finding landed live, from this task's own
 amendment: only a **carried** task lands — the merge that took its work
 (head branch id, title tags) — never a merge that merely touched its
 spec, or an amendment landing mid-flight would pull a worked task back
-to ready while its pull request stands open; regression-tested.
+to ready while its pull request stands open; regression-tested. A
+review pass then hardened the machinery: the shared helpers moved into
+`queue_lib.sh` (one resolver, immune to the pipefail death its clones
+carried), the survivor query matches by number rather than spelling,
+the workflow reads results from $GITHUB_OUTPUT instead of scraping
+prose, review events pin their checkouts to the default branch and
+skip fork reviews (read-only tokens), and the mirror job projects the
+recorded file via `project_pr_tasks.sh` — `reflect_progress.sh`'s
+private second derivation is retired.

@@ -5,10 +5,12 @@
 # flips and date stamps (product/stage-1-tasks-and-specs/statuses.md).
 #
 # Usage: record_task_status.sh <diff-range> [carried-task-id...]
-#   The carried ids are the tasks whose work this merge took — the head
-#   branch's own (task/NNNN-*) and every [TASK-NNNN] tag leading the
-#   merged title — so a merge whose diff never touched a task file
-#   still lands it.
+#   The carried ids are the tasks whose work this merge took. Passed as
+#   arguments, or — when none are given and the caller exported
+#   PR_HEAD_REF / PR_TITLE — derived from the head branch's own id
+#   (task/NNNN-*) and every [TASK-NNNN] tag leading the title, so a
+#   merge whose diff never touched a task file still lands it, and the
+#   workflow stays wiring with no parsing of its own.
 #
 # Per task in scope — added or modified by the range, referenced by a
 # spec the range touched, or carried — one of three moves, in this
@@ -34,17 +36,27 @@
 #           and backlog must not be a trap.
 #
 # blocked and dropped are a person's and are never touched. A task
-# already where it belongs writes nothing. Always exits 0, except 3 when
-# git cannot read the range — an unreadable range is not an empty one.
+# already where it belongs writes nothing.
+#
+# Output contract: one `moved <file>: <old> -> <new>` line per write on
+# stdout, and — when $GITHUB_OUTPUT is set — `changed=0|1` plus
+# `tasks=<id ...>` appended there, so a workflow reads results instead
+# of scraping prose. Always exits 0, except 3 when git cannot read the
+# range — an unreadable range is not an empty one.
 #
 # Portable bash 3.2, POSIX awk/sed — no gawk extensions. See the
 # standing rule in docs/technical/decisions/.
 
 set -euo pipefail
 
+. "$(dirname "$0")/queue_lib.sh"
+
 RANGE="${1:?usage: record_task_status.sh <diff-range> [carried-task-id...]}"
 shift
 CARRIED_IDS="$*"
+if [ -z "$CARRIED_IDS" ]; then
+  CARRIED_IDS=$(ql_carried_from_env)
+fi
 
 err=$(mktemp "${TMPDIR:-/tmp}/writrun-git.XXXXXX")
 if ! CHANGED=$(git diff --name-only "$RANGE" 2>"$err"); then
@@ -55,38 +67,8 @@ if ! CHANGED=$(git diff --name-only "$RANGE" 2>"$err"); then
 fi
 rm -f "$err"
 
-fm_field() {
-  awk -v f="$1" '
-    NR == 1 { if ($0 != "---") exit; next }
-    /^---$/ { exit }
-    sub("^" f ": *", "") { sub(/[[:space:]]*$/, ""); print; exit }
-  ' "$2"
-}
-
-set_field() {   # set_field <file> <field> <value> — front matter only
-  awk -v field="$2" -v value="$3" '
-    NR == 1 && $0 == "---" { infm = 1; print; next }
-    infm && /^---$/        { infm = 0; print; next }
-    infm && index($0, field ":") == 1 { print field ": " value; next }
-    { print }
-  ' "$1" > "$1.tmp" && mv "$1.tmp" "$1"
-}
-
-resting() {   # ready, or backlog if any referenced spec is draft
-  local refs ref spec st
-  refs=$(fm_field spec_ref "$1" | tr -d '[]' | tr ',' ' ')
-  for ref in $refs; do
-    [ -n "$ref" ] || continue
-    spec=$(find work/specs \( -iname "${ref}.md" -o -iname "${ref}-*.md" \) 2>/dev/null | head -n1)
-    [ -n "$spec" ] || continue
-    st=$(fm_field status "$spec")
-    [ "$st" = "draft" ] && { printf 'backlog'; return 0; }
-  done
-  printf 'ready'
-}
-
 # The scope: task files the range touched, tasks of specs it touched,
-# and the head branch's own.
+# and the carried ones.
 SCOPE=""
 add_scope() {
   case " $SCOPE " in *" $1 "*) ;; *) SCOPE="$SCOPE $1" ;; esac
@@ -96,24 +78,19 @@ while IFS= read -r f; do
     work/tasks/task-*.md) [ -f "$f" ] && add_scope "$f" ;;
     work/specs/spec-*.md)
       [ -f "$f" ] || continue
-      tref=$(fm_field task_ref "$f")
+      tref=$(ql_fm_field task_ref "$f")
       [ -n "$tref" ] || continue
-      tf=$(find work/tasks \( -iname "${tref}.md" -o -iname "${tref}-*.md" \) 2>/dev/null | head -n1)
+      tf=$(ql_task_file "$tref")
       [ -n "$tf" ] && add_scope "$tf"
       ;;
   esac
 done <<EOF
 $CHANGED
 EOF
+
 CARRIED_FILES=""
 for cid in $CARRIED_IDS; do
-  num=$(printf '%s' "$cid" | sed -E 's/^task-0*//; s/[^0-9].*$//')
-  [ -n "$num" ] || continue
-  tf=$(find work/tasks \( -iname "task-*${num}.md" -o -iname "task-*${num}-*.md" \) 2>/dev/null \
-    | while IFS= read -r c; do
-        cid2=$(basename "$c" .md | sed -E 's/^task-0*//; s/[^0-9].*$//')
-        [ "$cid2" = "$num" ] && printf '%s\n' "$c"
-      done | head -n1)
+  tf=$(ql_task_file "$cid")
   [ -n "$tf" ] || continue
   add_scope "$tf"
   CARRIED_FILES="$CARRIED_FILES $tf"
@@ -124,15 +101,25 @@ is_carried() {
   return 1
 }
 
+MOVED=""
+note_move() {   # note_move <file> <old> <new>
+  echo "moved $1: $2 -> $3"
+  id=$(basename "$1" .md | sed -E 's/^(task-[0-9]+).*/\1/')
+  case " $MOVED " in *" $id "*) ;; *) MOVED="${MOVED:+$MOVED }$id" ;; esac
+}
+
 for f in $SCOPE; do
-  st=$(fm_field status "$f")
+  st=$(ql_fm_field status "$f")
   case "$st" in
     blocked|dropped) continue ;;   # a person's, never the machinery's
   esac
 
-  cdate=$(fm_field completed "$f")
+  cdate=$(ql_fm_field completed "$f")
   if [ -n "$cdate" ] && [ "$cdate" != "null" ]; then
-    [ "$st" = "done" ] || { set_field "$f" status done; echo "moved ${f}: ${st} -> done"; }
+    if [ "$st" != "done" ]; then
+      ql_set_field "$f" status done
+      note_move "$f" "$st" done
+    fi
     continue
   fi
 
@@ -142,20 +129,29 @@ for f in $SCOPE; do
       # other merge leaves the in-flight state to the task's own pull
       # request's events.
       if is_carried "$f"; then
-        dest=$(resting "$f")
-        set_field "$f" status "$dest"
-        set_field "$f" taken_by null
-        echo "moved ${f}: ${st} -> ${dest}"
+        dest=$(ql_resting "$f")
+        ql_set_field "$f" status "$dest"
+        ql_set_field "$f" taken_by null
+        note_move "$f" "$st" "$dest"
       fi
       ;;
     backlog|ready)
-      dest=$(resting "$f")
+      dest=$(ql_resting "$f")
       if [ "$dest" != "$st" ]; then
-        set_field "$f" status "$dest"
-        echo "moved ${f}: ${st} -> ${dest}"
+        ql_set_field "$f" status "$dest"
+        note_move "$f" "$st" "$dest"
       fi
       ;;
   esac
 done
+
+if [ -n "${GITHUB_OUTPUT:-}" ]; then
+  if [ -n "$MOVED" ]; then
+    printf 'changed=1\n' >> "$GITHUB_OUTPUT"
+  else
+    printf 'changed=0\n' >> "$GITHUB_OUTPUT"
+  fi
+  printf 'tasks=%s\n' "$MOVED" >> "$GITHUB_OUTPUT"
+fi
 
 exit 0

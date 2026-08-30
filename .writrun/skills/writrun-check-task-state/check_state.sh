@@ -153,6 +153,29 @@ for f in $CHANGED; do
       new=$(fm_now "$f" status)
       old=$(fm_base "$f" status)
 
+      # A task the diff creates is not exempt from the single writer:
+      # born in flight, born done, or born with a holder would be a
+      # branch writing the machinery's line by arriving instead of by
+      # editing. It enters as backlog (or blocked, with its reason);
+      # the recording moves it from there.
+      if [ "$STAGE" -ge 2 ] && is_added "$f"; then
+        case "$new" in
+          backlog|blocked) ;;
+          *)
+            echo "FORBIDDEN: ${f} enters the tree already '${new}'." >&2
+            echo "  A task is born backlog (or blocked, with its reason); every" >&2
+            echo "  other state is the machinery's to write after the merge." >&2
+            status=1
+            ;;
+        esac
+        tb_new=$(fm_now "$f" taken_by)
+        if [ -n "$tb_new" ] && [ "$tb_new" != "null" ]; then
+          echo "FORBIDDEN: ${f} enters the tree with taken_by '${tb_new}'." >&2
+          echo "  Who has a task is the forge's record, machinery-written." >&2
+          status=1
+        fi
+      fi
+
       # E — the five working states have one writer, and it is the
       # machinery on the authority branch, never a branch. Only from
       # Stage 2 up: with no forge there is no machinery, and statuses
@@ -235,7 +258,10 @@ for f in $CHANGED; do
         spec_status=$(fm_now "$spec" status)
         if [ "$spec_status" != "implemented" ]; then
           all_implemented=false
-          if [ "$cd_new" != "null" ] && [ -n "$cd_new" ] && [ "$cd_old" = "null" ]; then
+          # An added file's base read is empty — the same "no date yet"
+          # as null, or a task born with its date would bypass this.
+          if [ "$cd_new" != "null" ] && [ -n "$cd_new" ] \
+            && { [ "$cd_old" = "null" ] || [ -z "$cd_old" ]; }; then
             echo "INCONSISTENT: ${f} writes its completed date but ${ref} is '${spec_status}'." >&2
             echo "  Fill the spec's Outcome and set it to implemented in this change." >&2
             status=1

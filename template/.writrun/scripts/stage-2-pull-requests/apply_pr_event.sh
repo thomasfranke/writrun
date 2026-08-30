@@ -74,13 +74,16 @@ case "$EVENT" in
       echo "closed by merging — the merge recording owns this move"
       exit 0
     fi
-    # A surviving open PR on the same task supersedes the landing.
-    prefix="task/$(printf '%s' "$TASK" | sed 's/^task-//')-"
+    # A surviving open PR on the same task supersedes the landing. The
+    # match is by number, zero-padding stripped — every id reader in
+    # this machine normalizes, and a survivor spelling `task/019-` must
+    # not be invisible to a close on `task/0019-`.
+    num=$(printf '%s' "$TASK" | sed 's/^task-0*//')
     survivor=""
     if [ -n "${GH_TOKEN:-}" ] && command -v gh >/dev/null 2>&1; then
       survivor=$(gh pr list --repo "${GH_REPO:?}" --state open \
         --json number,headRefName,author,isDraft \
-        --jq "[.[] | select(.headRefName | startswith(\"${prefix}\"))] | sort_by(.number) | last | if . == null then \"\" else \"\(.author.login) \(.isDraft)\" end" \
+        --jq "[.[] | select(.headRefName | test(\"^task/0*${num}-\"))] | sort_by(.number) | last | if . == null then \"\" else \"\(.author.login) \(.isDraft)\" end" \
         2>/dev/null || printf '')
     fi
     if [ -n "$survivor" ]; then

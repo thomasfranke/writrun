@@ -16,14 +16,17 @@ set -euo pipefail
 
 BRANCH="${1:?usage: readiness_heal.sh <remote-branch>}"
 
-if git diff --quiet -- template; then
+# status --porcelain, not diff: a sync that CREATES a file under
+# template/ is invisible to `git diff`, and a heal blind to it would
+# ship the kit without the file while every check stayed green.
+if [ -z "$(git status --porcelain -- template)" ]; then
   echo "no drift — nothing to heal"
   exit 0
 fi
 
 git config user.name  "github-actions[bot]"
 git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-git add template
+git add -A template
 git commit -m "chore(template): sync the kit with the root it mirrors" \
   -m "Healed by release readiness; red is for what a script cannot fix."
 # Another recording may have landed since checkout. Rebase onto it

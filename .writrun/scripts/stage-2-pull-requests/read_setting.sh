@@ -51,6 +51,21 @@ default_for() {
 raw=$(sed -n "s/^[[:space:]]*\"${KEY}\"[[:space:]]*:[[:space:]]*\(.*\)$/\1/p" \
   "$SETTINGS" | head -n1)
 
+if [ -z "$raw" ] && [ "$KEY" = "stage" ]; then
+  # The migration bridge: a settings file written before the rename
+  # says `level`, and reading it as "absent, so the default" would turn
+  # every workflow on for an adopter who chose the full opt-out.
+  # check_settings.sh names the rename; this keeps their choice honoured
+  # until they make it.
+  legacy=$(sed -n 's/^[[:space:]]*"level"[[:space:]]*:[[:space:]]*\(.*\)$/\1/p' \
+    "$SETTINGS" | head -n1 | sed 's/[[:space:]]*$//; s/,$//; s/^"//; s/"$//')
+  case "$legacy" in
+    tasks-and-specs) printf '1\n'; exit 0 ;;
+    pull-requests)   printf '2\n'; exit 0 ;;
+    github-issues)   printf '3\n'; exit 0 ;;
+  esac
+fi
+
 if [ -z "$raw" ]; then
   default_for "$KEY"; echo; exit 0
 fi

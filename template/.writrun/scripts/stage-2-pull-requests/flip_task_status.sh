@@ -34,60 +34,26 @@
 
 set -euo pipefail
 
+. "$(dirname "$0")/queue_lib.sh"
+
 MODE="${1:-}"
 TASK="${2:-}"
 [ -n "$MODE" ] && [ -n "$TASK" ] \
   || { echo "usage: flip_task_status.sh <take|review|rework|land> <task-id> [login] [draft|ready]" >&2; exit 3; }
 
-# The id, normalized: any spelling of the number finds the task.
-num=$(printf '%s' "$TASK" | sed -E 's/^task-0*//; s/[^0-9].*$//')
-[ -n "$num" ] || { echo "'${TASK}' names no task id" >&2; exit 0; }
-FILE=$(find work/tasks \( -iname "task-*${num}.md" -o -iname "task-*${num}-*.md" \) 2>/dev/null \
-  | while IFS= read -r c; do
-      cid=$(basename "$c" .md | sed -E 's/^task-0*//; s/[^0-9].*$//')
-      [ "$cid" = "$num" ] && printf '%s\n' "$c"
-    done | head -n1)
-[ -n "$FILE" ] || { echo "task-${num} resolves to no file — nothing to move" >&2; exit 0; }
+FILE=$(ql_task_file "$TASK")
+if [ -z "$FILE" ]; then
+  num=$(ql_task_num "$TASK")
+  [ -n "$num" ] || { echo "'${TASK}' names no task id" >&2; exit 0; }
+  echo "task-${num} resolves to no file — nothing to move" >&2
+  exit 0
+fi
 
-fm_field() {
-  awk -v f="$1" '
-    NR == 1 { if ($0 != "---") exit; next }
-    /^---$/ { exit }
-    sub("^" f ": *", "") { sub(/[[:space:]]*$/, ""); print; exit }
-  ' "$2"
-}
-
-set_field() {   # set_field <field> <value> — front matter only
-  awk -v field="$1" -v value="$2" '
-    NR == 1 && $0 == "---" { infm = 1; print; next }
-    infm && /^---$/        { infm = 0; print; next }
-    infm && index($0, field ":") == 1 { print field ": " value; next }
-    { print }
-  ' "$FILE" > "${FILE}.tmp" && mv "${FILE}.tmp" "$FILE"
-}
-
-# resting <file> — where a task out of flight belongs: ready, or backlog
-# if any spec it references is draft. An empty spec_ref is ready by
-# construction — no approval event exists for it, and backlog must not
-# be a trap.
-resting() {
-  local refs ref spec st
-  refs=$(fm_field spec_ref "$1" | tr -d '[]' | tr ',' ' ')
-  for ref in $refs; do
-    [ -n "$ref" ] || continue
-    spec=$(find work/specs \( -iname "${ref}.md" -o -iname "${ref}-*.md" \) 2>/dev/null | head -n1)
-    [ -n "$spec" ] || continue
-    st=$(fm_field status "$spec")
-    [ "$st" = "draft" ] && { printf 'backlog'; return 0; }
-  done
-  printf 'ready'
-}
-
-CUR=$(fm_field status "$FILE")
+CUR=$(ql_fm_field status "$FILE")
 
 move() {   # move <new-status> [taken_by-value]
-  set_field status "$1"
-  [ -n "${2:-}" ] && set_field taken_by "$2"
+  ql_set_field "$FILE" status "$1"
+  [ -n "${2:-}" ] && ql_set_field "$FILE" taken_by "$2"
   echo "moved ${FILE}: ${CUR} -> $1"
 }
 
@@ -104,7 +70,7 @@ case "$MODE" in
     [ "$DRAFTNESS" = "ready" ] && dest=in-review
     case "$CUR" in
       backlog|ready|in-progress|in-review)
-        if [ "$CUR" = "$dest" ] && [ "$(fm_field taken_by "$FILE")" = "$LOGIN" ]; then
+        if [ "$CUR" = "$dest" ] && [ "$(ql_fm_field taken_by "$FILE")" = "$LOGIN" ]; then
           echo "already there: ${FILE} is ${dest}, taken by ${LOGIN}"
         else
           move "$dest" "$LOGIN"
@@ -126,7 +92,7 @@ case "$MODE" in
     ;;
   land)
     case "$CUR" in
-      in-progress|in-review) move "$(resting "$FILE")" null ;;
+      in-progress|in-review) move "$(ql_resting "$FILE")" null ;;
       *) echo_only ;;
     esac
     ;;

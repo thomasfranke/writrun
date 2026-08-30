@@ -1,20 +1,28 @@
 name: writrun progress
 
 # The forge's in-flight events, written where they belong: the task's
-# status line on the base branch (Stage 2), and the mirrored Issue's
-# label (Stage 3). One workflow because they answer the same events;
-# two jobs because they are two stages, gated separately.
+# status line on the base branch (Stage 2), then the mirrored Issue's
+# label projected *from that write* (Stage 3) — one derivation, never
+# two. One workflow because they answer the same events; two jobs
+# because they are two stages, gated separately, and the mirror runs
+# after the recording so it reads what the machinery just wrote.
 #
 # Every step's logic lives in .writrun/scripts/, where the test suite's
 # integration tier executes it — YAML here only wires events onto
-# scripts. The edge table (which event moves which status where, and why
-# an echo writes nothing) is flip_task_status.sh and
-# product/stage-1-tasks-and-specs/statuses.md; the mirror reasoning is
-# reflect_progress.sh.
+# scripts. The edge table is flip_task_status.sh and
+# product/stage-1-tasks-and-specs/statuses.md; the projection is
+# rederive_labels.sh via project_pr_tasks.sh.
 #
-# Runs on pull_request_target for write tokens on fork PRs too. Safe
-# here because the PR's code is never checked out or executed: both jobs
-# take the BASE branch, and the PR's fields travel through env as data.
+# Trust posture, and it differs by event:
+#   - pull_request_target: safe by construction — jobs run base-branch
+#     code and the PR's fields travel through env as data.
+#   - pull_request_review: GITHUB_SHA points at PR-controlled code, so
+#     every checkout below pins the default branch explicitly — a bare
+#     checkout would execute the PR's own tree with credentials on
+#     disk. And a fork PR's review delivers a read-only token, so this
+#     workflow skips fork reviews; the state heals at the next _target
+#     event (converted_to_draft, ready_for_review, closed all still
+#     fire).
 # Pushes made with GITHUB_TOKEN trigger no workflow runs, which is what
 # keeps the recording from looping.
 
@@ -38,11 +46,14 @@ jobs:
     # no runner at all. It always succeeds: a job that did not run is not
     # a failure, and stage_gate.sh says which of the two happened. Two
     # outputs because the two jobs below sit at different stages.
+    if: github.event_name == 'pull_request_target' || github.event.pull_request.head.repo.full_name == github.repository
     outputs:
       record: ${{ steps.gate2.outputs.run }}
       mirror: ${{ steps.gate3.outputs.run }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
       - id: gate2
         run: bash .writrun/scripts/stage-2-pull-requests/stage_gate.sh 2
       - id: gate3
@@ -54,7 +65,7 @@ jobs:
     if: needs.gate.outputs.record == 'true'
     runs-on: ubuntu-latest
     steps:
-      # Base branch only — never the PR's code (see the header note).
+      # Default branch only — never the PR's code (see the header note).
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.repository.default_branch }}
@@ -104,24 +115,26 @@ jobs:
           git push origin "HEAD:${BASE_REF}"
 
   reflect:
-    needs: gate
-    if: needs.gate.outputs.mirror == 'true' && github.event.pull_request
+    name: mirror follows the file
+    needs: [gate, record]
+    # After the recording, so the projection reads what it wrote. A
+    # skipped record (a stage below 2 never reaches 3) or a no-op one
+    # both leave a readable queue, so only cancellation stops this.
+    if: >
+      !cancelled() && needs.gate.outputs.mirror == 'true'
     runs-on: ubuntu-latest
     steps:
-      # Base branch only — never the PR's code (see the header note).
+      # Default branch, freshly after the record job's push — the file
+      # is the truth the mirror restates.
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
 
-      - name: Reflect the pull request onto the mirror
-        # The PR's fields go through env, never inline interpolation —
-        # the title and head branch name are a fork's to choose.
+      - name: Project the carried tasks onto their mirrors
         env:
           GH_TOKEN: ${{ github.token }}
-          PR_STATE: ${{ github.event.pull_request.state }}
-          PR_DRAFT: ${{ github.event.pull_request.draft }}
-          PR_MERGED: ${{ github.event.pull_request.merged }}
           PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          bash .writrun/scripts/stage-3-github-issues/reflect_progress.sh \
-            "${{ github.repository }}" \
-            "${{ github.event.pull_request.number }}"
+          bash .writrun/scripts/stage-3-github-issues/project_pr_tasks.sh \
+            "${{ github.repository }}"
