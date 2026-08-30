@@ -80,8 +80,9 @@ a selection test excluding `dropped`.
 
 ## Proposed technical changes
 
-- `technical/README.md#task-schema` — `dropped` in the status set,
-  terminal, hand-written.
+- none — the value is already in the authored schema
+  (`technical/README.md#task-schema`); this change builds the checks
+  and mirror behaviour the doc already states.
 
 ## Outcome
 

@@ -18,9 +18,10 @@ machinery has to match — the PR's own branch while it is still open, or
 %%{init: {'theme':'base','themeVariables':{'background':'#0d1117','primaryColor':'#161b22','primaryTextColor':'#e6edf3','primaryBorderColor':'#8b949e','lineColor':'#ffffff','secondaryColor':'#161b22','tertiaryColor':'#161b22','fontSize':'14px'}}}%%
 flowchart LR
     A["MAINTAINER<br/>Assents to the PR<br/>an approving review · or the merge"]
-    B["CI<br/>writrun approve<br/>spec: draft → approved<br/>task: backlog → ready<br/>onto the PR branch, or onto main"]
+    B["CI<br/>writrun approve<br/>spec: draft → approved<br/>onto the PR branch, or onto main"]
+    C["CI, after the merge<br/>main: task backlog → ready<br/>never on a branch"]
     D["CI<br/>writrun issues<br/>Issue: status:ready"]
     E["Ready for development<br/>waiting for someone to take it"]
-    A --> B --> D --> E
+    A --> B --> C --> D --> E
 ```
 

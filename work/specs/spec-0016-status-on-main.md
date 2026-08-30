@@ -37,16 +37,22 @@ The script holds the legal-edge table from
 
 | Event | Edge |
 |---|---|
-| creating merge's recording commit approves every spec | `backlog → ready` |
+| creating merge's recording commit approves every spec — or finds `spec_ref` empty | `backlog → ready` |
 | a merge returns a spec to `draft` | `ready → backlog` |
-| draft PR `opened` / `reopened` | `ready → in-progress` (+`taken_by`) |
+| draft PR `opened` / `reopened` | `ready`/`backlog` `→ in-progress` (+`taken_by`); already in flight → refresh `taken_by` and state per the new PR's draftness — newest wins |
 | PR `ready_for_review` | `in-progress → in-review` |
 | PR `converted_to_draft` | `in-review → in-progress` |
 | review submitted `changes_requested` | `in-review → in-progress` |
-| `review_requested` | `in-progress → in-review` |
-| PR `closed`, unmerged | `in-progress`/`in-review` `→ ready` (−`taken_by`) |
+| `review_requested`, **non-draft PR only** (GitHub fires it on drafts too, e.g. via CODEOWNERS) | `in-progress → in-review` |
+| PR `closed`, unmerged, no other open PR on the task | leave flight: `→ ready`, or `backlog` if any spec is `draft` (−`taken_by`) |
+| PR `closed`, unmerged, another open PR survives | re-derive in-flight state and `taken_by` from the newest survivor |
 | merge carrying the `completed` date | `→ done` (`taken_by` kept) |
-| merge carrying work without it | `→ ready` (−`taken_by`) |
+| merge carrying work without it | leave flight: `→ ready`, or `backlog` if any spec is `draft` (−`taken_by`) |
+
+Leaving flight is a derivation, not a return: an amendment may have
+regressed a spec while the work was in flight — no edge interrupts
+flight to say so — so the resting state is read from the specs at exit
+time, never assumed to be the state the task left.
 
 An event whose edge does not match the status the task holds writes
 nothing and exits 0 — an out-of-order echo (a stale replay, a reopen
@@ -63,10 +69,13 @@ backwards.
    task id from the head branch name (`task/NNNN-*`; no id → exit
    without committing), apply the event, commit and push with the
    rebase-not-force pattern `writrun-approve.yml` already uses.
-3. Close-unmerged only: skip the reversal when another open pull
-   request still works the same task (ask the forge).
+3. Close-unmerged only: ask the forge for other open pull requests on
+   the same task; with a survivor, re-derive state and `taken_by` from
+   the newest one rather than landing the task — never skip silently,
+   or `taken_by` strands on the closed PR's author.
 4. Post-merge recording: the `ready`/`backlog` moves the spec flips
-   imply, and `done`/`ready` for each task whose work the merge range
+   imply (an empty `spec_ref` counts as approved), and `done` or the
+   leave-flight derivation for each task whose work the merge range
    carries — same commit as the spec flips and date stamps; one event,
    one commit.
 5. Integration tests for each edge and each echo, in the existing
@@ -81,8 +90,16 @@ backwards.
   holds, the machinery shall write nothing and exit 0.
 - When the head branch of a pull request names no task, the workflow
   shall exit without committing.
+- When a task with an empty `spec_ref` lands in the queue, the
+  recording commit shall move it `backlog → ready` — no approval event
+  exists for it, and `backlog` must not be a trap.
+- When a task leaves flight, the machinery shall land it on `ready`,
+  or on `backlog` if any of its specs is `draft` at that moment.
 - When a pull request closes unmerged while another open pull request
-  works the same task, the machinery shall leave the status in place.
+  works the same task, the machinery shall re-derive the in-flight
+  state and `taken_by` from the newest surviving pull request.
+- When `review_requested` fires on a pull request still in draft, the
+  machinery shall write nothing.
 - When the recording push races another change on the base branch, the
   machinery shall rebase onto it rather than force-push.
 - When a recording commit changes a task's status, the stage-3 mirror
@@ -139,11 +156,9 @@ regression).
 
 ## Proposed technical changes
 
-- `technical/README.md#task-schema` — the `status` field's who-writes
-  contract: the working states are machinery-written, from forge
-  events; `blocked` and `dropped` stay hand-written.
-- `technical/README.md#distribution` — the workflow/script inventory
-  gains the transition machinery.
+- none — the schema's who-writes contract and the machinery rules were
+  authored first (`technical/README.md#task-schema`); this change
+  builds what the doc already states.
 
 ## Outcome
 

@@ -112,11 +112,10 @@ green in their new homes.
 
 ## Proposed technical changes
 
-- `technical/README.md#settings` — the `stage` key replaces `level`:
-  integer 1–3, same gating semantics.
-- `technical/README.md#folder-layout-an-adopting-project-ends-up-with`
-  — the layout shows the stage-prefixed folders.
-- `technical/README.md#distribution` — script paths follow the rename.
+- `technical/README.md` — every link into the three renamed product
+  chapters follows the `git mv`; no prose changes — the `stage`
+  contract, the schema and the algorithm were authored first and are
+  already written.
 
 ## Outcome
 

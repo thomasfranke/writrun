@@ -22,16 +22,26 @@ the queue is as current as the forge can make it:
 | Forge event | Writes |
 |---|---|
 | the merge that creates the task | the file lands `backlog` |
-| that same merge's recording commit approves its specs | `backlog → ready` |
+| that same merge's recording commit approves its specs — or finds it has none to approve | `backlog → ready` |
 | a later merge returns one of its specs to `draft` (amendment) | `ready → backlog` |
 | the draft pull request opens, or reopens | `→ in-progress`, `taken_by` set |
 | the pull request is marked ready for review | `in-progress → in-review` |
 | the pull request is converted back to draft | `in-review → in-progress` |
 | a review requests changes | `in-review → in-progress` — the ball is back with the worker |
-| review is re-requested after the fixes | `in-progress → in-review` |
-| the pull request closes unmerged | `→ ready`, `taken_by` cleared |
+| review is re-requested, on a pull request already marked ready | `in-progress → in-review` |
+| the pull request closes unmerged | `→ ready` or `backlog`, per its specs; `taken_by` cleared |
 | the merge carries the task's `completed` date | `→ done`, `taken_by` kept |
-| the merge carries its work without that date | `→ ready`, `taken_by` cleared — one spec of several is work taken, not finished |
+| the merge carries its work without that date | `→ ready` or `backlog`, per its specs; `taken_by` cleared — one spec of several is work taken, not finished |
+
+Two of those edges land, not follow: a task **leaving flight** is not
+assumed back to the state it left. The machinery re-derives the resting
+state from the specs as they stand — `ready`, or `backlog` if one has
+meanwhile returned to `draft` — because an amendment may have landed
+while the work was in flight, and no edge interrupts flight to say so.
+And when more than one pull request works a task, **the newest event
+wins**: a close that leaves another pull request open re-derives the
+in-flight state and `taken_by` from that survivor, and a pull request
+opening for a task already in flight refreshes `taken_by` the same way.
 
 Two invariants fall out. `in-progress` and `in-review` each mean **an
 open pull request is working the task right now** — no open pull
@@ -113,8 +123,8 @@ its reason, and `depends_on`.
   request opening, closing, or changing draftness — the machinery shall
   write it after that event, and a person shall not write it by hand.
 - When the recording commit of the merge that creates a task approves
-  its every spec, the machinery shall move the task `backlog → ready`
-  in that same commit.
+  its every spec — or finds it references none — the machinery shall
+  move the task `backlog → ready` in that same commit.
 - When a merge returns a spec of a `ready` task to `draft`, the
   machinery shall move that task back to `backlog` in the same
   recording commit.
@@ -126,12 +136,18 @@ its reason, and `depends_on`.
   back to draft, the machinery shall return it to `in-progress`.
 - When a review on the pull request working a task requests changes,
   the machinery shall return the task to `in-progress`; when review is
-  re-requested, the machinery shall move it back to `in-review`.
-- When the pull request working a task closes unmerged, the machinery
-  shall return the task to `ready` and clear `taken_by`.
-- When a merge carries a task's work, the machinery shall move the task
-  to `done` if the merge carries its `completed` date, and shall return
-  it to `ready`, clearing `taken_by`, otherwise.
+  re-requested on a pull request already marked ready, the machinery
+  shall move the task back to `in-review`.
+- When a task leaves flight — its pull request closed unmerged, or its
+  work merged without the `completed` date — the machinery shall land
+  it on `ready`, or on `backlog` if any of its specs is `draft`, and
+  clear `taken_by`.
+- When a pull request working a task closes while another open pull
+  request still works it, the machinery shall re-derive the in-flight
+  state and `taken_by` from the newest surviving pull request instead
+  of landing the task.
+- When a merge carries a task's work and its `completed` date, the
+  machinery shall move the task to `done`.
 - When an event matches no legal transition for the status a task
   holds, the machinery shall write nothing.
 - When a change on a branch moves a task between the machinery's five

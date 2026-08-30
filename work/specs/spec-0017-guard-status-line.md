@@ -23,8 +23,10 @@ Everything local that still teaches or tolerates the old contract:
 
 1. `writrun-check-task-state`: reject a diff that moves a task between
    the machinery's five working states (`backlog`, `ready`,
-   `in-progress`, `in-review`, `done`); accept a hand-written move to or
-   from `blocked` (with `blocked_reason`) and to `dropped`; require, at
+   `in-progress`, `in-review`, `done`); accept a hand-written move
+   between `blocked` and `backlog` or `ready` only (with
+   `blocked_reason`), and to `dropped` from any non-terminal state;
+   require, at
    finishing, the spec flipped to `implemented`, the Outcome filled, and
    the task's `completed` date written — in place of the old "task set
    to completed" rule. Reject a branch-side edit of `taken_by` too.
@@ -49,8 +51,11 @@ Everything local that still teaches or tolerates the old contract:
   name the line.
 - When a branch's diff edits a task's `taken_by`, the check shall exit
   non-zero.
-- When a branch's diff moves a task to or from `blocked` with a
-  `blocked_reason`, or to `dropped`, the check shall accept it.
+- When a branch's diff moves a task between `blocked` and `backlog` or
+  `ready`, with a `blocked_reason`, or to `dropped` from any
+  non-terminal state, the check shall accept it; a hand move touching
+  `blocked` from any in-flight state it shall reject, per the status
+  table.
 - When a finishing diff carries a spec flipped to `implemented` without
   the task's `completed` date, the check shall exit non-zero.
 - When the selection algorithm meets a task `in-progress` with no open
@@ -59,12 +64,12 @@ Everything local that still teaches or tolerates the old contract:
 
 ## Edge cases
 
-- Stage 1 (`tasks-and-specs`, no forge): no forge events exist, so the
-  machinery cannot write the line — at that stage statuses stay
-  hand-moved, and the check's rejection applies from Stage 2 up,
-  gated on `level` like the workflows are.
-- A task abandoned with its PR: the forge already returned it to
-  `pending` (spec-0016); nothing local to clean.
+- Stage 1 (no forge): no forge events exist, so the machinery cannot
+  write the line — at that stage statuses stay hand-moved, and the
+  check's rejection applies from Stage 2 up, gated on the `stage`
+  setting like the workflows are.
+- A task abandoned with its PR: the forge already landed it back on
+  `ready` or `backlog` (spec-0016); nothing local to clean.
 - Historic diffs: the check judges the diff in front of it, never
   rewrites history — old commits that flipped statuses by hand stay
   valid history.
@@ -92,12 +97,10 @@ existing test tiers.
 
 ## Proposed technical changes
 
-- `technical/README.md#task-schema` — the who-writes note on
-  `status` and the dates: `completed` date remains a person's, the
-  status line becomes the machinery's from Stage 2 up.
-- `technical/README.md#task-selection-algorithm` — the resume step
-  reads `in-progress` as forge-written state, with the no-open-PR case
-  surfaced as resumable.
+- none — the schema's who-writes note and the selection algorithm's
+  resume step were authored first (`technical/README.md#task-schema`,
+  `technical/README.md#task-selection-algorithm`); this change brings
+  the checks and skills up to a doc that already states them.
 
 ## Outcome
 

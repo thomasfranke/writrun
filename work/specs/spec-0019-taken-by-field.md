@@ -88,8 +88,9 @@ status in one commit; check-task-state rejects a branch-side edit.
 
 ## Proposed technical changes
 
-- `technical/README.md#task-schema` — the `taken_by` field: type,
-  canonical position, who writes it.
+- none — the field is already in the authored schema
+  (`technical/README.md#task-schema`); this change builds the
+  generator, checks and writes the doc already states.
 
 ## Outcome
 

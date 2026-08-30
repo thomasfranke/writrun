@@ -298,10 +298,14 @@ Deterministic, independent of file layout on disk:
 0. **Resume before selecting.** If any task has `status: in-progress` or
    `in-review` with no open pull request working it (the machinery keeps
    the two in step with the forge, so a lasting mismatch is work someone
-   abandoned without the forge hearing about it — for a single-agent
-   setup: not owned by this session), resume it — do not pick new work
-   while started work sits unfinished. Only when no resumable task
-   exists does selection proceed.
+   abandoned without the forge hearing about it), or whose open pull
+   request is this session's own, resume it — do not pick new work
+   while started work sits unfinished. An in-flight task whose open
+   pull request is someone else's stays theirs, however stale: the
+   lister names it as in flight rather than hiding it, and taking it
+   over — closing or adopting their pull request — is a human decision,
+   never the algorithm's. Only when no resumable task exists does
+   selection proceed.
 1. Read the front-matter of every task.
 2. Keep those with `status: ready` — `backlog`, `blocked` and the
    in-flight and terminal states are excluded here by construction, with
