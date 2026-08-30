@@ -1,7 +1,7 @@
 ---
 id: spec-0020
 task_ref: task-0019
-status: approved
+status: implemented
 created: 2026-08-30T03:22:07Z
 ---
 
@@ -86,4 +86,11 @@ a selection test excluding `dropped`.
 
 ## Outcome
 
-_(fill after execution)_
+Built as specified: `dropped` is in the schema and the checks'
+vocabulary, reachable by hand from any non-terminal state and left by
+nothing — `check_state.sh` rejects the exit, the transition machine
+holds no edge out of it, `record_task_status.sh` never touches it, the
+selection excludes it, and `rederive_labels.sh` closes its mirror as
+not planned, stripping the status label. Divergence: the mirror close
+rides `rederive_labels.sh` (now a 1:1 projection of the file, and
+callable with task ids directly) rather than a new script.

@@ -1,7 +1,7 @@
 ---
 id: spec-0016
 task_ref: task-0019
-status: approved
+status: implemented
 created: 2026-08-30T02:58:05Z
 ---
 
@@ -162,4 +162,17 @@ regression).
 
 ## Outcome
 
-_(fill after execution)_
+Built as specified, with the machine split in two scripts rather than
+one: `flip_task_status.sh` (the live edges — take, review, rework,
+land) and `record_task_status.sh` (the merge's moves — done, land,
+settle), because the two run from different workflows with different
+inputs. `apply_pr_event.sh` wires events to edges and holds the
+survivor query and the draft guard on `review_requested`;
+`writrun-progress.yml` gained the Stage-2 `record` job committing to
+main beside the Stage-3 mirror job, and `writrun-approve.yml` calls the
+recorder in its existing commit. Divergences: the `changes_requested`
+edge listens on `pull_request_review` (no `_target` variant exists —
+it runs on base code with the same posture); landing derives
+ready-or-backlog at exit time per the review's finding rather than
+assuming the state the task left. Every edge and echo is
+integration-tested.

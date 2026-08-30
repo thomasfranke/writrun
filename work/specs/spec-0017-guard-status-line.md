@@ -1,7 +1,7 @@
 ---
 id: spec-0017
 task_ref: task-0019
-status: approved
+status: implemented
 created: 2026-08-30T02:58:05Z
 ---
 
@@ -104,4 +104,15 @@ existing test tiers.
 
 ## Outcome
 
-_(fill after execution)_
+Built as specified: `check_state.sh` grew rules E–H (branch-side flips
+between the five working states rejected from Stage 2 up, `taken_by`
+edits rejected, `blocked` confined to backlog/ready both ways,
+`dropped` terminal), the stage read resolves next to the script so the
+fixtures' settings gate it; rule C re-keyed on the `completed` date,
+with the reverse half (last spec implemented demands the date) as a
+pass over specs, since the task file may be absent from the diff.
+`list_tasks.sh` filters on `ready`, cross-checks the specs loudly, and
+treats an in-flight task with no open PR as resumable while naming
+someone else's stale draft instead of hiding it. The three skills'
+SKILL.md files, `AGENTS.md` and `CONTRIBUTING.md` teach the new flow.
+Divergence: none of substance.
