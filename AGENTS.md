@@ -79,7 +79,7 @@ writing; it is this repository's own convention and every project you
 work in may have rewritten it.
 
 **The values live in
-[`settings.json`](.writrun/conventions/settings.json); the `.md` files
+[`settings.json`](.writrun/settings.json); the `.md` files
 explain them.** Read the settings before writing a branch name, a commit
 subject or a PR title — the tag, the branch prefixes and the label names
 are settings, not constants, and a project you work in may hold different

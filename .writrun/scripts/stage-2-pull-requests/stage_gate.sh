@@ -58,7 +58,7 @@ if [ "$HERE" -ge "$NEED" ]; then
 fi
 
 echo "stage is ${HERE}, which stops below ${NEED} — not running."
-echo "This job is off because .writrun/conventions/settings.json says so,"
+echo "This job is off because .writrun/settings.json says so,"
 echo "not because anything failed. Raise 'stage' to turn it on"
 echo "(docs/product/adoption.md#three-stages)."
 report false

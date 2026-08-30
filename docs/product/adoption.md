@@ -8,7 +8,7 @@ counting as non-compliance.
 
 Adoption is progressive. Each stage adds machinery on top of the one before
 it and changes nothing beneath, and a project declares which it is at in
-[`settings.json`](../../.writrun/conventions/settings.json): `stage: 1`,
+[`settings.json`](../../.writrun/settings.json): `stage: 1`,
 `2` or `3`.
 
 | Stage | Name | Adds | Needs | Its chapter |
@@ -93,7 +93,7 @@ they are not judged the same way:
   reverse-engineered from the file tree**.
 
   **Where it is stated is
-  [`settings.json`](../../.writrun/conventions/settings.json).** "Somewhere a
+  [`settings.json`](../../.writrun/settings.json).** "Somewhere a
   reader would look" was honest about the obligation and vague about the
   address. One known path ends the hunt, and the machinery reads the same
   statement the reader does — so a choice cannot be declared in one place and
