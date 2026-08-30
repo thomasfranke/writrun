@@ -4,8 +4,77 @@
 
 | | Values | Moved by |
 |---|---|---|
-| Task | `pending` → `in-progress` → `completed`, or `blocked` (needs `blocked_reason`) | whoever does the work |
+| Task | `backlog` → `ready` → `in-progress` → `in-review` → `done` | the machinery, on the authority branch, from forge events — never by hand |
+| Task | `blocked` (needs `blocked_reason`), from and back to `backlog` or `ready` | a person — no forge event knows *why* work cannot proceed |
+| Task | `dropped` — terminal | a person — no forge event knows a task will never happen |
 | Spec | `draft` → `approved` → `implemented` | `approved` by a human only; the rest by whoever does the work |
+
+The five working states carry the vocabulary the wider community
+already reads — the same columns GitHub Projects, Linear and Jira
+converge on — so a contributor arriving from any tracker knows where a
+task stands without learning a dialect.
+
+**A task's status line has one writer, and `main` is the complete
+mirror.** The working states are a projection of forge events onto the
+authority branch, written there by the machinery as each event lands —
+the queue is as current as the forge can make it:
+
+| Forge event | Writes |
+|---|---|
+| the merge that creates the task | the file lands `backlog` |
+| that same merge's recording commit approves its specs — or finds it has none to approve | `backlog → ready` |
+| a later merge returns one of its specs to `draft` (amendment) | `ready → backlog` |
+| the draft pull request opens, or reopens | `→ in-progress`, `taken_by` set |
+| the pull request is marked ready for review | `in-progress → in-review` |
+| the pull request is converted back to draft | `in-review → in-progress` |
+| a review requests changes | `in-review → in-progress` — the ball is back with the worker |
+| review is re-requested, on a pull request already marked ready | `in-progress → in-review` |
+| the pull request closes unmerged | `→ ready` or `backlog`, per its specs; `taken_by` cleared |
+| the merge carries the task's `completed` date | `→ done`, `taken_by` kept |
+| the merge carries its work without that date | `→ ready` or `backlog`, per its specs; `taken_by` cleared — one spec of several is work taken, not finished |
+
+Two of those edges land, not follow: a task **leaving flight** is not
+assumed back to the state it left. The machinery re-derives the resting
+state from the specs as they stand — `ready`, or `backlog` if one has
+meanwhile returned to `draft` — because an amendment may have landed
+while the work was in flight, and no edge interrupts flight to say so.
+And when more than one pull request works a task, **the newest event
+wins**: a close that leaves another pull request open re-derives the
+in-flight state and `taken_by` from that survivor, and a pull request
+opening for a task already in flight refreshes `taken_by` the same way.
+
+Two invariants fall out. `in-progress` and `in-review` each mean **an
+open pull request is working the task right now** — no open pull
+request, no in-flight state. And a branch never edits the status line:
+two writers on one line is a merge conflict by construction, and the
+branch has nothing to say that a forge event does not already say
+better.
+
+**Transitions are a checked machine, not a suggestion.** The machinery
+writes only the moves the tables above draw; an event arriving out of
+order — a stale replay, a reopened pull request whose task is already
+`done` — matches no legal edge and writes nothing. An echo is not an
+error, and it is never allowed to march a task backwards.
+
+`blocked` and `dropped` are the two human exceptions, for the same
+reason in both directions: the forge can report what happened to a pull
+request, never that the world outside the queue has stalled a task or
+killed it. `blocked` names its reason and waits for a person to release
+it; `dropped` is terminal — the queue's honest word for *this will not
+happen*, so the file stops shadowing the backlog forever.
+
+The worker still declares finishing — that is what the hand-written
+`completed` date *is*. The machinery never decides a task is done; it
+records, on the authority branch, a declaration the merge carried.
+
+**Who took it is recorded the same way.** The task's `taken_by` field
+carries the login of the pull request's author, written by the
+machinery in the same commit as the `in-progress` flip. It is a record,
+never an assignment: WritRun's own non-goals rule out reserving work,
+so the field reports what the forge shows — including a newer pull
+request superseding it — and entitles nobody. It clears whenever the
+task returns to `ready`, and stays on `done`, as the record of who
+completed the work.
 
 **Dates.** A task carries four, and **who writes each is part of the
 contract** — not a convention anyone may bend.
@@ -25,11 +94,19 @@ halves answer different questions and neither substitutes for the other —
 took it. Where everything merges the same day they coincide; anywhere
 else the gap between them *is* the review.
 
-Three states are **derived, never stored**: *proposed* is a task whose
-file an open pull request adds and the authority branch does not hold
-yet; *ready for development* is a `pending` task whose every spec is
-`approved`; *waiting for review* is an open PR. No field records any of
-them.
+And four is the number — **no date per transition.** Every status flip
+the machinery makes is a commit, so the task's own git history already
+holds the full timeline, timestamped and captioned, for free. Lead
+time, review time, time-in-queue: derive them from the log. A schema
+field that restates git is bloat, and this sentence exists so nobody
+adds one.
+
+One state is **derived, never stored**: *proposed* — a task whose file
+an open pull request adds and the authority branch does not hold yet.
+It could not be stored even in principle: the merge that makes the task
+real is the very commit that carries the file's own words onto the
+authority branch, so the field would land already false. Everything
+else the pipeline distinguishes is written where it happened.
 
 **The merge of the pull request that creates a task is that task's
 authorization.** Nothing else authorizes it, and nothing else needs to:
@@ -42,8 +119,40 @@ its reason, and `depends_on`.
 
 ## Criteria
 
-- When a queue field records what a merge did, the machinery shall write
-  it after that merge, and a person shall not write it by hand.
+- When a queue field records what a forge event did — a merge, a pull
+  request opening, closing, or changing draftness — the machinery shall
+  write it after that event, and a person shall not write it by hand.
+- When the recording commit of the merge that creates a task approves
+  its every spec — or finds it references none — the machinery shall
+  move the task `backlog → ready` in that same commit.
+- When a merge returns a spec of a `ready` task to `draft`, the
+  machinery shall move that task back to `backlog` in the same
+  recording commit.
+- When a draft pull request opens for a task, the machinery shall move
+  it to `in-progress` and record the author's login in `taken_by`, in
+  one commit.
+- When a pull request working a task is marked ready for review, the
+  machinery shall move the task to `in-review`; when it is converted
+  back to draft, the machinery shall return it to `in-progress`.
+- When a review on the pull request working a task requests changes,
+  the machinery shall return the task to `in-progress`; when review is
+  re-requested on a pull request already marked ready, the machinery
+  shall move the task back to `in-review`.
+- When a task leaves flight — its pull request closed unmerged, or its
+  work merged without the `completed` date — the machinery shall land
+  it on `ready`, or on `backlog` if any of its specs is `draft`, and
+  clear `taken_by`.
+- When a pull request working a task closes while another open pull
+  request still works it, the machinery shall re-derive the in-flight
+  state and `taken_by` from the newest surviving pull request instead
+  of landing the task.
+- When a merge carries a task's work and its `completed` date, the
+  machinery shall move the task to `done`.
+- When an event matches no legal transition for the status a task
+  holds, the machinery shall write nothing.
+- When a change on a branch moves a task between the machinery's five
+  working states, the machinery shall reject the change; a hand-written
+  move to or from `blocked`, or to `dropped`, it shall accept.
 - When a queue file records a moment, it shall record it as a UTC
   timestamp, so that two entries made the same day remain orderable.
 - When a change adds a queue file whose id the authority branch or

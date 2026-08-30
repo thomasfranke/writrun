@@ -29,8 +29,8 @@ queue cheapens what the queue is for.
 
 An agent never picks a task by directory listing order, filename, or "the
 one that looks easiest." The algorithm — resume any unfinished
-`in-progress` task first, then filter to `pending`, exclude anything whose
-`depends_on` isn't fully `completed`, sort by priority then by `created`
+in-flight task first, then filter to `ready`, exclude anything whose
+`depends_on` isn't fully `done`, sort by priority then by `created`
 then by `id` — is specified in full in
 [`technical/README.md`](../../technical/README.md#task-selection-algorithm),
 not restated here.
@@ -41,7 +41,7 @@ Two different kinds of "can't start," and a task never uses one to mean the
 other:
 
 - **`depends_on`** — blocked by another task in this same queue. Resolves
-  itself once that task's status is `completed`; no human judgement needed.
+  itself once that task's status is `done`; no human judgement needed.
 - **`status: blocked`** — blocked by something outside the queue entirely:
   an unanswered decision, an upstream release, a spike whose result could
   invalidate the plan. Requires a non-null `blocked_reason` stating what
@@ -55,8 +55,9 @@ omitted field is never the same as an empty one:
 ```yaml
 ---
 id: task-0005
-status: pending
+status: ready
 blocked_reason: null
+taken_by: null
 spec_ref: [spec-0011]
 doc_ref: product/editor/search-and-replace.md#scope
 priority: high

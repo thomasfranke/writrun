@@ -21,7 +21,7 @@ none" in the PR body.
 %%{init: {'theme':'base','themeVariables':{'background':'#0d1117','primaryColor':'#161b22','primaryTextColor':'#e6edf3','primaryBorderColor':'#8b949e','lineColor':'#ffffff','secondaryColor':'#161b22','tertiaryColor':'#161b22','fontSize':'14px'}}}%%
 flowchart LR
     A["HUMAN<br/>Edit permanent doc<br/>product · technical · about"]
-    B["AGENT<br/>writrun-create-task-and-spec<br/>generates task: pending<br/>and spec: draft"]
+    B["AGENT<br/>writrun-create-task-and-spec<br/>generates task: backlog<br/>and spec: draft"]
     C["AGENT<br/>Branch docs/name · open PR<br/>Derived work listed"]
     D["CI<br/>writrun check<br/>derived work in the diff<br/>or declared none"]
     E["CI<br/>writrun issues<br/>Creates the GitHub Issue<br/>labelled status:proposed"]
@@ -108,7 +108,7 @@ flight.
 %%{init: {'theme':'base','themeVariables':{'background':'#0d1117','primaryColor':'#161b22','primaryTextColor':'#e6edf3','primaryBorderColor':'#8b949e','lineColor':'#ffffff','secondaryColor':'#161b22','tertiaryColor':'#161b22','fontSize':'14px'}}}%%
 flowchart LR
     A["AGENT or HUMAN<br/>work found in code or machinery<br/>an existing doc authorizes it"]
-    B["AGENT<br/>writrun-create-task-and-spec<br/>task: pending · spec: draft"]
+    B["AGENT<br/>writrun-create-task-and-spec<br/>task: backlog · spec: draft"]
     C["AGENT<br/>Branch queue/name · open PR<br/>names the rule it derives from"]
     D["Flow 2 takes over<br/>approval · merge · status:ready"]
     A --> B --> C --> D

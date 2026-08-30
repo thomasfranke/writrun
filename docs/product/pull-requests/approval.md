@@ -19,8 +19,9 @@ machinery has to match — the PR's own branch while it is still open, or
 flowchart LR
     A["MAINTAINER<br/>Assents to the PR<br/>an approving review · or the merge"]
     B["CI<br/>writrun approve<br/>spec: draft → approved<br/>onto the PR branch, or onto main"]
+    C["CI, after the merge<br/>main: task backlog → ready<br/>never on a branch"]
     D["CI<br/>writrun issues<br/>Issue: status:ready"]
-    E["Ready for development<br/>pending task + approved specs"]
-    A --> B --> D --> E
+    E["Ready for development<br/>waiting for someone to take it"]
+    A --> B --> C --> D --> E
 ```
 

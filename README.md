@@ -126,19 +126,37 @@ The sketch, one line per flow:
    `draft → approved` onto the branch; merge makes the task ready.
 3. **Taking a task** — an agent takes the next by the algorithm; a human
    picks any eligible one. `blocked`, an open dependency, or a draft
-   spec excludes a task for everyone.
-4. **Finishing** — work done → delta check → Outcome and statuses →
-   state check → PR; the two checks sit on either side of the status
-   change, in that order, always.
+   spec excludes a task for everyone. The draft PR is the signal: the
+   bot answers it by writing `in-progress` onto `main` itself.
+4. **Finishing** — work done → delta check → Outcome, spec status and
+   the `completed` date → state check → ready for review; the two
+   checks sit on either side of the status change, in that order,
+   always. The merge is what flips the task `done` on `main`.
 5. **Review and merge** — CI re-runs the checks (methodology, not code);
    the maintainer squash-merges; the Issue mirror follows.
 
 Special flows — a spec amended after approval returns through `draft`
 and is re-approved; work discovered mid-flight enters as a `queue/` PR
 adding only task and spec; `blocked` names its reason and waits for a
-human; a PR closed unmerged releases nothing because nothing was
+human; a PR closed unmerged is unwound by the bot — its task returns to
+`ready` on `main` on its own, because nothing else was ever
 reserved — same gates, drawn separately in
 [the same chapter](docs/product/tasks-and-specs/conflicts.md).
+
+## Three stages
+
+Adoption is progressive: three stages, each adding machinery on top of
+the one before and changing nothing beneath. A project declares its
+stage in `.writrun/conventions/settings.json` (`stage: 1`, `2` or `3`);
+everything that belongs to exactly one stage carries a `stage-N-`
+prefix in its name. The full rules live in
+[Adoption](docs/product/adoption.md).
+
+| | Does | Needs |
+|---|---|---|
+| **Stage 1** — tasks and specs | The docs, the queue, the schemas and the four human gates — all as markdown files. Statuses move by hand. | `git`, `bash`, POSIX tools. No forge, no permissions. |
+| **Stage 2** — pull requests | Branches, PRs, the CI checks, merge as assent. The bot owns the queue's status lines on `main`, following every forge event: `backlog → ready → in-progress → in-review → done`, plus `taken_by` naming who has it. | A GitHub repo. Actions workflow permissions: **Read and write**. `main` reachable by the Actions bot — unprotected, or a ruleset with the GitHub Actions app on its bypass list. |
+| **Stage 3** — GitHub issues | The Issues mirror: every task is an Issue, its `status:` label following the work in real time. | Issues enabled. The same Read-and-write setting covers the labels. |
 
 ## Repository setup
 

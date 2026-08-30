@@ -15,13 +15,20 @@ soon as the work is done. `writrun-check-task-state` has nothing to read until t
 statuses move — every rule it has is about a transition, so running it first
 passes without checking anything.
 
+What the branch moves is the spec's status and the task's `completed`
+date — the worker's declaration that the work is finished. The task's
+own status line stays untouched: it belongs to the machinery, which
+flips it to `done` on the authority branch when the merge lands
+carrying that date ([statuses](../tasks-and-specs/statuses.md)).
+
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'background':'#0d1117','primaryColor':'#161b22','primaryTextColor':'#e6edf3','primaryBorderColor':'#8b949e','lineColor':'#ffffff','secondaryColor':'#161b22','tertiaryColor':'#161b22','fontSize':'14px'}}}%%
 flowchart LR
     C["AGENT or HUMAN<br/>Task carried out<br/>the code now matches the doc"]
     D["AGENT<br/>writrun-check-spec-deltas<br/>the doc contract, exit 0"]
-    E["AGENT<br/>Outcome filled<br/>spec: → implemented<br/>task: → completed"]
-    F["AGENT<br/>writrun-check-task-state<br/>the transitions E just made<br/>exit 0 · open PR"]
-    C --> D --> E --> F
+    E["AGENT<br/>Outcome filled<br/>spec: → implemented<br/>completed date written"]
+    F["AGENT<br/>writrun-check-task-state<br/>the transitions E just made<br/>exit 0 · PR ready for review"]
+    G["CI, after the merge<br/>main: task → done"]
+    C --> D --> E --> F --> G
 ```
 
