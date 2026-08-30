@@ -1,7 +1,7 @@
 ---
 id: spec-0018
 task_ref: task-0019
-status: approved
+status: draft
 created: 2026-08-30T03:04:06Z
 ---
 
@@ -106,9 +106,15 @@ green in their new homes.
 
 ## Proposed product changes
 
-- `product/stage-1-tasks-and-specs/`, `product/stage-2-pull-requests/`,
-  `product/stage-3-github-issues/` — the three chapters renamed to
-  their stage-prefixed homes; content unchanged except links.
+- `product/stage-1-tasks-and-specs/` — the chapter renamed to its
+  stage-prefixed home; content unchanged except links.
+- `product/stage-2-pull-requests/` — the same rename.
+- `product/stage-3-github-issues/` — the same rename.
+- `product/README.md` — the chapter links follow the renames.
+- `product/adoption.md` — its links follow the renames.
+- `product/concepts/product-doc.md` — its links follow the renames.
+- `product/concepts/technical-doc.md` — its links follow the renames.
+- `about.md` — its links follow the renames.
 
 ## Proposed technical changes
 
@@ -116,6 +122,16 @@ green in their new homes.
   chapters follows the `git mv`; no prose changes — the `stage`
   contract, the schema and the algorithm were authored first and are
   already written.
+
+## Amendment history
+
+- 2026-08-30 — the Proposed product changes named the three renamed
+  folders on one bullet (only the first path was machine-readable) and
+  missed the five sibling docs whose links the rename sweeps
+  (`product/README.md`, `adoption.md`, two concepts files, `about.md`).
+  Split per path and named the five; returned to `draft` for
+  re-approval. The elaboration was incomplete, not wrong — the scope is
+  unchanged.
 
 ## Outcome
 
