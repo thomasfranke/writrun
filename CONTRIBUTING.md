@@ -66,7 +66,7 @@ does not exist yet.
   *authors* a rule rather than
   implementing one uses `docs/short-name` — it creates specs it will not
   implement, so naming it after one would misdescribe it. See
-  [Pipeline](docs/product/tasks-and-specs/authoring.md#two-ways-a-permanent-doc-changes) for
+  [Pipeline](docs/product/stage-1-tasks-and-specs/authoring.md#two-ways-a-permanent-doc-changes) for
   which kind of change you have.
 - **Take a task only when it is ready.** `pending`, and every spec it
   references `approved`. A task whose spec is still `draft` has not passed
@@ -147,7 +147,7 @@ fork, and open a pull request against `main`.**
 
 Merging is restricted to the maintainer. This is not a comment on trust —
 a permanent doc never merges on agent *or* single-reviewer approval alone,
-per WritRun's own [human gates](docs/product/tasks-and-specs/gates.md), and
+per WritRun's own [human gates](docs/product/stage-1-tasks-and-specs/gates.md), and
 keeping that responsibility in one place is the simplest way to honour it.
 
 - **Keep your fork in sync.** Branch from an up-to-date `main` or your PR

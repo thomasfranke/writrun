@@ -10,8 +10,8 @@ printf '# Changed\n' > docs/product/chapter.md
 commit_all
 
 check "an unreadable range is refused, with git's own words" 3 "fatal:" \
-  -- bash "$CI_SCRIPTS/pull-requests/check_derived_work.sh" nosuchref...HEAD
-out=$(bash "$CI_SCRIPTS/pull-requests/check_derived_work.sh" nosuchref...HEAD 2>&1 || true)
+  -- bash "$CI_SCRIPTS/stage-2-pull-requests/check_derived_work.sh" nosuchref...HEAD
+out=$(bash "$CI_SCRIPTS/stage-2-pull-requests/check_derived_work.sh" nosuchref...HEAD 2>&1 || true)
 if printf '%s' "$out" | grep -q "nothing to declare"; then
   echo "FAIL  and never claims it looked and found nothing"
   printf '%s\n' "$out" | sed 's/^/      | /'
@@ -22,6 +22,6 @@ fi
 
 # A genuinely empty answer still reads exactly as it did.
 check "a real empty diff behaves as before" 0 "nothing to declare" \
-  -- bash "$CI_SCRIPTS/pull-requests/check_derived_work.sh" HEAD~1...HEAD~1
+  -- bash "$CI_SCRIPTS/stage-2-pull-requests/check_derived_work.sh" HEAD~1...HEAD~1
 
 finish

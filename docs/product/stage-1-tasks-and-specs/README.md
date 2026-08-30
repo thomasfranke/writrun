@@ -57,11 +57,11 @@ full in [`gates.md`](gates.md).
 
 Flows 1–5 are the happy path — flow 1 drawn in
 [`authoring.md`](authoring.md), flows 2–5 in
-[`../pull-requests/`](../pull-requests/README.md). In the flow diagrams,
+[`../stage-2-pull-requests/`](../stage-2-pull-requests/README.md). In the flow diagrams,
 each node names who acts; only the human ones are decisions. The edge
 cases reality produces are drawn separately — same gates — in
 [`conflicts.md`](conflicts.md) and, at Stage 2, in
-[`review.md`](../pull-requests/review.md).
+[`review.md`](../stage-2-pull-requests/review.md).
 
 ## This folder
 
@@ -76,5 +76,5 @@ True at **every stage**. What the higher stages add lives beside it.
 
 | Level | Adds |
 |---|---|
-| [`pull-requests/`](../pull-requests/README.md) | branches, pull requests, CI, merge as assent |
-| [`github-issues/`](../github-issues/README.md) | the GitHub Issues mirror |
+| [`pull-requests/`](../stage-2-pull-requests/README.md) | branches, pull requests, CI, merge as assent |
+| [`github-issues/`](../stage-3-github-issues/README.md) | the GitHub Issues mirror |

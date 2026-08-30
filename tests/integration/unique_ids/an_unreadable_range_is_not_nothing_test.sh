@@ -10,8 +10,8 @@ task_file task-0007 pending ""
 commit_all
 
 check "an unreadable range is refused, with git's own words" 3 "fatal:" \
-  -- bash "$CI_SCRIPTS/pull-requests/check_unique_ids.sh" nosuchref...HEAD o/r 7
-out=$(bash "$CI_SCRIPTS/pull-requests/check_unique_ids.sh" nosuchref...HEAD o/r 7 2>&1 || true)
+  -- bash "$CI_SCRIPTS/stage-2-pull-requests/check_unique_ids.sh" nosuchref...HEAD o/r 7
+out=$(bash "$CI_SCRIPTS/stage-2-pull-requests/check_unique_ids.sh" nosuchref...HEAD o/r 7 2>&1 || true)
 if printf '%s' "$out" | grep -q "nothing claims an id"; then
   echo "FAIL  and never claims it looked and found nothing"
   printf '%s\n' "$out" | sed 's/^/      | /'
@@ -22,6 +22,6 @@ fi
 
 # A readable range still reaches its verdict unchanged.
 check "a readable range still checks the base" 0 "No id collides" \
-  -- bash "$CI_SCRIPTS/pull-requests/check_unique_ids.sh" main...HEAD o/r 7
+  -- bash "$CI_SCRIPTS/stage-2-pull-requests/check_unique_ids.sh" main...HEAD o/r 7
 
 finish

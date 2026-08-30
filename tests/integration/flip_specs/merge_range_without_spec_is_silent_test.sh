@@ -11,7 +11,7 @@ git checkout -q main
 git merge -q --squash feature
 git commit -qm "squash: edit a chapter"
 merge=$(git rev-parse HEAD)
-out=$(bash "$CI_SCRIPTS/pull-requests/flip_approved_specs.sh" "${merge}~1...${merge}")
+out=$(bash "$CI_SCRIPTS/stage-2-pull-requests/flip_approved_specs.sh" "${merge}~1...${merge}")
 if [ -z "$out" ]; then
   echo "ok    a merge carrying no spec flips nothing"; pass=$((pass + 1))
 else

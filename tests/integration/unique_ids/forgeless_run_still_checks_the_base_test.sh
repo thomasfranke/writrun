@@ -12,6 +12,6 @@ cp work/tasks/task-0007.md work/tasks/task-0007-again.md
 commit_all
 forge_unavailable
 check "no forge still catches a base-branch collision" 1 "COLLISION" \
-  -- bash "$CI_SCRIPTS/pull-requests/check_unique_ids.sh" main...HEAD o/r 7
+  -- bash "$CI_SCRIPTS/stage-2-pull-requests/check_unique_ids.sh" main...HEAD o/r 7
 
 finish

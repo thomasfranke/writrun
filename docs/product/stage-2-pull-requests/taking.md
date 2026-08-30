@@ -15,7 +15,7 @@ machinery answers it twice over: the mirror moves to
 `status:in-progress` on its own, and the same event is written back
 onto the authority branch itself — `main` reads `in-progress` the
 moment the draft opens, not at merge
-([statuses](../tasks-and-specs/statuses.md)). Marking the pull request
+([statuses](../stage-1-tasks-and-specs/statuses.md)). Marking the pull request
 ready for review at the end is the same event running the other way,
 into `status:in-review`.
 

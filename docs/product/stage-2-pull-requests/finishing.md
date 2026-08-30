@@ -19,7 +19,7 @@ What the branch moves is the spec's status and the task's `completed`
 date — the worker's declaration that the work is finished. The task's
 own status line stays untouched: it belongs to the machinery, which
 flips it to `done` on the authority branch when the merge lands
-carrying that date ([statuses](../tasks-and-specs/statuses.md)).
+carrying that date ([statuses](../stage-1-tasks-and-specs/statuses.md)).
 
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'background':'#0d1117','primaryColor':'#161b22','primaryTextColor':'#e6edf3','primaryBorderColor':'#8b949e','lineColor':'#ffffff','secondaryColor':'#161b22','tertiaryColor':'#161b22','fontSize':'14px'}}}%%

@@ -11,8 +11,8 @@ printf '# Changed\n' > docs/product/chapter.md
 commit_all
 
 check "an unreadable range is refused, with git's own words" 3 "fatal:" \
-  -- bash "$CI_SCRIPTS/pull-requests/check_queue_impact.sh" nosuchref...HEAD
-out=$(bash "$CI_SCRIPTS/pull-requests/check_queue_impact.sh" nosuchref...HEAD 2>&1 || true)
+  -- bash "$CI_SCRIPTS/stage-2-pull-requests/check_queue_impact.sh" nosuchref...HEAD
+out=$(bash "$CI_SCRIPTS/stage-2-pull-requests/check_queue_impact.sh" nosuchref...HEAD 2>&1 || true)
 if printf '%s' "$out" | grep -q "No permanent doc changed"; then
   echo "FAIL  and never claims it looked and found nothing"
   printf '%s\n' "$out" | sed 's/^/      | /'
@@ -22,6 +22,6 @@ else
 fi
 
 check "and it still passes a change that touched no doc" 0 "No permanent doc changed" \
-  -- bash "$CI_SCRIPTS/pull-requests/check_queue_impact.sh" HEAD~1...HEAD~1
+  -- bash "$CI_SCRIPTS/stage-2-pull-requests/check_queue_impact.sh" HEAD~1...HEAD~1
 
 finish

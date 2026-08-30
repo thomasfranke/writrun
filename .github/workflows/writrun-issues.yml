@@ -43,7 +43,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: gate
-        run: bash .writrun/scripts/pull-requests/level_gate.sh github-issues
+        run: bash .writrun/scripts/stage-2-pull-requests/level_gate.sh github-issues
 
   mirror:
     needs: gate
@@ -64,6 +64,6 @@ jobs:
           PR_AUTHOR_ASSOCIATION: ${{ github.event.pull_request.author_association }}
           PR_HTML_URL: ${{ github.event.pull_request.html_url }}
         run: |
-          bash .writrun/scripts/github-issues/mirror_issues.sh \
+          bash .writrun/scripts/stage-3-github-issues/mirror_issues.sh \
             "${{ github.repository }}" \
             "${{ github.event.pull_request.number }}"

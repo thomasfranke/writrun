@@ -10,6 +10,6 @@ git checkout -q main; git merge -q feature; git checkout -q feature
 printf 'amended rule\n' >> docs/product/chapter.md
 commit_all
 check "a completed task's reference raises no warning" 0 "No non-completed task" \
-  -- bash "$CI_SCRIPTS/pull-requests/check_queue_impact.sh" main...HEAD
+  -- bash "$CI_SCRIPTS/stage-2-pull-requests/check_queue_impact.sh" main...HEAD
 
 finish

@@ -11,6 +11,6 @@ git checkout -q main; git merge -q feature; git checkout -q feature
 cp work/tasks/task-0007.md work/tasks/task-0007-again.md
 commit_all
 check "an id the base branch already holds is rejected" 1 "task-0007-again" \
-  -- bash "$CI_SCRIPTS/pull-requests/check_unique_ids.sh" main...HEAD o/r 7
+  -- bash "$CI_SCRIPTS/stage-2-pull-requests/check_unique_ids.sh" main...HEAD o/r 7
 
 finish

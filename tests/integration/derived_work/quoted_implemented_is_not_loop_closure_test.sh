@@ -14,6 +14,6 @@ printf '\na new rule\n' >> docs/product/chapter.md
 printf 'status: implemented\n' >> work/specs/spec-001.md
 commit_all
 check "a quoted implemented line is not loop closure" 1 "neither adds a task" \
-  -- env PR_BODY= bash "$CI_SCRIPTS/pull-requests/check_derived_work.sh" main...HEAD
+  -- env PR_BODY= bash "$CI_SCRIPTS/stage-2-pull-requests/check_derived_work.sh" main...HEAD
 
 finish

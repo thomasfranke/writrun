@@ -1,6 +1,6 @@
 # Level `pull-requests`
 
-What branches, pull requests and CI add to [`tasks-and-specs/`](../tasks-and-specs/README.md).
+What branches, pull requests and CI add to [`tasks-and-specs/`](../stage-1-tasks-and-specs/README.md).
 Nothing here is required to claim adoption — it is mechanical enforcement of
 what a person otherwise does deliberately.
 

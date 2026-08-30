@@ -13,7 +13,7 @@ git checkout -q main
 git merge -q --squash feature
 git commit -qm "squash: add spec-0001"
 merge=$(git rev-parse HEAD)
-out=$(bash "$CI_SCRIPTS/pull-requests/flip_approved_specs.sh" "${merge}~1...${merge}")
+out=$(bash "$CI_SCRIPTS/stage-2-pull-requests/flip_approved_specs.sh" "${merge}~1...${merge}")
 if printf '%s' "$out" | grep -q "approved work/specs/spec-0001.md" &&
    grep -q '^status: approved$' work/specs/spec-0001.md; then
   echo "ok    a merge flips the draft spec it carried"; pass=$((pass + 1))

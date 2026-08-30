@@ -10,8 +10,8 @@ spec_file spec-001 task-001 implemented
 commit_all
 
 check "an unreadable range is refused, with git's own words" 3 "fatal:" \
-  -- bash "$CI_SCRIPTS/pull-requests/check_promised_deltas.sh" nosuchref...HEAD
-out=$(bash "$CI_SCRIPTS/pull-requests/check_promised_deltas.sh" nosuchref...HEAD 2>&1 || true)
+  -- bash "$CI_SCRIPTS/stage-2-pull-requests/check_promised_deltas.sh" nosuchref...HEAD
+out=$(bash "$CI_SCRIPTS/stage-2-pull-requests/check_promised_deltas.sh" nosuchref...HEAD 2>&1 || true)
 if printf '%s' "$out" | grep -q "not applicable"; then
   echo "FAIL  and never claims it looked and found nothing"
   printf '%s\n' "$out" | sed 's/^/      | /'

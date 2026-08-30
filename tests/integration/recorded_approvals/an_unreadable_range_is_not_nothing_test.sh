@@ -11,8 +11,8 @@ spec_file spec-001 task-001 approved
 commit_all
 
 check "an unreadable range is refused, with git's own words" 3 "fatal:" \
-  -- bash "$CI_SCRIPTS/pull-requests/check_recorded_approvals.sh" nosuchref...HEAD o/r 7
-out=$(bash "$CI_SCRIPTS/pull-requests/check_recorded_approvals.sh" nosuchref...HEAD o/r 7 2>&1 || true)
+  -- bash "$CI_SCRIPTS/stage-2-pull-requests/check_recorded_approvals.sh" nosuchref...HEAD o/r 7
+out=$(bash "$CI_SCRIPTS/stage-2-pull-requests/check_recorded_approvals.sh" nosuchref...HEAD o/r 7 2>&1 || true)
 if printf '%s' "$out" | grep -q "needs verifying"; then
   echo "FAIL  and never claims it looked and found nothing"
   printf '%s\n' "$out" | sed 's/^/      | /'

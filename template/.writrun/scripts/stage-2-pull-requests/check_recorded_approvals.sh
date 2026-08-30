@@ -129,10 +129,10 @@ if [ -n "$edited" ]; then
   echo "FORBIDDEN: these approved specs were edited with no status move:" >&2
   echo " ${edited}" >&2
   echo "Content under an approval never changes silently — amend" >&2
-  echo "through draft (docs/product/tasks-and-specs/conflicts.md)." >&2
+  echo "through draft (docs/product/stage-1-tasks-and-specs/conflicts.md)." >&2
 fi
 echo "No approving review from an owner, member, or collaborator" >&2
 echo "exists on this pull request. draft -> approved is a human gate" >&2
-echo "(docs/product/tasks-and-specs/gates.md) — the transition, or the" >&2
+echo "(docs/product/stage-1-tasks-and-specs/gates.md) — the transition, or the" >&2
 echo "amended content, is accepted once the review exists." >&2
 exit 1

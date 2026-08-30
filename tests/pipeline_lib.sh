@@ -22,9 +22,9 @@ NEW_SH="$REPO_ROOT/.writrun/skills/writrun-create-task-and-spec/new.sh"
 # The workflow step scripts — what the integration tier exercises, the same
 # way the unit tier exercises the skills.
 CI_SCRIPTS="$REPO_ROOT/.writrun/scripts"
-READ_SETTING="$CI_SCRIPTS/pull-requests/read_setting.sh"
-CHECK_SETTINGS="$CI_SCRIPTS/pull-requests/check_settings.sh"
-LEVEL_GATE="$CI_SCRIPTS/pull-requests/level_gate.sh"
+READ_SETTING="$CI_SCRIPTS/stage-2-pull-requests/read_setting.sh"
+CHECK_SETTINGS="$CI_SCRIPTS/stage-2-pull-requests/check_settings.sh"
+LEVEL_GATE="$CI_SCRIPTS/stage-2-pull-requests/level_gate.sh"
 WORKFLOWS="$REPO_ROOT/.github/workflows"
 
 # settings_file — the whole settings file, from stdin. Written verbatim,

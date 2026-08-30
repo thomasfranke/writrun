@@ -143,4 +143,4 @@ if [ "$faults" -gt 0 ]; then
   exit 1
 fi
 
-echo "OK — ${SETTINGS} is canonical: level=$(bash .writrun/scripts/pull-requests/read_setting.sh level), pr_title_style=$(bash .writrun/scripts/pull-requests/read_setting.sh pr_title_style)"
+echo "OK — ${SETTINGS} is canonical: level=$(bash .writrun/scripts/stage-2-pull-requests/read_setting.sh level), pr_title_style=$(bash .writrun/scripts/stage-2-pull-requests/read_setting.sh pr_title_style)"

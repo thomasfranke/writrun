@@ -47,7 +47,7 @@ and the line-based readers silently misread anything else.
 ## Which kind of change you have
 
 Two, and they are not handled the same way — see
-[`tasks-and-specs/authoring.md`](docs/product/tasks-and-specs/authoring.md#two-ways-a-permanent-doc-changes).
+[`tasks-and-specs/authoring.md`](docs/product/stage-1-tasks-and-specs/authoring.md#two-ways-a-permanent-doc-changes).
 
 | | Authoring | Tracking | Implementing |
 |---|---|---|---|
@@ -92,7 +92,7 @@ re-approved. Never edit an approved spec's body while it stays
 ## Human gates — explicit, per principle 7
 
 This is this repo's concrete answer to the general rule in
-[`docs/product/tasks-and-specs/gates.md`](docs/product/tasks-and-specs/gates.md)
+[`docs/product/stage-1-tasks-and-specs/gates.md`](docs/product/stage-1-tasks-and-specs/gates.md)
 — every adopting project states its own version of this table.
 
 | Transition | Who |

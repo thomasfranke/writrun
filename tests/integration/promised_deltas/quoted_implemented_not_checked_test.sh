@@ -12,6 +12,6 @@ git checkout -q main; git merge -q feature; git checkout -q feature
 printf 'status: implemented\n' >> work/specs/spec-001.md
 commit_all
 check "a quoted implemented line invokes no contract" 0 "not applicable" \
-  -- bash "$CI_SCRIPTS/pull-requests/check_promised_deltas.sh" main...HEAD
+  -- bash "$CI_SCRIPTS/stage-2-pull-requests/check_promised_deltas.sh" main...HEAD
 
 finish

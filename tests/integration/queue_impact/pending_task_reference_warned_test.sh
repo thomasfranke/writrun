@@ -10,6 +10,6 @@ git checkout -q main; git merge -q feature; git checkout -q feature
 printf 'amended rule\n' >> docs/product/chapter.md
 commit_all
 check "editing a doc a pending task references warns and names it" 0 "task-001" \
-  -- bash "$CI_SCRIPTS/pull-requests/check_queue_impact.sh" main...HEAD
+  -- bash "$CI_SCRIPTS/stage-2-pull-requests/check_queue_impact.sh" main...HEAD
 
 finish

@@ -3,7 +3,7 @@ id: task-0019
 status: in-progress
 blocked_reason: null
 spec_ref: [spec-0016, spec-0017, spec-0018, spec-0019, spec-0020, spec-0021]
-doc_ref: product/tasks-and-specs/statuses.md#criteria
+doc_ref: product/stage-1-tasks-and-specs/statuses.md#criteria
 priority: high
 depends_on: []
 milestone: null

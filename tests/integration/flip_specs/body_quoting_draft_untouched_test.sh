@@ -8,7 +8,7 @@ task_file task-001 pending spec-001
 spec_file spec-001 task-001 draft
 printf 'status: draft\n' >> work/specs/spec-001.md
 commit_all
-bash "$CI_SCRIPTS/pull-requests/flip_approved_specs.sh" main...HEAD >/dev/null
+bash "$CI_SCRIPTS/stage-2-pull-requests/flip_approved_specs.sh" main...HEAD >/dev/null
 fm_status=$(sed -n '1,/^---$/d; p' work/specs/spec-001.md >/dev/null; sed -n '2,/^---$/p' work/specs/spec-001.md | sed -n 's/^status: *//p')
 body_drafts=$(grep -c '^status: draft$' work/specs/spec-001.md)
 if [ "$fm_status" = "approved" ] && [ "$body_drafts" = "1" ]; then

@@ -15,7 +15,7 @@
 # approved, and no later event ever corrected it.
 #
 # **Reading the diff is right for what the merge carried; it is wrong for
-# what the merge caused** (docs/product/github-issues/labels.md).
+# what the merge caused** (docs/product/stage-3-github-issues/labels.md).
 # So this reads neither a diff nor a patch: it reads the files, which is
 # the only source that reflects the flip the merge just triggered.
 #

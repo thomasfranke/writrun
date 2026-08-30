@@ -6,6 +6,6 @@ task_file task-001 pending spec-001
 spec_file spec-001 task-001 draft
 commit_all
 check "no spec reaching implemented means deltas do not apply" 0 "not applicable" \
-  -- bash "$CI_SCRIPTS/pull-requests/check_promised_deltas.sh" main...HEAD
+  -- bash "$CI_SCRIPTS/stage-2-pull-requests/check_promised_deltas.sh" main...HEAD
 
 finish

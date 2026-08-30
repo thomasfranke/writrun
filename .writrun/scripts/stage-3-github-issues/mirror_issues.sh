@@ -77,7 +77,7 @@ first_heading() {
 # A mirror's title names its task, and that is how a mirror is found —
 # there is no stored number anywhere. The rule now spells the name as the
 # tag a pull request title carries, `[TASK-NNNN] <task title>`
-# (docs/product/github-issues/README.md), so one search for the tag
+# (docs/product/stage-3-github-issues/README.md), so one search for the tag
 # finds the task in the queue, in the PR, and in the mirror at once.
 #
 # Every lookup below still reads the `task-NNNN — ` prefix that predates
@@ -176,7 +176,7 @@ EOF
 # body — decides whether this PR may reopen or retire it, and the line is
 # only worth as much as the pull request it names: a mirror another *open*
 # pull request owns is named in the log and never touched, while one whose
-# owner is gone is adopted (docs/product/github-issues/README.md —
+# owner is gone is adopted (docs/product/stage-3-github-issues/README.md —
 # the file is the authority and the mirror is a projection of it, so a
 # task with a file and no reachable mirror is the one state this
 # reconciliation may not leave behind).
@@ -246,7 +246,7 @@ adopt_mirror() {
 
 # clear_status <issue> <labels-csv> — a retired mirror keeps every label
 # except its place in the pipeline, for the same reason a completed one
-# does (docs/product/github-issues/labels.md): the close and its
+# does (docs/product/stage-3-github-issues/labels.md): the close and its
 # reason are the terminal state, and a `status:` label left on top of them
 # contradicts it.
 clear_status() {
@@ -317,7 +317,7 @@ while IFS="$TAB" read -r tid fname priority milestone refs ttitle; do
     # Three states, not two. An open pull request only *proposes* the
     # task — it may still close unmerged, and the mirror retires with it,
     # so the queue does not hold it yet. A merged one puts it in the
-    # queue, ready or not (docs/product/github-issues/labels.md).
+    # queue, ready or not (docs/product/stage-3-github-issues/labels.md).
     if [ "$open" = "true" ]; then
       lbl=status:proposed
     elif is_ready $refs; then

@@ -14,7 +14,7 @@ sed '$d' work/specs/spec-001.md > work/specs/spec-001.md.tmp \
   && mv work/specs/spec-001.md.tmp work/specs/spec-001.md
 printf 'status: draft\n' >> work/specs/spec-001.md
 commit_all
-out=$(bash "$CI_SCRIPTS/pull-requests/flip_approved_specs.sh" main...HEAD)
+out=$(bash "$CI_SCRIPTS/stage-2-pull-requests/flip_approved_specs.sh" main...HEAD)
 fm_status=$(sed -n '2,/^---$/p' work/specs/spec-001.md | sed -n 's/^status: *//p')
 if [ -z "$out" ] && [ "$fm_status" = "approved" ]; then
   echo "ok    a quoted status swap is not a redraft"; pass=$((pass + 1))

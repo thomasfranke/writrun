@@ -164,7 +164,7 @@ ensure_label() {   # ensure_label <name> <color> <description>
 # its place in the pipeline.
 #
 # **A closed mirror carries no `status:` label**
-# (docs/product/github-issues/labels.md). Every label in that table
+# (docs/product/stage-3-github-issues/labels.md). Every label in that table
 # names a place *inside* the pipeline, so any of them on a closed issue is
 # a leftover from the step before last — and a leftover is not merely
 # useless, it is false: an issue closed as completed reading
