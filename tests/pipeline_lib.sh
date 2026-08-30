@@ -24,7 +24,7 @@ NEW_SH="$REPO_ROOT/.writrun/skills/writrun-create-task-and-spec/new.sh"
 CI_SCRIPTS="$REPO_ROOT/.writrun/scripts"
 READ_SETTING="$CI_SCRIPTS/stage-2-pull-requests/read_setting.sh"
 CHECK_SETTINGS="$CI_SCRIPTS/stage-2-pull-requests/check_settings.sh"
-LEVEL_GATE="$CI_SCRIPTS/stage-2-pull-requests/level_gate.sh"
+STAGE_GATE="$CI_SCRIPTS/stage-2-pull-requests/stage_gate.sh"
 WORKFLOWS="$REPO_ROOT/.github/workflows"
 
 # settings_file — the whole settings file, from stdin. Written verbatim,
@@ -36,7 +36,7 @@ settings_file() {
 }
 
 # check_front_matter runs on files alone, so it is a skill rather than a
-# CI script — it is the one check available at every adoption level.
+# CI script — it is the one check available at every adoption stage.
 CHECK_FRONT_MATTER="$REPO_ROOT/.writrun/skills/writrun-check-front-matter/check_front_matter.sh"
 
 # stub_gh <n> — put a fake `gh` on PATH that answers every invocation with

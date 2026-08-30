@@ -6,7 +6,7 @@
 setup
 settings_file <<'JSON'
 {
-  "level": "github-issues",
+  "stage": 3,
   "pr_title_style": "gherkin"
 }
 JSON
@@ -16,12 +16,12 @@ check "a style outside the vocabulary is rejected" 1 \
 
 settings_file <<'JSON'
 {
-  "level": "everything",
+  "stage": "everything",
   "pr_title_style": "conventional"
 }
 JSON
 check "and so is a level outside it" 1 \
-  "level 'everything' is outside its vocabulary" \
+  "stage 'everything' is outside its vocabulary" \
   -- bash "$CHECK_SETTINGS"
 
 finish

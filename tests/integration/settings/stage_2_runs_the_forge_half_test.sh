@@ -8,13 +8,13 @@
 setup
 settings_file <<'JSON'
 {
-  "level": "pull-requests",
+  "stage": 2,
   "pr_title_style": "conventional"
 }
 JSON
-check "writrun check and approve run" 0 "reaches 'pull-requests'" \
-  -- bash "$LEVEL_GATE" pull-requests
-check "the two mirror workflows do not" 0 "stops below 'github-issues'" \
-  -- bash "$LEVEL_GATE" github-issues
+check "writrun check and approve run" 0 "reaches 2" \
+  -- bash "$STAGE_GATE" 2
+check "the two mirror workflows do not" 0 "stops below 3" \
+  -- bash "$STAGE_GATE" 3
 
 finish

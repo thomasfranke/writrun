@@ -6,12 +6,12 @@
 setup
 settings_file <<'JSON'
 {
-  "level": "pull-requests",
+  "stage": 2,
   "pr_title_style": "bracketed"
 }
 JSON
-check "a present key prints its value" 0 "pull-requests" \
-  -- bash "$READ_SETTING" level
+check "a present key prints its value" 0 "2" \
+  -- bash "$READ_SETTING" stage
 check "and so does the other one" 0 "bracketed" \
   -- bash "$READ_SETTING" pr_title_style
 
@@ -19,7 +19,7 @@ check "and so does the other one" 0 "bracketed" \
 # quoted value carrying a colon of its own survives whole.
 settings_file <<'JSON'
 {
-  "level": "github-issues",
+  "stage": 3,
   "pr_title_style": "conventional",
   "label_prefix": "status:"
 }

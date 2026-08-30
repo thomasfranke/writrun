@@ -8,11 +8,12 @@
 # JSON permits nesting, arrays and free-form whitespace. read_setting.sh
 # sees none of that and would misread it in silence, so the file is
 # restricted to what such a reader can see — a flat object, one
-# `"key": value` per line, two-space indent, values `true`, `false`, or a
-# double-quoted string — and this is what enforces the restriction
+# `"key": value` per line, two-space indent, values `true`, `false`, an
+# unquoted integer, or a double-quoted string — and this is what enforces
+# the restriction
 # (docs/technical/README.md#the-shape-is-a-checked-contract).
 #
-# **Strictness is scoped to where the risk is.** `level` is parsed by the
+# **Strictness is scoped to where the risk is.** `stage` is parsed by the
 # workflows, so its shape and its value are both checked. `pr_title_style`
 # is read by agents only, and an agent reads JSON the way it reads prose,
 # so only its value is.
@@ -40,7 +41,7 @@ faults=0
 fault() { echo "REJECTED: $*" >&2; faults=$((faults + 1)); }
 
 # The vocabularies, as the schema spells them.
-LEVELS="tasks-and-specs pull-requests github-issues"
+STAGES="1 2 3"
 TITLE_STYLES="conventional bracketed"
 
 # A key that would switch off something Adoption lists as core is refused,
@@ -79,7 +80,7 @@ while IFS= read -r line || [ -n "$line" ]; do
 
   # One `"key": value` per line, two-space indent, and nothing else on it.
   if ! printf '%s' "$line" \
-    | grep -qE '^  "[A-Za-z_][A-Za-z0-9_]*": (true|false|"[^"]*")(,?)$'; then
+    | grep -qE '^  "[A-Za-z_][A-Za-z0-9_]*": (true|false|[0-9]+|"[^"]*")(,?)$'; then
     fault "line ${lineno} is not one canonical '\"key\": value' pair: ${line}"
     continue
   fi
@@ -100,10 +101,10 @@ while IFS= read -r line || [ -n "$line" ]; do
   done
 
   case "$key" in
-    level)
-      case " $LEVELS " in
+    stage)
+      case " $STAGES " in
         *" $val "*) ;;
-        *) fault "level '${val}' is outside its vocabulary: ${LEVELS}" ;;
+        *) fault "stage '${val}' is outside its vocabulary: ${STAGES}" ;;
       esac ;;
     pr_title_style)
       case " $TITLE_STYLES " in
@@ -128,7 +129,7 @@ fi
 # Every documented key is present, always — the same reason front matter
 # carries null fields rather than omitting them: a reader sees the whole
 # configuration without knowing the defaults.
-for want in level pr_title_style; do
+for want in stage pr_title_style; do
   case " $keys " in
     *" $want "*) ;;
     *) fault "'${want}' is missing — every documented key is present, always" ;;
@@ -143,4 +144,4 @@ if [ "$faults" -gt 0 ]; then
   exit 1
 fi
 
-echo "OK — ${SETTINGS} is canonical: level=$(bash .writrun/scripts/stage-2-pull-requests/read_setting.sh level), pr_title_style=$(bash .writrun/scripts/stage-2-pull-requests/read_setting.sh pr_title_style)"
+echo "OK — ${SETTINGS} is canonical: stage=$(bash .writrun/scripts/stage-2-pull-requests/read_setting.sh stage), pr_title_style=$(bash .writrun/scripts/stage-2-pull-requests/read_setting.sh pr_title_style)"

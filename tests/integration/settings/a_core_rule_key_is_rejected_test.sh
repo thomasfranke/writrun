@@ -9,7 +9,7 @@ setup
 
 settings_file <<'JSON'
 {
-  "level": "github-issues",
+  "stage": 3,
   "pr_title_style": "conventional",
   "audience_split": false
 }
@@ -20,7 +20,7 @@ check "a key switching off the audience split is refused" 1 \
 
 settings_file <<'JSON'
 {
-  "level": "github-issues",
+  "stage": 3,
   "pr_title_style": "conventional",
   "human_gates": false
 }

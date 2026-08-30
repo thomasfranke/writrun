@@ -9,7 +9,7 @@ setup
 
 gated() {   # gated <workflow> <required-level>
   local f="$WORKFLOWS/$1" name="$1"
-  if ! grep -q "level_gate.sh $2$" "$f"; then
+  if ! grep -q "stage_gate.sh $2$" "$f"; then
     printf 'FAIL  %s gates on %s\n' "$name" "$2"; fail=$((fail + 1)); return
   fi
   printf 'ok    %s gates on %s\n' "$name" "$2"; pass=$((pass + 1))
@@ -38,9 +38,9 @@ gated() {   # gated <workflow> <required-level>
   fi
 }
 
-gated writrun-check.yml pull-requests
-gated writrun-approve.yml pull-requests
-gated writrun-issues.yml github-issues
-gated writrun-progress.yml github-issues
+gated writrun-check.yml 2
+gated writrun-approve.yml 2
+gated writrun-issues.yml 3
+gated writrun-progress.yml 3
 
 finish

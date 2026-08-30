@@ -8,7 +8,7 @@ setup
 
 settings_file <<'JSON'
 {
-  "level": "github-issues",
+  "stage": 3,
   "pr_title_style": "conventional",
   "mirror": {
     "labels": true
@@ -20,7 +20,7 @@ check "a nested object is rejected" 1 "not one canonical" \
 
 settings_file <<'JSON'
 {
-  "level": "github-issues",
+  "stage": 3,
   "pr_title_style": "conventional",
   "prefixes": ["task", "spec"]
 }
@@ -30,7 +30,7 @@ check "an array is rejected" 1 "not one canonical" \
 
 settings_file <<'JSON'
 {
-  "level": "github-issues", "pr_title_style": "conventional"
+  "stage": 3, "pr_title_style": "conventional"
 }
 JSON
 check "two keys on one line are rejected" 1 "not one canonical" \
@@ -38,19 +38,19 @@ check "two keys on one line are rejected" 1 "not one canonical" \
 
 settings_file <<'JSON'
 {
-  "level": "github-issues",
-  "level": "pull-requests",
+  "stage": 3,
+  "stage": 2,
   "pr_title_style": "conventional"
 }
 JSON
-check "a duplicated key is rejected" 1 "'level' appears more than once" \
+check "a duplicated key is rejected" 1 "'stage' appears more than once" \
   -- bash "$CHECK_SETTINGS"
 
 # Edge case: a trailing comma is invalid JSON, and a reader that shrugged
 # at it would be reading something no other tool calls a settings file.
 settings_file <<'JSON'
 {
-  "level": "github-issues",
+  "stage": 3,
   "pr_title_style": "conventional",
 }
 JSON

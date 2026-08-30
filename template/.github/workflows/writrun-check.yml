@@ -22,18 +22,18 @@ permissions:
 
 jobs:
   gate:
-    name: adoption level
+    name: adoption stage
     runs-on: ubuntu-latest
     # The level gates the whole workflow rather than each job, and it is a
     # job rather than a first step so a project below the level starts no
     # runner at all. It always succeeds: a job that did not run is not a
-    # failure, and level_gate.sh says which of the two happened.
+    # failure, and stage_gate.sh says which of the two happened.
     outputs:
       run: ${{ steps.gate.outputs.run }}
     steps:
       - uses: actions/checkout@v4
       - id: gate
-        run: bash .writrun/scripts/stage-2-pull-requests/level_gate.sh pull-requests
+        run: bash .writrun/scripts/stage-2-pull-requests/stage_gate.sh 2
 
   lifecycle:
     name: task and spec transitions

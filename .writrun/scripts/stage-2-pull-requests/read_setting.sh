@@ -5,8 +5,8 @@
 #   Run from the repository root; the path is relative to it.
 #
 # The file is JSON in a restricted shape — flat object, one `"key": value`
-# per line, values `true`, `false`, or a double-quoted string
-# (docs/technical/README.md#the-shape-is-a-checked-contract). That
+# per line, values `true`, `false`, an unquoted integer, or a double-quoted
+# string (docs/technical/README.md#the-shape-is-a-checked-contract). That
 # restriction is what lets this read it with `sed` alone: requiring `jq`
 # would be this project's first runtime dependency, which the toolchain is
 # built to avoid.
@@ -34,12 +34,12 @@ KEY="${1:-}"
 SETTINGS=".writrun/conventions/settings.json"
 
 # The documented defaults, which are the values the schema's own example
-# block carries (docs/technical/README.md#settings). They are the levels
+# block carries (docs/technical/README.md#settings). They are the stage
 # and style this machinery behaved at before the file existed, so a
 # project without one behaves exactly as it did.
 default_for() {
   case "$1" in
-    level)          printf 'github-issues' ;;
+    stage)          printf '3' ;;
     pr_title_style) printf 'conventional' ;;
   esac
 }

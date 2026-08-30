@@ -8,16 +8,16 @@
 setup
 settings_file <<'JSON'
 {
-  "level": "tasks-and-specs",
+  "stage": 1,
   "pr_title_style": "conventional"
 }
 JSON
-check "writrun check and approve do not run" 0 "stops below 'pull-requests'" \
-  -- bash "$LEVEL_GATE" pull-requests
-check "writrun issues and progress do not run" 0 "stops below 'github-issues'" \
-  -- bash "$LEVEL_GATE" github-issues
+check "writrun check and approve do not run" 0 "stops below 2" \
+  -- bash "$STAGE_GATE" 2
+check "writrun issues and progress do not run" 0 "stops below 3" \
+  -- bash "$STAGE_GATE" 3
 check "and it says the choice is why, not a failure" 0 \
   "not because anything failed" \
-  -- bash "$LEVEL_GATE" github-issues
+  -- bash "$STAGE_GATE" 3
 
 finish

@@ -5,8 +5,8 @@
 # with the behaviour the schema documents — the same posture the lister
 # takes when no forge answers.
 setup
-check "no file gives the documented level" 0 "github-issues" \
-  -- bash "$READ_SETTING" level
+check "no file gives the documented stage" 0 "3" \
+  -- bash "$READ_SETTING" stage
 check "and the documented style" 0 "conventional" \
   -- bash "$READ_SETTING" pr_title_style
 
@@ -16,8 +16,8 @@ settings_file <<'JSON'
   "pr_title_style": "bracketed"
 }
 JSON
-check "a key the file omits falls back the same way" 0 "github-issues" \
-  -- bash "$READ_SETTING" level
+check "a key the file omits falls back the same way" 0 "3" \
+  -- bash "$READ_SETTING" stage
 
 # And the check does not turn the file into a requirement.
 setup

@@ -7,7 +7,7 @@
 setup
 settings_file <<'JSON'
 {
-  "level": "github-issues"
+  "stage": 3
 }
 JSON
 check "a file missing a documented key is rejected" 1 \
@@ -19,7 +19,7 @@ settings_file <<'JSON'
   "pr_title_style": "conventional"
 }
 JSON
-check "and it is rejected the other way round too" 1 "'level' is missing" \
+check "and it is rejected the other way round too" 1 "'stage' is missing" \
   -- bash "$CHECK_SETTINGS"
 
 finish
