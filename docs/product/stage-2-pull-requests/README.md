@@ -13,6 +13,7 @@ person at Stage 1 does deliberately.
 
 | File | Covers |
 |---|---|
+| [`setup.md`](setup.md) | the forge configuration — what is set, the owner-assent gate, and the commands an agent runs |
 | [`statuses.md`](statuses.md) | the status machinery — forge events projected onto the queue, one writer per status line |
 | [`taking.md`](taking.md) | flow 3 — taking a task, and the draft that reports it |
 | [`finishing.md`](finishing.md) | flow 4 — the two checks and their order |
