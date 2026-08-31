@@ -1,6 +1,6 @@
 ---
 id: task-0020
-status: in-review
+status: done
 blocked_reason: null
 taken_by: thomasfranke
 spec_ref: [spec-0022, spec-0023, spec-0024, spec-0025]
@@ -11,7 +11,7 @@ milestone: null
 created: 2026-08-30T13:15:57Z
 queued: 2026-08-30T22:44:13Z
 completed: 2026-08-30T23:05:45Z
-merged: null
+merged: 2026-08-31T02:33:23Z
 ---
 
 # Settings live at WritRun's root, sectioned by stage, and govern the agent's git actions
