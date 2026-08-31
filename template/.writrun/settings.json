@@ -2,7 +2,7 @@
   "stage": 3,
   "stage_1": {
     "spec_required": "when-warranted",
-    "decisions_style": "chronological",
+    "decisions_style": "per-subsystem",
     "product_layout": "by-concept"
   },
   "stage_2": {

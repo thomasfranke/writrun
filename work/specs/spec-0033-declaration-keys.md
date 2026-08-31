@@ -98,7 +98,7 @@ three — their home, their presence, their vocabularies — and
 `read_setting.sh` documents each default (`when-warranted`,
 `per-subsystem`, `by-concept`), which is the behaviour from before the
 keys existed. The root file states this repository's true values:
-`when-warranted`, `chronological`, `by-concept`.
+`when-warranted`, `per-subsystem`, `by-concept`.
 
 `writrun-create-task-and-spec` reads `spec_required` at the top of "Does
 this task need a spec?": `always` removes the judgement outright and
@@ -109,14 +109,22 @@ The declarations half of the catch-up note is gone, and landing with
 spec-0026 meant the `stage_1` section never disappeared between the
 conduct flags leaving and the declarations arriving.
 
-Divergence, one: **the kit does not ship the documented defaults.**
-Step 1 asks `template/.writrun/settings.json` for `when-warranted`,
-`per-subsystem`, `by-concept`. It ships `chronological` instead, because
-`.writrun` is on the template mirror list — `make template-sync` copies
-the root file byte for byte and a unit test holds it identical, so the
-kit necessarily ships this repository's values. The condition predates
-this change (`pr_title_style` already shipped as `bracketed` rather than
-the documented `conventional` default) and honouring the promise would
-mean teaching the sync to exclude a path, which is new machinery and
-outside this scope. Recorded rather than worked around; a task deciding
-whether the kit's settings file should leave the mirror is the fix.
+Divergence, one: **step 1 named the wrong value for this repository.**
+It asks the root file for `decisions_style: chronological`. This
+repository's decisions are not one log: every entry sits in the folder
+of the adoption level it concerns (`decisions/README.md`), and the index
+— not the tree — carries the chronology. `per-subsystem` is the true
+value, so it is what both files state, and `technical/README.md` says
+which shape is this repository's rather than leaving the two to
+disagree.
+
+That also settles what step 1 anticipated as a mismatch: `.writrun` is
+on the template mirror list — `make template-sync` copies the root file
+byte for byte and a unit test holds it identical, so the kit necessarily
+ships this repository's values, and for these three keys those are the
+documented defaults step 1 asked the kit for. The condition itself
+remains (`pr_title_style` ships as `bracketed` rather than the
+documented `conventional` default) and honouring that promise would mean
+teaching the sync to exclude a path, which is new machinery and outside
+this scope. Recorded rather than worked around; a task deciding whether
+the kit's settings file should leave the mirror is the fix.
