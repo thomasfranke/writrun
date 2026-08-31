@@ -1,11 +1,13 @@
 ---
 id: spec-0028
 task_ref: task-0022
-status: approved
+status: implemented
 created: 2026-08-31T02:58:23Z
 ---
 
 # spec-0028 — Queue references are clickable links
+
+**References:** [task-0022](../tasks/task-0022-queue-vocabulary.md)
 
 - **Goal:** a reader follows the queue by clicking. The generated body
   of a task links its `doc_ref` and each spec in `spec_ref`; the
@@ -92,4 +94,23 @@ green over the backfilled queue; template-mirror test green.
 
 ## Outcome
 
-_(fill after execution)_
+Built as specified. `new.sh` gained a `refs_line` helper and a
+`{{references}}` placeholder in `render_template`; a task's generated
+body carries `**References:** [doc_ref](../../docs/<doc_ref>)`, a
+spec's carries `[task-NNNN](../tasks/<file>)`, and the `spec_ref`
+append writes the matching spec link into the task's References line in
+the same run. The shipped templates carry the placeholder; a project
+template that omits it gets no links, unchanged. An empty references
+value takes the placeholder's whole line with it, so a task with no
+`doc_ref` and no spec has no empty heading. Front matter is
+byte-identical to what the checker accepted before.
+
+Backfill: one sweep added References lines to all 19 tasks and all 34
+specs, links only, front matter untouched — every link verified to
+resolve from the file it sits in. Divergence from the plan, one, and it
+is an addition: the append also *creates* the References line when the
+task had none, since the acceptance criterion is unconditional and a
+task with `doc_ref: null` starts without one. Tests: three generator
+cases (task with doc_ref, spec linking back, the append) plus the
+no-links edge case; the front-matter suite and the template mirror
+green.

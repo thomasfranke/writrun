@@ -7,6 +7,8 @@ created: 2026-08-31T03:06:42Z
 
 # spec-0029 — Protection is recommended, and never gates adoption
 
+**References:** [task-0021](../tasks/task-0021-commits-stage-two.md)
+
 - **Goal:** the machinery's comments match what the docs now state: the
   one hard requirement is that the Actions bot reaches `main`;
   protecting `main` with a ruleset is recommended where the forge

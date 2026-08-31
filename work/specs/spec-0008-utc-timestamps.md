@@ -7,6 +7,8 @@ created: 2026-08-28T00:00:00Z
 
 # spec-0008 — Record queue dates as UTC timestamps
 
+**References:** [task-0011](../tasks/task-0011-utc-timestamps.md)
+
 ## Scope
 
 Every date field in a task or spec becomes an RFC 3339 UTC timestamp

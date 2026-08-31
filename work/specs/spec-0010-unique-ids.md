@@ -7,6 +7,8 @@ created: 2026-08-28T00:00:00Z
 
 # spec-0010 — Keep queue ids unique across open pull requests
 
+**References:** [task-0013](../tasks/task-0013-unique-ids.md)
+
 ## Scope
 
 Prevention in the generator, detection in CI.

@@ -7,6 +7,8 @@ created: 2026-08-28T00:00:00Z
 
 # spec-0007 — Label closed mirrors and re-derive after approval
 
+**References:** [task-0010](../tasks/task-0010-label-closed-mirrors.md)
+
 ## Scope
 
 A closed mirror loses its `status:` label, and a task's label is

@@ -5,6 +5,7 @@ blocked_reason: null
 taken_by: null
 spec_ref: [spec-0007]
 doc_ref: product/stage-3-github-issues/labels.md
+origin: rule
 priority: medium
 depends_on: []
 milestone: null
@@ -15,6 +16,8 @@ merged: 2026-08-28T21:38:03Z
 ---
 
 # Label closed mirrors and re-derive after approval
+
+**References:** [product/stage-3-github-issues/labels.md](../../docs/product/stage-3-github-issues/labels.md) · [spec-0007](../specs/spec-0007-label-closed-mirrors.md)
 
 Two label defects, both visible in the live issues.
 

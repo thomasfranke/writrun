@@ -5,6 +5,7 @@ blocked_reason: null
 taken_by: null
 spec_ref: [spec-0006]
 doc_ref: technical/README.md#task-schema
+origin: rule
 priority: medium
 depends_on: []
 milestone: null
@@ -15,6 +16,8 @@ merged: 2026-08-29T17:38:35Z
 ---
 
 # Stamp queued and merged on the task
+
+**References:** [technical/README.md#task-schema](../../docs/technical/README.md#task-schema) · [spec-0006](../specs/spec-0006-stamp-queued-and.md)
 
 The schema now says a task carries four dates and that two of them —
 `queued` and `merged` — are the machinery's to write, after the merge

@@ -7,6 +7,8 @@ created: 2026-08-31T04:52:11Z
 
 # spec-0034 — Observance is checked where it leaves a trace
 
+**References:** [task-0021](../tasks/task-0021-commits-stage-two.md)
+
 - **Goal:** the settings an agent is told to obey stop being pure
   trust where disobedience is visible. From Stage 2, `writrun check`
   fails a pull request whose title ignores the declared

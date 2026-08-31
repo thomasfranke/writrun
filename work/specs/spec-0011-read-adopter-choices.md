@@ -7,6 +7,8 @@ created: 2026-08-28T00:00:00Z
 
 # spec-0011 — Read adopter choices from a settings file
 
+**References:** [task-0014](../tasks/task-0014-read-adopter-choices.md)
+
 ## Scope
 
 `.writrun/conventions/settings.json` exists, one reader serves whatever

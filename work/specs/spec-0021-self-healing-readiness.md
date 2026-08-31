@@ -7,6 +7,8 @@ created: 2026-08-30T03:33:06Z
 
 # spec-0021 — Self-healing release readiness: the bot syncs the template on main
 
+**References:** [task-0019](../tasks/task-0019-status-from-forge.md)
+
 - **Goal:** a push to `main` that leaves the template drifted gets a
   sync commit from the machinery, not a red X demanding
   `make template-sync` — and the readiness verdict lands on the healed

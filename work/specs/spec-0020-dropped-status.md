@@ -7,6 +7,8 @@ created: 2026-08-30T03:22:07Z
 
 # spec-0020 — The dropped status: a terminal state for work that will not happen
 
+**References:** [task-0019](../tasks/task-0019-status-from-forge.md)
+
 - **Goal:** the queue has an honest terminal word for *this will not
   happen* — hand-written like `blocked`, for the same reason: no forge
   event knows a task died. A `dropped` task stops shadowing the

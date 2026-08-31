@@ -7,6 +7,8 @@ created: 2026-08-30T03:05:33Z
 
 # spec-0019 — The taken_by field: who took the task, recorded by the machinery
 
+**References:** [task-0019](../tasks/task-0019-status-from-forge.md)
+
 - **Goal:** a task on `main` names who is working it — the forge login
   of the pull request's author, machinery-written in the same commit as
   the status flip, cleared whenever the task returns to `ready`, kept

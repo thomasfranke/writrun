@@ -5,6 +5,7 @@ blocked_reason: null
 taken_by: null
 spec_ref: [spec-0010]
 doc_ref: technical/README.md#task-schema
+origin: rule
 priority: high
 depends_on: []
 milestone: null
@@ -15,6 +16,8 @@ merged: 2026-08-28T20:14:25Z
 ---
 
 # Keep queue ids unique across open pull requests
+
+**References:** [technical/README.md#task-schema](../../docs/technical/README.md#task-schema) · [spec-0010](../specs/spec-0010-unique-ids.md)
 
 The schema now says an id is unique across the queue and every open pull
 request. The generator mints from one branch's view, so two branches cut

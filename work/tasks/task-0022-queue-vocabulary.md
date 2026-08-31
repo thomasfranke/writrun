@@ -5,16 +5,19 @@ blocked_reason: null
 taken_by: thomasfranke
 spec_ref: [spec-0028, spec-0031, spec-0032]
 doc_ref: technical/README.md#task-schema
+origin: rule
 priority: medium
 depends_on: []
 milestone: null
 created: 2026-08-31T03:38:14Z
 queued: 2026-08-31T04:04:03Z
-completed: null
+completed: 2026-08-31T11:48:06Z
 merged: null
 ---
 
 # Make the queue navigable and origin-aware
+
+**References:** [technical/README.md#task-schema](../../docs/technical/README.md#task-schema) · [spec-0028](../specs/spec-0028-clickable-refs.md) · [spec-0031](../specs/spec-0031-origin-field.md) · [spec-0032](../specs/spec-0032-reporting-rename.md)
 
 The docs gave the queue's own files a richer voice and the generator
 has not caught up. References are navigable by rule — a reader follows

@@ -5,6 +5,7 @@ blocked_reason: null
 taken_by: null
 spec_ref: [spec-0015]
 doc_ref: technical/README.md#task-schema
+origin: report
 priority: high
 depends_on: []
 milestone: null
@@ -15,6 +16,8 @@ merged: 2026-08-29T02:44:13Z
 ---
 
 # The generator's view of open pull requests stops at 100 files
+
+**References:** [technical/README.md#task-schema](../../docs/technical/README.md#task-schema) · [spec-0015](../specs/spec-0015-page-the-generator.md)
 
 An id is unique across the queue and every open pull request, and the
 generator consults the forge to honour it. The question it asks returns

@@ -7,6 +7,8 @@ created: 2026-08-30T03:04:06Z
 
 # spec-0018 — Stage-prefixed names across docs, scripts, tests and settings
 
+**References:** [task-0019](../tasks/task-0019-status-from-forge.md)
+
 - **Goal:** anything that belongs to exactly one stage says so in its
   name (`stage-N-` prefix), the settings contract says `stage: 1|2|3`
   (unquoted integer), the queue speaks the community status vocabulary

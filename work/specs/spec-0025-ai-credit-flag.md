@@ -7,6 +7,8 @@ created: 2026-08-30T13:16:14Z
 
 # spec-0025 — credit_ai decides whether the agent credits itself
 
+**References:** [task-0020](../tasks/task-0020-settings-restructure.md)
+
 - **Goal:** one boolean, `credit_ai` (section `"stage_1"`), puts the
   agent's self-credit under the adopter's control. `true` is today's
   behaviour: the agent's commits and pull request bodies carry whatever

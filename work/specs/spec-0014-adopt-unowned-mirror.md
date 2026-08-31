@@ -7,6 +7,8 @@ created: 2026-08-28T00:00:00Z
 
 # spec-0014 — Adopt an unowned mirror, never a live one
 
+**References:** [task-0017](../tasks/task-0017-stale-mirror-blocks.md)
+
 ## Scope
 
 The ownership decision in `mirror_issues.sh`, and nothing else.

@@ -5,6 +5,7 @@ blocked_reason: null
 taken_by: null
 spec_ref: [spec-0011]
 doc_ref: technical/README.md#settings
+origin: rule
 priority: medium
 depends_on: [task-0006, task-0008, task-0010, task-0013]
 milestone: null
@@ -15,6 +16,8 @@ merged: 2026-08-29T17:15:35Z
 ---
 
 # Read adopter choices from a settings file
+
+**References:** [technical/README.md#settings](../../docs/technical/README.md#settings) · [spec-0011](../specs/spec-0011-read-adopter-choices.md)
 
 The schema now says `.writrun/conventions/settings.json` holds the choices
 Adoption leaves open, that both the machinery and the agents read it, and

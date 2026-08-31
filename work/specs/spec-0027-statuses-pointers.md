@@ -7,6 +7,8 @@ created: 2026-08-31T02:47:41Z
 
 # spec-0027 — Machinery pointers follow the statuses split
 
+**References:** [task-0021](../tasks/task-0021-commits-stage-two.md)
+
 - **Goal:** every comment and skill instruction that cites the status
   projection cites the chapter that now holds it —
   `product/stage-2-pull-requests/statuses.md` — instead of the Stage 1

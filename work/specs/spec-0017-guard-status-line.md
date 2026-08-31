@@ -7,6 +7,8 @@ created: 2026-08-30T02:58:05Z
 
 # spec-0017 — Guard the status line: branch-side flips rejected, finishing flow updated
 
+**References:** [task-0019](../tasks/task-0019-status-from-forge.md)
+
 - **Goal:** the local checks refuse what the rule forbids — a branch
   moving a task between the machinery's statuses — and the skills and
   `AGENTS.md` describe the flow the worker actually performs now: take

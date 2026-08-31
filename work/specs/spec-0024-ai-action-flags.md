@@ -7,6 +7,8 @@ created: 2026-08-30T13:16:11Z
 
 # spec-0024 — auto_commit and auto_pr gate the agent's git actions
 
+**References:** [task-0020](../tasks/task-0020-settings-restructure.md)
+
 - **Goal:** two booleans put the agent's own git actions under the
   adopter's control: `auto_commit` (section `"stage_1"`) and `auto_pr`
   (section `"stage_2"`). `true` is today's behaviour. `false` means the

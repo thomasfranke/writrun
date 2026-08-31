@@ -5,6 +5,7 @@ blocked_reason: null
 taken_by: null
 spec_ref: [spec-0012]
 doc_ref: technical/README.md#task-schema
+origin: rule
 priority: medium
 depends_on: []
 milestone: null
@@ -15,6 +16,8 @@ merged: 2026-08-29T21:00:41Z
 ---
 
 # Check that a doc_ref resolves
+
+**References:** [technical/README.md#task-schema](../../docs/technical/README.md#task-schema) · [spec-0012](../specs/spec-0012-doc-ref-resolves.md)
 
 `check_front_matter.sh` validates a `doc_ref`'s shape — under `docs/`,
 a `.md` path, optional anchor — and never checks that the file is there.

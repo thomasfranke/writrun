@@ -7,6 +7,8 @@ created: 2026-08-30T13:16:05Z
 
 # spec-0022 — Settings move to WritRun's root
 
+**References:** [task-0020](../tasks/task-0020-settings-restructure.md)
+
 - **Goal:** `.writrun/settings.json` is the settings file's one address —
   the root of WritRun's home, not a corner of `conventions/` — and every
   reader, check, doc and mirror knows it, while a file left at the old

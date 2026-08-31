@@ -7,6 +7,8 @@ created: 2026-08-31T02:47:40Z
 
 # spec-0026 — Conduct flags live in stage_2
 
+**References:** [task-0021](../tasks/task-0021-commits-stage-two.md)
+
 - **Goal:** `auto_commit` and `credit_ai` move from the settings file's
   `stage_1` section to `stage_2`, so the file says what the docs now
   say: git begins at Stage 2, and Stage 1 carries no git-conduct choice
