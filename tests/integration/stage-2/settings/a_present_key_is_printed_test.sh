@@ -15,8 +15,9 @@ settings_file <<'JSON'
   },
   "stage_2": {
     "auto_commit": false,
-    "credit_ai": true,
     "auto_pr": true,
+    "auto_push": false,
+    "credit_ai": true,
     "pr_title_style": "bracketed"
   }
 }
@@ -32,6 +33,8 @@ check "and the rest of stage_2" 0 "true" \
   -- bash "$READ_SETTING" stage_2.credit_ai
 check "and the last of it" 0 "true" \
   -- bash "$READ_SETTING" stage_2.auto_pr
+check "and a stated auto_push overrides its default" 0 "false" \
+  -- bash "$READ_SETTING" stage_2.auto_push
 check "a declaration prints through stage_1" 0 "always" \
   -- bash "$READ_SETTING" stage_1.spec_required
 check "and so does the next" 0 "chronological" \

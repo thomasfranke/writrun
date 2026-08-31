@@ -34,6 +34,30 @@ settings_file <<'JSON'
 {
   "stage": 3,
   "stage_1": {
+    "auto_push": false,
+    "spec_required": "when-warranted",
+    "decisions_style": "per-subsystem",
+    "product_layout": "by-concept"
+  },
+  "stage_2": {
+    "auto_commit": true,
+    "auto_pr": true,
+    "credit_ai": true,
+    "pr_title_style": "conventional"
+  }
+}
+JSON
+check "the newest conduct flag is homeless in stage_1 too" 1 \
+  "its home is stage_2" \
+  -- bash "$CHECK_SETTINGS"
+check "and stage_2 reports it missing" 1 \
+  "'stage_2.auto_push' is missing" \
+  -- bash "$CHECK_SETTINGS"
+
+settings_file <<'JSON'
+{
+  "stage": 3,
+  "stage_1": {
     "spec_required": "when-warranted",
     "decisions_style": "per-subsystem",
     "product_layout": "by-concept",
@@ -60,8 +84,9 @@ settings_file <<'JSON'
   },
   "stage_2": {
     "auto_commit": true,
-    "credit_ai": true,
     "auto_pr": true,
+    "auto_push": true,
+    "credit_ai": true,
     "pr_title_style": "conventional"
   }
 }
@@ -111,8 +136,9 @@ settings_file <<'JSON'
   "stage_2": {
     "decisions_style": "per-subsystem",
     "auto_commit": true,
-    "credit_ai": true,
     "auto_pr": true,
+    "auto_push": true,
+    "credit_ai": true,
     "pr_title_style": "conventional"
   }
 }
@@ -132,8 +158,9 @@ settings_file <<'JSON'
   "stage": 3,
   "stage_2": {
     "auto_commit": true,
-    "credit_ai": true,
     "auto_pr": true,
+    "auto_push": true,
+    "credit_ai": true,
     "pr_title_style": "conventional"
   }
 }

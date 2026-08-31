@@ -49,8 +49,38 @@
   the task's mirror on `status:in-progress`. Ready for review is the end
   of the work, not the start. Authoring and reporting PRs have no work to
   announce and open ready.
+- **The push and the opening are one act.** The branch reaches the forge
+  and the draft opens in the same breath, so what an adopter gates is the
+  moment their work becomes public — not the second half of it. The agent
+  composes the branch name, the title and the body, presents them
+  together, and does both only on the word. See
+  [`auto_push`](#who-pushes--stage_2auto_push) below.
 - **Merge**: squash only — a messy branch history is fine; the commit
   landing on `main` is not.
+
+## Who pushes — `stage_2.auto_push`
+
+`true`, the default, lets an agent push on its own as its flow requires.
+`false` gates the action and never the work: the agent commits as it
+would, names the branch, and pushes only after an explicit yes.
+
+**This is the flag that holds work in.** A commit is private and a pull
+request is already a conversation; the push between them is the act that
+puts an adopter's work on someone else's server, and it is the last
+moment anything can still be taken back quietly. Before this key existed
+it belonged to no flag at all — a first push was nobody's, and a push to
+an open pull request's branch read as `auto_pr`'s by inference.
+
+**Before the pull request exists, this flag and `auto_pr` are one
+question.** Taking a task pushes and opens the draft in one act, so the
+agent asks once, presenting the branch, the title and the body together;
+`false` on either flag holds the whole thing. Two prompts for one moment
+is not a stricter gate. Once the pull request is open, further pushes to
+its head branch are this flag's alone.
+
+**It reaches every branch, not only a task's.** A docs branch, a report
+branch and an implementing branch make work public the same way, and the
+gate is about that, never about what kind of work it is.
 
 ## Who opens the pull request — `stage_2.auto_pr`
 
@@ -69,7 +99,11 @@ allowed.
 **It holds the draft too.** The pull request that reports a task as taken
 is mechanical, but mechanical is not exempt — the flag gates the action,
 not the reason for it. The agent presents, waits, and the taking flow
-continues unchanged afterwards. It sits in `stage_2`, beside
+continues unchanged afterwards. It holds the push that carries the branch
+there with it: at that moment the two are one act
+([`auto_push`](#who-pushes--stage_2auto_push)), and gating only the
+second half would leave the branch on the forge before the adopter was
+asked anything. It sits in `stage_2`, beside
 `auto_commit`, because git begins at Stage 2; below that there is
 neither a commit nor a pull request for either flag to gate.
 

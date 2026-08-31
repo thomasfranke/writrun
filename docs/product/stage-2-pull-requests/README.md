@@ -5,7 +5,8 @@ commits and branches, pull requests, CI, merge as assent. **This is
 where git begins** — Stage 1 needs nothing but files, so everything
 about commits lives here: the
 [commit conventions](../../../.writrun/conventions/commits.md), the
-adopter's word on the agent's own git actions (`auto_commit`) and on
+adopter's word on the agent's own git actions (the conduct flags
+`auto_commit`, `auto_push` and `auto_pr` — one per act) and on
 whether the agent appears as a commit's co-author (`agent_coauthor` —
 [settings](../../technical/README.md#settings)), and the
 machinery that turns forge events into status lines. Nothing here is
