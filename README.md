@@ -173,6 +173,7 @@ commands are in [Stage 2 setup](docs/product/stage-2-pull-requests/setup.md).
 |---|---|---|
 | Settings → General | Issues | **On** — the task mirror lives there. Skip if you deleted the two mirror workflows. |
 | Settings → General | Allow squash merging | **On** — every merge is a squash. |
+| Settings → General | Automatically delete head branches | **On** — a merged branch has no further job; the branch list stays a list of work in flight. |
 | Settings → Actions → General | Workflow permissions | **Read and write** — lets `writrun approve` record `draft → approved`. Read-only loses only that convenience; every check still works. |
 | Settings → Rules → Rulesets → ruleset on `main` | Restrict creations · Restrict deletions · Block force pushes · Require linear history | **On** — the most restrictive set that never touches the machinery; anything more blocks the recording pushes ([Stage 2 setup](docs/product/stage-2-pull-requests/setup.md)). |
 | Settings → Rules → Rulesets → same ruleset | Require a pull request + the GitHub Actions app on the bypass list | **Recommended, never a condition for adoption.** The bypass is what lets the recording commits (status flips, dates, approvals) keep landing on `main`. The forge only offers the app as a bypass actor on organization-owned repos — on user-owned repos (UI and API alike) it is unavailable, so skip this rule there; everything human still enters through a PR by convention. Approvals: 1 with reviewers; 0 where the maintainer authors the PRs — there the merge is the assent. |
