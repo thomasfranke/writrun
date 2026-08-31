@@ -688,11 +688,22 @@ The whole adoption kit ships as [`template/`](../../template), one folder
 is: `.writrun/`, the four `writrun-*.yml` workflows, `work/`, the
 skeletons for `AGENTS.md` and `docs/`, and the guide itself as
 `WRITRUN.md` — a name that collides with nothing and stays behind as a
-provenance pointer after adoption. Two of the four workflows are
-severable: `writrun-issues.yml` and `writrun-progress.yml` are the
-Issues mirror — a projection, never the authority — and an adopter that
-wants no GitHub Issues deletes exactly those two; `check` and `approve`
-stand alone, and nothing else reads the mirror. It names the kit's two collision
+provenance pointer after adoption. **Severing the mirror is the `stage`
+setting, not a deletion.** An adopter that wants no GitHub Issues lowers
+the top-level `stage` below `3`, and every mirror in the kit stands down
+at once: `writrun-issues.yml` is wholly Stage 3, so is
+`writrun-progress.yml`'s `reflect` job, and so are the two mirror steps
+`approve` carries. Those steps are what changed the instruction — a
+merged close has exactly one owner, and it has to be the workflow that
+writes the queue, because a label derived from anything but the queue
+after the recording commit is derived from a state the merge already
+changed. Delete the two mirror workflows and leave `stage` at its
+default of `3`, and `approve` goes on minting and labelling mirrors at
+every merge; lower the stage, and deleting them is tidying rather than
+severing. `writrun-issues.yml` is the only one a deletion severs
+cleanly: `writrun-progress.yml` also carries Stage 2's in-flight status
+recording, and `check` and `approve` stand alone. The guide names the
+kit's two collision
 points — an existing `AGENTS.md` is grafted, never overwritten; existing
 docs are kept — while everything else the copy lands is
 WritRun-namespaced. The kit deliberately ships **no README.md**: the one

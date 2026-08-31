@@ -120,8 +120,16 @@ jobs:
     # After the recording, so the projection reads what it wrote. A
     # skipped record (a stage below 2 never reaches 3) or a no-op one
     # both leave a readable queue, so only cancellation stops this.
+    #
+    # Except on a merged close, which this workflow does not answer at
+    # all: `record` already stands down there (the merge recording owns
+    # that move), and projecting anyway would read a checkout that may
+    # predate the recording commit writrun-approve.yml is pushing at that
+    # very moment — a third writer of one label, racing the two that were
+    # already racing (docs/technical/decisions/github-issues/, 0060).
     if: >
       !cancelled() && needs.gate.outputs.mirror == 'true'
+      && github.event.pull_request.merged != true
     runs-on: ubuntu-latest
     steps:
       # Default branch, freshly after the record job's push — the file

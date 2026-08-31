@@ -1,7 +1,7 @@
 ---
 id: spec-0039
 task_ref: task-0029
-status: approved
+status: implemented
 created: 2026-08-31T16:36:02Z
 ---
 
@@ -170,4 +170,91 @@ close: a merge adding a task and its spec leaves the mirror on
 
 ## Outcome
 
-_(fill after execution)_
+Implemented as specified. One workflow answers a merged close, and the
+label is written from the queue after the recording commit.
+
+**What shipped.** `mirror_issues.sh` lost `SPEC_STATUSES` and `is_ready`
+along with the `spec_ref` column its records only carried for them; past
+the open event it writes no `status:` label and mints bare.
+`record_task_status.sh` reports `scope` beside `tasks`.
+`writrun-approve.yml` gained a Stage 3 gate output and two steps after
+its push — mint, then label, with `steps.status.outputs.scope` and no
+condition on `changed`. `writrun-issues.yml`'s mirror job and
+`writrun-progress.yml`'s reflect job stand down for a merged close and
+keep every other event. Decision 0060 and its index row; the
+`#distribution` severability sentence now names the two Stage-3-gated
+steps `approve` carries.
+
+**Divergences.**
+
+- **The task's diagnosis was wrong, and the spec says so rather than the
+  code working around it.** task-0029 blamed the mirror job's unnamed
+  checkout ref; `mirror_issues.sh` never read the queue from disk, so
+  that ref was never the defect. Correcting the read would have changed
+  nothing, and naming it in the Scope was the premise the fix needed.
+- **The four standing mirrors were out of scope and stayed out.** #66,
+  #67, #70 and #71 had been corrected by hand at 15:31 on the day of the
+  report, before this work started; all four read `status:ready`, and
+  there was nothing left to fix.
+- **Two tests were deleted rather than adapted.**
+  `merged_ready_task_relabelled_ready_test.sh` and
+  `merged_with_draft_spec_kept_pending_test.sh` asserted the
+  diff-derived readiness this change removes. What they protected — a
+  draft spec holds its task back, an approved one lets it through — is
+  the projection's now, and `rederive_labels`' own cases already cover
+  both directions. `merged_writes_no_status_label_test.sh` replaces them
+  with the opposite assertion.
+- **The end-to-end case landed in the integration tier**, at
+  `tests/integration/stage-3/merged_close/`, not under `tests/e2e/`.
+  That tier is for whole-path runs against a copy of this repository;
+  this case drives three scripts — flip, record, mint, project — over
+  fixtures, in the order `writrun-approve.yml` runs them, and asserts
+  that the *last* label write to reach the forge is `status:ready`.
+  "Which write is last" is the whole defect, so the assertion is on
+  ordering rather than on any one call.
+- **One test beyond the plan.**
+  `merged_close/one_workflow_answers_it_test.sh` reads the three
+  workflows as text: both stand-downs, the push → mint → label order in
+  the owner, `scope` reaching the projection, and both mirror steps
+  gated on Stage 3. The settlement is wiring, and no script run can
+  observe wiring.
+
+**Corrected before merge, from review.** Three defects in the change
+above, all found while it was still in flight and fixed in the same
+branch.
+
+- **The mirror steps run on `!cancelled()`.** They carried only the
+  Stage 3 condition, which inherits the implicit `success()`, so any
+  earlier step failing — a push the base branch's ruleset refuses, a
+  rebase that conflicts — skipped them both. With the other two
+  workflows standing down for a merged close, that skip is the merged
+  close answering nothing at all, and no event comes back for it. The
+  Commit step now also aborts a conflicting rebase before failing, so
+  the queue the projection reads from disk is never left holding
+  conflict markers.
+- **The severability sentence needed more than the added clause.**
+  "delete exactly those two" is not made true by the Stage 3 gate:
+  `stage` defaults to `3`, so an adopter who deletes the two mirror
+  workflows and changes nothing else still gets mirrors from `approve`.
+  `#distribution` now says severing the mirror *is* the `stage` setting,
+  and notes that only `writrun-issues.yml` is severable by deletion at
+  all — `writrun-progress.yml` also carries Stage 2's in-flight
+  recording.
+- **The mint reports its own set.** Which mirrors get minted is derived
+  from the pull request's files; `scope` is derived from
+  `merge_commit_sha~1...merge_commit_sha`. Equal for a squash or a merge
+  commit, not for a rebase merge, where that range is only the last
+  rebased commit — so a task minted from an earlier one fell outside
+  `scope` and, minted bare by step 1 above, would have stayed label-less
+  for good. `mirror_issues.sh` now reports `tasks=` through
+  `$GITHUB_OUTPUT` and the projection is given it beside `scope`,
+  leaving out any mirror the pass refused to touch. This goes beyond the
+  Steps as written; 0060 carries the reasoning.
+
+Suite green after the corrections: 253 case files, 0 failed — the whole
+suite, not the tiers this change touched.
+
+**Left alone, deliberately.** The body a merged-path mint writes still
+closes with "Becomes ready for development when #N merges…", which reads
+oddly on a mirror born at the merge. It predates this change and no
+promise here covers it — a sentence for a commit, not for this diff.

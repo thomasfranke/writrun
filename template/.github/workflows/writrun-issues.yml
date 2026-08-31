@@ -47,7 +47,18 @@ jobs:
 
   mirror:
     needs: gate
-    if: needs.gate.outputs.run == 'true'
+    # Every close except the one that merged. A merged close is
+    # writrun-approve.yml's alone — it is the workflow that writes the
+    # queue, so it is the only one that can label a mirror from a queue
+    # that already holds what the merge decided. Two workflows answering
+    # it wrote the same label from two sources, and the one derived from
+    # the merge's own diff kept winning by finishing first
+    # (docs/technical/decisions/github-issues/, 0060). A close *without*
+    # a merge is still this workflow's: it retires the mirrors of a pull
+    # request that carried no assent, and no queue write follows it.
+    if: >
+      needs.gate.outputs.run == 'true'
+      && github.event.pull_request.merged != true
     runs-on: ubuntu-latest
     steps:
       # Base branch only — never the PR's code (see the header note).

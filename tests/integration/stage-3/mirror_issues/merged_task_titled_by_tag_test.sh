@@ -7,7 +7,7 @@
 setup_forge
 export PR_STATE=closed PR_MERGED=true
 added_task task-0004 "Name queue files by id and subject"
-check "a merged task gains its mirror" 0 "Created issue for task-0004 (ready)" \
+check "a merged task gains its mirror" 0 "Created issue for task-0004" \
   -- bash "$MIRROR_ISSUES" o/r 7
 forge_told "titled by the tag, not the old prefix" \
   "-f title=[TASK-0004] Name queue files by id and subject"

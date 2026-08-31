@@ -21,9 +21,24 @@
 # mirror, a reopened PR gets its mirrors back, and a merge creates any
 # mirror still missing rather than assuming the open event already did.
 #
+# **Which mirrors exist is this script's question; what they are labelled
+# is not** — past the open event, where `status:proposed` is the one
+# state no file can hold. From the merge on, the queue holds the task and
+# the label is projected from it by rederive_labels.sh, sequentially in
+# the same workflow that writes the queue. Both answers used to be
+# derived here, from the pull request's own patch, and the second one was
+# wrong every time a merge approved the specs it carried
+# (docs/technical/decisions/github-issues/, 0048 and 0060).
+#
 # The PR's files are read out of the API's own patch text and parsed as
 # data — the PR's code is never checked out and never executed. `gh` must
 # be on PATH and authenticated (GH_TOKEN in CI; a stub in the test suite).
+#
+# Output contract: prose on stdout, and — when $GITHUB_OUTPUT is set —
+# `tasks=<id ...>` appended there, naming every task whose mirror this
+# pass minted or found to be its own. The projection that labels them
+# next reads it, so the set it labels is the set that was really minted
+# rather than one re-derived from a commit range (see below).
 #
 # Exit codes: 0 reconciled (including nothing to do); 3 usage error. An
 # unexpected forge failure aborts non-zero via set -e.
@@ -112,43 +127,18 @@ tag_of_id() {
   printf '[%s]' "$(printf '%s' "$1" | tr '[:lower:]' '[:upper:]')"
 }
 
-# Pass 1 — the spec statuses the diff itself carries, "id status" lines.
-# "Ready for development" is derived, never stored: pending task, every
-# spec approved. The mirror's label must derive it the same way — a spec
-# the diff carries still `draft` (a fork merged past the convenience
-# flip, an admin merge) means the task is not ready, whatever the merge
-# implies. A spec the diff does not carry is already on main, where the
-# check gate vouched for it.
-SPEC_STATUSES=""
-while IFS="$TAB" read -r fstatus fname fpatch; do
-  [ "$fstatus" = "added" ] || continue
-  printf '%s' "$fname" | tr '[:upper:]' '[:lower:]' \
-    | grep -qE '^work/specs/spec-[0-9]+(-[a-z0-9-]+)?\.md$' || continue
-  body=$(printf '%s' "$fpatch" | b64_decode | sed -n 's/^+//p')
-  sid=$(fm_field "$body" id)
-  [ -n "$sid" ] || continue
-  SPEC_STATUSES="${SPEC_STATUSES}${sid} $(fm_field "$body" status)"$'\n'
-done <<EOF
-$FILES
-EOF
-
-spec_status_of() {
-  printf '%s\n' "$SPEC_STATUSES" | awk -v id="$1" '$1 == id { print $2; exit }'
-}
-is_ready() {   # is_ready <spec-ref>... — every ref approved?
-  local r s
-  for r in "$@"; do
-    [ -n "$r" ] || continue
-    s=$(spec_status_of "$r")
-    [ -n "$s" ] || s=approved
-    [ "$s" = "approved" ] || return 1
-  done
-  return 0
-}
-
-# Pass 2 — the task files the diff adds, one tab-separated record each:
-# id, filename, priority, milestone, origin, spec refs (space-separated),
-# title.
+# **This script derives no `status:` label past the open event.** It once
+# read "ready" out of the spec statuses in this pull request's own patch,
+# where the merge has not yet flipped them — right for what a merge
+# carried, wrong for what it caused, and it overwrote the correct write
+# seconds after the approve workflow made it. The merged close now has
+# one owner, and the label is the queue's to project
+# (rederive_labels.sh; docs/product/stage-3-github-issues/labels.md).
+# What is left here is the half only the diff can answer: which tasks the
+# pull request puts in the queue, and therefore which mirrors must exist.
+#
+# The task files the diff adds, one tab-separated record each: id,
+# filename, priority, milestone, origin, title.
 TASKS=""
 while IFS="$TAB" read -r fstatus fname fpatch; do
   [ "$fstatus" = "added" ] || continue
@@ -161,18 +151,15 @@ while IFS="$TAB" read -r fstatus fname fpatch; do
     echo "WARNING: Could not parse ${fname}; skipping."
     continue
   fi
-  refs=$(fm_field "$body" spec_ref | tr -d '[]' | tr ',' ' ' | tr -s ' ' \
-    | sed 's/^ *//; s/ *$//')
   # Tab is IFS whitespace, so an empty middle field would collapse on
-  # read — an empty ref list travels as "-" instead, and so does a
-  # missing `origin`. The schema requires that field and the front-matter
-  # check refuses a task without it; this runs after the merge, though,
-  # and a repository that does not gate on the check can land one anyway.
-  # Read it as absent rather than trip over it.
-  [ -n "$refs" ] || refs="-"
+  # read — a missing `origin` travels as "-" instead. The schema requires
+  # that field and the front-matter check refuses a task without it; this
+  # runs after the merge, though, and a repository that does not gate on
+  # the check can land one anyway. Read it as absent rather than trip
+  # over it.
   torigin=$(fm_field "$body" origin)
   [ -n "$torigin" ] || torigin="-"
-  TASKS="${TASKS}${tid}${TAB}${fname}${TAB}$(fm_field "$body" priority)${TAB}$(fm_field "$body" milestone)${TAB}${torigin}${TAB}${refs}${TAB}${ttitle}"$'\n'
+  TASKS="${TASKS}${tid}${TAB}${fname}${TAB}$(fm_field "$body" priority)${TAB}$(fm_field "$body" milestone)${TAB}${torigin}${TAB}${ttitle}"$'\n'
 done <<EOF
 $FILES
 EOF
@@ -324,6 +311,10 @@ ensure_origin_label() {
 # the origin label is re-stated in each of them: leaving it out would be
 # a removal, and this one is never removed.
 #
+# Only the open path calls it. `status:proposed` is the one label the
+# queue cannot project, because the file is not on the authority branch
+# yet — every other one is written from the queue, after the merge.
+#
 # Creating the label in the repository happens here, at the write, and
 # not where the label is computed. The paths that decide *not* to touch a
 # mirror — somebody else's and still open, or a pull request closed
@@ -353,18 +344,35 @@ case "$PR_AUTHOR_ASSOCIATION" in
   OWNER|MEMBER|COLLABORATOR) authorized=true ;;
 esac
 
+# Only what this script still writes. `status:backlog` and `status:ready`
+# are the projection's, created where they are written — a label declared
+# here and never worn is one more thing to keep in sync for nothing.
 if [ "$open" = "true" ]; then
   ensure_label "writrun:task" "1d76db" "Mirrors a work/tasks/ entry"
   ensure_label "status:proposed" "ededed" "A pull request proposes this task; it is not in the queue yet"
-  ensure_label "status:backlog" "fbca04" "In the queue, with a spec it references not yet approved"
-  ensure_label "status:ready" "0e8a16" "Ready for development — waiting for someone to take it"
 fi
 
 # Every task the diff adds gets a mirror in the right state.
 LIVE_NUMS=""
-while IFS="$TAB" read -r tid fname priority milestone torigin refs ttitle; do
+
+# And what this pass answered, as ids. Which mirrors exist is derived
+# here from the pull request's files; which get labelled is derived by
+# the caller from a commit range, and the two part on a rebase merge —
+# `merge_commit_sha` is only the last rebased commit, so a task file
+# added in an earlier one is minted and falls outside the range. Minted
+# and never labelled is the one outcome no later event corrects, so the
+# pass that minted reports what it minted
+# (docs/technical/decisions/github-issues/, 0060).
+#
+# A mirror this pass refused to touch — another open pull request's — is
+# left out: refusing it and then labelling it anyway would be the same
+# defect at one remove.
+MIRRORED=""
+note_mirrored() {
+  case " $MIRRORED " in *" $1 "*) ;; *) MIRRORED="${MIRRORED:+$MIRRORED }$1" ;; esac
+}
+while IFS="$TAB" read -r tid fname priority milestone torigin ttitle; do
   [ -n "$tid" ] || continue
-  [ "$refs" = "-" ] && refs=""
   [ "$torigin" = "-" ] && torigin=""
   LIVE_NUMS="${LIVE_NUMS} $(num_of_id "$tid")"
 
@@ -379,16 +387,15 @@ while IFS="$TAB" read -r tid fname priority milestone torigin refs ttitle; do
       echo "${tid}: author lacks authority — mirror deferred to merge."
       continue
     fi
-    # Three states, not two. An open pull request only *proposes* the
-    # task — it may still close unmerged, and the mirror retires with it,
-    # so the queue does not hold it yet. A merged one puts it in the
-    # queue, ready or not (docs/product/stage-3-github-issues/labels.md).
+    # An open pull request only *proposes* the task — it may still close
+    # unmerged, and the mirror retires with it, so the queue does not
+    # hold it yet, and no reader but this one can say so. A merged one
+    # puts the task in the queue, and from there the label is derived
+    # from the file: minted bare here, labelled by the projection that
+    # runs next (docs/product/stage-3-github-issues/labels.md).
+    status_args=()
     if [ "$open" = "true" ]; then
-      lbl=status:proposed
-    elif is_ready $refs; then
-      lbl=status:ready
-    else
-      lbl=status:backlog
+      status_args=(-f "labels[]=status:proposed")
     fi
     body=$(printf '%s\n' \
       "Mirrors [\`${fname}\`](${PR_HTML_URL}/files), which is the authority." \
@@ -411,14 +418,15 @@ while IFS="$TAB" read -r tid fname priority milestone torigin refs ttitle; do
     gh api -X POST "repos/${REPO}/issues" \
       -f "title=$(tag_of_id "$tid") ${ttitle}" \
       -f "labels[]=writrun:task" \
-      -f "labels[]=${lbl}" \
+      ${status_args[@]+"${status_args[@]}"} \
       ${olabel_args[@]+"${olabel_args[@]}"} \
       -f "body=${body}" >/dev/null
     if [ "$merged" = "true" ]; then
-      echo "Created issue for ${tid} (ready)"
+      echo "Created issue for ${tid} — its label is the projection's"
     else
       echo "Created issue for ${tid}"
     fi
+    note_mirrored "$tid"
     continue
   fi
 
@@ -427,9 +435,11 @@ while IFS="$TAB" read -r tid fname priority milestone torigin refs ttitle; do
   ilabels=$(printf '%s' "$row" | cut -f3)
   ibody=$(printf '%s' "$row" | cut -f4)
 
-  # The origin label every rewrite below carries, worked out here where
-  # the mirror's worn labels are in hand. Nothing is created in the
-  # repository yet: that is put_status_labels' job, at the write.
+  # The origin label the open path's rewrite carries, worked out here
+  # where the mirror's worn labels are in hand. Nothing is created in the
+  # repository yet: that is put_status_labels' job, at the write. The
+  # merged path writes no labels at all, so a mirror missing its
+  # `origin:` gains it from the projection instead.
   olbl=$(origin_label "$torigin" "$ilabels")
 
   # Three answers to "whose mirror is this", not two. Mine: proceed.
@@ -468,23 +478,23 @@ while IFS="$TAB" read -r tid fname priority milestone torigin refs ttitle; do
     else
       echo "${tid} already mirrored; nothing to do."
     fi
+    note_mirrored "$tid"
     continue
   fi
 
   if [ "$merged" = "true" ]; then
-    # A mirror adopted while closed is reopened here too — the labels
-    # below say where the task is, and a closed issue wearing one of them
-    # says it twice and disagrees with itself.
+    # A mirror adopted while closed is reopened here — the projection
+    # writes a label next, and a closed issue wearing one says where the
+    # task is twice and disagrees with itself.
     if [ "$adopted" = "true" ] && [ "$istate" = "closed" ]; then
       gh api -X PATCH "repos/${REPO}/issues/${num}" -f state=open >/dev/null
     fi
-    if is_ready $refs; then
-      put_status_labels "$num" "status:ready" "$olbl"
-      echo "${tid} is ready for development"
-    else
-      put_status_labels "$num" "status:backlog" "$olbl"
-      echo "${tid} merged with a spec still draft — kept backlog"
-    fi
+    # And no label. The merge is the moment the file became the truth,
+    # so the label is the queue's to project — this pass has answered
+    # the only question that was its own, which is whether the mirror
+    # exists at all.
+    echo "${tid} is in the queue; its label is the projection's"
+    note_mirrored "$tid"
   fi
 done <<EOF
 $TASKS
@@ -516,5 +526,9 @@ while IFS="$TAB" read -r num istate labels tb bb; do
 done <<EOF
 $ISSUES
 EOF
+
+if [ -n "${GITHUB_OUTPUT:-}" ]; then
+  printf 'tasks=%s\n' "$MIRRORED" >> "$GITHUB_OUTPUT"
+fi
 
 exit 0

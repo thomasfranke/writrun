@@ -79,3 +79,4 @@ appending a row.
 | [0057](pull-requests/0057-the-credit-flag-names-its-artifact.md) | 2026-08-31 | `pull-requests` | the credit flag names its artifact and is renamed `agent_coauthor` — narrowing 0054's `credit_ai`. |
 | [0058](tasks-and-specs/0058-the-ledger-lives-in-the-queue.md) | 2026-08-31 | `tasks-and-specs` | the provenance ledger lives in the queue; the agent's transcript is a source, never the store. |
 | [0059](pull-requests/0059-the-pause-is-derived.md) | 2026-08-31 | `pull-requests` | an amendment in flight suspends the task; the pause is derived, the forge carries the relation. |
+| [0060](github-issues/0060-the-merged-close-has-one-owner.md) | 2026-08-31 | `github-issues` | the merged close has one owner, and the label is the queue's to project — completing 0048. |
