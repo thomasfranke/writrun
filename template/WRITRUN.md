@@ -73,8 +73,26 @@ style): `.writrun/conventions/` — yours from the moment of adoption.
    counts as permanent input.
 4. `work/` starts empty on purpose — the queue fills through the
    pipeline.
-5. Configure the forge per the **Repository setup** section of WritRun's
-   README.
+5. **Stage 2 — the forge setup.** Skippable at Stage 1: nothing there
+   asks for git, so nothing here conditions your adoption. From Stage 2
+   the workflows need the forge configured, and WritRun's
+   `docs/product/stage-2-pull-requests/setup.md` is the chapter — it is
+   written to be run by an agent, and it carries the commands: the
+   current-state reads first, then the writes for workflow permissions,
+   squash merging, and the recommended ruleset. Two things to take from
+   it before anything else:
+
+   - **The owner assents, in session, per set of changes.** These
+     settings live outside the repository, so no diff, no review and no
+     merge gate will ever catch a wrong one. The agent presents current
+     → target values and applies only on an explicit yes. Name it in
+     `AGENTS.md`'s gates table — the skeleton ships the row.
+   - **Some rules must stay off**, each one blocking the machinery's own
+     recording push and stopping the queue silently at the next merge.
+     The chapter lists them; do not improvise a ruleset without it.
+
+   Declare your stage in `.writrun/settings.json` (`"stage": 1 | 2 | 3`)
+   — it is what turns the workflows on.
 
 Then delete this section — keeping the rest of this file as the
 project's WritRun reference card is the idea.
