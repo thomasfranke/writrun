@@ -14,7 +14,7 @@ Each task the PR carries has the queue on `main` — and its mirror —
 follow it: `in-progress` while the PR is still a draft, `in-review` once
 it is marked ready, back to `in-progress` when a review requests
 changes, `done` once a merge carries the task's `completed` date
-([statuses](../stage-1-tasks-and-specs/statuses.md)). **`in-review` is a state of
+([statuses](statuses.md)). **`in-review` is a state of
 its own rather than part of `in-progress`** because the two ask opposite
 things of the maintainer — one means leave the worker alone, the other
 means the maintainer is the blocker.

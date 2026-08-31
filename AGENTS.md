@@ -34,7 +34,7 @@ reaches the forge, and the draft is the event the machinery answers by
 writing `in-progress` and your login onto `main` and moving the mirror
 to `status:in-progress`. **Touch the task's status line never**: it has
 one writer, and it is not you
-(docs/product/stage-1-tasks-and-specs/statuses.md). Mark the PR ready
+(docs/product/stage-2-pull-requests/statuses.md). Mark the PR ready
 for review when the work is done — that is what moves the task to
 `in-review`.
 
@@ -55,11 +55,11 @@ and the line-based readers silently misread anything else.
 Two, and they are not handled the same way — see
 [`tasks-and-specs/authoring.md`](docs/product/stage-1-tasks-and-specs/authoring.md#two-ways-a-permanent-doc-changes).
 
-| | Authoring | Tracking | Implementing |
+| | Authoring | Reporting | Implementing |
 |---|---|---|---|
-| Is | a rule that isn't true yet | work discovered that an existing rule already authorizes | an approved spec |
+| Is | a rule that isn't true yet | work reported or discovered that an existing rule already authorizes | an approved spec |
 | Touches | `docs/` + the work it derives | `work/` only — no permanent doc | code + the docs its spec promised |
-| Branch | `docs/short-name` | `queue/short-name` | `task/NNNN-short-name` |
+| Branch | `docs/short-name` | `report/short-name` | `task/NNNN-short-name` |
 | PR states | the tasks and specs it created | the tasks and specs it adds, and the rule they derive from | the spec(s) it implements, every carried task tagged `[TASK-NNNN]` leading the title |
 | `writrun-check-spec-deltas` | does not apply | does not apply | must exit 0 |
 | `writrun-check-task-state` | must exit 0 | must exit 0 | must exit 0 |
@@ -67,7 +67,7 @@ Two, and they are not handled the same way — see
 Never more than one kind in one change. A change that closes the loop on
 one rule while introducing another is two changes.
 
-When derivation runs (authoring or tracking), **present the derived tasks
+When derivation runs (authoring or reporting), **present the derived tasks
 and specs in the session before opening the PR** — the human reviews the
 queue the rule creates while the feedback loop is still cheap. Open
 directly only when the declaration itself says so ("deriva e abre
@@ -80,11 +80,14 @@ work in may have rewritten it.
 
 **The values live in
 [`settings.json`](.writrun/settings.json); the `.md` files
-explain them.** Read the settings before writing a branch name, a commit
-subject or a PR title — the tag, the branch prefixes and the label names
-are settings, not constants, and a project you work in may hold different
-ones. Where the two ever disagree, the settings file is what the machinery
-obeys, so it is what you obey.
+explain them.** Read the settings before committing, opening a PR, or
+deciding whether a task needs a spec — the stage, the conduct flags,
+the title style and the project's three declarations (`spec_required`,
+`decisions_style`, `product_layout`) are settings, not constants, and a
+project you work in may hold different ones. The task tag, the branch
+prefixes and the label names are the methodology's constants — the
+conventions files state them. Where prose and settings ever disagree,
+the settings file is what the machinery obeys, so it is what you obey.
 
 When you edit anything under `docs/`, check `work/tasks/` for
 non-completed tasks whose `doc_ref` points into the files you are
@@ -107,6 +110,7 @@ This is this repo's concrete answer to the general rule in
 | An authored rule is finished, so derivation may start | **Human declares it.** No event marks the last edit of a rule, so the handoff is a signal, never an inference: invoking `writrun-create-task-and-spec`, or marking the authoring PR ready for review. An agent never derives from a doc edit nobody declared finished. A forgotten handoff is caught, not remembered: `writrun check` fails an authoring PR that neither adds tasks nor declares "Derived work: none". |
 | Spec `draft → approved` | **Human only.** The assenting act here is **the maintainer's squash-merge** — this repository's pull requests are authored by its maintainer, who cannot review them, so a review-based gate would never be satisfiable. CI records the flip on `main` after the merge. Never self-approve, and never write the field on verbal permission relayed through you: a merged PR is the record, and nothing else is. |
 | Task with empty `spec_ref` | If the task body + `doc_ref` is not a sufficient brief, **stop and ask for a spec** — do not improvise scope. |
+| Changing repository/forge settings (Actions permissions, rulesets, merge methods) | **Owner assents in session, per set of changes.** Settings live outside the repository — no diff, no review, no merge gate sees them — so present current → target values first and apply only on an explicit yes (docs/product/stage-2-pull-requests/setup.md). |
 | Everything else (creating tasks, drafting specs, implementing approved specs, filling Outcome) | Agent, autonomously. |
 
 ## Completing a task

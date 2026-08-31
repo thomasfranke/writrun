@@ -6,7 +6,8 @@
 
 Autogen tasks and specs from your docs.   
 Docs are the executable source. Code is the derived artefact.  
-You write the doc. AI checks the code and generates the tasks and specs, ready for development.
+You write the doc. AI checks the code and generates the tasks and specs, ready for development.  
+And after the merge, a script — not discipline — keeps the docs true.
 
 
 [![license](https://img.shields.io/badge/license-MIT--0-blue)](LICENSE)
@@ -21,11 +22,26 @@ You write the doc. AI checks the code and generates the tasks and specs, ready f
 > names — can still change without notice; nothing is stable to build on
 > yet.
 
+## The half nobody checks
+
+Every spec-driven workflow solves the same half: prompt → spec → code.
+Nobody solves the half that comes **after the merge** — whether the
+docs are still true once the change ships. WritRun's answer is
+mechanical, not disciplinary: **a spec declares, up front, every
+permanent doc its change will touch, and the diff that completes the
+task must touch all of them and nothing else — checked by a script,
+enforced by CI, never left to whoever remembers.** So the docs an
+agent reads next session describe the system that actually exists,
+and the pipeline can run again from them, indefinitely.
+
 What it does:
 
 - **Docs as the source of truth.** You write the rules in `docs/`; code
   is checked against them — never the reverse.
-- **Tasks and specs are generated automatically.** Tell your agent
+- **The loop closes by machine.** Every spec carries the list of docs
+  its change will touch; `writrun check` fails the diff that skips one
+  — or touches one it never declared.
+- **Autogen tasks and specs.** Tell your agent
   "update the tasks": it reads what you wrote, compares it to the actual
   project, and generates the tasks and specs that close the gap.
 - **Who implements is your call, per task.** A generated task carries a
@@ -33,9 +49,11 @@ What it does:
   or point an AI agent at it.
 - **The queue mirrors into GitHub Issues.** Optional: every task appears
   as an Issue in real time, labels following the work on their own.
-- **AI drives the commits and PRs.** Branches, conventional commits, PR
-  bodies, checks in the right order — the agent conducts the queue
-  mechanics, whoever writes the code.
+- **AI drives the commits and PRs** — from Stage 2, where git begins.
+  Branches, conventional commits, PR bodies, checks in the right order —
+  the agent conducts the queue mechanics, whoever writes the code.
+  Stage 1 is the entry point and needs none of it: just the docs, the
+  generated queue, and the gates — files alone.
 - **Humans keep four named gates:** the docs, the handoff, the approval,
   the merge.
 
@@ -101,11 +119,12 @@ flowchart LR
     D -->|"same change updates the docs"| A
 ```
 
-**The loop back is the part most spec-driven workflows leave out.** A
-spec names, up front, every permanent doc the finished change will touch;
-the diff that completes the task must touch all of them and nothing else.
-That closing loop is what makes the docs stay true after the agent is done
-— it is checked mechanically, not remembered.
+**The loop back is the headline** — [the half nobody
+checks](#the-half-nobody-checks). Mechanically: the spec's two
+Proposed-changes sections are the merge contract, and
+`writrun-check-spec-deltas` compares them against the completing diff,
+both ways — a promised doc left untouched fails, and so does a
+permanent doc touched without being promised.
 
 How the pipeline actually runs — step by step, with every actor named —
 is the five flows and their special cases, drawn in full in
@@ -117,11 +136,13 @@ finished (flow 1), a spec approved by review (flow 2), every merge a
 maintainer performs (flows 2 and 5) — and behind them all, a permanent
 doc never merges on agent approval alone.
 
-The sketch, one line per flow:
+The sketch, one line per flow — flow 1 is Stage 1's whole pipeline;
+flows 2–5 describe the queue riding the forge, which begins at Stage 2:
 
 1. **Authoring** — a human writes a rule in `docs/` and declares it
-   finished (a gate); the agent derives tasks and draft specs, opens the
-   PR, and the mirroring Issue appears on its own.
+   finished (a gate); the agent derives tasks and draft specs — and,
+   from Stage 2, opens the PR, the mirroring Issue appearing on its
+   own.
 2. **Approval** — the maintainer's review is the gate; CI records
    `draft → approved` onto the branch; merge makes the task ready.
 3. **Taking a task** — an agent takes the next by the algorithm; a human
@@ -136,7 +157,7 @@ The sketch, one line per flow:
    the maintainer squash-merges; the Issue mirror follows.
 
 Special flows — a spec amended after approval returns through `draft`
-and is re-approved; work discovered mid-flight enters as a `queue/` PR
+and is re-approved; work reported or discovered mid-flight enters as a `report/` PR
 adding only task and spec; `blocked` names its reason and waits for a
 human; a PR closed unmerged is unwound by the bot — its task returns to
 `ready` on `main` on its own, because nothing else was ever
@@ -152,24 +173,29 @@ everything that belongs to exactly one stage carries a `stage-N-`
 prefix in its name. The full rules live in
 [Adoption](docs/product/adoption.md).
 
-| | Does | Needs |
+| Stage | Does | Requires |
 |---|---|---|
-| **Stage 1** — tasks and specs | The docs, the queue, the schemas and the four human gates — all as markdown files. Statuses move by hand. | `git`, `bash`, POSIX tools. No forge, no permissions. |
-| **Stage 2** — pull requests | Branches, PRs, the CI checks, merge as assent. The bot owns the queue's status lines on `main`, following every forge event: `backlog → ready → in-progress → in-review → done`, plus `taken_by` naming who has it. | A GitHub repo. Actions workflow permissions: **Read and write**. `main` reachable by the Actions bot — unprotected, or a ruleset with the GitHub Actions app on its bypass list. |
-| **Stage 3** — GitHub issues | The Issues mirror: every task is an Issue, its `status:` label following the work in real time. | Issues enabled. The same Read-and-write setting covers the labels. |
+| **1 — tasks and specs** | Autogen tasks and specs from your docs, as markdown files. | Nothing — files only. |
+| **2 — pull requests** | Git begins: commits, branches, PRs, the CI checks, merge as assent. The bot owns the queue's status lines on `main`. | `git` + a GitHub repo · Actions permissions **Read and write** · `main` reachable by the Actions bot |
+| **3 — GitHub issues** | Every task mirrored as an Issue, its `status:` label live. | Issues enabled — nothing else; Stage 2's permission already covers the labels. |
 
 ## Repository setup
 
 No secrets, no App token, no PAT. Labels are created on first use.
+An agent with `gh` can apply all of it — after presenting the changes
+and getting your explicit assent, never on its own: the full flow and
+commands are in [Stage 2 setup](docs/product/stage-2-pull-requests/setup.md).
 
 | Where | Setting | Value |
 |---|---|---|
 | Settings → General | Issues | **On** — the task mirror lives there. Skip if you deleted the two mirror workflows. |
 | Settings → General | Allow squash merging | **On** — every merge is a squash. |
+| Settings → General | Automatically delete head branches | **On** — a merged branch has no further job; the branch list stays a list of work in flight. |
 | Settings → Actions → General | Workflow permissions | **Read and write** — lets `writrun approve` record `draft → approved`. Read-only loses only that convenience; every check still works. |
-| Settings → Branches → rule on `main` | Require a pull request before merging | **On**, 1 approval. |
-| Settings → Branches → rule on `main` | Dismiss stale approvals when new commits are pushed | **Off** — the recording push would dismiss the approval it records. |
-| Settings → Branches → rule on `main` | Required status checks | Optional: the four `writrun check` jobs. If required, **do not apply the rule to administrators** ([why](docs/technical/decisions/README.md)). |
+| Settings → Rules → Rulesets → ruleset on `main` | Restrict creations · Restrict deletions · Block force pushes · Require linear history | **On** — the most restrictive set that never touches the machinery; anything more blocks the recording pushes ([Stage 2 setup](docs/product/stage-2-pull-requests/setup.md)). |
+| Settings → Rules → Rulesets → same ruleset | Require a pull request + the GitHub Actions app on the bypass list | **Recommended, never a condition for adoption.** The bypass is what lets the recording commits (status flips, dates, approvals) keep landing on `main`. The forge only offers the app as a bypass actor on organization-owned repos — on user-owned repos (UI and API alike) it is unavailable, so skip this rule there; everything human still enters through a PR by convention. Approvals: 1 with reviewers; 0 where the maintainer authors the PRs — there the merge is the assent. |
+| Settings → Rules → Rulesets → same ruleset | Dismiss stale pull request approvals | **Off** — the recording push would dismiss the approval it records. Only relevant with the PR rule above. |
+| Settings → Rules → Rulesets → same ruleset | Required status checks | Optional: the four `writrun check` jobs. If required, keep the repository's administrators on the bypass list ([why](docs/technical/decisions/README.md)). |
 
 For this repository itself (not adopters): Settings → General →
 Description = `What is written, runs. Autogen tasks and specs from your

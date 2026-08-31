@@ -46,6 +46,7 @@ blocked_reason: null               # required non-null when status: blocked; nul
 taken_by: null                     # machinery only: login of the open PR's author; null when nobody has it
 spec_ref: [spec-0004]              # list — zero, one, or many specs
 doc_ref: product/concepts/task.md#two-invariants   # any path under docs/; null only when the task originates in code or machinery, not in a doc
+origin: report                     # rule | report — derived from an authored rule, or born from a report of work found
 priority: medium                   # high | medium | low
 depends_on: [task-0002]            # real technical blocking, not sequencing taste
 milestone: v0.1-core
@@ -86,14 +87,33 @@ merged: null                       # machinery only: the merge that took the wor
 - `doc_ref` and any path inside `spec_ref`/`depends_on` point at a section
   anchor, resolved relative to `docs/`, never just a filename — this is what
   makes reverse traceability a grep, not a manual search.
+- `origin` records how the task came to exist, and it is a fact, not a
+  judgement: `rule` when the task was derived from an authored rule
+  declared finished (flow 1), `report` when it was born from a report
+  of work an existing rule already authorizes (reporting). The
+  generator writes it at creation and nothing rewrites it later. At
+  Stage 2+ it mirrors the creating PR's branch kind (`docs/` vs
+  `report/`); at Stage 1 it is the only record of the difference.
+  (Until the machinery catches up, existing tasks carry no `origin`
+  line and the generator does not write one; the derived task adds the
+  field and backfills the queue.)
+- **References are navigable, not just resolvable.** The front matter
+  stays plain strings — it is the machine contract, and the line-based
+  readers see nothing else — but the generated body carries every
+  reference as a clickable relative link: a task's body links its
+  `doc_ref` and each spec in `spec_ref`, a spec's body links its
+  `task_ref`, and the append that adds a spec to a task's `spec_ref`
+  appends the body link in the same edit. A reader follows the queue by
+  clicking, never by reconstructing paths.
 - Status lives in front-matter, never in folder position — nothing moves
   between directories as work progresses, so `git log` stays readable without
   `--follow`.
 - **Four dates, and who writes each is part of the contract** — the table
   is in [`product/stage-1-tasks-and-specs/statuses.md`](../product/stage-1-tasks-and-specs/statuses.md).
-  `created` and `completed` are a person's, written on the branch;
+  `created` and `completed` are a person's, written by hand;
   `queued` and `merged` are the machinery's, written after the merge each
-  records. A date recording a merge is never hand-written: it would have
+  records — at Stage 1, where no forge exists to record, they stay
+  `null`. A date recording a merge is never hand-written: it would have
   to be typed before the event it describes.
 - **Every date is a UTC timestamp, and always spelled with `Z`** —
   `2026-08-21T09:14:00Z`, never a local time and never an offset like
@@ -226,10 +246,13 @@ only when it holds a documented key — no empty placeholder objects.
 {
   "stage": 3,
   "stage_1": {
-    "auto_commit": true,
-    "credit_ai": true
+    "spec_required": "when-warranted",
+    "decisions_style": "per-subsystem",
+    "product_layout": "by-concept"
   },
   "stage_2": {
+    "auto_commit": true,
+    "credit_ai": true,
     "auto_pr": true,
     "pr_title_style": "conventional"
   }
@@ -239,10 +262,20 @@ only when it holds a documented key — no empty placeholder objects.
 | Key | Section | Values | Read by |
 |---|---|---|---|
 | `stage` | top level | `1` / `2` / `3` | the workflows, and agents |
-| `auto_commit` | `stage_1` | `true` / `false` | agents only |
-| `credit_ai` | `stage_1` | `true` / `false` | agents only |
+| `spec_required` | `stage_1` | `always` / `when-warranted` | agents only |
+| `decisions_style` | `stage_1` | `per-subsystem` / `chronological` | agents only |
+| `product_layout` | `stage_1` | `by-concept` / `by-feature` | agents only |
+| `auto_commit` | `stage_2` | `true` / `false` | agents only |
+| `credit_ai` | `stage_2` | `true` / `false` | agents only |
 | `auto_pr` | `stage_2` | `true` / `false` | agents only |
 | `pr_title_style` | `stage_2` | `conventional` / `bracketed` | agents only |
+
+(Until the machinery catches up with this section, the two conduct
+flags `auto_commit` and `credit_ai` still sit in a `stage_1` section
+and `check_settings.sh` still expects them there — the derived task
+moves both. The three declaration keys are likewise ahead of the
+machinery: the file does not carry them yet and the checker does not
+know them; their derived task adds both halves.)
 
 **Every key is present, always** — the same reason the front matter carries
 `null` fields rather than omitting them: a reader sees the whole
@@ -282,9 +315,11 @@ bracketed      [TASK-0007][Feat][CI] Record approval on the merge
                [DOCS] The merge is the assenting act
 ```
 
-Read by agents, never by code — nothing parses the summary after the tag,
-not the checks and not the release notes, which the forge generates from
-pull requests.
+Composed by agents, and from Stage 2 checked at the door —
+[observance](#observance-is-checked-where-it-leaves-a-trace): `writrun
+check` fails a title that ignores the declared style. Nothing parses
+the summary beyond that — not the release notes, which the forge
+generates from pull requests.
 
 **The `[TASK-NNNN]` tag is in both and is not settable.** It is how
 the machinery and `list_tasks.sh` learn which tasks a pull request
@@ -306,10 +341,13 @@ running auto-accept, autonomous, or any mode in which its harness would
 not ask, still stops: the platform's mode governs what the *harness*
 asks, these flags govern what the *adopter* allowed — a setting that only
 bound an agent already asking would control nothing, and a setting
-controls (below). `auto_commit` sits in `stage_1` because commits exist
-for every adopter; `auto_pr` in `stage_2` because pull requests begin
-there. Neither flag touches the one commit the machinery makes nor any
-workflow-driven write — those are not the agent's actions.
+controls (below). Both flags sit in `stage_2` because that is where the
+actions they govern begin: git starts at Stage 2
+([Adoption](../product/adoption.md#three-stages)), so below it there is
+neither a commit nor a pull request for either flag to gate — Stage 1
+needs nothing but files. Neither flag touches the one commit the
+machinery makes nor any workflow-driven write — those are not the
+agent's actions.
 
 ### `credit_ai`
 
@@ -325,6 +363,34 @@ precedence the conduct flags above state. The flag speaks only to what
 the agent writes: authorship identity stays git configuration, other
 authors' commits are untouched, and nothing rewrites history — the flag
 binds from the write after the flip.
+
+### The three declarations
+
+Unlike the conduct flags, these gate no action — each answers, once, a
+question every agent session otherwise re-asks. `spec_required` is the
+project's word on when a task needs a spec: `always`, or
+`when-warranted` (the default — the creation skill's own judgement
+guidance applies). `decisions_style` names where dated decisions live:
+`per-subsystem` (the methodology's default) or `chronological` (one
+numbered log — this repository's own shape). `product_layout` names
+how the product half is organized: `by-concept` (chapters about ideas
+— this repository's shape) or `by-feature` (one doc per feature —
+TOM's shape). Each is a declared variant from
+[Adoption's open list](../product/adoption.md#mandatory-core-vs-documented-variant),
+stated here so it is never reverse-engineered from the file tree.
+
+### Observance is checked where it leaves a trace
+
+A conduct flag binds the agent, but only some disobedience is visible
+afterwards — and what is visible is checked, not trusted. From Stage
+2, `writrun check` fails a pull request whose title ignores the
+declared `pr_title_style`, and one whose commits or body carry
+platform credit — a co-author trailer, a session link, a
+generated-with line — while `credit_ai` is `false`. What leaves no
+trace (`auto_commit`, `auto_pr` — whether the agent *asked*) stays
+instruction-bound: no diff can show a question that wasn't asked.
+(Until the machinery catches up, neither check runs; the derived task
+adds both.)
 
 ### The shape is a checked contract
 
@@ -397,7 +463,7 @@ Deterministic, independent of file layout on disk:
 
 `ready` is stored, and steps 2–4 still agree by construction: the
 machinery derives the flip from the same facts step 4 re-checks
-([statuses](../product/stage-1-tasks-and-specs/statuses.md)). The cross-check is
+([statuses](../product/stage-2-pull-requests/statuses.md)). The cross-check is
 deliberate — a stored status that could silently disagree with the facts
 it summarizes is exactly what the old derive-don't-store rule feared, so
 the algorithm keeps reading both and stops loudly on a mismatch.
@@ -417,6 +483,61 @@ plus `doc_ref` is the whole brief, and whether that's sufficient — or
 whether the agent should stop and ask for a spec first — is a call this
 methodology leaves to the adopting project, stated explicitly in its
 `AGENTS.md`.
+
+## The report entry point
+
+The cheapest way work enters the system, and the one a client wraps
+first: **a report is one free-form sentence** — "checkout returns
+500", "the generator reuses ids" — plus whatever evidence is at hand.
+No form, no template, no schema: the report is a trigger, not an
+artefact, and everything structured about it is produced *from* it,
+downstream. The product-side flow, gates and triage table live in
+[authoring — reporting](../product/stage-1-tasks-and-specs/authoring.md#reporting--work-found-or-reported-mid-flight);
+this section is the operation's contract, for agents today and the CLI
+tomorrow.
+
+The operation, deterministic end to end:
+
+1. **Dedup** — before anything, the non-completed tasks are read; a
+   report matching one **ends the operation**, returning that task's
+   id. New evidence the report carried enriches the existing task's
+   body through a normal queue change. A client implements this as a
+   search over `work/tasks/` front matter and titles, never as a
+   question to the reporter.
+2. **Triage** answers one question — *is what "correct" means already
+   written?* Three outcomes, and each names its artefact:
+   a defect against a documented behaviour → a task, directly; a rule
+   nobody wrote → route to authoring, produce nothing; a trivial fix →
+   a commit, produce nothing.
+3. **Generation**, on the defect path: `new.sh task` with
+   `--origin report`, `--doc-ref` when a doc states the violated
+   behaviour (null when the broken thing was never documented),
+   priority from impact; a spec via `new.sh spec` when the fix is more
+   than the body can brief. **Evidence — the error, the log excerpt,
+   the reproduction — lives in the task body, as text and links**: the
+   mirror is one-way, so anything attached only to an Issue never
+   reaches the file that is the authority. The generated queue is
+   **presented to the human before any PR opens** (the
+   derivation-review gate).
+4. **Recording**, at Stage 2+: branch `report/short-name` — no task id
+   in the name, because the PR records work rather than working it —
+   and a PR that only adds queue files. The merge authorizes the task;
+   the approval gate takes over.
+
+One inversion a client must know: **an outage ships the fix first.**
+When documented behaviour is down, the patch goes out through an
+ordinary PR at whatever size the outage demands, and the report runs
+immediately behind it, triaging what remains — the patch itself gets
+no retroactive task
+([the reporting rules](../product/stage-1-tasks-and-specs/authoring.md#reporting--work-found-or-reported-mid-flight)).
+
+What a client (`writ report`) builds on is exactly the public contract
+below: the task and spec schemas (`origin: report` included), the
+generator's arguments and refusals, the `report/` branch prefix, and
+the `## Derived work` marker in the PR body. The triage judgement
+itself is the one step that is not mechanical — a client either asks
+an agent to make it or asks the person, and the contract stays the
+same either way.
 
 ## Distribution
 
@@ -526,8 +647,9 @@ and exit codes, and the handful of grep-level markers the machinery reads
 — the `## Derived work` heading in a PR body, the two Proposed-changes
 headings in a spec, a task file's `# ` title line, a `task-nnn` /
 `spec-nnn` id at the start of a branch name, and the labels the machinery
-owns and filters on: `writrun:task` and the `status:*` values
+owns and filters on: `writrun:task`, the `status:*` values
 (`proposed`, `backlog`, `ready`, `in-progress`, `in-review`, `blocked`)
+and the `origin:*` values (`rule`, `report`)
 — renaming any of these means adapting the workflows. One carve-out runs the other way:
 `docs/writrun-instructions.md` is process metadata, not project truth —
 no task derives from it and every check ignores it. **Everything else about
