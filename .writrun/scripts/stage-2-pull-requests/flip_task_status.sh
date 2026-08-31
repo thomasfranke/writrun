@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # flip_task_status.sh — the transition machine: applies one forge event
 # to one task's status line, on the working tree, exactly as the edge
-# table in product/stage-1-tasks-and-specs/statuses.md draws it.
+# table in product/stage-2-pull-requests/statuses.md draws it.
 #
 # Usage:
 #   flip_task_status.sh take   <task-id> <login> <draft|ready>

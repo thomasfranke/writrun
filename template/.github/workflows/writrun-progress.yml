@@ -10,7 +10,7 @@ name: writrun progress
 # Every step's logic lives in .writrun/scripts/, where the test suite's
 # integration tier executes it — YAML here only wires events onto
 # scripts. The edge table is flip_task_status.sh and
-# product/stage-1-tasks-and-specs/statuses.md; the projection is
+# product/stage-2-pull-requests/statuses.md; the projection is
 # rederive_labels.sh via project_pr_tasks.sh.
 #
 # Trust posture, and it differs by event:

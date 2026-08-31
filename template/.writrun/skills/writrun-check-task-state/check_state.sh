@@ -19,7 +19,7 @@
 #   E. (Stage 2+) A branch may not move a task between the machinery's
 #      five working states — backlog, ready, in-progress, in-review,
 #      done. That line has one writer, and it is not a branch
-#      (docs/product/stage-1-tasks-and-specs/statuses.md).
+#      (docs/product/stage-2-pull-requests/statuses.md).
 #   F. (Stage 2+) A branch may not edit `taken_by` — same single writer.
 #   G. A hand move touching `blocked` is legal only between `blocked`
 #      and `backlog` or `ready`; an in-flight task cannot be blocked.
