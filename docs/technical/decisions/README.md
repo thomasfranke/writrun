@@ -76,3 +76,5 @@ appending a row.
 | [0054](tasks-and-specs/0054-the-adopter-governs-the-agent.md) | 2026-08-30 | `tasks-and-specs` | the adopter's settings govern the agent's git conduct. |
 | [0055](tasks-and-specs/0055-conduct-flags-live-in-stage-2.md) | 2026-08-31 | `tasks-and-specs` | the conduct flags move to `stage_2` — correcting 0054's placement. |
 | [0056](pull-requests/0056-protection-is-recommended.md) | 2026-08-31 | `pull-requests` | protecting the authority branch is recommended, never a gate — superseding 0043's unprotected premise. |
+| [0057](pull-requests/0057-the-credit-flag-names-its-artifact.md) | 2026-08-31 | `pull-requests` | the credit flag names its artifact and is renamed `agent_coauthor` — narrowing 0054's `credit_ai`. |
+| [0058](tasks-and-specs/0058-the-ledger-lives-in-the-queue.md) | 2026-08-31 | `tasks-and-specs` | the provenance ledger lives in the queue; the agent's transcript is a source, never the store. |

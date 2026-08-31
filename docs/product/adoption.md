@@ -96,7 +96,9 @@ they are not judged the same way:
   (per-subsystem or one chronological log), whether a chapter in `product/`
   is organized by concept or by feature, id prefixes, whether a spec is
   mandatory for every task or only for the ones [Task](concepts/task.md)'s
-  own guidance flags. A project is free to choose either side of any of
+  own guidance flags, whether the queue keeps a
+  [provenance ledger](concepts/provenance.md#the-adopter-decides-whether-to-keep-it).
+  A project is free to choose either side of any of
   these — the requirement is that the choice is **stated, not left to be
   reverse-engineered from the file tree**.
 

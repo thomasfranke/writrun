@@ -5,8 +5,9 @@ commits and branches, pull requests, CI, merge as assent. **This is
 where git begins** — Stage 1 needs nothing but files, so everything
 about commits lives here: the
 [commit conventions](../../../.writrun/conventions/commits.md), the
-adopter's word on the agent's own git actions (`auto_commit`,
-`credit_ai` — [settings](../../technical/README.md#settings)), and the
+adopter's word on the agent's own git actions (`auto_commit`) and on
+whether the agent appears as a commit's co-author (`agent_coauthor` —
+[settings](../../technical/README.md#settings)), and the
 machinery that turns forge events into status lines. Nothing here is
 required to claim adoption — it is mechanical enforcement of what a
 person at Stage 1 does deliberately.

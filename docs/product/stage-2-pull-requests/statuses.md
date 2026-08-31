@@ -51,7 +51,10 @@ pull request's author, written in the same commit as the `in-progress`
 flip. Still a record, never an assignment: it reports what the forge
 shows — including a newer pull request superseding it — and entitles
 nobody. It clears whenever the task returns to `ready`, and stays on
-`done`, as the record of who completed the work.
+`done`, as the record of who completed the work — which is exactly why it
+is a pointer and not a history. What accumulates instead, in a project
+that declares one, is the
+[provenance ledger](../concepts/provenance.md#why-the-field-naming-the-worker-is-not-this-record).
 
 **The machinery's two dates come alive.** `queued` and `merged` — at
 Stage 1 left `null` — are written here, by the machinery, after the
