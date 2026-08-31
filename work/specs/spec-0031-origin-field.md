@@ -124,3 +124,13 @@ a label the mirror already wears wins over the diff's field — the field
 is written once, so a disagreement means the diff is the stale side.
 Every existing `new.sh task` call in the suite gained `--origin rule`,
 which is what "no default" costs.
+
+Review, before merge, found a third consequence, and it is the same
+kind: declaring `origin:rule` / `origin:report` in the repository ran
+ahead of the paths that refuse to touch a mirror, so a run that logged
+"not touching it" — and a pull request closed without merging — still
+left a label behind that nothing wore. Declaring moved to the write
+itself: in `mirror_issues.sh` a `put_status_labels` helper now owns the
+three relabelling PUTs and declares the label as it writes them, and in
+`rederive_labels.sh` the declaration sits past the closed-mirror
+return. Two mirror cases cover it.

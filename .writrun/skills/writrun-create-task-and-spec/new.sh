@@ -611,18 +611,47 @@ EOF
     # ...and the matching body link, in the same run: front matter and
     # body must never disagree about which specs a task has. An existing
     # References line gains the link; a task that had nothing to link
-    # gets the line, under its heading.
+    # gets the line — under the body's first heading, whatever its
+    # level, or straight after the front matter when the body opens
+    # without one. That last fallback belongs to the invariant: an
+    # insert that finds no anchor must not quietly not happen, and a
+    # body shaped unlike the ones we imagined is still a body the front
+    # matter has to agree with.
+    #
+    # Unless the project asked for no links at all. A task template
+    # without {{references}} opted its bodies out — taste, not contract,
+    # as the header says — and an opt-out that lasted until the task's
+    # first spec would be no opt-out. The front matter carries the spec
+    # either way: that half is the machine contract, and never the
+    # template's to shape.
+    task_tpl=$(body_template_for task)
+    body_links=1
+    if [[ -n "$task_tpl" ]] && ! grep -q '{{references}}' "$task_tpl"; then
+      body_links=0
+    fi
     spec_link="[${id}](../specs/$(basename "$file"))"
-    if grep -q '^\*\*References:\*\* ' "$task_file"; then
-      awk -v link="$spec_link" '
-        !done && /^\*\*References:\*\* / { print $0 " · " link; done = 1; next }
-        { print }
-      ' "$task_file" > "${task_file}.tmp" && mv "${task_file}.tmp" "$task_file"
-    else
-      awk -v link="$spec_link" '
-        !done && /^# / { print; print ""; print "**References:** " link; done = 1; next }
-        { print }
-      ' "$task_file" > "${task_file}.tmp" && mv "${task_file}.tmp" "$task_file"
+    if [[ "$body_links" -eq 1 ]]; then
+      if grep -q '^\*\*References:\*\* ' "$task_file"; then
+        awk -v link="$spec_link" '
+          !done && /^\*\*References:\*\* / { print $0 " · " link; done = 1; next }
+          { print }
+        ' "$task_file" > "${task_file}.tmp"
+      elif grep -qE '^#+ ' "$task_file"; then
+        awk -v link="$spec_link" '
+          !done && /^#+ / { print; print ""; print "**References:** " link; done = 1; next }
+          { print }
+        ' "$task_file" > "${task_file}.tmp"
+      else
+        awk -v link="$spec_link" '
+          fm < 2 && /^---$/ {
+            fm++; print
+            if (fm == 2) { print ""; print "**References:** " link }
+            next
+          }
+          { print }
+        ' "$task_file" > "${task_file}.tmp"
+      fi
+      mv "${task_file}.tmp" "$task_file"
     fi
 
     echo "Created ${file} (${id}), appended to ${task_file}'s spec_ref"

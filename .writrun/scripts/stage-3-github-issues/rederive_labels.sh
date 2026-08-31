@@ -85,8 +85,9 @@ label_for() {
 }
 
 # origin_label_for <task-file> — the label the task's stored `origin`
-# projects. Nothing for a file written before the field existed, which is
-# a gap to leave rather than a value to guess.
+# projects. Nothing for a file that arrives without the field, which the
+# front-matter check should have refused: a gap to leave rather than a
+# value to guess.
 origin_label_for() {
   case "$(fm "$1" origin)" in
     rule)   printf 'origin:rule' ;;
@@ -219,7 +220,6 @@ EOF
   olbl=""
   if ! printf '%s\n' "$labels" | tr ',' '\n' | grep -q '^origin:'; then
     olbl=$(origin_label_for "$tf")
-    [ -n "$olbl" ] && ensure_origin_label "$olbl"
   fi
 
   # Closing wins. A mirror closed by the same merge is out of the
@@ -228,6 +228,11 @@ EOF
     echo "${tref}: mirror #${num} is closed — no label is written."
     continue
   fi
+
+  # Past every path that writes nothing, and only here: creating the
+  # label in the repository is itself a write, and a mirror this pass
+  # decided to leave alone must not leave a label behind it.
+  if [ -n "$olbl" ]; then ensure_origin_label "$olbl"; fi
 
   # A terminal status closes the mirror: the close and its reason are
   # the state, and no status label survives it.

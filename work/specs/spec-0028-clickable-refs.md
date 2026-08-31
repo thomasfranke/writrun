@@ -114,3 +114,14 @@ task with `doc_ref: null` starts without one. Tests: three generator
 cases (task with doc_ref, spec linking back, the append) plus the
 no-links edge case; the front-matter suite and the template mirror
 green.
+
+Review, before merge, found that addition had swallowed the opt-out:
+the append wrote a References line into a body whose template never
+asked for one, so "gets no links" lasted exactly until the task's first
+spec — and where the body opened at no `#` heading, the insert landed
+nowhere at all while the run still reported it appended. Both are fixed
+here. The append reads the resolved task template and leaves the body
+alone when it carries no `{{references}}`; where it does insert, it
+anchors on the body's first heading of any level and falls back to the
+line after the front matter, so there is no body shape it can silently
+skip. Two generator cases cover it.

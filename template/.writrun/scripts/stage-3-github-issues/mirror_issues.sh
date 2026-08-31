@@ -164,8 +164,11 @@ while IFS="$TAB" read -r fstatus fname fpatch; do
   refs=$(fm_field "$body" spec_ref | tr -d '[]' | tr ',' ' ' | tr -s ' ' \
     | sed 's/^ *//; s/ *$//')
   # Tab is IFS whitespace, so an empty middle field would collapse on
-  # read — an empty ref list travels as "-" instead, and so does a task
-  # file written before `origin` existed.
+  # read — an empty ref list travels as "-" instead, and so does a
+  # missing `origin`. The schema requires that field and the front-matter
+  # check refuses a task without it; this runs after the merge, though,
+  # and a repository that does not gate on the check can land one anyway.
+  # Read it as absent rather than trip over it.
   [ -n "$refs" ] || refs="-"
   torigin=$(fm_field "$body" origin)
   [ -n "$torigin" ] || torigin="-"
@@ -293,8 +296,9 @@ ensure_label() {   # ensure_label <name> <color> <description>
 # origin_label <file-origin> <labels-csv> — the label to carry. A label
 # the mirror already wears wins over the file, because the field is
 # written once and a disagreement means this diff is the stale one; a
-# task file written before the field existed leaves it empty rather than
-# guessing, and the next recording commit adds it from the queue.
+# task that arrives without the field — one the front-matter check should
+# have refused — leaves the label empty rather than guessing, and the next
+# recording commit adds it from the queue.
 origin_label() {
   local worn
   worn=$(printf '%s\n' "$2" | tr ',' '\n' | grep '^origin:' | head -n1 || true)
@@ -313,6 +317,27 @@ ensure_origin_label() {
     origin:rule)   ensure_label "origin:rule" "0075ca" "Derived from an authored rule" ;;
     origin:report) ensure_label "origin:report" "d73a4a" "Born from a report of work an existing rule authorizes" ;;
   esac
+}
+
+# put_status_labels <issue-number> <status-label> <origin-label> — the
+# mirror's whole label set, rewritten. Every rewrite replaces the set, so
+# the origin label is re-stated in each of them: leaving it out would be
+# a removal, and this one is never removed.
+#
+# Creating the label in the repository happens here, at the write, and
+# not where the label is computed. The paths that decide *not* to touch a
+# mirror — somebody else's and still open, or a pull request closed
+# without merging — would otherwise leave a label behind in a repository
+# where nothing wears it.
+put_status_labels() {
+  local args=()
+  if [ -n "$3" ]; then
+    ensure_origin_label "$3"
+    args=(-f "labels[]=$3")
+  fi
+  gh api -X PUT "repos/${REPO}/issues/${1}/labels" \
+    -f "labels[]=writrun:task" -f "labels[]=${2}" \
+    ${args[@]+"${args[@]}"} >/dev/null
 }
 
 open=false;   [ "$PR_STATE" = "open" ]  && open=true
@@ -402,15 +427,10 @@ while IFS="$TAB" read -r tid fname priority milestone torigin refs ttitle; do
   ilabels=$(printf '%s' "$row" | cut -f3)
   ibody=$(printf '%s' "$row" | cut -f4)
 
-  # Every rewrite below replaces the mirror's whole label set, so the
-  # origin label is re-stated in each of them — dropping it would be a
-  # removal, and this one is never removed.
+  # The origin label every rewrite below carries, worked out here where
+  # the mirror's worn labels are in hand. Nothing is created in the
+  # repository yet: that is put_status_labels' job, at the write.
   olbl=$(origin_label "$torigin" "$ilabels")
-  olabel_args=()
-  if [ -n "$olbl" ]; then
-    ensure_origin_label "$olbl"
-    olabel_args=(-f "labels[]=${olbl}")
-  fi
 
   # Three answers to "whose mirror is this", not two. Mine: proceed.
   # Somebody's, and that somebody is still open: refuse, exactly as
@@ -443,9 +463,7 @@ while IFS="$TAB" read -r tid fname priority milestone torigin refs ttitle; do
       # Reopened means open, and open means proposed — the task is back
       # to being offered, not back in the queue.
       gh api -X PATCH "repos/${REPO}/issues/${num}" -f state=open >/dev/null
-      gh api -X PUT "repos/${REPO}/issues/${num}/labels" \
-        -f "labels[]=writrun:task" -f "labels[]=status:proposed" \
-        ${olabel_args[@]+"${olabel_args[@]}"} >/dev/null
+      put_status_labels "$num" "status:proposed" "$olbl"
       [ "$adopted" = "true" ] || echo "${tid} reopened with #${PR}"
     else
       echo "${tid} already mirrored; nothing to do."
@@ -461,14 +479,10 @@ while IFS="$TAB" read -r tid fname priority milestone torigin refs ttitle; do
       gh api -X PATCH "repos/${REPO}/issues/${num}" -f state=open >/dev/null
     fi
     if is_ready $refs; then
-      gh api -X PUT "repos/${REPO}/issues/${num}/labels" \
-        -f "labels[]=writrun:task" -f "labels[]=status:ready" \
-        ${olabel_args[@]+"${olabel_args[@]}"} >/dev/null
+      put_status_labels "$num" "status:ready" "$olbl"
       echo "${tid} is ready for development"
     else
-      gh api -X PUT "repos/${REPO}/issues/${num}/labels" \
-        -f "labels[]=writrun:task" -f "labels[]=status:backlog" \
-        ${olabel_args[@]+"${olabel_args[@]}"} >/dev/null
+      put_status_labels "$num" "status:backlog" "$olbl"
       echo "${tid} merged with a spec still draft — kept backlog"
     fi
   fi
