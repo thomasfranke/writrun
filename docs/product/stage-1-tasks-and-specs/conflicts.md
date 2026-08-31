@@ -23,6 +23,24 @@ flowchart LR
     A --> B --> C --> D --> E
 ```
 
+**The same flow can be forced at the other end of the pipeline**, and
+one property inverts when it is. The triggers above are
+pre-implementation — nobody holds the task, so "net status unchanged" is
+a no-op and costs nothing. But the conflict can also surface at the
+completion gate: the work finished, the delta check refusing it because
+the promise list was wrong. Then the amendment runs **under an open pull
+request**, the task cannot advance until re-approval, and "net status
+unchanged" is still correct — the flight state belongs to the task's own
+pull request — but no longer sufficient: unrecorded, the queue keeps
+asserting that someone is working while the work is stalled. The pause is
+recorded where it happens, not in a status: the amendment and the pull
+request it suspends **name each other**, the lister derives and names the
+suspension, and the resume step waits on the re-approval — drawn in
+[the Stage 2 chapter](../stage-2-pull-requests/statuses.md#an-amendment-under-an-open-pull-request).
+At Stage 1 the amendment is a hand edit, so the suspended state — an
+in-flight task with a spec back in `draft` — persists in the files
+themselves, and the lister reads it from them alone.
+
 
 ## A task hits an outside blocker
 
@@ -77,3 +95,6 @@ queue is what adjusts. Three consequences, in order:
 - When a change edits a permanent doc that a non-completed task
   references, the overlap shall be surfaced to the change's reviewer —
   from Stage 2 up, by the machinery.
+- When an amendment runs while its task is in flight, the task's status
+  shall not move, and the amendment and the pull request it suspends
+  shall name each other.

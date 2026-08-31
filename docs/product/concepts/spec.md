@@ -49,6 +49,18 @@ contributors remember into something checked mechanically — see
 [`writrun-check-spec-deltas`](../../../.writrun/skills/writrun-check-spec-deltas/SKILL.md) — instead
 of trusted to whoever happens to be finishing the task.
 
+**A promise includes its mandatory companions.** Some documents never
+change alone: a rule elsewhere makes touching one imply touching another,
+and a promise that names the first without the second is not a smaller
+promise — it is a wrong one, discovered at the worst possible time. The
+named case is the dated decisions log: its chronology index is appended
+whenever an entry is added, so a spec promising a decision entry promises
+the index row with it. An incomplete promise is refused **where the spec
+enters** — at creation or amendment, where fixing it is one edit — never
+left for the completion gate, where it forces an amendment under a
+finished branch and suspends the task
+([Conflicts](../stage-1-tasks-and-specs/conflicts.md#a-spec-changes-after-its-approval)).
+
 ## Example
 
 The spec for the task shown in [Task](task.md#example):

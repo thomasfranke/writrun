@@ -76,3 +76,4 @@ appending a row.
 | [0054](tasks-and-specs/0054-the-adopter-governs-the-agent.md) | 2026-08-30 | `tasks-and-specs` | the adopter's settings govern the agent's git conduct. |
 | [0055](tasks-and-specs/0055-conduct-flags-live-in-stage-2.md) | 2026-08-31 | `tasks-and-specs` | the conduct flags move to `stage_2` — correcting 0054's placement. |
 | [0056](pull-requests/0056-protection-is-recommended.md) | 2026-08-31 | `pull-requests` | protecting the authority branch is recommended, never a gate — superseding 0043's unprotected premise. |
+| [0059](pull-requests/0059-the-pause-is-derived.md) | 2026-08-31 | `pull-requests` | an amendment in flight suspends the task; the pause is derived, the forge carries the relation. |
