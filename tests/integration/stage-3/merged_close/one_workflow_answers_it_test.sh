@@ -56,12 +56,34 @@ else
   fail=$((fail + 1))
 fi
 
-# Both mirror steps are Stage 3's, so an adopter that deleted the two
-# mirror workflows reaches for no mirror here either.
+# Both mirror steps are Stage 3's, so an adopter below that stage reaches
+# for no mirror here either.
 if [ "$(grep -c "needs.gate.outputs.mirror == 'true'" "$APPROVE")" -eq 2 ]; then
   printf 'ok    both mirror steps are gated on Stage 3\n'; pass=$((pass + 1))
 else
   printf 'FAIL  both mirror steps are gated on Stage 3\n'; fail=$((fail + 1))
+fi
+
+# And on `!cancelled()`, not the implicit `success()`. The steps follow
+# the recording commit, so a refused push or a conflicting rebase would
+# otherwise skip them — and with the other two workflows standing down,
+# that is the merged close answering nothing at all, with no later event
+# to correct it.
+if [ "$(grep -c '!cancelled() && needs.gate.outputs.mirror' "$APPROVE")" -eq 2 ]; then
+  printf 'ok    a failed recording does not also skip the mirror\n'; pass=$((pass + 1))
+else
+  printf 'FAIL  a failed recording does not also skip the mirror\n'; fail=$((fail + 1))
+fi
+
+# The mint reports what it minted, and the projection is given it: the
+# two sets are derived from different sources — the pull request's files
+# and a commit range — and a rebase merge is where they part.
+if grep -q 'steps.mint.outputs.tasks' "$APPROVE" && grep -q '^        id: mint$' "$APPROVE"; then
+  printf 'ok    the projection is also given the set the mint answered\n'
+  pass=$((pass + 1))
+else
+  printf 'FAIL  the projection is also given the set the mint answered\n'
+  fail=$((fail + 1))
 fi
 
 finish

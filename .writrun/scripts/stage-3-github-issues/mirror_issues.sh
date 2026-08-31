@@ -34,6 +34,12 @@
 # data — the PR's code is never checked out and never executed. `gh` must
 # be on PATH and authenticated (GH_TOKEN in CI; a stub in the test suite).
 #
+# Output contract: prose on stdout, and — when $GITHUB_OUTPUT is set —
+# `tasks=<id ...>` appended there, naming every task whose mirror this
+# pass minted or found to be its own. The projection that labels them
+# next reads it, so the set it labels is the set that was really minted
+# rather than one re-derived from a commit range (see below).
+#
 # Exit codes: 0 reconciled (including nothing to do); 3 usage error. An
 # unexpected forge failure aborts non-zero via set -e.
 #
@@ -348,6 +354,23 @@ fi
 
 # Every task the diff adds gets a mirror in the right state.
 LIVE_NUMS=""
+
+# And what this pass answered, as ids. Which mirrors exist is derived
+# here from the pull request's files; which get labelled is derived by
+# the caller from a commit range, and the two part on a rebase merge —
+# `merge_commit_sha` is only the last rebased commit, so a task file
+# added in an earlier one is minted and falls outside the range. Minted
+# and never labelled is the one outcome no later event corrects, so the
+# pass that minted reports what it minted
+# (docs/technical/decisions/github-issues/, 0060).
+#
+# A mirror this pass refused to touch — another open pull request's — is
+# left out: refusing it and then labelling it anyway would be the same
+# defect at one remove.
+MIRRORED=""
+note_mirrored() {
+  case " $MIRRORED " in *" $1 "*) ;; *) MIRRORED="${MIRRORED:+$MIRRORED }$1" ;; esac
+}
 while IFS="$TAB" read -r tid fname priority milestone torigin ttitle; do
   [ -n "$tid" ] || continue
   [ "$torigin" = "-" ] && torigin=""
@@ -403,6 +426,7 @@ while IFS="$TAB" read -r tid fname priority milestone torigin ttitle; do
     else
       echo "Created issue for ${tid}"
     fi
+    note_mirrored "$tid"
     continue
   fi
 
@@ -454,6 +478,7 @@ while IFS="$TAB" read -r tid fname priority milestone torigin ttitle; do
     else
       echo "${tid} already mirrored; nothing to do."
     fi
+    note_mirrored "$tid"
     continue
   fi
 
@@ -469,6 +494,7 @@ while IFS="$TAB" read -r tid fname priority milestone torigin ttitle; do
     # the only question that was its own, which is whether the mirror
     # exists at all.
     echo "${tid} is in the queue; its label is the projection's"
+    note_mirrored "$tid"
   fi
 done <<EOF
 $TASKS
@@ -500,5 +526,9 @@ while IFS="$TAB" read -r num istate labels tb bb; do
 done <<EOF
 $ISSUES
 EOF
+
+if [ -n "${GITHUB_OUTPUT:-}" ]; then
+  printf 'tasks=%s\n' "$MIRRORED" >> "$GITHUB_OUTPUT"
+fi
 
 exit 0
