@@ -1,6 +1,6 @@
 ---
 id: task-0022
-status: in-review
+status: done
 blocked_reason: null
 taken_by: thomasfranke
 spec_ref: [spec-0028, spec-0031, spec-0032]
@@ -12,7 +12,7 @@ milestone: null
 created: 2026-08-31T03:38:14Z
 queued: 2026-08-31T04:04:03Z
 completed: 2026-08-31T11:48:06Z
-merged: null
+merged: 2026-08-31T12:55:41Z
 ---
 
 # Make the queue navigable and origin-aware
