@@ -60,12 +60,17 @@ check "a co-author trailer is flagged, and the line is named" 1 \
 check "and the offending line is printed" 1 "Co-Authored-By: Some Agent" \
   -- bash "$CHECK_OBSERVANCE" main...HEAD
 
-# The same range, the flag flipped: nothing is judged, because the
-# adopter allowed exactly this.
+# The same range, the flag flipped: the credit the `false` direction
+# forbids is the artifact `true` obliges, so the same commits pass.
+#
+# The `true` direction's own check — every commit trailered once the body
+# declares agent work — is not here yet: spec-0035's step 3 assumed a
+# committer identity that does not exist, and the amendment that replaces
+# it is under review. This case holds the half that is implemented.
 allowing
 commit_all
-check "under agent_coauthor true the check does not run" 0 \
-  "the adopter allows platform credit" \
+check "under agent_coauthor true the same range is not faulted" 0 \
+  "agent_coauthor is honoured" \
   -- bash "$CHECK_OBSERVANCE" main...HEAD
 
 # A session trailer and a generated-with line are the same write in two
