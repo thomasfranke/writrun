@@ -44,6 +44,11 @@ so the field reports and entitles nobody. At Stage 1 the worker writes
 it when they start and clears it if they stop; from Stage 2 up the
 machinery owns it, exactly as it owns the status line.
 
+**It is a pointer, not a history.** Because it clears every time the task
+returns to the queue, it cannot say what the work cost or which agent did
+it — that is the [provenance ledger](../concepts/provenance.md)'s record,
+kept only by a project that declares one.
+
 **Dates.** A task carries four, and **who writes each is part of the
 contract** — not a convention anyone may bend.
 

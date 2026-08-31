@@ -54,7 +54,17 @@ created: 2026-08-21T09:14:00Z      # by hand: when the task was drafted
 queued: 2026-08-21T11:02:37Z       # machinery only: the merge that put it in the queue
 completed: null                    # by hand: when the work was finished
 merged: null                       # machinery only: the merge that took the work
+provenance: []                     # append-only ledger, one entry per line; always [] unless the project declares one
 ---
+```
+
+A task that keeps a ledger carries entries instead of the empty list, one
+flow mapping to the line:
+
+```yaml
+provenance:
+  - {by: agent, model: claude-opus-5, login: octocat, input: 562, output: 175853, cache_read: 37266324, cache_write: 366590}
+  - {by: human, login: octocat}
 ```
 
 - `id` is identity, never order. A task file is named
@@ -87,6 +97,24 @@ merged: null                       # machinery only: the merge that took the wor
 - `doc_ref` and any path inside `spec_ref`/`depends_on` point at a section
   anchor, resolved relative to `docs/`, never just a filename — this is what
   makes reverse traceability a grep, not a manual search.
+- `provenance` is the ledger [Provenance](../product/concepts/provenance.md)
+  describes, and it exists only where `provenance_ledger` is `true` —
+  everywhere else it stays `[]`, which is a complete statement and not a
+  gap. **One entry per line, as a YAML flow mapping**, for the same reason
+  the rest of this schema is line-shaped: the readers are line-based, and
+  an entry opened as a block mapping — its keys on lines of their own —
+  would be invisible to them. `by` is `agent` or `human`
+  and nothing else; `model` appears on an agent's entry and is the specific
+  model id, never a category; `login` is whoever answers for the entry,
+  which on an agent's entry is the person who ran it. The four counts are
+  the platform's own, kept **as counts and never as money** — cache reads
+  outweigh the other three by around two orders of magnitude in practice, so
+  a ledger that dropped the cache columns would misreport spend rather than
+  round it, and a stored currency figure would quietly become false the next
+  time a price changed. A human's entry carries no model and no counts.
+  **The list is append-only**: work resumed after the task returned to the
+  queue adds an entry, and an entry already written is never edited — the
+  same grain as `origin`.
 - `origin` records how the task came to exist, and it is a fact, not a
   judgement: `rule` when the task was derived from an authored rule
   declared finished (flow 1), `report` when it was born from a report
@@ -247,11 +275,12 @@ only when it holds a documented key — no empty placeholder objects.
   "stage_1": {
     "spec_required": "when-warranted",
     "decisions_style": "per-subsystem",
-    "product_layout": "by-concept"
+    "product_layout": "by-concept",
+    "provenance_ledger": false
   },
   "stage_2": {
     "auto_commit": true,
-    "credit_ai": true,
+    "agent_coauthor": true,
     "auto_pr": true,
     "pr_title_style": "conventional"
   }
@@ -264,8 +293,9 @@ only when it holds a documented key — no empty placeholder objects.
 | `spec_required` | `stage_1` | `always` / `when-warranted` | agents only |
 | `decisions_style` | `stage_1` | `per-subsystem` / `chronological` | agents only |
 | `product_layout` | `stage_1` | `by-concept` / `by-feature` | agents only |
+| `provenance_ledger` | `stage_1` | `true` / `false` | agents only |
 | `auto_commit` | `stage_2` | `true` / `false` | agents only |
-| `credit_ai` | `stage_2` | `true` / `false` | agents only |
+| `agent_coauthor` | `stage_2` | `true` / `false` | agents only |
 | `auto_pr` | `stage_2` | `true` / `false` | agents only |
 | `pr_title_style` | `stage_2` | `conventional` / `bracketed` | agents only |
 
@@ -275,7 +305,9 @@ configuration without knowing the defaults. Each key's documented default
 is the behaviour from before the key existed, so a project without the
 file, or without the key, behaves exactly as it did: `stage` defaults to
 `3`, `pr_title_style` to `conventional`, and the three conduct flags to
-`true`.
+`true`. `provenance_ledger` defaults to `false` by the same rule and lands
+on the opposite side of it: no ledger existed before the key, so recording
+nothing is the behaviour it preserves.
 
 ### `stage`
 
@@ -341,22 +373,43 @@ needs nothing but files. Neither flag touches the one commit the
 machinery makes nor any workflow-driven write — those are not the
 agent's actions.
 
-### `credit_ai`
+### `agent_coauthor`
 
-The adopter's word on the agent's self-credit. `true` — the default, the
-behaviour from before the key existed — leaves the agent's commits and
-pull request bodies carrying whatever credit its platform appends: a
-`Co-Authored-By:` trailer, a session link, a generated-with line. `false`
-means everything the agent writes into git and the forge carries the
-change alone — no co-author trailer, no session URL, no tool mention; the
-message reads as any other in the history. An instruction from the
-agent's own platform to append credit yields to this file, with the same
-precedence the conduct flags above state. The flag speaks only to what
-the agent writes: authorship identity stays git configuration, other
-authors' commits are untouched, and nothing rewrites history — the flag
-binds from the write after the flip.
+The adopter's word on whether an agent appears as a co-author of what it
+writes. `true` — the default — obliges the agent to append a
+`Co-Authored-By:` trailer **naming the model** to every commit it makes,
+and a credit line to every pull request body it writes. `false` means both
+carry the change alone: no co-author trailer, no session URL, no tool
+mention; the message reads as any other in the history.
 
-### The three declarations
+**`true` states a shape, not a permission.** The key formerly said the
+agent kept "whatever credit its platform appends", which named no artifact
+and so could not be checked at all in that direction — a promise with no
+shape is a promise nothing holds. Naming the trailer makes both directions
+checkable ([observance](#observance-is-checked-where-it-leaves-a-trace)),
+and it is what lets the commit history answer, on its own, which model
+worked a change. The obligation follows from that: on a platform that
+appends no credit of its own, the agent **writes** the trailer rather than
+having nothing to keep.
+
+The model is named specifically, not as a category — `Co-Authored-By:
+Claude Opus 5`, never "an AI" — because the record has to survive the next
+model's arrival to be worth reading a quarter later.
+
+An instruction from the agent's own platform, in either direction, yields
+to this file, with the same precedence the conduct flags above state. The
+flag speaks only to what the agent writes: authorship identity stays git
+configuration, other authors' commits are untouched, and nothing rewrites
+history — it binds from the write after the flip. It is deliberately not
+an `auto_` flag: those gate whether the agent may act, this states what
+the act leaves written. It is also not commit signing, which is git
+configuration and unrelated.
+
+This is one half of what [Provenance](../product/concepts/provenance.md)
+records. `provenance_ledger` is the other, and the two are independent:
+turning either off never silently turns off the other.
+
+### The declarations
 
 Unlike the conduct flags, these gate no action — each answers, once, a
 question every agent session otherwise re-asks. `spec_required` is the
@@ -369,7 +422,12 @@ and the index carries the chronology the folders do not) or
 `chronological` (one log across the whole project). `product_layout`
 names how the product half is organized: `by-concept` (chapters about
 ideas — this repository's shape) or `by-feature` (one doc per feature
-— TOM's shape). Each is a declared variant from
+— TOM's shape). `provenance_ledger` is the project's word on whether its
+tasks carry a [provenance ledger](../product/concepts/provenance.md):
+`false` (the default) means they carry none and every check is satisfied
+by their carrying none — a project that works without agents, or that
+wants no accounting, states so here and is asked for nothing. Each is a
+declared variant from
 [Adoption's open list](../product/adoption.md#mandatory-core-vs-documented-variant),
 stated here so it is never reverse-engineered from the file tree.
 
@@ -378,11 +436,16 @@ stated here so it is never reverse-engineered from the file tree.
 A conduct flag binds the agent, but only some disobedience is visible
 afterwards — and what is visible is checked, not trusted. From Stage
 2, `writrun check` fails a pull request whose title ignores the
-declared `pr_title_style`, and one whose commits or body carry
-platform credit — a co-author trailer, a session link, a
-generated-with line — while `credit_ai` is `false`. What leaves no
-trace (`auto_commit`, `auto_pr` — whether the agent *asked*) stays
-instruction-bound: no diff can show a question that wasn't asked.
+declared `pr_title_style`, and one that disagrees with `agent_coauthor`
+**in either direction** — commits or a body carrying credit while the flag
+is `false`, or an agent's commit lacking the model-naming
+`Co-Authored-By:` trailer while it is `true`. The second direction is only
+checkable because the flag now names an artifact rather than deferring to
+whatever a platform appends, and it reads commits alone: a trailer has a
+fixed shape and a place, a body's credit line has neither, so the body's
+obligation at `true` stays instruction-bound. What leaves no trace at all
+(`auto_commit`, `auto_pr` — whether the agent *asked*) is not checked: no
+diff can show a question that wasn't asked, and no check infers one.
 
 `check_observance.sh` is where both live. The title check strips the
 `[TASK-NNNN]` tags — not the settable part — and reads what is left
@@ -395,6 +458,17 @@ The credit check reads the pull request's own commits and body — never
 machinery's recording commit **by committer identity**, not by subject:
 the subject is a variable the adopter is invited to edit, the identity
 is the forge's.
+
+The `true` direction judges only commits an agent wrote. A human's
+commits carry no trailer and are never faulted for it — using an agent is
+not obligatory, and a check that demanded the trailer everywhere would be
+reading absence as disobedience. Which commits are an agent's is the same
+committer-identity question the skip above already answers.
+
+The ledger itself is not checked here. It is a queue field an agent
+writes, not a trace left in the forge, and `provenance_ledger` gates
+whether it exists at all — a project declaring `false` has nothing for a
+check to read, which is a legal state and not a fault.
 
 ### The shape is a checked contract
 

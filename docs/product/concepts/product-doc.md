@@ -5,9 +5,9 @@ language** — the source of truth an implementation is checked against, not
 a description of the implementation itself. It lives in `product/`, one
 chapter per concern, and is meant to be read in order, like a book: later
 chapters use the nouns earlier ones establish and never redefine them. The
-five `concepts/*.md` chapters — [About](about.md), this one, [Technical
-doc](technical-doc.md), [Task](task.md), [Spec](spec.md) — come first for
-exactly that reason, listed in reading order in
+six `concepts/*.md` chapters — [About](about.md), this one, [Technical
+doc](technical-doc.md), [Task](task.md), [Spec](spec.md),
+[Provenance](provenance.md) — come first for exactly that reason, listed in reading order in
 [`product/README.md`](../README.md#chapters).
 
 ## Who reads it
