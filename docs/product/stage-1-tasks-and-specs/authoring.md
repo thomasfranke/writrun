@@ -131,6 +131,23 @@ flowchart LR
     B -->|"trivial"| F["A commit, no task"]
 ```
 
+**A report is checked against the queue before it becomes a task.**
+The same defect reported twice — by two people, or by one person and
+an agent — is one piece of work, not two: triage starts by reading the
+non-completed tasks, and a report that matches one ends there, naming
+the existing task rather than minting a double. New evidence the
+second report carried enriches the existing task's body, through a
+normal queue change.
+
+**An outage inverts the order, never the obligation.** When documented
+behaviour is down and users are hurting, the fix does not wait for the
+queue: it ships first, through an ordinary branch and PR, at whatever
+size the outage demands. The report follows immediately behind it and
+runs the normal triage over **what remains** — the proper fix behind
+the patch, the missing test, the doc gap. The patch itself gets no
+retroactive task: the queue tracks what is pending, and git already
+records what happened.
+
 From Stage 2 up, reporting rides a branch whose prefix is `report/` on
 purpose — carrying no task id, because a reporting PR records work, it
 is not working it, and must not read as in flight — and flow 2 takes
@@ -160,3 +177,9 @@ over at the merge
   shall stop and route it through authoring rather than decide the rule
   itself.
 - When a reported fix is trivial, it shall be a commit, not a task.
+- When a report matches a non-completed task already in the queue, the
+  agent shall name that task instead of creating a second one, and new
+  evidence shall enrich the existing task's body.
+- When documented behaviour is down, the fix shall ship first and the
+  report shall follow immediately, triaging what remains; the shipped
+  patch itself shall not receive a retroactive task.

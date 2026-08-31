@@ -458,22 +458,38 @@ tomorrow.
 
 The operation, deterministic end to end:
 
-1. **Triage** answers one question — *is what "correct" means already
+1. **Dedup** — before anything, the non-completed tasks are read; a
+   report matching one **ends the operation**, returning that task's
+   id. New evidence the report carried enriches the existing task's
+   body through a normal queue change. A client implements this as a
+   search over `work/tasks/` front matter and titles, never as a
+   question to the reporter.
+2. **Triage** answers one question — *is what "correct" means already
    written?* Three outcomes, and each names its artefact:
    a defect against a documented behaviour → a task, directly; a rule
    nobody wrote → route to authoring, produce nothing; a trivial fix →
    a commit, produce nothing.
-2. **Generation**, on the defect path: `new.sh task` with
+3. **Generation**, on the defect path: `new.sh task` with
    `--origin report`, `--doc-ref` when a doc states the violated
-   behaviour (null when the broken thing was never documented — the
-   evidence goes in the body), priority from impact; a spec via
-   `new.sh spec` when the fix is more than the body can brief. The
-   generated queue is **presented to the human before any PR opens**
-   (the derivation-review gate).
-3. **Recording**, at Stage 2+: branch `report/short-name` — no task id
+   behaviour (null when the broken thing was never documented),
+   priority from impact; a spec via `new.sh spec` when the fix is more
+   than the body can brief. **Evidence — the error, the log excerpt,
+   the reproduction — lives in the task body, as text and links**: the
+   mirror is one-way, so anything attached only to an Issue never
+   reaches the file that is the authority. The generated queue is
+   **presented to the human before any PR opens** (the
+   derivation-review gate).
+4. **Recording**, at Stage 2+: branch `report/short-name` — no task id
    in the name, because the PR records work rather than working it —
    and a PR that only adds queue files. The merge authorizes the task;
    the approval gate takes over.
+
+One inversion a client must know: **an outage ships the fix first.**
+When documented behaviour is down, the patch goes out through an
+ordinary PR at whatever size the outage demands, and the report runs
+immediately behind it, triaging what remains — the patch itself gets
+no retroactive task
+([the reporting rules](../product/stage-1-tasks-and-specs/authoring.md#reporting--work-found-or-reported-mid-flight)).
 
 What a client (`writ report`) builds on is exactly the public contract
 below: the task and spec schemas (`origin: report` included), the
