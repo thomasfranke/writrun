@@ -1,7 +1,7 @@
 ---
 id: spec-0041
 task_ref: task-0024
-status: approved
+status: draft
 created: 2026-08-31T21:04:45Z
 ---
 
@@ -361,6 +361,28 @@ section of the same chapter, and nothing this spec proposes touches it.
 - `technical/decisions/tasks-and-specs/0062-a-shown-shape-is-a-checked-shape.md`
   — the dated why: an example is documentation that lies with a straight
   face, and the checker that reads files can read blocks.
+- `technical/decisions/README.md` — 0062's row in the chronology. A
+  decision reachable from nothing is a decision nobody finds; the index
+  is part of adding an entry, not a separate errand.
+
+## Amendment — 2026-08-31
+
+Returned to `draft` under an open pull request. **#83 is the suspended
+pull request**, and the two name each other by hand, because the
+machinery that would derive the pause is spec-0037's and is not
+implemented yet.
+
+One line, and it is the whole amendment: the Proposed technical changes
+promised the decision file and not `decisions/README.md`, where the
+chronology row goes, so `check_deltas` refused the row — correctly. The
+row is held back on #83 until this lands.
+
+**This spec walked into the defect task-0028 exists to prevent.** A
+promise that adds a decisions entry has to promise the index too, and
+nothing yet makes it: the omission is invisible while drafting and
+surfaces at the completion gate, under a finished branch, which is the
+most expensive place to find it. spec-0038 is approved and unimplemented;
+this is one more instance for its Outcome to point at.
 
 ## Outcome
 
