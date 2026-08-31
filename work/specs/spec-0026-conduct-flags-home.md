@@ -1,7 +1,7 @@
 ---
 id: spec-0026
 task_ref: task-0021
-status: approved
+status: draft
 created: 2026-08-31T02:47:40Z
 ---
 
@@ -17,7 +17,14 @@ created: 2026-08-31T02:47:40Z
 In: the settings file's shape and its checker, the addresses the two
 conventions files read the flags through, the test fixtures that spell
 the old shape, the catch-up note the technical doc carries until this
-lands, and a dated decision entry recording why the placement moved.
+lands, and a dated decision entry recording why the placement moved —
+with its row in the decisions chronology.
+
+> **Amended 2026-08-31, returned to `draft`.** The original promised
+> the decision entry and not the index row it is never added without,
+> so `writrun-check-spec-deltas` reported the row as an undeclared
+> permanent-doc change and the completion gate could not pass. The
+> promise now names the file. Nothing else about the change moved.
 
 Out: the flags' semantics (unchanged, including precedence over the
 platform's autonomy mode); `auto_pr` and `pr_title_style` (already in
@@ -94,6 +101,12 @@ suite green with its fixture on the new shape.
 - `technical/decisions/tasks-and-specs/0055-conduct-flags-live-in-stage-2.md`
   — new dated entry: why the conduct flags moved home, superseding
   decision 0054's `stage_1` placement rationale.
+- `technical/decisions/README.md` — append 0055's row to the chronology
+  table. A decision entry is not added without it
+  ([0045](../../docs/technical/decisions/tasks-and-specs/0045-one-decision-per-file.md):
+  the table is the chronology the folders do not carry, appended
+  whenever an entry is), and the delta check reads paths rather than
+  intent, so the row has to be promised by name.
 
 ## Outcome
 
