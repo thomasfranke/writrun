@@ -691,8 +691,14 @@ skeletons for `AGENTS.md` and `docs/`, and the guide itself as
 provenance pointer after adoption. Two of the four workflows are
 severable: `writrun-issues.yml` and `writrun-progress.yml` are the
 Issues mirror — a projection, never the authority — and an adopter that
-wants no GitHub Issues deletes exactly those two; `check` and `approve`
-stand alone, and nothing else reads the mirror. It names the kit's two collision
+wants no GitHub Issues deletes exactly those two. `check` stands alone.
+So does `approve`, which carries two mirror steps of its own behind a
+Stage 3 gate: a merged close has exactly one owner, and it has to be the
+workflow that writes the queue, because a label derived from anything
+but the queue after the recording commit is derived from a state the
+merge already changed. Below Stage 3 the gate answers `false` and the
+two steps never start, so deleting the mirror workflows still removes
+the mirror. It names the kit's two collision
 points — an existing `AGENTS.md` is grafted, never overwritten; existing
 docs are kept — while everything else the copy lands is
 WritRun-namespaced. The kit deliberately ships **no README.md**: the one
