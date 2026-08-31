@@ -52,3 +52,11 @@ class of defect a guard: the shapes prose shows are read by the same
 checker that reads the real files, and the kit's documents are held to
 the vocabulary the schema currently states — so the next retired word
 fails a run instead of shipping to an adopter.
+
+A parallel authoring change (`docs/provenance-ledger`) grows the schema
+these examples are held to: task front matter gains `provenance: []`, so
+the corrected example in `concepts/task.md` carries that line too. The
+same change puts a front-matter *fragment* in `technical/README.md` — a
+`provenance:` block showing entries alone, no full file around it — so
+the guard this task adds must say what it does with fragments, or it is
+born failing the doc that was authored beside it.

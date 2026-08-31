@@ -89,3 +89,12 @@ from a place that names all of them, so flipping the declaration is one
 edit and not a hunt. Ship the kit a settings file of its own, cautious
 by default, and say in `.writrun`'s own README that the file is the
 adopter's.
+
+A parallel authoring change (`docs/provenance-ledger`, task-0025) reaches
+two of the same places: it renames `credit_ai` to `agent_coauthor` — so
+the wedged key named above will already be gone or differently named —
+and its spec rewrites `commits.md` and `prs.md` for the credit contract
+this task's own edits pass through. Neither blocks the other; whichever
+lands second absorbs the survivor's shape. Under the alphabetical order
+proposed here, `agent_coauthor` sorts ahead of both `auto_` flags, so
+the wedge resolves either way.
