@@ -277,8 +277,11 @@ one line per word this project stopped having, and the backticked form is
 refused wherever the documents instruct — `docs/technical/decisions/` is
 exempt, because a record has to be able to name what it retired, and
 ordinary English is untouched because it carries no backticks. Retiring a
-word without adding its line is how the next `pending` ships; the file is
-the single source, and it is the price of the guard.
+word without adding its line is how the next one ships; the file is the
+single source, and it is the price of the guard. **This paragraph cannot
+spell its own example**, and that is the rule working: the token form is
+what the check refuses outside a record, so a section that defines the
+rule names the word as a word or not at all.
 
 ## Settings
 
@@ -794,8 +797,8 @@ guard, and cannot have one: those documents differ from this
 repository's on purpose. What they share is the vocabulary, so
 `check_doc_shapes.sh` reads them for both halves — the front matter they
 show, and the words they use. That is the structural reason the kit
-shipped `pending` long after the queue stopped having it, and the reason
-a second mirror was not the answer.
+shipped a retired status long after the queue stopped having it, and the
+reason a second mirror was not the answer.
 
 **One file leaves the mirror on purpose: `.writrun/settings.json`.** The
 kit ships it cautious — `stage: 1`, every conduct flag `false` — because
