@@ -183,7 +183,7 @@ condition on `changed`. `writrun-issues.yml`'s mirror job and
 `writrun-progress.yml`'s reflect job stand down for a merged close and
 keep every other event. Decision 0060 and its index row; the
 `#distribution` severability sentence now names the two Stage-3-gated
-steps `approve` carries. Suite green: 61 case files, 0 failed.
+steps `approve` carries.
 
 **Divergences.**
 
@@ -218,6 +218,41 @@ steps `approve` carries. Suite green: 61 case files, 0 failed.
   the owner, `scope` reaching the projection, and both mirror steps
   gated on Stage 3. The settlement is wiring, and no script run can
   observe wiring.
+
+**Corrected before merge, from review.** Three defects in the change
+above, all found while it was still in flight and fixed in the same
+branch.
+
+- **The mirror steps run on `!cancelled()`.** They carried only the
+  Stage 3 condition, which inherits the implicit `success()`, so any
+  earlier step failing — a push the base branch's ruleset refuses, a
+  rebase that conflicts — skipped them both. With the other two
+  workflows standing down for a merged close, that skip is the merged
+  close answering nothing at all, and no event comes back for it. The
+  Commit step now also aborts a conflicting rebase before failing, so
+  the queue the projection reads from disk is never left holding
+  conflict markers.
+- **The severability sentence needed more than the added clause.**
+  "delete exactly those two" is not made true by the Stage 3 gate:
+  `stage` defaults to `3`, so an adopter who deletes the two mirror
+  workflows and changes nothing else still gets mirrors from `approve`.
+  `#distribution` now says severing the mirror *is* the `stage` setting,
+  and notes that only `writrun-issues.yml` is severable by deletion at
+  all — `writrun-progress.yml` also carries Stage 2's in-flight
+  recording.
+- **The mint reports its own set.** Which mirrors get minted is derived
+  from the pull request's files; `scope` is derived from
+  `merge_commit_sha~1...merge_commit_sha`. Equal for a squash or a merge
+  commit, not for a rebase merge, where that range is only the last
+  rebased commit — so a task minted from an earlier one fell outside
+  `scope` and, minted bare by step 1 above, would have stayed label-less
+  for good. `mirror_issues.sh` now reports `tasks=` through
+  `$GITHUB_OUTPUT` and the projection is given it beside `scope`,
+  leaving out any mirror the pass refused to touch. This goes beyond the
+  Steps as written; 0060 carries the reasoning.
+
+Suite green after the corrections: 253 case files, 0 failed — the whole
+suite, not the tiers this change touched.
 
 **Left alone, deliberately.** The body a merged-path mint writes still
 closes with "Becomes ready for development when #N merges…", which reads
