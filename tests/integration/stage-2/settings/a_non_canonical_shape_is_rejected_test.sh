@@ -186,4 +186,25 @@ check "a missing comma between entries is rejected too" 1 \
   "ends without a comma" \
   -- bash "$CHECK_SETTINGS"
 
+# The object ends once. A second bare '}' is trailing content, not another
+# close — the shape the check is meant to catch is exactly the one a
+# line-based reader walks straight past while jq refuses the file.
+settings_file <<'JSON'
+{
+  "stage": 3,
+  "stage_1": {
+    "auto_commit": true,
+    "credit_ai": true
+  },
+  "stage_2": {
+    "auto_pr": true,
+    "pr_title_style": "conventional"
+  }
+}
+}
+JSON
+check "a second closing brace is rejected" 1 \
+  "follows the closing '}' — the object ends once" \
+  -- bash "$CHECK_SETTINGS"
+
 finish

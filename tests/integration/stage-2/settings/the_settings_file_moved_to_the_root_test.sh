@@ -18,6 +18,9 @@ check "an unmoved file is honoured exactly as before the move" 0 "2" \
   -- bash "$READ_SETTING" stage
 check "and it still stops the machinery it stopped" 0 "stops below 3" \
   -- bash "$STAGE_GATE" 3
+check "the off-switch message names the file that actually said so" 0 \
+  "because .writrun/conventions/settings.json says so" \
+  -- bash "$STAGE_GATE" 3
 check "a sectioned address finds its key flat there" 0 "bracketed" \
   -- bash "$READ_SETTING" stage_2.pr_title_style
 check "a key the frozen contract never had falls back to its default" 0 \

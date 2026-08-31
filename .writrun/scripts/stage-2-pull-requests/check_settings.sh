@@ -131,15 +131,19 @@ while IFS= read -r line || [ -n "$line" ]; do
   # A trailing blank line is the file's newline, not a line.
   [ -n "$line" ] || continue
 
+  # This guard comes before the closing brace is recognised, so a second
+  # bare '}' is caught as trailing content rather than read as another
+  # close. The object ends once; a file that closes twice is invalid JSON,
+  # and jq would say so even though the line-based reader shrugs.
+  if [ -n "${closed:-}" ]; then
+    fault "line ${lineno} follows the closing '}' — the object ends once"
+    continue
+  fi
+
   if [ "$line" = "}" ] && [ "$section" = "" ]; then
     [ "$t_prev_line" -eq 0 ] || [ "$t_prev_comma" -eq 0 ] \
       || fault "line ${t_prev_line} is the last pair of the object and ends with a comma — invalid JSON"
     closed=$lineno
-    continue
-  fi
-
-  if [ -n "${closed:-}" ]; then
-    fault "line ${lineno} follows the closing '}' — the object ends once"
     continue
   fi
 
@@ -180,7 +184,7 @@ while IFS= read -r line || [ -n "$line" ]; do
         *) fault "'${section}' opens a section at line ${lineno}, and only a '\"stage_N\"' section may — the file's one nesting level is the stage split, not free structure" ;;
       esac
       case " $addresses " in
-        *" ${section}. "*|*" ${section} "*) fault "'${section}' appears more than once" ;;
+        *" ${section} "*) fault "'${section}' appears more than once" ;;
       esac
       addresses="$addresses $section"
       continue

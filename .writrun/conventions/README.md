@@ -24,10 +24,10 @@ code, comments, commits, documentation.
 Tooling needs these choices machine-readably — the scripts already act on
 some of them — so the data lives in [`settings.json`](../settings.json),
 at the root of WritRun's home, and these `.md` files carry the reasoning:
-what the options are and why a project would pick one. **Nothing is stated in both.** A value here that
-also sits in the settings file is a value that will eventually disagree
-with itself; if you find one, the settings file wins and the prose is the
-bug.
+what the options are and why a project would pick one. **Nothing is
+stated in both.** A value here that also sits in the settings file is a
+value that will eventually disagree with itself; if you find one, the
+settings file wins and the prose is the bug.
 
 That split was always the plan; the file is JSON rather than the
 front-matter this once predicted, because it is edited by people who have
