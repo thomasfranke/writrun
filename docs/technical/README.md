@@ -231,9 +231,11 @@ WritRun's own home because it is the first file a reader or a tool goes
 looking for: the one address ends the hunt. The file is the project's from
 adoption onward and `writ update` never touches it — the same exemption
 `conventions/` carries, stated for this file by name now that it no longer
-lives there. (Until the machinery catches up with this section, the file
-still sits at its old address, `.writrun/conventions/settings.json`; the
-reader honours a file left there, and `check_settings.sh` names the move.)
+lives there. A file left at the old address, `.writrun/conventions/settings.json`,
+is still honoured flat by the reader under the contract frozen at the
+move, and `check_settings.sh` is what names the move — the bridge
+outlives the migration it covered, because an adopter may still be
+carrying one.
 
 **The choices are sectioned by stage** — the same rule that put the stage
 on folder names ([Adoption](../product/adoption.md#three-stages)): one
