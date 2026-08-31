@@ -9,7 +9,7 @@
   a scanning eye reads the left edge: what work this was comes before
   what kind of change it was, and a task's story stays a `git log
   --grep`. It is also how the machinery learns which tasks the PR
-  carries, so it stays whatever the style. Authoring and tracking PRs
+  carries, so it stays whatever the style. Authoring and reporting PRs
   carry none — their tasks are born in the PR, not worked by it.
 
   **`stage_2.pr_title_style` chooses what follows**, and the choice is
@@ -47,7 +47,7 @@
 - **Opening state**: an implementing PR opens as a **draft**, at the
   moment its task is taken and before the work starts — that is what puts
   the task's mirror on `status:in-progress`. Ready for review is the end
-  of the work, not the start. Authoring and tracking PRs have no work to
+  of the work, not the start. Authoring and reporting PRs have no work to
   announce and open ready.
 - **Merge**: squash only — a messy branch history is fine; the commit
   landing on `main` is not.
