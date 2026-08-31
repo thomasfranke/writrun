@@ -169,27 +169,36 @@ fi
 
 CREDIT=$(bash "$READ_SETTING" stage_2.agent_coauthor)
 
-if [ "$CREDIT" != "false" ]; then
-  echo "agent_coauthor is '${CREDIT}'."
-else
-  # Trailers and whole lines, never a subject: a title that *mentions*
-  # a trailer ("remove the Co-Authored-By trailer") is prose about the
-  # rule, not an instance of it. Anchored to the start of a line for the
-  # same reason.
-  CREDIT_LINES='^[[:space:]]*(Co-[Aa]uthored-[Bb]y:|Claude-Session:|Generated-[Bb]y:|Co-authored-by:)'
-  CREDIT_PROSE='(Generated with \[?Claude|🤖 Generated with|https://claude\.ai/code/session)'
+# Trailers and whole lines, never a subject: a title that *mentions* a
+# trailer ("remove the Co-Authored-By trailer") is prose about the rule,
+# not an instance of it. Anchored to the start of a line for the same
+# reason. Both directions read these.
+CREDIT_LINES='^[[:space:]]*(Co-[Aa]uthored-[Bb]y:|Claude-Session:|Generated-[Bb]y:|Co-authored-by:)'
+CREDIT_PROSE='(Generated with \[?Claude|🤖 Generated with|https://claude\.ai/code/session)'
+TRAILER='^[[:space:]]*[Cc]o-[Aa]uthored-[Bb]y:'
 
-  # The commits in the range, minus the machinery's own. The committer
-  # name is read rather than the message, so the skip is by identity and
-  # no subject text can imitate it.
-  # `A...B` reaches this script written for `git diff`, where it means
-  # "B since the merge base" — every sibling check is handed the same
-  # string. `git log` reads the same three dots as the *symmetric
-  # difference*, so it would also hand back the commits the base gained
-  # since the branch point: work that landed in another pull request,
-  # judged as if this one had written it. The two ends are resolved here
-  # and one side is asked for, the same derivation check_derived_work.sh
-  # makes when it needs a base.
+# **A category is not a model.** `Co-Authored-By: AI` satisfies any
+# trailer regex and answers nothing a quarter later, which is the whole
+# reason the trailer is worth reading. This is a tripwire and not a
+# proof — a name written to evade it evades it, exactly as the core-rule
+# stems in check_settings.sh do — and what it catches is the honest
+# attempt reaching for a category because nobody said not to.
+CATEGORIES="ai an-ai the-ai agent an-agent the-agent bot a-bot the-bot \
+assistant an-assistant the-assistant llm an-llm the-llm model a-model \
+the-model claude gpt copilot"
+
+# The commits in the range, minus the machinery's own. The committer
+# name is read rather than the message, so the skip is by identity and
+# no subject text can imitate it. Both directions walk this list.
+#
+# `A...B` reaches this script written for `git diff`, where it means
+# "B since the merge base" — every sibling check is handed the same
+# string. `git log` reads the same three dots as the *symmetric
+# difference*, so it would also hand back the commits the base gained
+# since the branch point: work that landed in another pull request,
+# judged as if this one had written it. The two ends are resolved here
+# and one side is asked for, the same derivation check_derived_work.sh
+# makes when it needs a base.
   case "$RANGE" in
     *...*)
       left="${RANGE%%...*}"
@@ -220,6 +229,10 @@ else
     | grep -vF "	${BOT_COMMITTER}" \
     | cut -f1 || true)
 
+body="${PR_BODY:-}"
+
+case "$CREDIT" in
+false)
   for sha in $shas; do
     [ -n "$sha" ] || continue
     git_read "git log -1 --format=%B ${sha}" log -1 --format='%B' "$sha"
@@ -228,13 +241,70 @@ else
     [ -z "$hit" ] || fault "commit ${sha} carries platform credit while agent_coauthor is false: ${hit}"
   done
 
-  body="${PR_BODY:-}"
   if [ -n "$body" ]; then
     hit=$(printf '%s\n' "$body" \
       | grep -E "$CREDIT_LINES|$CREDIT_PROSE" | head -n 1 || true)
     [ -z "$hit" ] || fault "the pull request body carries platform credit while agent_coauthor is false: ${hit}"
   fi
-fi
+  ;;
+
+true)
+  # **The unit is the pull request, because nothing here can be a
+  # commit.** The flag obliges an artifact per commit, but deciding whose
+  # commit it is needs a signal that does not exist: an agent commits
+  # under whoever ran it, same name and same email as any other work of
+  # theirs, and this script is handed a title, a body and a range.
+  #
+  # So the declaration is read where one exists. At `true` the flag
+  # obliges a credit line in the body, and that line is the pull request
+  # saying an agent worked it. When it is there, every commit that is not
+  # the machinery's owes the trailer; when nothing declares agent work
+  # anywhere, there is nothing to judge and this says so rather than
+  # inventing a verdict.
+  #
+  # What this catches is partial compliance — three commits trailered of
+  # five, or the body line written and none of the trailers. What it
+  # cannot catch is an agent that credits itself nowhere, which is the
+  # blind spot absence always leaves.
+  declared=""
+  if [ -n "$body" ]; then
+    declared=$(printf '%s\n' "$body" \
+      | grep -E "$CREDIT_LINES|$CREDIT_PROSE" | head -n 1 || true)
+  fi
+
+  if [ -z "$declared" ]; then
+    echo "agent_coauthor is true and nothing in the pull request body declares agent work — no commit judged."
+  else
+    for sha in $shas; do
+      [ -n "$sha" ] || continue
+      git_read "git log -1 --format=%B ${sha}" log -1 --format='%B' "$sha"
+      trailer=$(printf '%s\n' "$GIT_OUT" | grep -E "$TRAILER" | head -n 1 || true)
+      if [ -z "$trailer" ]; then
+        fault "commit ${sha} carries no Co-Authored-By: trailer while agent_coauthor is true and this pull request declares agent work"
+        continue
+      fi
+      # The name is what sits between the colon and the address. Folded
+      # to lowercase with spaces as hyphens, so "an AI" and "An  Ai" are
+      # one token against the vocabulary.
+      name=$(printf '%s\n' "$trailer" \
+        | sed -E 's/^[[:space:]]*[Cc]o-[Aa]uthored-[Bb]y:[[:space:]]*//; s/[[:space:]]*<.*$//; s/[[:space:]]+$//' \
+        | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+      case " $CATEGORIES " in
+        *" $name "*)
+          fault "commit ${sha}'s trailer names '${name}', a category rather than a model — the record has to survive the next model's arrival, so name it: Co-Authored-By: Claude Opus 5 <...>" ;;
+      esac
+    done
+  fi
+  ;;
+
+*)
+  # The same posture the title check takes for a style it does not know:
+  # check_settings.sh is where a value outside the vocabulary is named,
+  # and judging credit against a flag nobody declared would fault honest
+  # commits for a fault in another file.
+  echo "agent_coauthor is '${CREDIT}', which this check does not know — check_settings.sh names that; no credit judged."
+  ;;
+esac
 
 # ---------------------------------------------------------------- close
 

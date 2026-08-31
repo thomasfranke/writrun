@@ -3,8 +3,8 @@
 
 # `agent_coauthor: false` says everything the agent writes into git and the
 # forge carries the change alone. That write is visible afterwards, so it
-# is checked rather than trusted — and under `true` there is nothing to
-# check, because the adopter allowed it.
+# is checked rather than trusted. This case is the `false` direction; the
+# `true` one has its own file.
 setup
 
 forbidding() {

@@ -1,7 +1,7 @@
 ---
 id: spec-0035
 task_ref: task-0025
-status: approved
+status: implemented
 created: 2026-08-31T14:24:45Z
 ---
 
@@ -177,4 +177,42 @@ direction, and the conventions — all of which are already implemented on
 
 ## Outcome
 
-_(fill after execution)_
+Shipped as amended. The key is `agent_coauthor` in both settings files,
+the present-always list, the value check, the documented default and the
+observance messages; a file still spelling `credit_ai` is refused naming
+the new key. The `true` direction judges the pull request: when the body
+declares agent work, every commit that is not the machinery's owes a
+model-naming trailer, and a category name is refused. Suite 257 case
+files, 0 failed.
+
+**The amendment is the outcome.** Step 3 said to reuse the committer
+identity to decide whose commit it is, and that identity answers a
+different question — it knows the forge's bot from everyone else. Nothing
+in what the check receives separates an agent's commit from a person's:
+on this platform an agent commits under whoever ran it, same name and
+same email. Every signal that exists is per-branch, so the unit became
+the pull request, `check_observance.sh` reads the body's credit line as
+the declaration, and a person's commit on a declared-agent branch is
+asked for the trailer too. That cost is stated in the edge cases rather
+than discovered by whoever hits it.
+
+**Where the implementation went past the amendment.**
+
+- **Bare family names join the refused vocabulary.** `Claude`, `GPT` and
+  `Copilot` are refused alongside `AI` and `an agent`: a family is not a
+  model, and the record exists to survive the next model's arrival. The
+  amendment listed the category words and this widens the list by the
+  same argument.
+- **A value outside the vocabulary judges nothing**, and says so, the way
+  the title check already treats a `pr_title_style` it does not know.
+  `check_settings.sh` is where that fault is named; faulting honest
+  commits for a fault in another file would be the wrong door.
+- **The doc's promised anchor gained two paragraphs, not one sentence.**
+  The amendment removed a claim; what replaced it had to say why the
+  per-commit unit is unavailable, or the next reader re-derives the same
+  dead end.
+
+**What no check reaches, stated plainly.** An agent that credits itself
+nowhere — no body line, no trailers — passes. That is the same blind spot
+`auto_commit` has: absence is not evidence, and a check that guessed
+would fault honest work to catch nothing.
