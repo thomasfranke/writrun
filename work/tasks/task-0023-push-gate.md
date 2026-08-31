@@ -1,6 +1,6 @@
 ---
 id: task-0023
-status: in-review
+status: done
 blocked_reason: null
 taken_by: thomasfranke
 spec_ref: [spec-0040]
@@ -12,7 +12,7 @@ milestone: null
 created: 2026-08-31T13:02:49Z
 queued: 2026-08-31T15:04:48Z
 completed: 2026-08-31T20:59:50Z
-merged: null
+merged: 2026-08-31T21:46:54Z
 ---
 
 # The settings gain a push flag, an order, and obedient commits
