@@ -37,7 +37,10 @@ eligibility).
 3. The mirror machinery (`writrun issues` / the labeler) applies
    `origin:rule` or `origin:report` when a mirror is created, creating
    the label on first use like every other; unlike `status:` it is
-   never changed and never removed, closed mirrors included.
+   never changed and never removed, closed mirrors included. Colors on
+   first creation: `origin:report` `#d73a4a` (GitHub's stock bug red),
+   `origin:rule` `#0075ca` (its documentation blue) — vocabulary any
+   Issues reader already knows.
 4. Backfill: every existing task gains its `origin` line, derived from
    the PR branch that created it (`docs/` → `rule`, `queue/` →
    `report`); where history is ambiguous, the judgement is made once,
