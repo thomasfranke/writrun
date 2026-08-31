@@ -50,11 +50,14 @@ LEGACY=".writrun/conventions/settings.json"
 # behaves exactly as it did.
 default_for() {
   case "$1" in
-    stage)                  printf '3' ;;
-    stage_1.auto_commit)    printf 'true' ;;
-    stage_1.credit_ai)      printf 'true' ;;
-    stage_2.auto_pr)        printf 'true' ;;
-    stage_2.pr_title_style) printf 'conventional' ;;
+    stage)                   printf '3' ;;
+    stage_1.spec_required)   printf 'when-warranted' ;;
+    stage_1.decisions_style) printf 'per-subsystem' ;;
+    stage_1.product_layout)  printf 'by-concept' ;;
+    stage_2.auto_commit)     printf 'true' ;;
+    stage_2.credit_ai)       printf 'true' ;;
+    stage_2.auto_pr)         printf 'true' ;;
+    stage_2.pr_title_style)  printf 'conventional' ;;
   esac
 }
 

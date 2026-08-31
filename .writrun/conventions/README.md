@@ -29,6 +29,15 @@ stated in both.** A value here that also sits in the settings file is a
 value that will eventually disagree with itself; if you find one, the
 settings file wins and the prose is the bug.
 
+**Three questions about the docs are answered there too, and never by
+reading the file tree**: `stage_1.spec_required` says when a task needs
+a spec, `stage_1.decisions_style` says where dated decisions live —
+`per-subsystem` or one `chronological` log — and
+`stage_1.product_layout` says how the product half is organized,
+`by-concept` or `by-feature`. Each is a variant Adoption leaves open
+and orders declared, so an agent asks the file rather than inferring a
+shape from whichever folders it happened to open first.
+
 That split was always the plan; the file is JSON rather than the
 front-matter this once predicted, because it is edited by people who have
 not read WritRun's front-matter contract and JSON is the shape they

@@ -2,7 +2,7 @@
 # record_task_status.sh — the merge's half of the transition machine:
 # moves every task the merge affected to where the queue now says it
 # belongs, on the working tree, in the same recording commit as the spec
-# flips and date stamps (product/stage-1-tasks-and-specs/statuses.md).
+# flips and date stamps (product/stage-2-pull-requests/statuses.md).
 #
 # Usage: record_task_status.sh <diff-range> [carried-task-id...]
 #   The carried ids are the tasks whose work this merge took. Passed as

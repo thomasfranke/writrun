@@ -25,7 +25,7 @@ check "a sectioned address finds its key flat there" 0 "bracketed" \
   -- bash "$READ_SETTING" stage_2.pr_title_style
 check "a key the frozen contract never had falls back to its default" 0 \
   "true" \
-  -- bash "$READ_SETTING" stage_1.auto_commit
+  -- bash "$READ_SETTING" stage_2.auto_commit
 check "while the check names the move" 1 \
   "it moved to .writrun/settings.json" \
   -- bash "$CHECK_SETTINGS"
@@ -35,10 +35,13 @@ settings_file <<'JSON'
 {
   "stage": 3,
   "stage_1": {
-    "auto_commit": true,
-    "credit_ai": true
+    "spec_required": "when-warranted",
+    "decisions_style": "per-subsystem",
+    "product_layout": "by-concept"
   },
   "stage_2": {
+    "auto_commit": true,
+    "credit_ai": true,
     "auto_pr": true,
     "pr_title_style": "conventional"
   }
@@ -57,10 +60,13 @@ settings_file <<'JSON'
 {
   "stage": 3,
   "stage_1": {
-    "auto_commit": true,
-    "credit_ai": true
+    "spec_required": "when-warranted",
+    "decisions_style": "per-subsystem",
+    "product_layout": "by-concept"
   },
   "stage_2": {
+    "auto_commit": true,
+    "credit_ai": true,
     "auto_pr": true,
     "pr_title_style": "conventional"
   }

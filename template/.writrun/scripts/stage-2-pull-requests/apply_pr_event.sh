@@ -2,7 +2,7 @@
 # apply_pr_event.sh — turns one pull-request forge event into the status
 # write it implies, via flip_task_status.sh. The workflow wires events to
 # this; the edge table lives in the flip script and in
-# product/stage-1-tasks-and-specs/statuses.md.
+# product/stage-2-pull-requests/statuses.md.
 #
 # Usage: apply_pr_event.sh <event>
 #   <event>: opened | reopened | ready_for_review | converted_to_draft |

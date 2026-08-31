@@ -11,10 +11,13 @@ settings_file <<'JSON'
 {
   "stage": 1,
   "stage_1": {
-    "auto_commit": true,
-    "credit_ai": true
+    "spec_required": "when-warranted",
+    "decisions_style": "per-subsystem",
+    "product_layout": "by-concept"
   },
   "stage_2": {
+    "auto_commit": true,
+    "credit_ai": true,
     "auto_pr": true,
     "pr_title_style": "conventional"
   }

@@ -74,3 +74,5 @@ appending a row.
 | [0052](tasks-and-specs/0052-settings-carry-the-choice.md) | 2026-08-28 | `tasks-and-specs` | adoption is levelled, and settings.json carries which level. |
 | [0053](tasks-and-specs/0053-settings-at-the-root.md) | 2026-08-30 | `tasks-and-specs` | settings move to WritRun's root and section by stage — reversing part of 0052. |
 | [0054](tasks-and-specs/0054-the-adopter-governs-the-agent.md) | 2026-08-30 | `tasks-and-specs` | the adopter's settings govern the agent's git conduct. |
+| [0055](tasks-and-specs/0055-conduct-flags-live-in-stage-2.md) | 2026-08-31 | `tasks-and-specs` | the conduct flags move to `stage_2` — correcting 0054's placement. |
+| [0056](pull-requests/0056-protection-is-recommended.md) | 2026-08-31 | `pull-requests` | protecting the authority branch is recommended, never a gate — superseding 0043's unprotected premise. |

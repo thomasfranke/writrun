@@ -1,7 +1,7 @@
 ---
 id: spec-0034
 task_ref: task-0021
-status: approved
+status: implemented
 created: 2026-08-31T04:52:11Z
 ---
 
@@ -86,4 +86,43 @@ byte-identical; full suite green.
 
 ## Outcome
 
-_(fill after execution)_
+Built as specified: `check_observance.sh` carries both verifications and
+`writrun check` runs it as the "the settings are observed" job — gated
+on Stage 2 like every other, read-only, no secrets, so a fork pull
+request is served like any other.
+
+The title check strips the `[TASK-NNNN]` tags first, because that part
+is not settable, then reads what is left against the declared style:
+`type(scope): subject` under `conventional`, `[Type][Scope] Sentence`
+under `bracketed`, the scope optional in both. Authoring and reporting
+titles carry no tag, so for them the summary is the whole title and the
+same grammar applies. The credit check is inert unless `credit_ai` is
+`false`; when active it reads the pull request's own commits and body
+for a co-author trailer, a session trailer or a generated-with line,
+anchored to line starts so a subject *mentioning* a trailer is prose and
+not an instance. The machinery's recording commit is skipped by
+committer identity — `github-actions[bot]` — never by subject, which is
+a variable the adopter is invited to edit. `auto_commit` and `auto_pr`
+are not checked, and both `technical/README.md` and `prs.md` say so
+rather than pretend.
+
+Two calls the spec left open, both resolved in session with the
+maintainer:
+
+1. **Case inside a bracketed label is not judged.** The convention's own
+   examples write `[Fix][CI]` for an implementing title and `[DOCS]` for
+   an authoring one; a check picking either spelling would reject the
+   project's own documented examples. Types and scopes are matched
+   case-folded against the vocabularies.
+2. **`readme` and `setup` joined the documented scopes** in
+   `commits.md`. The check enforces that list, and this repository's
+   recent merged titles (`[Docs][Readme]`, `[Docs][Setup]`) used scopes
+   outside it — so shipping the list unchanged would have made CI reject
+   titles the maintainer writes by habit. The conventions file is the
+   project's to edit; `commits.md` now states that editing the two
+   vocabularies is editing what the check accepts, and that
+   `check_observance.sh` holds the machine half of the same statement.
+
+Divergence beyond those two: none. Nine cases cover the title in both
+styles and six cover credit, including the flag flipped both ways and
+the recording commit left unjudged.

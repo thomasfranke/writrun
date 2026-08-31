@@ -24,9 +24,19 @@ name: writrun approve
 #     Workflow permissions). That setting is a ceiling; the `permissions:`
 #     block below cannot rise above it.
 #   - **The base branch must accept a push from the Actions token.** The
-#     flip now lands on the base branch itself, after the merge — which
-#     this repository allows because `main` is unprotected. Protecting it
-#     later means letting this token through, or the recording stops and
+#     flip lands on the base branch itself, after the merge, so
+#     reachability is the one hard requirement — and it is compatible
+#     with protection, which the setup chapter recommends rather than
+#     requires (docs/product/stage-2-pull-requests/setup.md):
+#       * unprotected — the push lands, nothing stands in its way;
+#       * a partial ruleset (creation, deletion, non-fast-forward,
+#         linear history) — the push lands, because an ordinary
+#         fast-forward push breaks none of those rules;
+#       * a full ruleset with the pull-request requirement — the push
+#         lands only with GitHub Actions on the bypass list, which the
+#         forge offers on organization-owned repositories alone.
+#     Nothing here conditions adoption; what stops the recording is a
+#     rule the setup chapter names as one that must stay off, and then
 #     specs stay `draft` after their merge.
 #   - Pushes made with GITHUB_TOKEN trigger no workflow runs. That is what
 #     keeps this from looping, and it means no check reports on the flip
@@ -130,7 +140,7 @@ jobs:
         # where the merge carried the worker's completed date, back to
         # rest where it carried partial work, backlog -> ready where the
         # approvals it recorded made a task ready. One event, one commit
-        # (product/stage-1-tasks-and-specs/statuses.md).
+        # (product/stage-2-pull-requests/statuses.md).
         id: status
         # Which tasks the merge carried is the script's to derive (from
         # PR_HEAD_REF and PR_TITLE, as data), and its results arrive

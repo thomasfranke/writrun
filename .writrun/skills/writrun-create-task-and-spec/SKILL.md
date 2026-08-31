@@ -97,6 +97,19 @@ headings and Outcome, or the script refuses it.
 
 ## Does this task need a spec?
 
+**Read `stage_1.spec_required` first — the project may have answered
+this already**
+(`bash .writrun/scripts/stage-2-pull-requests/read_setting.sh stage_1.spec_required`,
+which prints its documented default when the file or the key is
+absent):
+
+- `always` — every task gets a spec. There is no judgement left to
+  make; the rest of this section does not apply, and a task shipped
+  without one is the project's rule broken, not a call you were free
+  to make.
+- `when-warranted` — the default, and the judgement below is the
+  guidance the project chose to keep.
+
 Skip the spec only if the task is small enough that its own body plus
 `doc_ref` is a complete, unambiguous brief. Default to writing a spec
 whenever:
@@ -171,7 +184,7 @@ manual `spec_ref` append on the task file.
 3. Fill the task's `completed` date (a UTC timestamp) — and touch its
    `status` line **never**: from Stage 2 up that line is the machinery's,
    and the merge is what flips the task to `done` when it lands your
-   date (product/stage-1-tasks-and-specs/statuses.md).
+   date (product/stage-2-pull-requests/statuses.md).
 
 ## Never
 

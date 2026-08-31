@@ -47,7 +47,14 @@ before it is committed.
 | An authored rule is finished, so derivation may start | <!-- TODO — default: the human declares it --> |
 | Spec `draft → approved` | <!-- TODO — default: human only, recorded via the approved PR --> |
 | Task with empty `spec_ref` and insufficient brief | <!-- TODO — default: stop and ask for a spec --> |
+| Changing repository/forge settings (Actions permissions, rulesets, merge methods) | <!-- TODO — default: the owner assents in session, per set of changes --> |
 | Everything else | Agent, autonomously. |
+
+**The forge row is not optional the way its answer is.** Repository
+settings live outside the repository — no diff, no review, no merge gate
+sees them — so an agent applying one is acting where nothing can catch
+it afterwards. Whoever the project names, the agent presents current →
+target values first and applies only on an explicit yes.
 
 ### Deriving work
 

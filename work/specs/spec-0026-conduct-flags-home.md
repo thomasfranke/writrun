@@ -1,7 +1,7 @@
 ---
 id: spec-0026
 task_ref: task-0021
-status: approved
+status: implemented
 created: 2026-08-31T02:47:40Z
 ---
 
@@ -110,4 +110,39 @@ suite green with its fixture on the new shape.
 
 ## Outcome
 
-_(fill after execution)_
+Built as specified: `auto_commit` and `credit_ai` sit in `stage_2`
+beside `auto_pr` and `pr_title_style`, in both settings files, and the
+`stage_1` section did not disappear because spec-0033's three
+declarations landed in the same change. `check_settings.sh` gives both
+keys `stage_2` as their documented home, so a file spelling either in
+`stage_1` is refused by the homeless-key fault the schema already had —
+naming `stage_2` — and no new rule was needed for the migration path.
+`read_setting.sh` moved both defaults to the new addresses;
+`commits.md` and `prs.md` read them there. The catch-up note is gone
+from `technical/README.md#settings`, decision 0055 records the move
+against 0054's placement rationale, and its row is in the chronology.
+
+The checker never had a required-section rule and did not gain one: a
+file with no `stage_1` section is faulted for each documented key it
+was holding, by address, never for the section itself. A case asserts
+exactly that, which needed a `refute` assertion — the mirror of
+`check`'s text half — added to `tests/harness.sh`.
+
+Divergences, two, both small:
+
+1. **A folded trivial fix.** The same `#settings` section still claimed
+   the file "still sits at its old address", false since task-0020
+   merged. It sat inside a paragraph this change was already rewriting,
+   so leaving it would have shipped a false statement beside the
+   corrected ones. Landed as its own untagged `fix(technical):` commit,
+   with the maintainer's assent in session; the bridge itself is not a
+   catch-up note and stays described.
+2. **The spec was amended mid-flight.** The original promised decision
+   0055 and not its row in `technical/decisions/README.md`, which
+   decision 0045 makes inseparable from adding an entry.
+   `writrun-check-spec-deltas` reads paths rather than intent, reported
+   the row as an undeclared permanent-doc change, and the completion
+   gate could not pass. Amended and returned to `draft` on
+   `queue/amend-specs-0026-0029`, re-approved by the merge of #63, and
+   the implementing branch rebased onto it. Nothing about the scope
+   moved — the elaboration was incomplete.

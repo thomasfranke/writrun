@@ -40,5 +40,26 @@ check() {
   pass=$((pass + 1))
 }
 
+# refute <name> <unwanted-substring> -- <cmd...>
+#
+# The mirror of check's text half, for the assertions that are about
+# something a run must *not* say. Exit code is deliberately not asserted:
+# every use so far is a rejection whose faults are being read, and
+# pinning the code as well would make the case fail for the wrong reason
+# the day a neighbouring fault changes.
+refute() {
+  local name="$1" unwanted="$2"; shift 3
+  local out
+  out=$("$@" 2>&1)
+
+  if printf '%s' "$out" | grep -q "$unwanted"; then
+    printf 'FAIL  %s\n      expected output NOT to contain: %s\n' "$name" "$unwanted"
+    printf '%s\n' "$out" | sed 's/^/      | /'
+    fail=$((fail + 1)); return
+  fi
+  printf 'ok    %s\n' "$name"
+  pass=$((pass + 1))
+}
+
 # finish — every case file's last line: exit with the case's verdict.
 finish() { [ "$fail" -eq 0 ]; exit $?; }

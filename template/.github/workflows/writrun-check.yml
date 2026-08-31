@@ -137,6 +137,30 @@ jobs:
           bash .writrun/scripts/stage-2-pull-requests/check_derived_work.sh \
             "origin/${{ github.base_ref }}...HEAD"
 
+  observance:
+    name: the settings are observed
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The credit check reads the commits the range adds, so the
+          # history both ends need must be present.
+          fetch-depth: 0
+
+      - name: The title and the commits obey what the settings declare
+        # A conduct flag binds the agent, and what leaves a trace is
+        # checked rather than trusted. Title and body go through env,
+        # never inline interpolation — both are attacker-controlled text
+        # on a fork PR. Reasoning in the script.
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          bash .writrun/scripts/stage-2-pull-requests/check_observance.sh \
+            "origin/${{ github.base_ref }}...HEAD"
+
   settings:
     name: settings are canonical
     needs: gate

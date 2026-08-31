@@ -1,7 +1,7 @@
 ---
 id: spec-0027
 task_ref: task-0021
-status: approved
+status: implemented
 created: 2026-08-31T02:47:41Z
 ---
 
@@ -77,4 +77,18 @@ that can fail here; no new tests, since no behaviour changes.
 
 ## Outcome
 
-_(fill after execution)_
+Built as specified: all seven citations of the status projection now
+point at `product/stage-2-pull-requests/statuses.md` —
+`record_task_status.sh`, `flip_task_status.sh`, `apply_pr_event.sh`,
+`check_state.sh`'s rule E, `writrun-create-task-and-spec`'s completion
+step, `writrun-approve.yml`'s status step and `writrun-progress.yml`'s
+header. Each surrounding sentence was read first, and every one of the
+seven turned out to cite the projection rather than what stayed behind.
+
+What remained in the Stage 1 chapter kept its pointer: the four-dates
+table cited from `technical/README.md` is unmoved, and no vocabulary
+reference was repointed.
+
+Divergence: none. Comments and one instruction link only — no code path
+moved, and the suite's template-mirror case is the one that could have
+failed here. It passes.

@@ -231,9 +231,11 @@ WritRun's own home because it is the first file a reader or a tool goes
 looking for: the one address ends the hunt. The file is the project's from
 adoption onward and `writ update` never touches it — the same exemption
 `conventions/` carries, stated for this file by name now that it no longer
-lives there. (Until the machinery catches up with this section, the file
-still sits at its old address, `.writrun/conventions/settings.json`; the
-reader honours a file left there, and `check_settings.sh` names the move.)
+lives there. A file left at the old address, `.writrun/conventions/settings.json`,
+is still honoured flat by the reader under the contract frozen at the
+move, and `check_settings.sh` is what names the move — the bridge
+outlives the migration it covered, because an adopter may still be
+carrying one.
 
 **The choices are sectioned by stage** — the same rule that put the stage
 on folder names ([Adoption](../product/adoption.md#three-stages)): one
@@ -269,13 +271,6 @@ only when it holds a documented key — no empty placeholder objects.
 | `credit_ai` | `stage_2` | `true` / `false` | agents only |
 | `auto_pr` | `stage_2` | `true` / `false` | agents only |
 | `pr_title_style` | `stage_2` | `conventional` / `bracketed` | agents only |
-
-(Until the machinery catches up with this section, the two conduct
-flags `auto_commit` and `credit_ai` still sit in a `stage_1` section
-and `check_settings.sh` still expects them there — the derived task
-moves both. The three declaration keys are likewise ahead of the
-machinery: the file does not carry them yet and the checker does not
-know them; their derived task adds both halves.)
 
 **Every key is present, always** — the same reason the front matter carries
 `null` fields rather than omitting them: a reader sees the whole
@@ -371,11 +366,13 @@ question every agent session otherwise re-asks. `spec_required` is the
 project's word on when a task needs a spec: `always`, or
 `when-warranted` (the default — the creation skill's own judgement
 guidance applies). `decisions_style` names where dated decisions live:
-`per-subsystem` (the methodology's default) or `chronological` (one
-numbered log — this repository's own shape). `product_layout` names
-how the product half is organized: `by-concept` (chapters about ideas
-— this repository's shape) or `by-feature` (one doc per feature —
-TOM's shape). Each is a declared variant from
+`per-subsystem` (the methodology's default, and this repository's own
+shape — an entry sits in the folder of the adoption level it concerns,
+and the index carries the chronology the folders do not) or
+`chronological` (one log across the whole project). `product_layout`
+names how the product half is organized: `by-concept` (chapters about
+ideas — this repository's shape) or `by-feature` (one doc per feature
+— TOM's shape). Each is a declared variant from
 [Adoption's open list](../product/adoption.md#mandatory-core-vs-documented-variant),
 stated here so it is never reverse-engineered from the file tree.
 
@@ -389,8 +386,18 @@ platform credit — a co-author trailer, a session link, a
 generated-with line — while `credit_ai` is `false`. What leaves no
 trace (`auto_commit`, `auto_pr` — whether the agent *asked*) stays
 instruction-bound: no diff can show a question that wasn't asked.
-(Until the machinery catches up, neither check runs; the derived task
-adds both.)
+
+`check_observance.sh` is where both live. The title check strips the
+`[TASK-NNNN]` tags — not the settable part — and reads what is left
+against the declared style: the type against the vocabulary
+`conventions/commits.md` carries, the scope against it too when one is
+present, and nothing about the summary. Case inside a bracketed label
+is not judged, because the convention writes both `[Fix]` and `[DOCS]`.
+The credit check reads the pull request's own commits and body — never
+`main`'s past, since nothing rewrites history — and skips the
+machinery's recording commit **by committer identity**, not by subject:
+the subject is a variable the adopter is invited to edit, the identity
+is the forge's.
 
 ### The shape is a checked contract
 

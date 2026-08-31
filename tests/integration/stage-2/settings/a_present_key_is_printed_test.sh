@@ -9,10 +9,13 @@ settings_file <<'JSON'
 {
   "stage": 2,
   "stage_1": {
-    "auto_commit": false,
-    "credit_ai": true
+    "spec_required": "always",
+    "decisions_style": "chronological",
+    "product_layout": "by-feature"
   },
   "stage_2": {
+    "auto_commit": false,
+    "credit_ai": true,
     "auto_pr": true,
     "pr_title_style": "bracketed"
   }
@@ -23,12 +26,18 @@ check "a top-level key prints its value, addressed bare" 0 "2" \
 check "a sectioned key prints its value, addressed through its section" 0 \
   "bracketed" \
   -- bash "$READ_SETTING" stage_2.pr_title_style
-check "and so does one in the other section" 0 "false" \
-  -- bash "$READ_SETTING" stage_1.auto_commit
-check "and the rest of stage_1" 0 "true" \
-  -- bash "$READ_SETTING" stage_1.credit_ai
+check "and so does the conduct flag beside it" 0 "false" \
+  -- bash "$READ_SETTING" stage_2.auto_commit
 check "and the rest of stage_2" 0 "true" \
+  -- bash "$READ_SETTING" stage_2.credit_ai
+check "and the last of it" 0 "true" \
   -- bash "$READ_SETTING" stage_2.auto_pr
+check "a declaration prints through stage_1" 0 "always" \
+  -- bash "$READ_SETTING" stage_1.spec_required
+check "and so does the next" 0 "chronological" \
+  -- bash "$READ_SETTING" stage_1.decisions_style
+check "and the last" 0 "by-feature" \
+  -- bash "$READ_SETTING" stage_1.product_layout
 
 # Edge case: the reader takes everything after the key's colon, so a
 # quoted value carrying a colon of its own survives whole — and a brace
@@ -39,10 +48,13 @@ settings_file <<'JSON'
   "stage": 3,
   "label_prefix": "status:",
   "stage_1": {
-    "auto_commit": true,
-    "credit_ai": true
+    "spec_required": "when-warranted",
+    "decisions_style": "per-subsystem",
+    "product_layout": "by-concept"
   },
   "stage_2": {
+    "auto_commit": true,
+    "credit_ai": true,
     "auto_pr": true,
     "pr_title_style": "conventional",
     "opener": "{"
@@ -60,11 +72,14 @@ settings_file <<'JSON'
 {
   "stage": 3,
   "stage_1": {
-    "auto_commit": true,
-    "credit_ai": true,
+    "spec_required": "when-warranted",
+    "decisions_style": "per-subsystem",
+    "product_layout": "by-concept",
     "note": "one"
   },
   "stage_2": {
+    "auto_commit": true,
+    "credit_ai": true,
     "auto_pr": true,
     "pr_title_style": "conventional",
     "note": "two"

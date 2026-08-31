@@ -1,7 +1,7 @@
 ---
 id: spec-0030
 task_ref: task-0021
-status: approved
+status: implemented
 created: 2026-08-31T03:18:55Z
 ---
 
@@ -77,4 +77,22 @@ machinery, no new checks.
 
 ## Outcome
 
-_(fill after execution)_
+Built as specified: `template/WRITRUN.md`'s adoption walkthrough gains a
+Stage 2 step that names the owner-assent gate **before** pointing at the
+commands, states that the settings live outside the repository so no
+diff, review or merge gate will catch a wrong one, and warns that some
+ruleset rules must stay off. It points at
+`docs/product/stage-2-pull-requests/setup.md` rather than restating it,
+so the chapter stays the single source of the commands. The step reads
+as skippable at Stage 1, in its own first line.
+
+`template/AGENTS.md`'s human-gates table ships the forge-settings row,
+with a paragraph below it distinguishing what is the project's to answer
+(who assents) from what is not (that someone must, in session, per set
+of changes) — so a grafted skeleton starts with the gate named.
+
+Divergence: none. No new skill was created; the chapter is
+agent-runnable as written. Neither kit file is on the template mirror
+list, so both are hand-maintained and `make template-sync` does not
+touch them — the mirror test covers the `.writrun/` and workflow copies
+this change also touched, and passes.
