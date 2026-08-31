@@ -74,6 +74,32 @@ commit_message "$(printf 'feat(ci): a family is not a model\n\nCo-Authored-By: C
 check "a bare family name is a category too" 1 \
   "a category rather than a model" -- bash "$CHECK_OBSERVANCE" main...HEAD
 
+# **A commit carries as many trailers as it had helpers, and every one of
+# them is read.** Stopping at the first made the verdict a function of
+# line order: the same two trailers passed with the person on top and
+# faulted with the person below, which is not a rule anyone could obey —
+# and the passing arrangement is the one an agent reaching for a category
+# would write, since its own line goes last.
+setup
+obliging
+commit_message "$(printf 'feat(ci): a person and a category\n\nCo-Authored-By: Jane Doe <jane@example.com>\nCo-Authored-By: an AI <noreply@example.com>')"
+check "a category below a person is still refused" 1 \
+  "a category rather than a model" -- bash "$CHECK_OBSERVANCE" main...HEAD
+
+setup
+obliging
+commit_message "$(printf 'feat(ci): a category and a person\n\nCo-Authored-By: an AI <noreply@example.com>\nCo-Authored-By: Jane Doe <jane@example.com>')"
+check "and so is a category above one" 1 \
+  "a category rather than a model" -- bash "$CHECK_OBSERVANCE" main...HEAD
+
+# The pair that obeys: a person and a model, and no order of the two
+# changes the answer.
+setup
+obliging
+commit_message "$(printf 'feat(ci): a person and a model\n\nCo-Authored-By: Jane Doe <jane@example.com>\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>')"
+check "a person beside a model passes" 0 "agent_coauthor is honoured" \
+  -- bash "$CHECK_OBSERVANCE" main...HEAD
+
 # The machinery's recording commit is not an agent's action, so no
 # conduct flag reaches it — in this direction either.
 setup

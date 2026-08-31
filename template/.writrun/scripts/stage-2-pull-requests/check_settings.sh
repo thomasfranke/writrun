@@ -247,7 +247,7 @@ while IFS= read -r line || [ -n "$line" ]; do
     level)
       fault "'level' was renamed: declare 'stage' (1|2|3) instead — the reader honours the old value meanwhile, but only this check will tell you" ;;
     credit_ai)
-      fault "'credit_ai' was renamed: declare 'agent_coauthor' (true|false) instead — the key names the artifact it obliges, a Co-Authored-By: trailer naming the model, rather than the platform it came from; the value carries over unchanged" ;;
+      fault "'credit_ai' was renamed: declare 'agent_coauthor' (true|false) instead — the key names the artifact it obliges, a Co-Authored-By: trailer naming the model, rather than the platform it came from; the reader honours the old value meanwhile, so it carries over unchanged, but only this check will tell you" ;;
     stage)
       case " $STAGES " in
         *" $val "*) ;;

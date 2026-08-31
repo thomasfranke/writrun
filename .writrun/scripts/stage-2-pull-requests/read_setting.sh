@@ -126,6 +126,18 @@ if [ -z "$raw" ] && [ "$KEY" = "stage" ]; then
   esac
 fi
 
+if [ -z "$raw" ] && [ "$KEY" = "stage_2.agent_coauthor" ]; then
+  # The same bridge, for the same reason (spec-0035): a settings file
+  # written before the rename says `credit_ai`, and reading it as
+  # "absent, so the default" would print `true` for an adopter who wrote
+  # `false` to switch the obligation off — a deliberate opt-out inverted
+  # into an obligation, and check_observance.sh flipped from forbidding
+  # credit to demanding trailers. The value carries over unchanged,
+  # which is what check_settings.sh's rename fault promises;
+  # this is where the promise is kept.
+  raw=$(pair "$SECTION" credit_ai)
+fi
+
 if [ -z "$raw" ]; then
   default_for "$KEY"; echo; exit 0
 fi

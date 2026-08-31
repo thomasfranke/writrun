@@ -303,21 +303,41 @@ true)
     for sha in $authored; do
       [ -n "$sha" ] || continue
       git_read "git log -1 --format=%B ${sha}" log -1 --format='%B' "$sha"
-      trailer=$(printf '%s\n' "$GIT_OUT" | grep -E "$TRAILER" | head -n 1 || true)
-      if [ -z "$trailer" ]; then
+      trailers=$(printf '%s\n' "$GIT_OUT" | grep -E "$TRAILER" || true)
+      if [ -z "$trailers" ]; then
         fault "commit ${sha} carries no Co-Authored-By: trailer while agent_coauthor is true and this pull request declares agent work"
         continue
       fi
-      # The name is what sits between the colon and the address. Folded
-      # to lowercase with spaces as hyphens, so "an AI" and "An  Ai" are
-      # one token against the vocabulary.
-      name=$(printf '%s\n' "$trailer" \
-        | sed -E 's/^[[:space:]]*[Cc]o-[Aa]uthored-[Bb]y:[[:space:]]*//; s/[[:space:]]*<.*$//; s/[[:space:]]+$//' \
-        | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
-      case " $CATEGORIES " in
-        *" $name "*)
-          fault "commit ${sha}'s trailer names '${name}', a category rather than a model — the record has to survive the next model's arrival, so name it: Co-Authored-By: Claude Opus 5 <...>" ;;
-      esac
+      # **Every trailer is read, never only the first.** A commit that
+      # credits a person and a model carries two of these, in whichever
+      # order the writer typed them, and a tripwire that stopped at line
+      # one would pass `Co-Authored-By: AI` for having a human above it
+      # while rejecting the same commit for having the human below —
+      # a verdict decided by line order, which is not a rule anyone
+      # could obey. The obligation is that *a* trailer names a model, so
+      # every trailer is asked, and each category found is named.
+      #
+      # **What a non-category name buys is the tripwire, not a proof.**
+      # Nothing here can tell a model's name from a person's, so a commit
+      # trailered only `Co-Authored-By: Jane Doe` passes — the same blind
+      # spot absence leaves, recorded in spec-0035 rather than papered
+      # over with a list of known model names that would fault the next
+      # model to ship.
+      while IFS= read -r trailer; do
+        [ -n "$trailer" ] || continue
+        # The name is what sits between the colon and the address. Folded
+        # to lowercase with spaces as hyphens, so "an AI" and "An  Ai" are
+        # one token against the vocabulary.
+        name=$(printf '%s\n' "$trailer" \
+          | sed -E 's/^[[:space:]]*[Cc]o-[Aa]uthored-[Bb]y:[[:space:]]*//; s/[[:space:]]*<.*$//; s/[[:space:]]+$//' \
+          | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+        case " $CATEGORIES " in
+          *" $name "*)
+            fault "commit ${sha}'s trailer names '${name}', a category rather than a model — the record has to survive the next model's arrival, so name it: Co-Authored-By: Claude Opus 5 <...>" ;;
+        esac
+      done <<TRAILERS
+${trailers}
+TRAILERS
     done
   fi
   ;;

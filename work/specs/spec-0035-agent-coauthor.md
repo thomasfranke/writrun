@@ -228,6 +228,22 @@ than discovered by whoever hits it.
   The amendment removed a claim; what replaced it had to say why the
   per-commit unit is unavailable, or the next reader re-derives the same
   dead end.
+- **Every trailer is read, not the first one.** A commit that credits a
+  person and a model carries two, and the first version stopped at line
+  one — so `Co-Authored-By: an AI` passed with a human above it and
+  faulted with the human below. A verdict decided by line order is not a
+  rule anyone can obey, and the arrangement that passed is the one an
+  agent reaching for a category would write, since its own line goes
+  last. The obligation is that *a* trailer names a model, so every
+  trailer is asked and each category found is named.
+- **The rename got a reader bridge, not only a checker fault.** Step 2
+  named `check_settings.sh`; the file it refuses is one the reader still
+  has to read meanwhile, exactly as decision 0053's `level` bridge does.
+  Without it a settings file spelling `credit_ai: false` read as absent,
+  the default `true` applied, and a deliberate opt-out inverted into an
+  obligation — `check_observance.sh` flipping from forbidding credit to
+  demanding trailers. The rename fault's own sentence promises the value
+  carries over; this is where the promise is kept.
 
 **What no check reaches, stated plainly.** An agent that credits itself
 nowhere — no body line, no trailers — passes. That is the same blind spot
