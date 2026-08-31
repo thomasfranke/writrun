@@ -35,7 +35,7 @@ keystroke on a particular field. A project may record assent however it
 likes, including by having its tooling write the transition once a person
 has approved the change that carries it. What stays forbidden is the thing
 the gate exists to prevent: a spec reaching `approved`, or a permanent doc
-reaching `main`, with no person having assented to it at all.
+change standing as final, with no person having assented to it at all.
 
 Everything else in the pipeline — creating tasks, drafting specs,
 implementing an approved spec, filling a spec's Outcome — is agent work,

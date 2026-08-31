@@ -63,6 +63,13 @@ cases reality produces are drawn separately — same gates — in
 [`conflicts.md`](conflicts.md) and, at Stage 2, in
 [`review.md`](../stage-2-pull-requests/review.md).
 
+**At Stage 1 the whole pipeline is files.** The docs, the generated
+tasks and specs, the statuses moved by hand — nothing here needs git, a
+forge, or a permission. What flows 2–5 add is the *enforced* form of
+the same gates: branches, pull requests, CI, and the machinery that
+owns the status lines. A Stage 1 adopter passes every gate
+deliberately instead ([statuses](statuses.md), [gates](gates.md)).
+
 ## This folder
 
 True at **every stage**. What the higher stages add lives beside it.
@@ -76,5 +83,5 @@ True at **every stage**. What the higher stages add lives beside it.
 
 | Level | Adds |
 |---|---|
-| [`pull-requests/`](../stage-2-pull-requests/README.md) | branches, pull requests, CI, merge as assent |
+| [`pull-requests/`](../stage-2-pull-requests/README.md) | commits and branches, pull requests, CI, merge as assent, [the status machinery](../stage-2-pull-requests/statuses.md) |
 | [`github-issues/`](../stage-3-github-issues/README.md) | the GitHub Issues mirror |

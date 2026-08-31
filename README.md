@@ -33,9 +33,11 @@ What it does:
   or point an AI agent at it.
 - **The queue mirrors into GitHub Issues.** Optional: every task appears
   as an Issue in real time, labels following the work on their own.
-- **AI drives the commits and PRs.** Branches, conventional commits, PR
-  bodies, checks in the right order — the agent conducts the queue
-  mechanics, whoever writes the code.
+- **AI drives the commits and PRs** — from Stage 2, where git begins.
+  Branches, conventional commits, PR bodies, checks in the right order —
+  the agent conducts the queue mechanics, whoever writes the code.
+  Stage 1 is the entry point and needs none of it: just the docs, the
+  generated queue, and the gates — files alone.
 - **Humans keep four named gates:** the docs, the handoff, the approval,
   the merge.
 
@@ -117,11 +119,13 @@ finished (flow 1), a spec approved by review (flow 2), every merge a
 maintainer performs (flows 2 and 5) — and behind them all, a permanent
 doc never merges on agent approval alone.
 
-The sketch, one line per flow:
+The sketch, one line per flow — flow 1 is Stage 1's whole pipeline;
+flows 2–5 describe the queue riding the forge, which begins at Stage 2:
 
 1. **Authoring** — a human writes a rule in `docs/` and declares it
-   finished (a gate); the agent derives tasks and draft specs, opens the
-   PR, and the mirroring Issue appears on its own.
+   finished (a gate); the agent derives tasks and draft specs — and,
+   from Stage 2, opens the PR, the mirroring Issue appearing on its
+   own.
 2. **Approval** — the maintainer's review is the gate; CI records
    `draft → approved` onto the branch; merge makes the task ready.
 3. **Taking a task** — an agent takes the next by the algorithm; a human
@@ -154,8 +158,8 @@ prefix in its name. The full rules live in
 
 | | Does | Needs |
 |---|---|---|
-| **Stage 1** — tasks and specs | The docs, the queue, the schemas and the four human gates — all as markdown files. Statuses move by hand. | `git`, `bash`, POSIX tools. No forge, no permissions. |
-| **Stage 2** — pull requests | Branches, PRs, the CI checks, merge as assent. The bot owns the queue's status lines on `main`, following every forge event: `backlog → ready → in-progress → in-review → done`, plus `taken_by` naming who has it. | A GitHub repo. Actions workflow permissions: **Read and write**. `main` reachable by the Actions bot — unprotected, or a ruleset with the GitHub Actions app on its bypass list. |
+| **Stage 1** — tasks and specs | Autogen of tasks and specs from the docs: the docs, the queue, the schemas and the four human gates — all as markdown files. Statuses move by hand. | `bash`, POSIX tools. No git, no forge, no permissions. |
+| **Stage 2** — pull requests | Git begins here: commits and branches, PRs, the CI checks, merge as assent. The bot owns the queue's status lines on `main`, following every forge event: `backlog → ready → in-progress → in-review → done`, plus `taken_by` naming who has it. | `git` and a GitHub repo. Actions workflow permissions: **Read and write**. `main` reachable by the Actions bot — unprotected, or a ruleset with the GitHub Actions app on its bypass list. |
 | **Stage 3** — GitHub issues | The Issues mirror: every task is an Issue, its `status:` label following the work in real time. | Issues enabled. The same Read-and-write setting covers the labels. |
 
 ## Repository setup

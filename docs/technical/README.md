@@ -91,9 +91,10 @@ merged: null                       # machinery only: the merge that took the wor
   `--follow`.
 - **Four dates, and who writes each is part of the contract** — the table
   is in [`product/stage-1-tasks-and-specs/statuses.md`](../product/stage-1-tasks-and-specs/statuses.md).
-  `created` and `completed` are a person's, written on the branch;
+  `created` and `completed` are a person's, written by hand;
   `queued` and `merged` are the machinery's, written after the merge each
-  records. A date recording a merge is never hand-written: it would have
+  records — at Stage 1, where no forge exists to record, they stay
+  `null`. A date recording a merge is never hand-written: it would have
   to be typed before the event it describes.
 - **Every date is a UTC timestamp, and always spelled with `Z`** —
   `2026-08-21T09:14:00Z`, never a local time and never an offset like
@@ -225,11 +226,9 @@ only when it holds a documented key — no empty placeholder objects.
 ```json
 {
   "stage": 3,
-  "stage_1": {
-    "auto_commit": true,
-    "credit_ai": true
-  },
   "stage_2": {
+    "auto_commit": true,
+    "credit_ai": true,
     "auto_pr": true,
     "pr_title_style": "conventional"
   }
@@ -239,10 +238,15 @@ only when it holds a documented key — no empty placeholder objects.
 | Key | Section | Values | Read by |
 |---|---|---|---|
 | `stage` | top level | `1` / `2` / `3` | the workflows, and agents |
-| `auto_commit` | `stage_1` | `true` / `false` | agents only |
-| `credit_ai` | `stage_1` | `true` / `false` | agents only |
+| `auto_commit` | `stage_2` | `true` / `false` | agents only |
+| `credit_ai` | `stage_2` | `true` / `false` | agents only |
 | `auto_pr` | `stage_2` | `true` / `false` | agents only |
 | `pr_title_style` | `stage_2` | `conventional` / `bracketed` | agents only |
+
+(Until the machinery catches up with this section, the two conduct
+flags `auto_commit` and `credit_ai` still sit in a `stage_1` section;
+`check_settings.sh` still expects them there, and the derived task
+moves both.)
 
 **Every key is present, always** — the same reason the front matter carries
 `null` fields rather than omitting them: a reader sees the whole
@@ -306,10 +310,13 @@ running auto-accept, autonomous, or any mode in which its harness would
 not ask, still stops: the platform's mode governs what the *harness*
 asks, these flags govern what the *adopter* allowed — a setting that only
 bound an agent already asking would control nothing, and a setting
-controls (below). `auto_commit` sits in `stage_1` because commits exist
-for every adopter; `auto_pr` in `stage_2` because pull requests begin
-there. Neither flag touches the one commit the machinery makes nor any
-workflow-driven write — those are not the agent's actions.
+controls (below). Both flags sit in `stage_2` because that is where the
+actions they govern begin: git starts at Stage 2
+([Adoption](../product/adoption.md#three-stages)), so below it there is
+neither a commit nor a pull request for either flag to gate — Stage 1
+needs nothing but files. Neither flag touches the one commit the
+machinery makes nor any workflow-driven write — those are not the
+agent's actions.
 
 ### `credit_ai`
 
@@ -397,7 +404,7 @@ Deterministic, independent of file layout on disk:
 
 `ready` is stored, and steps 2–4 still agree by construction: the
 machinery derives the flip from the same facts step 4 re-checks
-([statuses](../product/stage-1-tasks-and-specs/statuses.md)). The cross-check is
+([statuses](../product/stage-2-pull-requests/statuses.md)). The cross-check is
 deliberate — a stored status that could silently disagree with the facts
 it summarizes is exactly what the old derive-don't-store rule feared, so
 the algorithm keeps reading both and stops loudly on a mismatch.

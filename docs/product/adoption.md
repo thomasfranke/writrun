@@ -13,9 +13,17 @@ it and changes nothing beneath, and a project declares which it is at in
 
 | Stage | Name | Adds | Needs | Its chapter |
 |---|---|---|---|---|
-| 1 | tasks and specs | the docs and the queue, as markdown | nothing but files | [Stage 1 — tasks and specs](stage-1-tasks-and-specs/README.md) |
-| 2 | pull requests | branches, pull requests, the CI checks, merge as assent | a forge | [Stage 2 — pull requests](stage-2-pull-requests/README.md) |
+| 1 | tasks and specs | the docs and the queue, as markdown — tasks and specs generated from the docs, statuses moved by hand | nothing but files | [Stage 1 — tasks and specs](stage-1-tasks-and-specs/README.md) |
+| 2 | pull requests | commits and branches, pull requests, the CI checks, merge as assent, the status machinery | git + a forge | [Stage 2 — pull requests](stage-2-pull-requests/README.md) |
 | 3 | GitHub issues | the Issues mirror | Issues | [Stage 3 — GitHub issues](stage-3-github-issues/README.md) |
+
+**Git begins at Stage 2.** Stage 1 is the queue as files and nothing
+else: the docs are written, the tasks and specs are generated from
+them, and every status moves by hand. Whether those files also live in
+a repository is the adopter's business — the methodology asks nothing
+of git until the stage that rides it, which is why everything about
+commits (the conventions, the agent-conduct settings) belongs to
+Stage 2's chapter and settings section, not Stage 1's.
 
 **The stage is in the name of everything that belongs to one.** A folder,
 doc chapter, script directory or test suite that exists for exactly one

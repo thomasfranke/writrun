@@ -7,18 +7,18 @@ body is what a human assented to; whatever the reason it must change —
 usually the doc moved ahead of it (a later authoring change edited a
 section it derives from), sometimes the elaboration was simply wrong —
 the amendment goes through `draft` and passes the gate again. The doc
-always wins over the spec. Two places catch the stale case: CI names the
-affected tasks on the authoring PR itself (`writrun check`, queue
-impact), and the selection algorithm's step 7 reads the doc against the
-spec before any code.
+always wins over the spec. Two places catch the stale case: the
+selection algorithm's step 7 reads the doc against the spec before any
+code, and from Stage 2 up CI also names the affected tasks on the
+authoring PR itself (`writrun check`, queue impact).
 
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'background':'#0d1117','primaryColor':'#161b22','primaryTextColor':'#e6edf3','primaryBorderColor':'#8b949e','lineColor':'#ffffff','secondaryColor':'#161b22','tertiaryColor':'#161b22','fontSize':'14px'}}}%%
 flowchart LR
-    A["CI or AGENT<br/>Conflict surfaced<br/>doc moved ahead of spec"]
-    B["AGENT<br/>Amend spec to match doc<br/>spec: approved → draft · open PR"]
-    C["MAINTAINER<br/>Assents to the PR<br/>to the amended content"]
-    D["CI<br/>writrun approve<br/>spec: draft → approved"]
+    A["AGENT or MACHINERY<br/>Conflict surfaced<br/>doc moved ahead of spec"]
+    B["AGENT<br/>Amend spec to match doc<br/>spec: approved → draft"]
+    C["MAINTAINER<br/>Assents to the<br/>amended content"]
+    D["spec: draft → approved<br/>recorded by hand at Stage 1<br/>by CI from Stage 2"]
     E["Net status unchanged<br/>brief current"]
     A --> B --> C --> D --> E
 ```
@@ -62,9 +62,10 @@ queue is what adjusts. Three consequences, in order:
 - **Staleness is caught where it is born.** The authoring change that
   moves a doc ahead of the queue is the moment the conflict comes into
   existence, and the reviewer of that change is already looking at the
-  rule — so the machinery surfaces the overlap there: a change to a
-  permanent doc that non-completed tasks reference names those tasks to
-  its reviewer.
+  rule — so the overlap is surfaced there: a change to a permanent doc
+  that non-completed tasks reference names those tasks to its reviewer —
+  by whoever presents the change at Stage 1, by the machinery from
+  Stage 2 up.
 
 ## Criteria
 
@@ -74,5 +75,5 @@ queue is what adjusts. Three consequences, in order:
 - When an approved spec's content needs to change, the change shall return
   it to draft, and the amended spec shall pass the approval gate again.
 - When a change edits a permanent doc that a non-completed task
-  references, the machinery shall surface the overlap to the change's
-  reviewer.
+  references, the overlap shall be surfaced to the change's reviewer —
+  from Stage 2 up, by the machinery.

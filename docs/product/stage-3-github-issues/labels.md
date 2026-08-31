@@ -2,7 +2,7 @@
 
 **The mirror projects the file, one to one.** Since the authority
 branch now stores every pipeline state the moment its forge event lands
-([statuses](../stage-1-tasks-and-specs/statuses.md)), the `status:` label has
+([statuses](../stage-2-pull-requests/statuses.md)), the `status:` label has
 nothing left to derive: it restates the stored status, plus the one
 state the file cannot hold. One label per state, no state sharing a
 label with another:

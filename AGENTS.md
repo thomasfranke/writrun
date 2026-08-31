@@ -34,7 +34,7 @@ reaches the forge, and the draft is the event the machinery answers by
 writing `in-progress` and your login onto `main` and moving the mirror
 to `status:in-progress`. **Touch the task's status line never**: it has
 one writer, and it is not you
-(docs/product/stage-1-tasks-and-specs/statuses.md). Mark the PR ready
+(docs/product/stage-2-pull-requests/statuses.md). Mark the PR ready
 for review when the work is done — that is what moves the task to
 `in-review`.
 
