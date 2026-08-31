@@ -213,6 +213,13 @@ than discovered by whoever hits it.
   exempt — but the mechanism is different: two parents rather than a
   committer identity. Named here because it is a judgement made during
   implementation, not one the spec settled.
+
+  Its first version was wrong in a way one merge cannot show: the
+  exemption is a membership test over a list, and a newline-separated
+  list behaves exactly like a space-separated one until there are two
+  entries. It passed here and faulted in CI, where the forge stacks its
+  own synthetic merge on the branch's. The case that guards it now builds
+  two.
 - **A value outside the vocabulary judges nothing**, and says so, the way
   the title check already treats a `pr_title_style` it does not know.
   `check_settings.sh` is where that fault is named; faulting honest

@@ -108,6 +108,20 @@ fi
 check "a merge commit owes no trailer" 0 "agent_coauthor is honoured" \
   -- bash "$CHECK_OBSERVANCE" main...HEAD
 
+# **Two of them, because one proves less than it looks.** The exemption
+# is a membership test over a list, and with a single entry a
+# newline-separated list and a space-separated one behave identically —
+# which is how a broken version of this passed here and faulted in CI,
+# where the forge builds a synthetic merge of its own on top.
+git checkout -q -b other main
+printf 'other work\n' > other.txt
+git add -A >/dev/null
+git commit -q -m "$(printf 'feat(ci): more work on the base\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>')"
+git checkout -q feature
+git merge --no-ff other -m "Merge other into feature" >/dev/null
+check "and so does the second one in the same range" 0 \
+  "agent_coauthor is honoured" -- bash "$CHECK_OBSERVANCE" main...HEAD
+
 # A value the vocabulary does not hold is check_settings.sh's to name.
 setup
 settings_file <<'JSON'

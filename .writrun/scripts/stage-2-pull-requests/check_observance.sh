@@ -236,8 +236,15 @@ the-model claude gpt copilot"
   # direction that judged them would fault every branch that ever caught
   # up with its base. Same reason as the recording commit's exemption:
   # the flag reaches what an agent *wrote*.
+  #
+  # Space-separated, never newline-separated: the membership test below is
+  # a `case` glob over `" $merges "`, and a newline between two ids is not
+  # the space the pattern looks for. With one merge in the range the two
+  # forms are indistinguishable, which is exactly how a broken version of
+  # this passed locally and faulted in CI, where the forge's own synthetic
+  # merge makes a second one.
   merges=$(printf '%s\n' "$GIT_OUT" \
-    | awk -F'	' 'NF >= 3 && $3 ~ / / { print $1 }' || true)
+    | awk -F'	' 'NF >= 3 && $3 ~ / / { print $1 }' | tr '\n' ' ' || true)
 
 body="${PR_BODY:-}"
 
