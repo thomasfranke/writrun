@@ -2,7 +2,7 @@
 . "$(dirname "$0")/../../pipeline_lib.sh"
 
 setup
-bash "$NEW_SH" task "Flagged" --priority low \
+bash "$NEW_SH" task "Flagged" --origin rule --priority low \
   --depends-on task-001,task-002 \
   --doc-ref product/chapter.md#scope \
   --milestone v0.1 >/dev/null 2>&1

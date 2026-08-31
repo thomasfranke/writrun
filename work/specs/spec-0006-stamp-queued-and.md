@@ -7,6 +7,8 @@ created: 2026-08-28T00:00:00Z
 
 # spec-0006 — Stamp queued and merged
 
+**References:** [task-0009](../tasks/task-0009-stamp-queued-and.md)
+
 ## Scope
 
 `queued` and `merged` become part of the generated shape and the

@@ -24,7 +24,7 @@ origin: {{task_ref}}
 
 _(fill after execution)_
 EOF
-bash "$NEW_SH" task "The task" >/dev/null 2>&1
+bash "$NEW_SH" task "The task" --origin rule >/dev/null 2>&1
 bash "$NEW_SH" spec task-001 "The spec" >/dev/null 2>&1
 fm=$(sed -n '2,/^---$/p' work/specs/spec-0001-the-spec.md)
 if printf '%s\n' "$fm" | grep -q '^origin: task-0001$' &&

@@ -1,11 +1,13 @@
 ---
 id: spec-0032
 task_ref: task-0022
-status: approved
+status: implemented
 created: 2026-08-31T03:44:32Z
 ---
 
 # spec-0032 — The machinery speaks reporting
+
+**References:** [task-0022](../tasks/task-0022-queue-vocabulary.md)
 
 - **Goal:** the third kind of change is called **reporting**
   everywhere the machinery speaks, and its branch prefix is
@@ -78,4 +80,13 @@ files, and the suite green.
 
 ## Outcome
 
-_(fill after execution)_
+Built as specified, and it was as small as it looked.
+`.writrun/conventions/branches.md` names `report/short-name` —
+reporting, same definition, same deliberate absence of a task id;
+`prs.md` says "Authoring and reporting PRs" in both places; the kit's
+`WRITRUN.md` says work found mid-flight enters as a `report/` PR. The
+sweep over `.writrun/skills/` and `.github/workflows/` found one hit,
+and it was the generic verb — "work that justifies tracking", principle
+6's sense — so it stays, exactly as the scope said. No `queue/` remains
+as a branch prefix in any file an adopter receives. No divergences; no
+behaviour moved, and the template mirror is the check.

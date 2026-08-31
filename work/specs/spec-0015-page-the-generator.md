@@ -7,6 +7,8 @@ created: 2026-08-28T00:00:00Z
 
 # spec-0015 — Page the generator's forge scan
 
+**References:** [task-0018](../tasks/task-0018-generator-truncates.md)
+
 ## Scope
 
 `new.sh`'s `forge_scan`, and the reasoning recorded around it.

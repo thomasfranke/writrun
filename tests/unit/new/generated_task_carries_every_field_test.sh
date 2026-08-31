@@ -2,7 +2,7 @@
 . "$(dirname "$0")/../../pipeline_lib.sh"
 
 setup
-bash "$NEW_SH" task "A tracked thing" --priority high >/dev/null 2>&1
+bash "$NEW_SH" task "A tracked thing" --origin rule --priority high >/dev/null 2>&1
 if [ -f work/tasks/task-0001-a-tracked-thing.md ] &&
    grep -q '^status: backlog$'      work/tasks/task-0001-a-tracked-thing.md &&
    grep -q '^blocked_reason: null$' work/tasks/task-0001-a-tracked-thing.md &&

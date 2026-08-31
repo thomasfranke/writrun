@@ -12,5 +12,9 @@ check "a closed mirror is not relabelled" 0 "is closed — no label is written" 
   -- bash "$REDERIVE_LABELS" o/r work/specs/spec-0003.md
 forge_not_told "nothing is written to it" \
   "PUT repos/o/r/issues/31/labels"
+# Declaring a label is a write to the repository too, so a pass that
+# writes nothing must not declare one either.
+forge_not_told "and no origin label is declared for it" \
+  "POST repos/o/r/labels -f name=origin:rule"
 
 finish

@@ -14,7 +14,7 @@ owner: "quoted value"
 # {{title}}
 EOF
 check "a non-canonical extension is refused" 3 "is quoted" \
-  -- bash "$NEW_SH" task "Quoted"
+  -- bash "$NEW_SH" task "Quoted" --origin rule
 if ! ls work/tasks/task-*.md >/dev/null 2>&1; then
   echo "ok    the refusal leaves no half-written file"; pass=$((pass + 1))
 else

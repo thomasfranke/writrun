@@ -25,7 +25,7 @@ Happy path (drawn in full, indexed from WritRun's
 
 Special flows: a spec that must change after approval goes back through
 `draft` and is re-approved (the doc always wins over a stale spec); work
-discovered mid-flight enters as a `queue/` PR adding only task + spec;
+discovered mid-flight enters as a `report/` PR adding only task + spec;
 `blocked` needs a `blocked_reason` and a human to lift it; a PR closed
 unmerged releases everything — nothing was ever reserved.
 

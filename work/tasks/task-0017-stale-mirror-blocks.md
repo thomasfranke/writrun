@@ -5,6 +5,7 @@ blocked_reason: null
 taken_by: null
 spec_ref: [spec-0014]
 doc_ref: product/stage-3-github-issues/README.md
+origin: report
 priority: medium
 depends_on: []
 milestone: null
@@ -15,6 +16,8 @@ merged: 2026-08-29T02:46:57Z
 ---
 
 # Stop a stale mirror from blocking a task's own
+
+**References:** [product/stage-3-github-issues/README.md](../../docs/product/stage-3-github-issues/README.md) · [spec-0014](../specs/spec-0014-adopt-unowned-mirror.md)
 
 A mirror belongs to the pull request that introduced it. When the
 machinery finds a mirror for a task but the current pull request does not

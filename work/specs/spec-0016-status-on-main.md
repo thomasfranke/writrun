@@ -7,6 +7,8 @@ created: 2026-08-30T02:58:05Z
 
 # spec-0016 — Write task status onto main from pull request events
 
+**References:** [task-0019](../tasks/task-0019-status-from-forge.md)
+
 - **Goal:** the machinery commits every working-status transition of a
   task onto the base branch as its forge event lands — `main` is the
   complete mirror, as current as the forge can make it — through a

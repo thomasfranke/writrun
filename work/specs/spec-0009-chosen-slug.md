@@ -7,6 +7,8 @@ created: 2026-08-28T00:00:00Z
 
 # spec-0009 — Take the subject slug as an argument
 
+**References:** [task-0012](../tasks/task-0012-chosen-slug.md)
+
 ## Scope
 
 `new.sh` accepts the filename's subject slug instead of only deriving

@@ -94,9 +94,6 @@ merged: null                       # machinery only: the merge that took the wor
   generator writes it at creation and nothing rewrites it later. At
   Stage 2+ it mirrors the creating PR's branch kind (`docs/` vs
   `report/`); at Stage 1 it is the only record of the difference.
-  (Until the machinery catches up, existing tasks carry no `origin`
-  line and the generator does not write one; the derived task adds the
-  field and backfills the queue.)
 - **References are navigable, not just resolvable.** The front matter
   stays plain strings — it is the machine contract, and the line-based
   readers see nothing else — but the generated body carries every

@@ -7,6 +7,8 @@ created: 2026-08-28T00:00:00Z
 
 # spec-0013 — Stop reporting green when git failed
 
+**References:** [task-0016](../tasks/task-0016-green-on-git-failure.md)
+
 ## Scope
 
 A script that could not read its input says so and exits non-zero, instead

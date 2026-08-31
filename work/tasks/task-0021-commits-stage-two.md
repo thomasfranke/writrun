@@ -5,6 +5,7 @@ blocked_reason: null
 taken_by: thomasfranke
 spec_ref: [spec-0026, spec-0027, spec-0029, spec-0030, spec-0033, spec-0034]
 doc_ref: product/adoption.md#three-stages
+origin: rule
 priority: medium
 depends_on: []
 milestone: null
@@ -15,6 +16,8 @@ merged: 2026-08-31T11:30:53Z
 ---
 
 # Catch the machinery up with the restaged docs
+
+**References:** [product/adoption.md#three-stages](../../docs/product/adoption.md#three-stages) · [spec-0026](../specs/spec-0026-conduct-flags-home.md) · [spec-0027](../specs/spec-0027-statuses-pointers.md) · [spec-0029](../specs/spec-0029-ruleset-bot-bypass.md) · [spec-0030](../specs/spec-0030-kit-forge-setup.md) · [spec-0033](../specs/spec-0033-declaration-keys.md) · [spec-0034](../specs/spec-0034-observance-checks.md)
 
 The docs restaged the methodology and the machinery has not caught up.
 Git begins at Stage 2 now — Stage 1 is autogen of tasks and specs from

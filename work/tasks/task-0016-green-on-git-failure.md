@@ -5,6 +5,7 @@ blocked_reason: null
 taken_by: null
 spec_ref: [spec-0013]
 doc_ref: product/stage-1-tasks-and-specs/gates.md
+origin: report
 priority: high
 depends_on: []
 milestone: null
@@ -15,6 +16,8 @@ merged: 2026-08-29T20:55:56Z
 ---
 
 # Stop reporting green when git failed
+
+**References:** [product/stage-1-tasks-and-specs/gates.md](../../docs/product/stage-1-tasks-and-specs/gates.md) · [spec-0013](../specs/spec-0013-green-on-git-failure.md)
 
 Five scripts absorb a failed `git diff` into an empty result and exit 0.
 The output is indistinguishable from an honest "nothing matched":

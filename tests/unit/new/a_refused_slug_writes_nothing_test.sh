@@ -6,21 +6,21 @@
 setup
 
 check "an out-of-contract slug is refused" 3 "outside the filename contract" \
-  -- bash "$NEW_SH" task "Mine" --slug Bad_Slug
+  -- bash "$NEW_SH" task "Mine" --origin rule --slug Bad_Slug
 check "and so is a leading hyphen" 3 "outside the filename contract" \
-  -- bash "$NEW_SH" task "Mine" --slug -leading
+  -- bash "$NEW_SH" task "Mine" --origin rule --slug -leading
 check "and a trailing one" 3 "outside the filename contract" \
-  -- bash "$NEW_SH" task "Mine" --slug trailing-
+  -- bash "$NEW_SH" task "Mine" --origin rule --slug trailing-
 
 # `task-0004-2-of-3.md` reads as id 4 to every prefix resolver here.
 check "a slug that reads as the id is refused, and says why" 3 \
   "reads as a continuation of the id" \
-  -- bash "$NEW_SH" task "Mine" --slug 2-of-3
+  -- bash "$NEW_SH" task "Mine" --origin rule --slug 2-of-3
 
 # Empty is refused, not treated as absent: it was typed, so it was meant.
 check "an empty slug is refused, not treated as absent" 3 \
   "omit the flag to derive one" \
-  -- bash "$NEW_SH" task "Mine" --slug ""
+  -- bash "$NEW_SH" task "Mine" --origin rule --slug ""
 
 # The spec subcommand refuses on the same terms, before its task is even
 # resolved.

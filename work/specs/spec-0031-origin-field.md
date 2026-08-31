@@ -1,11 +1,13 @@
 ---
 id: spec-0031
 task_ref: task-0022
-status: approved
+status: implemented
 created: 2026-08-31T03:44:31Z
 ---
 
 # spec-0031 — Tasks carry their origin
+
+**References:** [task-0022](../tasks/task-0022-queue-vocabulary.md)
 
 - **Goal:** every task records how it came to exist — `origin: rule`
   (derived from an authored rule declared finished) or
@@ -99,4 +101,36 @@ the backfilled queue; template-mirror test green.
 
 ## Outcome
 
-_(fill after execution)_
+Built as specified. `new.sh task` gained `--origin rule|report`, with
+no default: an unstated or invented value refuses at exit 3, naming the
+flag, before anything is written. The field lands between `doc_ref` and
+`priority`, exactly as the schema draws it, and joins `TASK_CONTRACT`
+so a project template cannot redefine it.
+`check_front_matter.sh` requires it on every task and accepts only the
+two values. The mirror projects it: `mirror_issues.sh` labels a new
+mirror `origin:rule` (`#0075ca`) or `origin:report` (`#d73a4a`) and
+re-states the label in every relabelling PUT it makes, since each
+replaces the whole set; `rederive_labels.sh` adds it from the stored
+field when a mirror does not already wear one, and never rewrites one
+that does.
+
+Backfill: all 19 tasks gained the line, `rule` for the sixteen derived
+from an authored rule and `report` for task-0016, task-0017 and
+task-0018 — the three reported machinery defects. The catch-up note is
+gone from `technical/README.md#task-schema`. Divergences: two, both
+consequences rather than changes of plan. `issue_row_of` now carries
+the mirror's label list so the origin label can survive a rewrite, and
+a label the mirror already wears wins over the diff's field — the field
+is written once, so a disagreement means the diff is the stale side.
+Every existing `new.sh task` call in the suite gained `--origin rule`,
+which is what "no default" costs.
+
+Review, before merge, found a third consequence, and it is the same
+kind: declaring `origin:rule` / `origin:report` in the repository ran
+ahead of the paths that refuse to touch a mirror, so a run that logged
+"not touching it" — and a pull request closed without merging — still
+left a label behind that nothing wore. Declaring moved to the write
+itself: in `mirror_issues.sh` a `put_status_labels` helper now owns the
+three relabelling PUTs and declares the label as it writes them, and in
+`rederive_labels.sh` the declaration sits past the closed-mirror
+return. Two mirror cases cover it.

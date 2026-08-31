@@ -1,5 +1,7 @@
 # {{id}} — {{title}}
 
+{{references}}
+
 - **Goal:** TODO
 
 ## Scope

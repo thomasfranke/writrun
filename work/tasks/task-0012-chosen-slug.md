@@ -5,6 +5,7 @@ blocked_reason: null
 taken_by: null
 spec_ref: [spec-0009]
 doc_ref: technical/README.md#task-schema
+origin: rule
 priority: low
 depends_on: []
 milestone: null
@@ -15,6 +16,8 @@ merged: 2026-08-29T17:24:03Z
 ---
 
 # Take the subject slug as an argument
+
+**References:** [technical/README.md#task-schema](../../docs/technical/README.md#task-schema) · [spec-0009](../specs/spec-0009-chosen-slug.md)
 
 The convention now says whoever creates a queue file chooses its subject
 slug, and that deriving it from the title is only the fallback. The

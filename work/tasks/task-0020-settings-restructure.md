@@ -5,6 +5,7 @@ blocked_reason: null
 taken_by: thomasfranke
 spec_ref: [spec-0022, spec-0023, spec-0024, spec-0025]
 doc_ref: technical/README.md#settings
+origin: rule
 priority: medium
 depends_on: []
 milestone: null
@@ -15,6 +16,8 @@ merged: 2026-08-31T02:33:23Z
 ---
 
 # Settings live at WritRun's root, sectioned by stage, and govern the agent's git actions
+
+**References:** [technical/README.md#settings](../../docs/technical/README.md#settings) · [spec-0022](../specs/spec-0022-settings-at-root.md) · [spec-0023](../specs/spec-0023-stage-sections.md) · [spec-0024](../specs/spec-0024-ai-action-flags.md) · [spec-0025](../specs/spec-0025-ai-credit-flag.md)
 
 The settings file is where an adopter's choices live, and three things
 about it no longer match what the docs now state. It sits in a corner of

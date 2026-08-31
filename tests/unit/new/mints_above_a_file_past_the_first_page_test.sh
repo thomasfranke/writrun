@@ -10,7 +10,7 @@ stub_forge
 forge_pr_filler 9 104
 forge_pr 9 added work/tasks/task-0042-theirs.md
 check "the mint reads past the first page" 0 "every open pull request" \
-  -- bash "$NEW_SH" task "Mine"
+  -- bash "$NEW_SH" task "Mine" --origin rule
 if [ -f work/tasks/task-0043-mine.md ]; then
   echo "ok    and lands above an id claimed on a later page"; pass=$((pass + 1))
 else

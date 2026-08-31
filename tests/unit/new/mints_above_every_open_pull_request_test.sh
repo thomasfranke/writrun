@@ -11,7 +11,7 @@ forge_pr 9 added work/tasks/task-0020-theirs.md
 forge_pr 9 added work/specs/spec-0031-theirs.md
 forge_pr 12 modified work/tasks/task-0004-theirs.md
 check "every open pull request is folded in" 0 "every open pull request" \
-  -- bash "$NEW_SH" task "Mine"
+  -- bash "$NEW_SH" task "Mine" --origin rule
 if [ -f work/tasks/task-0021-mine.md ]; then
   echo "ok    and the mint clears the highest of them"; pass=$((pass + 1))
 else

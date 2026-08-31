@@ -5,6 +5,7 @@ blocked_reason: null
 taken_by: null
 spec_ref: [spec-0016, spec-0017, spec-0018, spec-0019, spec-0020, spec-0021]
 doc_ref: product/stage-1-tasks-and-specs/statuses.md#criteria
+origin: rule
 priority: high
 depends_on: []
 milestone: null
@@ -15,6 +16,8 @@ merged: 2026-08-30T13:07:01Z
 ---
 
 # Task status on main is written by the machinery, from forge events
+
+**References:** [product/stage-1-tasks-and-specs/statuses.md#criteria](../../docs/product/stage-1-tasks-and-specs/statuses.md#criteria) · [spec-0016](../specs/spec-0016-status-on-main.md) · [spec-0017](../specs/spec-0017-guard-status-line.md) · [spec-0018](../specs/spec-0018-stage-naming.md) · [spec-0019](../specs/spec-0019-taken-by-field.md) · [spec-0020](../specs/spec-0020-dropped-status.md) · [spec-0021](../specs/spec-0021-self-healing-readiness.md)
 
 `main` is the complete mirror of the queue — that is the rule the docs
 now state, and the system has not caught up. Today a task's

@@ -7,6 +7,8 @@ created: 2026-08-30T13:16:08Z
 
 # spec-0023 — The settings file is sectioned by stage
 
+**References:** [task-0020](../tasks/task-0020-settings-restructure.md)
+
 - **Goal:** the settings file carries one top-level `stage` and one
   section per stage (`"stage_1"`, `"stage_2"`) holding the keys that
   stage's readers act on — the same rule that put the stage on folder

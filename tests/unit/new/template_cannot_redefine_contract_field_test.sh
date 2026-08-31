@@ -15,7 +15,7 @@ status: done
 EOF
 check "a template redefining a contract field is refused" 3 \
   "redefines the contract field 'status'" \
-  -- bash "$NEW_SH" task "Sneaky"
+  -- bash "$NEW_SH" task "Sneaky" --origin rule
 if ! ls work/tasks/task-*.md >/dev/null 2>&1; then
   echo "ok    the refusal leaves no half-written file"; pass=$((pass + 1))
 else

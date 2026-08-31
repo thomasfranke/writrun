@@ -7,6 +7,8 @@ created: 2026-08-31T04:52:10Z
 
 # spec-0033 — The adopter's declarations get keys
 
+**References:** [task-0021](../tasks/task-0021-commits-stage-two.md)
+
 - **Goal:** the three variants Adoption leaves open and orders declared
   — spec threshold, decisions shape, product layout — stop living in
   prose and get their keys: `stage_1.spec_required`

@@ -7,6 +7,8 @@ created: 2026-08-31T03:18:55Z
 
 # spec-0030 — The adoption kit carries the Stage 2 setup
 
+**References:** [task-0021](../tasks/task-0021-commits-stage-two.md)
+
 - **Goal:** an adopter's agent finds the Stage 2 forge setup — the
   settings, the commands, and above all the owner-assent gate — inside
   the kit it was installed from, not only in this repository's docs.

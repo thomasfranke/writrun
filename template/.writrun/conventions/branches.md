@@ -13,9 +13,9 @@ around it; WritRun neither knows nor cares what happens beyond it.
 ## Naming
 
 - `docs/short-name` — authoring (flow 1).
-- `queue/short-name` — tracking: a change that only adds tasks and specs
+- `report/short-name` — reporting: a change that only adds tasks and specs
   for work discovered mid-flight, touching no permanent doc. Deliberately
-  carries no `task-NNNN` id at the start — a tracking PR records work, it
+  carries no `task-NNNN` id at the start — a reporting PR records work, it
   is not working it, and must not read as in flight.
 - `task/NNNN-short-name` — implementing (flows 3–5), whether the task has
   one spec, several, or none. The `task-NNNN` id at the start of the name

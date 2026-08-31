@@ -2,7 +2,8 @@
 # new.sh — scaffolds a schema-correct task or spec file.
 #
 # Usage:
-#   new.sh task "<title>" [--slug words-here] \
+#   new.sh task "<title>" --origin rule|report \
+#                          [--slug words-here] \
 #                          [--priority high|medium|low] \
 #                          [--depends-on task-nnn[,task-mmm...]] \
 #                          [--doc-ref path/to/doc.md#anchor] \
@@ -37,7 +38,18 @@
 #   1. .writrun/conventions/templates/{task,spec}.md   — the project customized
 #   2. .writrun/templates/{task,spec}.md      — WritRun's shipped default
 #   3. the skeleton built into this script    — safety: works anywhere
-# The template's {{id}}, {{title}}, {{task_ref}} are substituted.
+# The template's {{id}}, {{title}}, {{task_ref}} and {{references}} are
+# substituted.
+#
+# **References are navigable, not just resolvable**
+# (docs/technical/README.md#task-schema). The front matter keeps its
+# references as plain strings — it is the machine contract, and every
+# reader here is line-based — while the generated *body* carries the same
+# references as relative markdown links: a task's body links its
+# `doc_ref` and each spec in `spec_ref`, a spec's body links its
+# `task_ref`, and the `spec_ref` append below adds the body link in the
+# same edit. A template that drops {{references}} simply gets no links —
+# taste, not contract.
 #
 # The *contract* front matter is always generated here, never templated —
 # the machinery reads those fields, and a template that reshaped them
@@ -227,16 +239,40 @@ queue_file() {
   return 0
 }
 
-# render_template <file> <id> <title> <task_ref> — prints the template
-# with {{id}}, {{title}}, {{task_ref}} substituted. Pure parameter
-# expansion: titles may carry any character sed would trip on.
+# render_template <file> <id> <title> <task_ref> <references> — prints
+# the template with {{id}}, {{title}}, {{task_ref}} and {{references}}
+# substituted. Pure parameter expansion: titles may carry any character
+# sed would trip on.
+#
+# An empty <references> takes the placeholder's whole line with it,
+# blank separator included: a task with no `doc_ref` and no spec has
+# nothing to link, and an empty References heading is noise.
 render_template() {
   local content
   content=$(<"$1")
   content=${content//'{{id}}'/$2}
   content=${content//'{{title}}'/$3}
   content=${content//'{{task_ref}}'/$4}
+  if [[ -n "${5:-}" ]]; then
+    content=${content//'{{references}}'/$5}
+  else
+    content=${content//'{{references}}'$'\n\n'/}
+    content=${content//'{{references}}'/}
+  fi
   printf '%s\n' "$content"
+}
+
+# refs_line <link>... — the body's References line, or nothing when there
+# is nothing to link. One line, so the `spec_ref` append has one place to
+# add to.
+refs_line() {
+  local out="" l
+  for l in "$@"; do
+    [ -n "$l" ] || continue
+    if [ -z "$out" ]; then out="$l"; else out="$out · $l"; fi
+  done
+  [ -n "$out" ] || return 0
+  printf '**References:** %s' "$out"
 }
 
 # body_template_for <task|spec> — the project's template wins, then the
@@ -250,7 +286,7 @@ body_template_for() {
 }
 
 # The contract fields — the script's to write, never a template's.
-TASK_CONTRACT="id status blocked_reason taken_by spec_ref doc_ref priority depends_on milestone created completed"
+TASK_CONTRACT="id status blocked_reason taken_by spec_ref doc_ref origin priority depends_on milestone created completed"
 SPEC_CONTRACT="id task_ref status created"
 
 # template_extensions — stdin: a rendered template. Prints the lines of
@@ -316,7 +352,7 @@ EOF
 }
 
 usage() {
-  echo "Usage: new.sh task \"<title>\" [--slug words-here] [--priority high|medium|low] [--depends-on task-nnn,...] [--doc-ref path#anchor] [--milestone name]" >&2
+  echo "Usage: new.sh task \"<title>\" --origin rule|report [--slug words-here] [--priority high|medium|low] [--depends-on task-nnn,...] [--doc-ref path#anchor] [--milestone name]" >&2
   echo "       new.sh spec task-nnn \"<title>\" [--slug words-here]" >&2
   exit 3
 }
@@ -333,6 +369,7 @@ case "$cmd" in
     priority=medium
     depends_on=""
     doc_ref=null
+    origin=""
     milestone=null
     slug_given=""
     while [[ $# -gt 0 ]]; do
@@ -341,6 +378,7 @@ case "$cmd" in
         --priority) priority="$2"; shift 2 ;;
         --depends-on) depends_on="$2"; shift 2 ;;
         --doc-ref) doc_ref="$2"; shift 2 ;;
+        --origin) origin="${2-}"; shift 2 ;;
         --milestone) milestone="$2"; shift 2 ;;
         *) echo "Unknown flag: $1" >&2; exit 3 ;;
       esac
@@ -349,6 +387,17 @@ case "$cmd" in
     case "$priority" in
       high|medium|low) ;;
       *) echo "Invalid --priority '$priority' — expected high, medium, or low" >&2; exit 3 ;;
+    esac
+
+    # No default, deliberately. `origin` is a fact about how the task came
+    # to exist, written once and never rewritten — and a default would
+    # record one of the two silently, for whichever kind of change happened
+    # not to say. A wrong fact nobody typed is the failure the field exists
+    # to prevent, so an unstated origin refuses (docs/technical/README.md#task-schema).
+    case "$origin" in
+      rule|report) ;;
+      "") echo "--origin is required — 'rule' for a task derived from an authored rule, 'report' for one born from a report" >&2; exit 3 ;;
+      *) echo "Invalid --origin '$origin' — expected rule or report" >&2; exit 3 ;;
     esac
 
     # Validate before the forge is consulted: a refusal must cost nothing
@@ -368,13 +417,24 @@ case "$cmd" in
       depends_list="[]"
     fi
 
+    # A task's body links its doc_ref, resolved from work/tasks/. The
+    # front-matter value stays exactly as typed — relative to docs/ —
+    # because that is what the machinery reads; the link is the reader's
+    # half of the same fact. `spec_ref` is empty at creation, so the
+    # spec links arrive through the append below, never here.
+    doc_link=""
+    if [[ "$doc_ref" != "null" ]]; then
+      doc_link="[${doc_ref}](../../docs/${doc_ref})"
+    fi
+    references=$(refs_line "$doc_link")
+
     # Resolve and validate the template before writing anything — a
     # refusal must leave no half-written file behind.
     tpl=$(body_template_for task)
     tpl_ext=""
     tpl_body=""
     if [[ -n "$tpl" ]]; then
-      rendered=$(render_template "$tpl" "$id" "$title" "")
+      rendered=$(render_template "$tpl" "$id" "$title" "" "$references")
       tpl_ext=$(printf '%s\n' "$rendered" | template_extensions)
       tpl_body=$(printf '%s\n' "$rendered" | template_body)
       validate_extensions "$tpl" "$tpl_ext" "$TASK_CONTRACT"
@@ -389,6 +449,7 @@ blocked_reason: null
 taken_by: null
 spec_ref: []
 doc_ref: ${doc_ref}
+origin: ${origin}
 priority: ${priority}
 depends_on: ${depends_list}
 milestone: ${milestone}
@@ -402,9 +463,9 @@ EOF
       if [[ -n "$tpl" ]]; then
         printf '%s\n' "$tpl_body"
       else
+        printf '# %s\n\n' "$title"
+        [[ -n "$references" ]] && printf '%s\n\n' "$references"
         cat <<EOF
-# ${title}
-
 TODO: what to do, and why it matters. No technical detail — that belongs
 in the spec.
 EOF
@@ -443,6 +504,12 @@ EOF
     file="work/specs/${id}${slug:+-$slug}.md"
     [[ -e "$file" ]] && { echo "$file already exists" >&2; exit 3; }
 
+    # A spec's body links back to its task, resolved from work/specs/.
+    # The link targets the filename, which never changes — identity is
+    # never order, and a retitled task is never renamed — so no link
+    # here ever needs maintaining.
+    references=$(refs_line "[${task_id}](../tasks/$(basename "$task_file"))")
+
     # Resolve and validate the template before writing anything — a
     # refusal must leave no half-written file behind.
     tpl=$(body_template_for spec)
@@ -459,7 +526,7 @@ EOF
           exit 3
         fi
       done
-      rendered=$(render_template "$tpl" "$id" "$title" "$task_id")
+      rendered=$(render_template "$tpl" "$id" "$title" "$task_id" "$references")
       tpl_ext=$(printf '%s\n' "$rendered" | template_extensions)
       tpl_body=$(printf '%s\n' "$rendered" | template_body)
       validate_extensions "$tpl" "$tpl_ext" "$SPEC_CONTRACT"
@@ -482,9 +549,11 @@ EOF
     else
       skip_default_body=0
     fi
+    if [[ "$skip_default_body" -eq 0 ]]; then
+      printf '# %s — %s\n\n' "$id" "$title" >> "$file"
+      [[ -n "$references" ]] && printf '%s\n\n' "$references" >> "$file"
+    fi
     [[ "$skip_default_body" -eq 1 ]] || cat >> "$file" <<EOF
-# ${id} — ${title}
-
 - **Goal:** TODO
 
 ## Scope
@@ -538,6 +607,52 @@ EOF
       }
       { print }
     ' "$task_file" > "${task_file}.tmp" && mv "${task_file}.tmp" "$task_file"
+
+    # ...and the matching body link, in the same run: front matter and
+    # body must never disagree about which specs a task has. An existing
+    # References line gains the link; a task that had nothing to link
+    # gets the line — under the body's first heading, whatever its
+    # level, or straight after the front matter when the body opens
+    # without one. That last fallback belongs to the invariant: an
+    # insert that finds no anchor must not quietly not happen, and a
+    # body shaped unlike the ones we imagined is still a body the front
+    # matter has to agree with.
+    #
+    # Unless the project asked for no links at all. A task template
+    # without {{references}} opted its bodies out — taste, not contract,
+    # as the header says — and an opt-out that lasted until the task's
+    # first spec would be no opt-out. The front matter carries the spec
+    # either way: that half is the machine contract, and never the
+    # template's to shape.
+    task_tpl=$(body_template_for task)
+    body_links=1
+    if [[ -n "$task_tpl" ]] && ! grep -q '{{references}}' "$task_tpl"; then
+      body_links=0
+    fi
+    spec_link="[${id}](../specs/$(basename "$file"))"
+    if [[ "$body_links" -eq 1 ]]; then
+      if grep -q '^\*\*References:\*\* ' "$task_file"; then
+        awk -v link="$spec_link" '
+          !done && /^\*\*References:\*\* / { print $0 " · " link; done = 1; next }
+          { print }
+        ' "$task_file" > "${task_file}.tmp"
+      elif grep -qE '^#+ ' "$task_file"; then
+        awk -v link="$spec_link" '
+          !done && /^#+ / { print; print ""; print "**References:** " link; done = 1; next }
+          { print }
+        ' "$task_file" > "${task_file}.tmp"
+      else
+        awk -v link="$spec_link" '
+          fm < 2 && /^---$/ {
+            fm++; print
+            if (fm == 2) { print ""; print "**References:** " link }
+            next
+          }
+          { print }
+        ' "$task_file" > "${task_file}.tmp"
+      fi
+      mv "${task_file}.tmp" "$task_file"
+    fi
 
     echo "Created ${file} (${id}), appended to ${task_file}'s spec_ref"
     mint_report

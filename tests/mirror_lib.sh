@@ -104,8 +104,8 @@ pr_patch() {
   printf '%s\t%s\t%s\n' "$1" "$2" "$(b64)" >> "$FAKE_GH_DIR/pr_files"
 }
 
-# added_task <id> <title> [spec-refs-csv] — a schema-correct task file
-# entering the diff.
+# added_task <id> <title> [spec-refs-csv] [origin] — a schema-correct
+# task file entering the diff.
 added_task() {
   pr_file added "work/tasks/$1.md" <<EOF
 ---
@@ -114,6 +114,7 @@ status: pending
 blocked_reason: null
 spec_ref: [${3:-}]
 doc_ref: null
+origin: ${4:-rule}
 priority: medium
 depends_on: []
 milestone: null
@@ -157,9 +158,9 @@ created: 2026-08-23T00:00:00Z
 EOF
 }
 
-# base_task <id> <status> [spec-refs-csv] — a task as it already exists
-# on the base branch, for the readers that ask the queue on disk rather
-# than a pull request's diff.
+# base_task <id> <status> [spec-refs-csv] [origin] — a task as it already
+# exists on the base branch, for the readers that ask the queue on disk
+# rather than a pull request's diff.
 base_task() {
   cat > "work/tasks/$1.md" <<EOF
 ---
@@ -168,6 +169,7 @@ status: $2
 blocked_reason: null
 spec_ref: [${3:-}]
 doc_ref: null
+origin: ${4:-rule}
 priority: medium
 depends_on: []
 milestone: null

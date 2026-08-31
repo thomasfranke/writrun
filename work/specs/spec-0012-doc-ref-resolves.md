@@ -7,6 +7,8 @@ created: 2026-08-28T00:00:00Z
 
 # spec-0012 — Check that a doc_ref resolves
 
+**References:** [task-0015](../tasks/task-0015-doc-ref-resolves.md)
+
 ## Scope
 
 `check_front_matter.sh` gains one rule: a non-null `doc_ref` names a file

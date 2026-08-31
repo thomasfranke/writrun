@@ -32,6 +32,8 @@
 #   - `doc_ref` is null or a path under docs/ written *relative to*
 #     docs/ — a `docs/` prefix would double when the machinery resolves
 #     it
+#   - `origin` is `rule` or `report`, always present on a task — how it
+#     came to exist is a fact, and there is no third answer
 #
 # Unknown keys in canonical shape are allowed — an adopter may extend.
 # The schemas themselves: docs/technical/README.md.
@@ -151,14 +153,14 @@ check_id() {   # check_id <file> <block> — id agrees with the filename's id
 }
 
 check_task() {   # check_task <file>
-  local block f st reason pr ref
+  local block f st reason pr org ref
   f="$1"
   if ! block=$(fm_block "$f"); then
     fail "$f" "front matter must open at line 1 with --- and close with ---"
     return 0
   fi
   check_shape "$f" "$block"
-  for field in id status blocked_reason taken_by spec_ref doc_ref priority depends_on milestone created queued completed merged; do
+  for field in id status blocked_reason taken_by spec_ref doc_ref origin priority depends_on milestone created queued completed merged; do
     require_once "$f" "$block" "$field"
   done
   check_id "$f" "$block"
@@ -198,6 +200,17 @@ check_task() {   # check_task <file>
   case "$pr" in
     high|medium|low) ;;
     *) fail "$f" "priority '$pr' is not high, medium, or low" ;;
+  esac
+
+  # How the task came to exist, and there are only two answers: derived
+  # from an authored rule, or born from a report of work an existing rule
+  # already authorizes. Written once at creation and never rewritten, so
+  # the only thing left to hold is that it is there and says one of the
+  # two (docs/technical/README.md#task-schema).
+  org=$(get "$block" origin)
+  case "$org" in
+    rule|report) ;;
+    *) fail "$f" "origin '$org' is not rule or report" ;;
   esac
 
   check_list "$f" "$block" spec_ref spec
