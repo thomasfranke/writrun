@@ -86,6 +86,14 @@ merged: null                       # machinery only: the merge that took the wor
 - `doc_ref` and any path inside `spec_ref`/`depends_on` point at a section
   anchor, resolved relative to `docs/`, never just a filename — this is what
   makes reverse traceability a grep, not a manual search.
+- **References are navigable, not just resolvable.** The front matter
+  stays plain strings — it is the machine contract, and the line-based
+  readers see nothing else — but the generated body carries every
+  reference as a clickable relative link: a task's body links its
+  `doc_ref` and each spec in `spec_ref`, a spec's body links its
+  `task_ref`, and the append that adds a spec to a task's `spec_ref`
+  appends the body link in the same edit. A reader follows the queue by
+  clicking, never by reconstructing paths.
 - Status lives in front-matter, never in folder position — nothing moves
   between directories as work progresses, so `git log` stays readable without
   `--follow`.

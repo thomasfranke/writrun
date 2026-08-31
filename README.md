@@ -25,7 +25,7 @@ What it does:
 
 - **Docs as the source of truth.** You write the rules in `docs/`; code
   is checked against them — never the reverse.
-- **Tasks and specs are generated automatically.** Tell your agent
+- **Autogen tasks and specs.** Tell your agent
   "update the tasks": it reads what you wrote, compares it to the actual
   project, and generates the tasks and specs that close the gap.
 - **Who implements is your call, per task.** A generated task carries a
@@ -156,11 +156,11 @@ everything that belongs to exactly one stage carries a `stage-N-`
 prefix in its name. The full rules live in
 [Adoption](docs/product/adoption.md).
 
-| | Does | Needs |
+| Stage | Does | Requires |
 |---|---|---|
-| **Stage 1** — tasks and specs | Autogen of tasks and specs from the docs: the docs, the queue, the schemas and the four human gates — all as markdown files. Statuses move by hand. | `bash`, POSIX tools. No git, no forge, no permissions. |
-| **Stage 2** — pull requests | Git begins here: commits and branches, PRs, the CI checks, merge as assent. The bot owns the queue's status lines on `main`, following every forge event: `backlog → ready → in-progress → in-review → done`, plus `taken_by` naming who has it. | `git` and a GitHub repo. Actions workflow permissions: **Read and write**. `main` reachable by the Actions bot — unprotected, or a ruleset with the GitHub Actions app on its bypass list. |
-| **Stage 3** — GitHub issues | The Issues mirror: every task is an Issue, its `status:` label following the work in real time. | Issues enabled. The same Read-and-write setting covers the labels. |
+| **1 — tasks and specs** | Autogen tasks and specs from your docs, as markdown files. | Nothing — files only. |
+| **2 — pull requests** | Git begins: commits, branches, PRs, the CI checks, merge as assent. The bot owns the queue's status lines on `main`. | `git` + a GitHub repo · Actions permissions **Read and write** · `main` reachable by the Actions bot |
+| **3 — GitHub issues** | Every task mirrored as an Issue, its `status:` label live. | Issues enabled — nothing else; Stage 2's permission already covers the labels. |
 
 ## Repository setup
 

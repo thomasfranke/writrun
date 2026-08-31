@@ -13,7 +13,7 @@ it and changes nothing beneath, and a project declares which it is at in
 
 | Stage | Name | Adds | Needs | Its chapter |
 |---|---|---|---|---|
-| 1 | tasks and specs | the docs and the queue, as markdown — tasks and specs generated from the docs, statuses moved by hand | nothing but files | [Stage 1 — tasks and specs](stage-1-tasks-and-specs/README.md) |
+| 1 | tasks and specs | the docs and the queue, as markdown — autogen of tasks and specs from the docs, statuses moved by hand | nothing but files | [Stage 1 — tasks and specs](stage-1-tasks-and-specs/README.md) |
 | 2 | pull requests | commits and branches, pull requests, the CI checks, merge as assent, the status machinery | git + a forge | [Stage 2 — pull requests](stage-2-pull-requests/README.md) |
 | 3 | GitHub issues | the Issues mirror | Issues | [Stage 3 — GitHub issues](stage-3-github-issues/README.md) |
 
