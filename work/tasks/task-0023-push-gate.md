@@ -1,8 +1,8 @@
 ---
 id: task-0023
-status: ready
+status: in-progress
 blocked_reason: null
-taken_by: null
+taken_by: thomasfranke
 spec_ref: [spec-0040]
 doc_ref: technical/README.md#auto_commit-and-auto_pr
 origin: report
