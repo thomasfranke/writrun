@@ -14,4 +14,6 @@ rules depend on to be verifiable. -->
 
 <!-- TODO: dated, append-only entries — what was decided, why, and what
 was rejected. Never edit an entry; add the next one. Per-subsystem logs
-or one global log: your choice, stated here. -->
+or one global log is `stage_1.decisions_style` in
+.writrun/settings.json — declare it there, not here: a choice stated in
+two places is free to disagree with itself. -->

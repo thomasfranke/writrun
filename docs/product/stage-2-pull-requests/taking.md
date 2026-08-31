@@ -32,13 +32,22 @@ commit not yet on `main`. Not a lock, but the one real-time signal a
 forge can be asked for — and without network access it says so rather
 than reporting a task as free.
 
+**The push and the draft are one act, and the adopter gates it once.**
+An adopter who set a conduct flag to `false` is asked before their work
+is public — the agent presents the branch, the pull request title and the
+body together, and pushes nothing before the word. Gating only the
+opening would put the branch on the forge first and ask afterwards,
+which is the wrong half of the moment: what a gate on this act exists
+to hold is work becoming visible to anyone but its author
+([the conduct flags](../../technical/README.md#the-conduct-flags)).
+
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'background':'#0d1117','primaryColor':'#161b22','primaryTextColor':'#e6edf3','primaryBorderColor':'#8b949e','lineColor':'#ffffff','secondaryColor':'#161b22','tertiaryColor':'#161b22','fontSize':'14px'}}}%%
 flowchart LR
     A1["AGENT<br/>writrun-select-next-task<br/>takes the next one"]
     A2["HUMAN<br/>list_tasks.sh<br/>picks any available one"]
     B["AGENT<br/>branch task/NNNN-name<br/>status line untouched"]
-    C["AGENT<br/>push · open draft PR<br/>before the work starts"]
+    C["AGENT<br/>push · open draft PR<br/>one act, before the work starts"]
     D["CI<br/>main: task → in-progress<br/>mirror: status:in-progress"]
     A1 --> B
     A2 --> B
@@ -52,3 +61,7 @@ flowchart LR
   the forge can be asked for.
 - When an implementing branch is named, it shall carry the id of the task
   it works, never of a spec that task elaborates.
+- When a task is taken under a conduct flag that gates the push or the
+  pull request, the agent shall present the branch, the title and the
+  body together and put nothing on the forge before an explicit yes, so
+  that the gate holds the whole act rather than its second half.

@@ -14,6 +14,7 @@ header that WritRun shipped it.
 | `templates/` | WritRun — shipped default body shapes for task and spec, and the PR body template (its only home: agents fill it when opening PRs; GitHub's pre-fill is deliberately forgone) | refreshes |
 | `VERSION` | WritRun — the tag this copy of the kit came from | rewrites |
 | `conventions/` | **The project**, from the moment of adoption — ships as defaults, then it is yours | never touches |
+| `settings.json` | **The project**, from the moment of adoption — the stage, the conduct flags, the title style; the first file to edit after adoption | never touches |
 
 Two rules keep the layers honest:
 
@@ -22,7 +23,10 @@ Two rules keep the layers honest:
   the convention. Nothing in a WritRun-owned folder is authority.
 - **Never hand-edit a WritRun-owned folder** — customize at the project
   layer instead. Hand edits there are overwritten by the next refresh, by
-  design.
+  design. The two project-owned rows above are the exception, and
+  `settings.json` is the one *file* among them: it lives at this folder's
+  root rather than in `conventions/` because the one address ends the
+  hunt, and editing it is the point.
 
 Adopting a project? The kit ships as `template/` in WritRun's repository,
 shaped exactly like the destination root, and its guide travels with the

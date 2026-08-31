@@ -85,8 +85,9 @@ PRODUCT_LAYOUTS="by-concept by-feature"
 # starts at Stage 2 (product/adoption.md#three-stages), so below it there
 # is neither a commit nor a pull request for a conduct flag to gate.
 HOMES=":stage \
-stage_1:spec_required stage_1:decisions_style stage_1:product_layout \
-stage_2:auto_commit stage_2:credit_ai stage_2:auto_pr stage_2:pr_title_style"
+stage_1:decisions_style stage_1:product_layout stage_1:spec_required \
+stage_2:auto_commit stage_2:auto_pr stage_2:auto_push stage_2:credit_ai \
+stage_2:pr_title_style"
 
 home_of() {   # home_of <name> — the section the schema gives that key
   for h in $HOMES; do
@@ -255,7 +256,7 @@ while IFS= read -r line || [ -n "$line" ]; do
         *" $val "*) ;;
         *) fault "pr_title_style '${val}' is outside its vocabulary: ${TITLE_STYLES}" ;;
       esac ;;
-    auto_commit|auto_pr|credit_ai)
+    auto_commit|auto_pr|auto_push|credit_ai)
       case " $BOOLEANS " in
         *" $val "*) ;;
         *) fault "${key} '${val}' is outside its vocabulary: ${BOOLEANS}" ;;
@@ -298,6 +299,6 @@ done
 R=".writrun/scripts/stage-2-pull-requests/read_setting.sh"
 echo "OK — ${SETTINGS} is canonical:"
 echo "  stage=$(bash "$R" stage)"
-echo "  stage_1.spec_required=$(bash "$R" stage_1.spec_required) stage_1.decisions_style=$(bash "$R" stage_1.decisions_style) stage_1.product_layout=$(bash "$R" stage_1.product_layout)"
-echo "  stage_2.auto_commit=$(bash "$R" stage_2.auto_commit) stage_2.credit_ai=$(bash "$R" stage_2.credit_ai)"
-echo "  stage_2.auto_pr=$(bash "$R" stage_2.auto_pr) stage_2.pr_title_style=$(bash "$R" stage_2.pr_title_style)"
+echo "  stage_1.decisions_style=$(bash "$R" stage_1.decisions_style) stage_1.product_layout=$(bash "$R" stage_1.product_layout) stage_1.spec_required=$(bash "$R" stage_1.spec_required)"
+echo "  stage_2.auto_commit=$(bash "$R" stage_2.auto_commit) stage_2.auto_pr=$(bash "$R" stage_2.auto_pr) stage_2.auto_push=$(bash "$R" stage_2.auto_push)"
+echo "  stage_2.credit_ai=$(bash "$R" stage_2.credit_ai) stage_2.pr_title_style=$(bash "$R" stage_2.pr_title_style)"

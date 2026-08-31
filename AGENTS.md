@@ -32,7 +32,11 @@ branch created.** Branch as `task/NNNN-short-name`, push, and open the
 PR as a draft *before* implementing — the branch is invisible until it
 reaches the forge, and the draft is the event the machinery answers by
 writing `in-progress` and your login onto `main` and moving the mirror
-to `status:in-progress`. **Touch the task's status line never**: it has
+to `status:in-progress`. **The push and the opening are one act**: this
+repository leaves `auto_push` and `auto_pr` at `true`, so you do both
+without asking — under either at `false` you would compose the branch,
+the title and the body, present them together, and put nothing on the
+forge before the word. **Touch the task's status line never**: it has
 one writer, and it is not you
 (docs/product/stage-2-pull-requests/statuses.md). Mark the PR ready
 for review when the work is done — that is what moves the task to

@@ -37,6 +37,21 @@ edited, a status flipped — must pass
 [`writrun-check-front-matter`](.writrun/skills/writrun-check-front-matter/SKILL.md)
 before it is committed.
 
+### Taking a task
+
+Branch as `task/NNNN-short-name`, push, and open the pull request **as a
+draft before the work starts** — the branch is invisible until it
+reaches the forge, and the draft is the event the machinery answers by
+writing `in-progress` and your login onto the queue. Never write the
+task's status line yourself; it has one writer, and it is not you. Mark
+the pull request ready for review when the work is done.
+
+**The push and the opening are one act.** Under `stage_2.auto_push` or
+`stage_2.auto_pr` set to `false`, compose the branch name, the title and
+the body, present them together, and put nothing on the forge before an
+explicit yes — the gate is about work becoming public, so it holds the
+whole moment rather than its second half.
+
 ### Human gates
 
 <!-- yours: this table is the project's own answers; it survives updates. -->
@@ -71,6 +86,17 @@ declaration says to open directly.
 3. Run `writrun-check-spec-deltas` (exit 0), fill the spec's **Outcome**,
    set spec `implemented` and task `completed`, run
    `writrun-check-task-state` (exit 0), open the PR.
+
+### The settings
+
+[`.writrun/settings.json`](.writrun/settings.json) is the adopter's file
+and the first edit after adoption: the stage, the conduct flags that say
+who presses commit, push and open, and the title style everything else
+here obeys. It ships cautious — `stage: 1` and all three flags `false` —
+so a fresh copy does nothing on its own until the project says
+otherwise. It is the one file inside `.writrun/` that is yours to edit,
+and `writ update` never touches it. The schema is in
+[`docs/technical/README.md`](docs/technical/README.md).
 
 Commit messages, branch names, PR titles, and task/spec style:
 [`.writrun/conventions/`](.writrun/conventions/README.md).

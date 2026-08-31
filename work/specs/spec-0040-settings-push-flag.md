@@ -1,7 +1,7 @@
 ---
 id: spec-0040
 task_ref: task-0023
-status: approved
+status: implemented
 created: 2026-08-31T18:49:37Z
 ---
 
@@ -285,4 +285,47 @@ cases with no interest in this change.
 
 ## Outcome
 
-_(fill after execution)_
+All ten steps shipped. `auto_push` is the third conduct flag in
+`stage_2`, default `true`; `#auto_commit-and-auto_pr` is now
+`#the-conduct-flags` and covers three, with task-0023's `doc_ref` moved to
+it in the same change. `commit_subject.sh <merge|forge>` composes both
+recording workflows' subjects from `pr_title_style`, and `queue` is in
+the scope vocabulary on both sides. The kit ships `stage: 1` with all
+three flags `false`, preserved across `make template-sync` by
+`tests/template_exceptions.txt`. `.writrun/README.md` has the
+`settings.json` row, decision 0061 is written, and the suite is 256 case
+files, 0 failed.
+
+**Where it diverged from the Steps.**
+
+- **The fixture sweep was a fifth of what step 1 budgeted.** The step
+  named 46 lines across 11 cases; what the present-always rule actually
+  breaks is only a fixture whose file is meant to be canonical, and the
+  rest already fault for the shapes they exist to catch. 13 files under
+  `tests/integration/stage-2/settings/` changed, most of them gaining the
+  key inside a block that was already complete rather than being repaired.
+  The step overestimated because it counted occurrences of `auto_commit`
+  rather than blocks that must pass.
+- **`commit_subject.sh` resolves its reader from its own directory**,
+  `$(dirname "$0")/read_setting.sh`, the way `check_observance.sh` and
+  `stage_gate.sh` already do. The workflows run at the repository root, so
+  a repo-relative path would have worked for them and for nothing else —
+  the settings file is found relative to the working directory, but the
+  script that reads it is found relative to the kit.
+- **The byte-mirror test drops the exceptions from copies of both sides**
+  and then compares, rather than passing an exclusion to `diff`. That is
+  what "path-exact" means in practice: `diff -x` has no path form at all,
+  so the choice was never between two flags — it was between filtering
+  the trees and filtering the output.
+- **One out-of-scope doc edit was reverted.**
+  `product/stage-2-pull-requests/README.md` names `auto_commit` alone
+  where it could now name three flags. True, and not promised: it went
+  back as it was, and the sentence is a report of its own.
+
+**What the next change inherits.** The kit's settings file carries every
+key `HOMES` names *today* — which is not `stage_1.provenance_ledger`,
+since spec-0036 is approved and unimplemented. Whichever of the two lands
+second must write its key into both settings files, not only the root's,
+or the kit faults for every adopter on their first run. The same applies
+to spec-0035's `credit_ai` → `agent_coauthor`: the kit's file spells it
+`credit_ai`, as the checker does.

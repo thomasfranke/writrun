@@ -34,8 +34,9 @@ settings_file <<'JSON'
   },
   "stage_2": {
     "auto_commit": true,
-    "credit_ai": true,
     "auto_pr": true,
+    "auto_push": true,
+    "credit_ai": true,
     "pr_title_style": "conventional"
   }
 }
@@ -104,6 +105,49 @@ JSON
 check "and so does credit_ai" 1 "credit_ai 'no' is outside its vocabulary" \
   -- bash "$CHECK_SETTINGS"
 
+settings_file <<'JSON'
+{
+  "stage": 3,
+  "stage_1": {
+    "spec_required": "when-warranted",
+    "decisions_style": "per-subsystem",
+    "product_layout": "by-concept"
+  },
+  "stage_2": {
+    "auto_commit": true,
+    "auto_pr": true,
+    "auto_push": "yes",
+    "credit_ai": true,
+    "pr_title_style": "conventional"
+  }
+}
+JSON
+check "and so does auto_push, the third conduct flag" 1 \
+  "auto_push 'yes' is outside its vocabulary" \
+  -- bash "$CHECK_SETTINGS"
+
+# Both booleans pass, which is the other half of a vocabulary: a check
+# that only ever rejected would be indistinguishable from one that
+# rejects everything.
+settings_file <<'JSON'
+{
+  "stage": 3,
+  "stage_1": {
+    "spec_required": "when-warranted",
+    "decisions_style": "per-subsystem",
+    "product_layout": "by-concept"
+  },
+  "stage_2": {
+    "auto_commit": true,
+    "auto_pr": true,
+    "auto_push": false,
+    "credit_ai": true,
+    "pr_title_style": "conventional"
+  }
+}
+JSON
+check "a gated push is canonical" 0 "is canonical" -- bash "$CHECK_SETTINGS"
+
 # The three declarations gate nothing mechanical — an agent alone reads
 # them — and are checked for value all the same, for the same reason:
 # a value outside the vocabulary is one an agent would have to guess at.
@@ -117,8 +161,9 @@ settings_file <<'JSON'
   },
   "stage_2": {
     "auto_commit": true,
-    "credit_ai": true,
     "auto_pr": true,
+    "auto_push": true,
+    "credit_ai": true,
     "pr_title_style": "conventional"
   }
 }
@@ -137,8 +182,9 @@ settings_file <<'JSON'
   },
   "stage_2": {
     "auto_commit": true,
-    "credit_ai": true,
     "auto_pr": true,
+    "auto_push": true,
+    "credit_ai": true,
     "pr_title_style": "conventional"
   }
 }
@@ -157,8 +203,9 @@ settings_file <<'JSON'
   },
   "stage_2": {
     "auto_commit": true,
-    "credit_ai": true,
     "auto_pr": true,
+    "auto_push": true,
+    "credit_ai": true,
     "pr_title_style": "conventional"
   }
 }

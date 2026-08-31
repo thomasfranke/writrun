@@ -1,14 +1,15 @@
 {
-  "stage": 3,
+  "stage": 1,
   "stage_1": {
-    "spec_required": "when-warranted",
     "decisions_style": "per-subsystem",
-    "product_layout": "by-concept"
+    "product_layout": "by-concept",
+    "spec_required": "when-warranted"
   },
   "stage_2": {
-    "auto_commit": true,
+    "auto_commit": false,
+    "auto_pr": false,
+    "auto_push": false,
     "credit_ai": true,
-    "auto_pr": true,
-    "pr_title_style": "bracketed"
+    "pr_title_style": "conventional"
   }
 }

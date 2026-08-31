@@ -37,8 +37,9 @@ allowing() {
   },
   "stage_2": {
     "auto_commit": true,
-    "credit_ai": true,
     "auto_pr": true,
+    "auto_push": true,
+    "credit_ai": true,
     "pr_title_style": "conventional"
   }
 }

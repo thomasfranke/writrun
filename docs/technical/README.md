@@ -273,30 +273,39 @@ only when it holds a documented key — no empty placeholder objects.
 {
   "stage": 3,
   "stage_1": {
-    "spec_required": "when-warranted",
     "decisions_style": "per-subsystem",
     "product_layout": "by-concept",
-    "provenance_ledger": false
+    "provenance_ledger": false,
+    "spec_required": "when-warranted"
   },
   "stage_2": {
-    "auto_commit": true,
     "agent_coauthor": true,
+    "auto_commit": true,
     "auto_pr": true,
+    "auto_push": true,
     "pr_title_style": "conventional"
   }
 }
 ```
 
+**Keys are alphabetical inside each section.** Mint order is a history the
+file cannot show, and a reader checking whether a key is present should
+not have to know when it was added. This is the schema's rule and nothing
+enforces it: a fault over an adopter's working file would cost more than
+the order buys, so the file above is the statement and the eye is the
+check.
+
 | Key | Section | Values | Read by |
 |---|---|---|---|
 | `stage` | top level | `1` / `2` / `3` | the workflows, and agents |
-| `spec_required` | `stage_1` | `always` / `when-warranted` | agents only |
 | `decisions_style` | `stage_1` | `per-subsystem` / `chronological` | agents only |
 | `product_layout` | `stage_1` | `by-concept` / `by-feature` | agents only |
 | `provenance_ledger` | `stage_1` | `true` / `false` | agents only |
-| `auto_commit` | `stage_2` | `true` / `false` | agents only |
+| `spec_required` | `stage_1` | `always` / `when-warranted` | agents only |
 | `agent_coauthor` | `stage_2` | `true` / `false` | agents only |
+| `auto_commit` | `stage_2` | `true` / `false` | agents only |
 | `auto_pr` | `stage_2` | `true` / `false` | agents only |
+| `auto_push` | `stage_2` | `true` / `false` | agents only |
 | `pr_title_style` | `stage_2` | `conventional` / `bracketed` | agents only |
 
 **Every key is present, always** — the same reason the front matter carries
@@ -304,8 +313,9 @@ only when it holds a documented key — no empty placeholder objects.
 configuration without knowing the defaults. Each key's documented default
 is the behaviour from before the key existed, so a project without the
 file, or without the key, behaves exactly as it did: `stage` defaults to
-`3`, `pr_title_style` to `conventional`, and the three conduct flags to
-`true`. `provenance_ledger` defaults to `false` by the same rule and lands
+`3`, `pr_title_style` to `conventional`, and the three conduct flags —
+`auto_commit`, `auto_pr`, `auto_push` — to `true`, `agent_coauthor` with
+them. `provenance_ledger` defaults to `false` by the same rule and lands
 on the opposite side of it: no ledger existed before the key, so recording
 nothing is the behaviour it preserves.
 
@@ -345,31 +355,61 @@ check` fails a title that ignores the declared style. Nothing parses
 the summary beyond that — not the release notes, which the forge
 generates from pull requests.
 
+**It governs the machinery's own commit subjects too**, and those pass no
+door. `writrun approve` and `writrun progress` each write a commit onto
+the default branch, and nothing squashes them — a subject in the
+undeclared style would sit in the history for good. Both take theirs from
+`commit_subject.sh`, which composes it from this key under the scope
+`queue`, so the declaration has one reader rather than two literals free
+to drift. There is no check behind it because there is no door: what
+replaces one is that the subject has a single writer.
+
 **The `[TASK-NNNN]` tag is in both and is not settable.** It is how
 the machinery and `list_tasks.sh` learn which tasks a pull request
 carries, and a branch name holds one id: a title without it reduces a
 multi-task pull request to reporting one task, silently.
 
-### `auto_commit` and `auto_pr`
+### The conduct flags
 
-The adopter's word on the agent's own git actions. `true` — the default,
-and the behaviour from before the keys existed — lets the agent commit
-(`auto_commit`) and open pull requests (`auto_pr`) on its own as its flow
-requires. `false` gates the action, never the work: the agent still
-composes the full commit message, or the pull request's complete title and
-body, then presents it and acts only on an explicit yes. Approval is per
-action, never a session-wide grant.
+The adopter's word on the agent's own git actions, one flag per act:
+`auto_commit` holds the commit, `auto_push` holds the push, `auto_pr`
+holds the pull request. `true` — the default, and the behaviour from
+before the keys existed — lets the agent take that action on its own as
+its flow requires. `false` gates the action, never the work: the agent
+still composes the whole thing — the full commit message, or the branch
+and the pull request's complete title and body — presents it, and acts
+only on an explicit yes. Approval is per action, never a session-wide
+grant.
+
+**`auto_push` exists because the push is the act that makes work
+public.** A commit is private and a pull request is already a
+conversation; between them sits the moment an adopter's work lands on
+someone else's server, and until this key that moment was covered by
+inference alone — read as `auto_pr`'s when a pull request was open, as
+nobody's on a branch's first push. The inference covered the wrong half.
+Taking a task pushes the branch and *then* opens the draft, so an
+adopter who set `auto_pr: false` had their branch on the forge before
+the gate they asked for was reached: what waited for the word was only
+the pull request, half a step behind the act the gate exists to hold.
+
+**Before a pull request exists, the push and the pull request are one
+act, gated once.** The agent presents the branch, the title and the body
+together, and `false` on either flag holds all of it — two prompts for
+one moment is not a stricter gate, it is a worse one. Once the pull
+request is open, a further push to its head branch is `auto_push`'s
+alone: `auto_pr` has been answered, and what is being gated again is
+work becoming visible.
 
 **The flags outrank the agent platform's own autonomy mode.** An agent
 running auto-accept, autonomous, or any mode in which its harness would
 not ask, still stops: the platform's mode governs what the *harness*
 asks, these flags govern what the *adopter* allowed — a setting that only
 bound an agent already asking would control nothing, and a setting
-controls (below). Both flags sit in `stage_2` because that is where the
+controls (below). All three sit in `stage_2` because that is where the
 actions they govern begin: git starts at Stage 2
 ([Adoption](../product/adoption.md#three-stages)), so below it there is
-neither a commit nor a pull request for either flag to gate — Stage 1
-needs nothing but files. Neither flag touches the one commit the
+neither a commit, a push nor a pull request for a conduct flag to gate —
+Stage 1 needs nothing but files. No flag touches the commits the
 machinery makes nor any workflow-driven write — those are not the
 agent's actions.
 
@@ -455,9 +495,11 @@ present, and nothing about the summary. Case inside a bracketed label
 is not judged, because the convention writes both `[Fix]` and `[DOCS]`.
 The credit check reads the pull request's own commits and body — never
 `main`'s past, since nothing rewrites history — and skips the
-machinery's recording commit **by committer identity**, not by subject:
-the subject is a variable the adopter is invited to edit, the identity
-is the forge's.
+machinery's recording commits **by committer identity**, not by subject.
+The subject is now the machinery's own, composed from `pr_title_style`
+([above](#pr_title_style)) — but reading it would still be the wrong
+test: a subject is text, and what makes those commits exempt is who
+wrote them, which only the identity says.
 
 The `true` direction judges only commits an agent wrote. A human's
 commits carry no trailer and are never faulted for it — using an agent is
@@ -711,6 +753,21 @@ file whose blind copy would replace the adopting project's own. The mirrored par
 **deliberate full copy**, kept byte-identical to this repository's own
 root files by a unit test (`make template-sync` refreshes; the mirror
 list is `tests/template_mirrors.txt`, the single source of what ships).
+
+**One file leaves the mirror on purpose: `.writrun/settings.json`.** The
+kit ships it cautious — `stage: 1`, every conduct flag `false` — because
+a fresh copy of this repository's own file would start an adopter at
+Stage 3 with every workflow armed and the Issues mirror opening issues on
+their first pull request, while the guide is still telling them to
+declare a stage. `tests/template_exceptions.txt` is the single source of
+what differs, read by the sync and by the unit test alike. The sync
+stashes each listed path before the mirror runs and restores it after —
+not merely declining to overwrite it, because the mirror list names
+`.writrun`, a directory, and a directory is refreshed by removing it and
+copying it back; every path it keeps is named in the output. The test
+drops the same paths from both sides before comparing, by path and never
+by name, so `.writrun/conventions/settings.json` — the legacy address the
+reader still honours — stays compared.
 This repository's own CI beyond the writrun workflows — the pull-request
 suite in `.github/workflows/tests.yml` and the release-readiness
 pipeline on `main`, `.github/workflows/release-readiness.yml` — is not

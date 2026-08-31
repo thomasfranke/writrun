@@ -4,20 +4,20 @@ status: in-review
 blocked_reason: null
 taken_by: thomasfranke
 spec_ref: [spec-0040]
-doc_ref: technical/README.md#auto_commit-and-auto_pr
+doc_ref: technical/README.md#the-conduct-flags
 origin: report
 priority: medium
 depends_on: []
 milestone: null
 created: 2026-08-31T13:02:49Z
 queued: 2026-08-31T15:04:48Z
-completed: null
+completed: 2026-08-31T20:59:50Z
 merged: null
 ---
 
 # The settings gain a push flag, an order, and obedient commits
 
-**References:** [technical/README.md#auto_commit-and-auto_pr](../../docs/technical/README.md#auto_commit-and-auto_pr) · [spec-0040](../specs/spec-0040-settings-push-flag.md)
+**References:** [technical/README.md#the-conduct-flags](../../docs/technical/README.md#the-conduct-flags) · [spec-0040](../specs/spec-0040-settings-push-flag.md)
 
 An adopter can say who presses commit and who opens the pull request,
 and cannot say who pushes. `auto_commit` names the commit, `auto_pr`

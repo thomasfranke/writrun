@@ -14,6 +14,8 @@ check "and the agent commits unprompted" 0 "true" \
   -- bash "$READ_SETTING" stage_2.auto_commit
 check "and opens pull requests unprompted" 0 "true" \
   -- bash "$READ_SETTING" stage_2.auto_pr
+check "and pushes unprompted" 0 "true" \
+  -- bash "$READ_SETTING" stage_2.auto_push
 check "and credits itself as its platform does" 0 "true" \
   -- bash "$READ_SETTING" stage_2.credit_ai
 check "a spec is written when the work warrants one" 0 "when-warranted" \
