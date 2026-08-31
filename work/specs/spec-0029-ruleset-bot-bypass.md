@@ -1,7 +1,7 @@
 ---
 id: spec-0029
 task_ref: task-0021
-status: approved
+status: draft
 created: 2026-08-31T03:06:42Z
 ---
 
@@ -19,7 +19,14 @@ created: 2026-08-31T03:06:42Z
 
 In: the comment in `writrun-approve.yml` that still explains itself by
 `main` being unprotected (and its template mirror), and a dated
-decision recording how the stance evolved from 0043.
+decision recording how the stance evolved from 0043 — with its row in
+the decisions chronology.
+
+> **Amended 2026-08-31, returned to `draft`.** Same omission as
+> spec-0026's: the decision entry was promised and its index row was
+> not, which `writrun-check-spec-deltas` reports as an undeclared
+> permanent-doc change. The promise now names the file; the change
+> itself is unmoved.
 
 Out: the forge configuration itself (this repository's partial ruleset
 is already live — a setting, not a file); decisions 0014 and 0043 as
@@ -84,6 +91,11 @@ ruleset change; the template-mirror test covers the workflow copy.
   became a recommendation bounded by the forge (app bypass is
   organization-only), reachability stays the requirement, 0043's
   unprotected default is superseded.
+- `technical/decisions/README.md` — append that entry's row to the
+  chronology table, for the same reason spec-0026 now names it: a
+  decision is not added without its row
+  ([0045](../../docs/technical/decisions/tasks-and-specs/0045-one-decision-per-file.md)),
+  and the delta check reads paths, not intent.
 
 ## Outcome
 
