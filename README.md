@@ -140,7 +140,7 @@ flows 2–5 describe the queue riding the forge, which begins at Stage 2:
    the maintainer squash-merges; the Issue mirror follows.
 
 Special flows — a spec amended after approval returns through `draft`
-and is re-approved; work discovered mid-flight enters as a `queue/` PR
+and is re-approved; work reported or discovered mid-flight enters as a `report/` PR
 adding only task and spec; `blocked` names its reason and waits for a
 human; a PR closed unmerged is unwound by the bot — its task returns to
 `ready` on `main` on its own, because nothing else was ever

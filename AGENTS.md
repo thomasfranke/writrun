@@ -55,11 +55,11 @@ and the line-based readers silently misread anything else.
 Two, and they are not handled the same way — see
 [`tasks-and-specs/authoring.md`](docs/product/stage-1-tasks-and-specs/authoring.md#two-ways-a-permanent-doc-changes).
 
-| | Authoring | Tracking | Implementing |
+| | Authoring | Reporting | Implementing |
 |---|---|---|---|
-| Is | a rule that isn't true yet | work discovered that an existing rule already authorizes | an approved spec |
+| Is | a rule that isn't true yet | work reported or discovered that an existing rule already authorizes | an approved spec |
 | Touches | `docs/` + the work it derives | `work/` only — no permanent doc | code + the docs its spec promised |
-| Branch | `docs/short-name` | `queue/short-name` | `task/NNNN-short-name` |
+| Branch | `docs/short-name` | `report/short-name` | `task/NNNN-short-name` |
 | PR states | the tasks and specs it created | the tasks and specs it adds, and the rule they derive from | the spec(s) it implements, every carried task tagged `[TASK-NNNN]` leading the title |
 | `writrun-check-spec-deltas` | does not apply | does not apply | must exit 0 |
 | `writrun-check-task-state` | must exit 0 | must exit 0 | must exit 0 |
@@ -67,7 +67,7 @@ Two, and they are not handled the same way — see
 Never more than one kind in one change. A change that closes the loop on
 one rule while introducing another is two changes.
 
-When derivation runs (authoring or tracking), **present the derived tasks
+When derivation runs (authoring or reporting), **present the derived tasks
 and specs in the session before opening the PR** — the human reviews the
 queue the rule creates while the feedback loop is still cheap. Open
 directly only when the declaration itself says so ("deriva e abre

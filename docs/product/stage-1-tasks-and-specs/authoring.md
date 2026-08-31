@@ -91,30 +91,50 @@ rule the system already satisfies — states that explicitly. An empty
 declaration and a forgotten one look identical otherwise.
 
 The declaration is what was known at review time, not a closed set. Work
-discovered later is tracked normally, against the rule it derives from; the
-list is not a claim that nothing else will follow.
+discovered later is reported normally, against the rule it derives from;
+the list is not a claim that nothing else will follow.
 
 
-## Work discovered mid-flight
+## Reporting — work found or reported mid-flight
 
-Not every task descends from a fresh rule. Work found in the code or the
-machinery — already authorized by a doc that exists — is **tracked**: a
-change that only adds task and spec, touches no permanent doc, and
-implements nothing. The third kind of change, next to authoring and
-implementing (`AGENTS.md`).
+Not every task descends from a fresh rule. A bug someone hits, a gap an
+agent finds in the code or the machinery — work already authorized by a
+doc that exists — is **reported**: a change that only adds task and
+spec, touches no permanent doc, and implements nothing. The third kind
+of change, next to authoring and implementing (`AGENTS.md`).
+
+**The trigger and the authorization are different things.** What makes
+the task exist *now* is the report — a person saying "the checkout
+returns 500", an agent noticing a script violates a criterion. What
+makes the work *legitimate* is, as always, a doc — here one that
+already stands: the task points back at it through `doc_ref`. The doc
+does not generate a reported task; it validates it.
+
+Triage is the agent's work, and it asks one question — *is what
+"correct" means already written, or does a human need to decide it?*
+
+| The report | The route |
+|---|---|
+| A real defect — a broken screen, a 500, documented behaviour gone | A task, directly. The defect violates the doc of the feature itself; `doc_ref` names it — or stays `null` when the broken feature was never documented, with the evidence in the task body. |
+| A behavioural disagreement — "shouldn't it do X instead?" | **Authoring.** No doc states the rule, so fixing means deciding it — the agent stops and hands the pen back; the rule is written first and the task derives from it. |
+| A trivial fix — a typo, an obvious one-liner | A commit, never a task (principle 6). |
 
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'background':'#0d1117','primaryColor':'#161b22','primaryTextColor':'#e6edf3','primaryBorderColor':'#8b949e','lineColor':'#ffffff','secondaryColor':'#161b22','tertiaryColor':'#161b22','fontSize':'14px'}}}%%
 flowchart LR
-    A["AGENT or HUMAN<br/>work found in code or machinery<br/>an existing doc authorizes it"]
-    B["AGENT<br/>writrun-create-task-and-spec<br/>task: backlog · spec: draft<br/>names the rule it derives from"]
-    C["The approval gate takes over<br/>spec assented · task ready"]
-    A --> B --> C
+    A["HUMAN or AGENT<br/>reports work found<br/>an existing doc authorizes it"]
+    B["AGENT triages<br/>defect · rule missing · trivial"]
+    C["AGENT<br/>writrun-create-task-and-spec<br/>task: backlog · spec: draft<br/>doc_ref names the rule"]
+    D["The approval gate takes over<br/>spec assented · task ready"]
+    A --> B -->|"defect"| C --> D
+    B -->|"rule missing"| E["Flow 1 — authoring<br/>human writes the rule first"]
+    B -->|"trivial"| F["A commit, no task"]
 ```
 
-From Stage 2 up, tracking rides a branch whose prefix is `queue/` on
-purpose — a tracking PR records work, it is not working it, and must
-not read as in flight — and flow 2 takes over at the merge
+From Stage 2 up, reporting rides a branch whose prefix is `report/` on
+purpose — carrying no task id, because a reporting PR records work, it
+is not working it, and must not read as in flight — and flow 2 takes
+over at the merge
 ([the Stage 2 chapter](../stage-2-pull-requests/README.md)).
 
 ## Criteria
@@ -133,3 +153,10 @@ not read as in flight — and flow 2 takes over at the merge
 - When a task completes, its diff shall touch every path listed in its
   spec's Proposed-changes sections in the same change, and shall not touch
   a permanent doc that isn't listed there.
+- When work is reported and a permanent doc already states the behaviour
+  it violates, the task shall be created directly, with `doc_ref` naming
+  that doc — no new rule and no doc edit shall be required first.
+- When a report asks for behaviour no permanent doc states, the agent
+  shall stop and route it through authoring rather than decide the rule
+  itself.
+- When a reported fix is trivial, it shall be a commit, not a task.

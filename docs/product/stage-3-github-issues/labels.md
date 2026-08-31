@@ -17,6 +17,16 @@ label with another:
 | `status:blocked` | stalled by something outside the queue — `blocked_reason` says what. |
 | *(none — the mirror is closed)* | out of the pipeline: closed **completed** for `done`, closed **not planned** for `dropped`. |
 
+**The mirror also says where the task came from.** Alongside its
+`status:` label, every mirror carries one `origin:` label projecting
+the task's stored `origin` field — `origin:rule` for a task derived
+from an authored rule, `origin:report` for one born from a report — so
+a reader scanning the Issues list tells planned rule-work from
+reported defects at a glance, without opening anything. Unlike the
+`status:` labels it never changes and never comes off: origin is a
+fact about the task's birth, so it stays on the mirror through every
+state, closed included.
+
 **A closed mirror carries no `status:` label.** Every label above names a
 place *inside* the pipeline, so any of them on a closed mirror is a
 leftover from the step before last — and a leftover is not merely
@@ -44,3 +54,6 @@ so its diff still reads them `draft`).
 - When a recording commit changes a task's stored status, the machinery
   shall re-label that task's mirror from the queue as it then stands,
   rather than from the merge's own diff.
+- When a task is mirrored, its mirror shall carry the `origin:` label
+  matching the task's stored `origin`, and the label shall stay on the
+  mirror through every state, closed included.

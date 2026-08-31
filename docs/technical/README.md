@@ -46,6 +46,7 @@ blocked_reason: null               # required non-null when status: blocked; nul
 taken_by: null                     # machinery only: login of the open PR's author; null when nobody has it
 spec_ref: [spec-0004]              # list — zero, one, or many specs
 doc_ref: product/concepts/task.md#two-invariants   # any path under docs/; null only when the task originates in code or machinery, not in a doc
+origin: report                     # rule | report — derived from an authored rule, or born from a report of work found
 priority: medium                   # high | medium | low
 depends_on: [task-0002]            # real technical blocking, not sequencing taste
 milestone: v0.1-core
@@ -86,6 +87,16 @@ merged: null                       # machinery only: the merge that took the wor
 - `doc_ref` and any path inside `spec_ref`/`depends_on` point at a section
   anchor, resolved relative to `docs/`, never just a filename — this is what
   makes reverse traceability a grep, not a manual search.
+- `origin` records how the task came to exist, and it is a fact, not a
+  judgement: `rule` when the task was derived from an authored rule
+  declared finished (flow 1), `report` when it was born from a report
+  of work an existing rule already authorizes (reporting). The
+  generator writes it at creation and nothing rewrites it later. At
+  Stage 2+ it mirrors the creating PR's branch kind (`docs/` vs
+  `report/`); at Stage 1 it is the only record of the difference.
+  (Until the machinery catches up, existing tasks carry no `origin`
+  line and the generator does not write one; the derived task adds the
+  field and backfills the queue.)
 - **References are navigable, not just resolvable.** The front matter
   stays plain strings — it is the machine contract, and the line-based
   readers see nothing else — but the generated body carries every
@@ -433,6 +444,45 @@ whether the agent should stop and ask for a spec first — is a call this
 methodology leaves to the adopting project, stated explicitly in its
 `AGENTS.md`.
 
+## The report entry point
+
+The cheapest way work enters the system, and the one a client wraps
+first: **a report is one free-form sentence** — "checkout returns
+500", "the generator reuses ids" — plus whatever evidence is at hand.
+No form, no template, no schema: the report is a trigger, not an
+artefact, and everything structured about it is produced *from* it,
+downstream. The product-side flow, gates and triage table live in
+[authoring — reporting](../product/stage-1-tasks-and-specs/authoring.md#reporting--work-found-or-reported-mid-flight);
+this section is the operation's contract, for agents today and the CLI
+tomorrow.
+
+The operation, deterministic end to end:
+
+1. **Triage** answers one question — *is what "correct" means already
+   written?* Three outcomes, and each names its artefact:
+   a defect against a documented behaviour → a task, directly; a rule
+   nobody wrote → route to authoring, produce nothing; a trivial fix →
+   a commit, produce nothing.
+2. **Generation**, on the defect path: `new.sh task` with
+   `--origin report`, `--doc-ref` when a doc states the violated
+   behaviour (null when the broken thing was never documented — the
+   evidence goes in the body), priority from impact; a spec via
+   `new.sh spec` when the fix is more than the body can brief. The
+   generated queue is **presented to the human before any PR opens**
+   (the derivation-review gate).
+3. **Recording**, at Stage 2+: branch `report/short-name` — no task id
+   in the name, because the PR records work rather than working it —
+   and a PR that only adds queue files. The merge authorizes the task;
+   the approval gate takes over.
+
+What a client (`writ report`) builds on is exactly the public contract
+below: the task and spec schemas (`origin: report` included), the
+generator's arguments and refusals, the `report/` branch prefix, and
+the `## Derived work` marker in the PR body. The triage judgement
+itself is the one step that is not mechanical — a client either asks
+an agent to make it or asks the person, and the contract stays the
+same either way.
+
 ## Distribution
 
 The operational half of the methodology — selecting the next task, drafting a
@@ -541,8 +591,9 @@ and exit codes, and the handful of grep-level markers the machinery reads
 — the `## Derived work` heading in a PR body, the two Proposed-changes
 headings in a spec, a task file's `# ` title line, a `task-nnn` /
 `spec-nnn` id at the start of a branch name, and the labels the machinery
-owns and filters on: `writrun:task` and the `status:*` values
+owns and filters on: `writrun:task`, the `status:*` values
 (`proposed`, `backlog`, `ready`, `in-progress`, `in-review`, `blocked`)
+and the `origin:*` values (`rule`, `report`)
 — renaming any of these means adapting the workflows. One carve-out runs the other way:
 `docs/writrun-instructions.md` is process metadata, not project truth —
 no task derives from it and every check ignores it. **Everything else about
