@@ -147,7 +147,8 @@ is_ready() {   # is_ready <spec-ref>... — every ref approved?
 }
 
 # Pass 2 — the task files the diff adds, one tab-separated record each:
-# id, filename, priority, milestone, spec refs (space-separated), title.
+# id, filename, priority, milestone, origin, spec refs (space-separated),
+# title.
 TASKS=""
 while IFS="$TAB" read -r fstatus fname fpatch; do
   [ "$fstatus" = "added" ] || continue
@@ -163,9 +164,12 @@ while IFS="$TAB" read -r fstatus fname fpatch; do
   refs=$(fm_field "$body" spec_ref | tr -d '[]' | tr ',' ' ' | tr -s ' ' \
     | sed 's/^ *//; s/ *$//')
   # Tab is IFS whitespace, so an empty middle field would collapse on
-  # read — an empty ref list travels as "-" instead.
+  # read — an empty ref list travels as "-" instead, and so does a task
+  # file written before `origin` existed.
   [ -n "$refs" ] || refs="-"
-  TASKS="${TASKS}${tid}${TAB}${fname}${TAB}$(fm_field "$body" priority)${TAB}$(fm_field "$body" milestone)${TAB}${refs}${TAB}${ttitle}"$'\n'
+  torigin=$(fm_field "$body" origin)
+  [ -n "$torigin" ] || torigin="-"
+  TASKS="${TASKS}${tid}${TAB}${fname}${TAB}$(fm_field "$body" priority)${TAB}$(fm_field "$body" milestone)${TAB}${torigin}${TAB}${refs}${TAB}${ttitle}"$'\n'
 done <<EOF
 $FILES
 EOF
@@ -184,7 +188,7 @@ ISSUES=$(gh api "repos/${REPO}/issues?labels=writrun:task&state=all&per_page=100
   --paginate \
   --jq '.[] | [.number, .state, ((.labels // []) | map(.name) | join(",")), (.title | @base64), ((.body // "") | @base64)] | @tsv')
 
-issue_row_of() {   # issue_row_of <task-id> — "number<TAB>state<TAB>body-b64"
+issue_row_of() {   # issue_row_of <task-id> — "number<TAB>state<TAB>labels<TAB>body-b64"
   local num state labels tb bb t tn want
   want=$(num_of_id "$1")
   [ -n "$want" ] || return 0
@@ -194,7 +198,11 @@ issue_row_of() {   # issue_row_of <task-id> — "number<TAB>state<TAB>body-b64"
     tn=$(num_of_id "$(id_of_title "$t")")
     [ -n "$tn" ] || continue
     if [ "$tn" -eq "$want" ] 2>/dev/null; then
-      printf '%s\t%s\t%s\n' "$num" "$state" "$bb"; return 0
+      # Labels travel with the row because one of them must survive every
+      # rewrite below: `origin:` is a fact about the task's birth, so a
+      # relabelling pass re-states it rather than dropping it
+      # (docs/product/stage-3-github-issues/labels.md).
+      printf '%s\t%s\t%s\t%s\n' "$num" "$state" "$labels" "$bb"; return 0
     fi
   done <<EOF
 $ISSUES
@@ -276,6 +284,37 @@ ensure_label() {   # ensure_label <name> <color> <description>
   fi
 }
 
+# The origin label — `origin:rule` or `origin:report`, projecting the
+# task's stored `origin`. Unlike `status:` it is never changed and never
+# removed: origin is a fact about how the task came to exist, so it stays
+# on the mirror through every state, closed included
+# (docs/product/stage-3-github-issues/labels.md).
+#
+# origin_label <file-origin> <labels-csv> — the label to carry. A label
+# the mirror already wears wins over the file, because the field is
+# written once and a disagreement means this diff is the stale one; a
+# task file written before the field existed leaves it empty rather than
+# guessing, and the next recording commit adds it from the queue.
+origin_label() {
+  local worn
+  worn=$(printf '%s\n' "$2" | tr ',' '\n' | grep '^origin:' | head -n1 || true)
+  if [ -n "$worn" ]; then printf '%s' "$worn"; return 0; fi
+  case "$1" in
+    rule)   printf 'origin:rule' ;;
+    report) printf 'origin:report' ;;
+  esac
+}
+
+# ensure_origin_label <label> — created on first use like every other,
+# in the vocabulary an Issues reader already knows: GitHub's stock bug
+# red for a report, its documentation blue for a rule.
+ensure_origin_label() {
+  case "$1" in
+    origin:rule)   ensure_label "origin:rule" "0075ca" "Derived from an authored rule" ;;
+    origin:report) ensure_label "origin:report" "d73a4a" "Born from a report of work an existing rule authorizes" ;;
+  esac
+}
+
 open=false;   [ "$PR_STATE" = "open" ]  && open=true
 merged=false; [ "$PR_MERGED" = "true" ] && merged=true
 
@@ -298,9 +337,10 @@ fi
 
 # Every task the diff adds gets a mirror in the right state.
 LIVE_NUMS=""
-while IFS="$TAB" read -r tid fname priority milestone refs ttitle; do
+while IFS="$TAB" read -r tid fname priority milestone torigin refs ttitle; do
   [ -n "$tid" ] || continue
   [ "$refs" = "-" ] && refs=""
+  [ "$torigin" = "-" ] && torigin=""
   LIVE_NUMS="${LIVE_NUMS} $(num_of_id "$tid")"
 
   row=$(issue_row_of "$tid")
@@ -337,10 +377,17 @@ while IFS="$TAB" read -r tid fname priority milestone refs ttitle; do
       "" \
       "Becomes ready for development when #${PR} merges and every" \
       "spec in its \`spec_ref\` is \`approved\`.")
+    olbl=$(origin_label "$torigin" "")
+    olabel_args=()
+    if [ -n "$olbl" ]; then
+      ensure_origin_label "$olbl"
+      olabel_args=(-f "labels[]=${olbl}")
+    fi
     gh api -X POST "repos/${REPO}/issues" \
       -f "title=$(tag_of_id "$tid") ${ttitle}" \
       -f "labels[]=writrun:task" \
       -f "labels[]=${lbl}" \
+      ${olabel_args[@]+"${olabel_args[@]}"} \
       -f "body=${body}" >/dev/null
     if [ "$merged" = "true" ]; then
       echo "Created issue for ${tid} (ready)"
@@ -352,7 +399,18 @@ while IFS="$TAB" read -r tid fname priority milestone refs ttitle; do
 
   num=$(printf '%s' "$row" | cut -f1)
   istate=$(printf '%s' "$row" | cut -f2)
-  ibody=$(printf '%s' "$row" | cut -f3)
+  ilabels=$(printf '%s' "$row" | cut -f3)
+  ibody=$(printf '%s' "$row" | cut -f4)
+
+  # Every rewrite below replaces the mirror's whole label set, so the
+  # origin label is re-stated in each of them — dropping it would be a
+  # removal, and this one is never removed.
+  olbl=$(origin_label "$torigin" "$ilabels")
+  olabel_args=()
+  if [ -n "$olbl" ]; then
+    ensure_origin_label "$olbl"
+    olabel_args=(-f "labels[]=${olbl}")
+  fi
 
   # Three answers to "whose mirror is this", not two. Mine: proceed.
   # Somebody's, and that somebody is still open: refuse, exactly as
@@ -386,7 +444,8 @@ while IFS="$TAB" read -r tid fname priority milestone refs ttitle; do
       # to being offered, not back in the queue.
       gh api -X PATCH "repos/${REPO}/issues/${num}" -f state=open >/dev/null
       gh api -X PUT "repos/${REPO}/issues/${num}/labels" \
-        -f "labels[]=writrun:task" -f "labels[]=status:proposed" >/dev/null
+        -f "labels[]=writrun:task" -f "labels[]=status:proposed" \
+        ${olabel_args[@]+"${olabel_args[@]}"} >/dev/null
       [ "$adopted" = "true" ] || echo "${tid} reopened with #${PR}"
     else
       echo "${tid} already mirrored; nothing to do."
@@ -403,11 +462,13 @@ while IFS="$TAB" read -r tid fname priority milestone refs ttitle; do
     fi
     if is_ready $refs; then
       gh api -X PUT "repos/${REPO}/issues/${num}/labels" \
-        -f "labels[]=writrun:task" -f "labels[]=status:ready" >/dev/null
+        -f "labels[]=writrun:task" -f "labels[]=status:ready" \
+        ${olabel_args[@]+"${olabel_args[@]}"} >/dev/null
       echo "${tid} is ready for development"
     else
       gh api -X PUT "repos/${REPO}/issues/${num}/labels" \
-        -f "labels[]=writrun:task" -f "labels[]=status:backlog" >/dev/null
+        -f "labels[]=writrun:task" -f "labels[]=status:backlog" \
+        ${olabel_args[@]+"${olabel_args[@]}"} >/dev/null
       echo "${tid} merged with a spec still draft — kept backlog"
     fi
   fi

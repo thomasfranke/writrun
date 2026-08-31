@@ -17,7 +17,7 @@ estimate: TODO
 
 Our shape.
 EOF
-bash "$NEW_SH" task "Extended" >/dev/null 2>&1
+bash "$NEW_SH" task "Extended" --origin rule >/dev/null 2>&1
 fm=$(sed -n '2,/^---$/p' work/tasks/task-0001-extended.md)
 if printf '%s\n' "$fm" | grep -q '^owner: TODO — the team that answers for this$' &&
    printf '%s\n' "$fm" | grep -q '^estimate: TODO$' &&

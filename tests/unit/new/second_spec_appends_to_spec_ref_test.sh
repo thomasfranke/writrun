@@ -2,7 +2,7 @@
 . "$(dirname "$0")/../../pipeline_lib.sh"
 
 setup
-bash "$NEW_SH" task "A tracked thing" >/dev/null 2>&1
+bash "$NEW_SH" task "A tracked thing" --origin rule >/dev/null 2>&1
 bash "$NEW_SH" spec task-001 "First" >/dev/null 2>&1
 bash "$NEW_SH" spec task-001 "Second" >/dev/null 2>&1
 if grep -q '^spec_ref: \[spec-0001, spec-0002\]$' work/tasks/task-0001-a-tracked-thing.md; then

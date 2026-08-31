@@ -6,7 +6,7 @@
 setup
 mkdir -p .writrun/templates
 printf '# {{title}}\n\nShipped shape.\n' > .writrun/templates/task.md
-bash "$NEW_SH" task "Layered" >/dev/null 2>&1
+bash "$NEW_SH" task "Layered" --origin rule >/dev/null 2>&1
 if grep -q '^Shipped shape.$' work/tasks/task-0001-layered.md; then
   echo "ok    the shipped .writrun template is the fallback layer"; pass=$((pass + 1))
 else

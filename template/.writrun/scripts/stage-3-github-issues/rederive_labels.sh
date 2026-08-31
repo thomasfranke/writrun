@@ -84,6 +84,16 @@ label_for() {
   esac
 }
 
+# origin_label_for <task-file> — the label the task's stored `origin`
+# projects. Nothing for a file written before the field existed, which is
+# a gap to leave rather than a value to guess.
+origin_label_for() {
+  case "$(fm "$1" origin)" in
+    rule)   printf 'origin:rule' ;;
+    report) printf 'origin:report' ;;
+  esac
+}
+
 # close_for <task-file> — the close reason a terminal status implies, or
 # nothing for a task still in the pipeline.
 close_for() {
@@ -117,7 +127,7 @@ num_of_id() {
     | sed -n 's/^task-0*\([0-9][0-9]*\)$/\1/p'
 }
 
-set_status() {   # set_status <issue> <labels-csv> <status-label>
+set_status() {   # set_status <issue> <labels-csv> <status-label> [extra-label]
   local kept l args
   kept=$(printf '%s\n' "$2" | tr ',' '\n' | grep -v '^status:' | sed '/^$/d' || true)
   args=()
@@ -128,6 +138,7 @@ set_status() {   # set_status <issue> <labels-csv> <status-label>
 $kept
 EOF
   args+=(-f "labels[]=$3")
+  [ -n "${4:-}" ] && args+=(-f "labels[]=$4")
   gh api -X PUT "repos/${REPO}/issues/${1}/labels" "${args[@]}" >/dev/null
 }
 
@@ -138,6 +149,13 @@ ensure_label() {   # ensure_label <name> <color> <description>
     printf '%s\n' "$out" | grep -q "HTTP 422" \
       || { printf '%s\n' "$out" >&2; exit 1; }
   fi
+}
+
+ensure_origin_label() {   # ensure_origin_label <label>
+  case "$1" in
+    origin:rule)   ensure_label "origin:rule" "0075ca" "Derived from an authored rule" ;;
+    origin:report) ensure_label "origin:report" "d73a4a" "Born from a report of work an existing rule authorizes" ;;
+  esac
 }
 
 seen=""
@@ -193,6 +211,17 @@ EOF
   istate=$(printf '%s' "$found" | cut -f2)
   labels=$(printf '%s' "$found" | cut -f3)
 
+  # The `origin:` label never changes and never comes off, so this pass
+  # only ever adds one: a mirror minted before the field existed gains it
+  # here, once, from the stored field
+  # (docs/product/stage-3-github-issues/labels.md). One already worn is
+  # left exactly as it is.
+  olbl=""
+  if ! printf '%s\n' "$labels" | tr ',' '\n' | grep -q '^origin:'; then
+    olbl=$(origin_label_for "$tf")
+    [ -n "$olbl" ] && ensure_origin_label "$olbl"
+  fi
+
   # Closing wins. A mirror closed by the same merge is out of the
   # pipeline, and every label names a place inside it.
   if [ "$istate" != "open" ]; then
@@ -211,6 +240,7 @@ EOF
     done <<EOF
 $kept
 EOF
+    [ -n "$olbl" ] && args+=(-f "labels[]=$olbl")
     gh api -X PUT "repos/${REPO}/issues/${num}/labels" ${args[@]+"${args[@]}"} >/dev/null
     gh api -X PATCH "repos/${REPO}/issues/${num}" \
       -f state=closed -f "state_reason=${closing}" >/dev/null
@@ -230,6 +260,6 @@ EOF
     status:blocked)
       ensure_label "status:blocked" "b60205" "Stalled by something outside the queue — blocked_reason says what" ;;
   esac
-  set_status "$num" "$labels" "$want"
+  set_status "$num" "$labels" "$want" "$olbl"
   echo "${tref} → ${want} (re-derived from the queue)"
 done

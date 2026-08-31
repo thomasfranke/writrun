@@ -4,7 +4,7 @@
 # A generated task carries all four dates, and the machinery's two are
 # born null: they record merges, and nothing has merged yet.
 setup
-bash "$NEW_SH" task "Stamp the queue dates" --slug stamp-queue-dates >/dev/null 2>&1
+bash "$NEW_SH" task "Stamp the queue dates" --origin rule --slug stamp-queue-dates >/dev/null 2>&1
 f=work/tasks/task-0001-stamp-queue-dates.md
 
 for want in "queued: null" "merged: null"; do

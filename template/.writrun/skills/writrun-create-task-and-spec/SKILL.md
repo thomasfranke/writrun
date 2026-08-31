@@ -26,12 +26,28 @@ drift this script exists to make impossible:
 
 ```bash
 bash .writrun/skills/writrun-create-task-and-spec/new.sh task "<title>" \
+  --origin rule|report \
   --slug <two-or-three-words> \
   [--priority high|medium|low] \
   [--depends-on task-nnnn,task-mmmm] \
   [--doc-ref path/to/doc.md#anchor] \
   [--milestone name]
 ```
+
+**`--origin` is required, and it records a fact, not a preference:** how
+this task came to exist.
+
+- `rule` — it was derived from an authored rule a human declared
+  finished (flow 1). The doc came first and the task exists to bring the
+  system up to it.
+- `report` — it was born from a report of work an existing rule already
+  authorizes: a defect someone hit, a gap found in the code or the
+  machinery. The doc it points at validates the task; it did not
+  generate it.
+
+There is no default and no third value. An unstated origin refuses,
+because the one thing worse than being asked is a wrong fact recorded
+silently — and the field is written once and never rewritten.
 
 **Choose the slug. Deriving it is the fallback, not the default.** It is
 shown above without brackets for that reason: `--slug` is the one argument
@@ -59,6 +75,7 @@ blocked_reason: null
 taken_by: null
 spec_ref: []
 doc_ref: null            # or --doc-ref's value
+origin: rule                  # or report — --origin's value, always one of the two
 priority: medium              # or --priority's value
 depends_on: []                 # or --depends-on's value, as a list
 milestone: null                # or --milestone's value
@@ -71,6 +88,13 @@ Then fill in the generated body: the request only — what to do, and why it
 matters. No acceptance criteria, no step-by-step plan, no technical detail:
 that belongs in the spec, not the task. Fill any extension fields the
 project's template added to the front matter too — see the next rule.
+
+**Leave the generated References line alone.** The body carries every
+reference as a clickable relative link — the task's `doc_ref` and each
+spec in `spec_ref`, a spec's `task_ref` — and the generator writes it,
+including on the run that appends a new spec. The front matter keeps the
+same references as plain strings, because that is what the machinery
+reads; the two must never disagree, so neither is edited by hand.
 
 If the script isn't available in the target project (not yet copied in, or
 no bash), do the above by hand — the schema is normative either way, the

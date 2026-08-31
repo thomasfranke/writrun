@@ -5,7 +5,7 @@
 # the shape has to be right — a file born in the old shape would fail the
 # canonical check the moment it was created.
 setup
-bash "$NEW_SH" task "A tracked thing" >/dev/null 2>&1
+bash "$NEW_SH" task "A tracked thing" --origin rule >/dev/null 2>&1
 bash "$NEW_SH" spec task-0001 "Its elaboration" >/dev/null 2>&1
 t=work/tasks/task-0001-a-tracked-thing.md
 s=work/specs/spec-0001-its-elaboration.md

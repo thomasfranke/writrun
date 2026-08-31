@@ -3,6 +3,6 @@
 
 setup
 check "an invalid --priority is refused" 3 "Invalid --priority" \
-  -- bash "$NEW_SH" task "Bad" --priority urgent
+  -- bash "$NEW_SH" task "Bad" --origin rule --priority urgent
 
 finish

@@ -5,11 +5,11 @@
 # committed first — an id that only ever existed in a working tree never
 # existed as far as the project is concerned.
 setup
-bash "$NEW_SH" task "First" >/dev/null 2>&1
+bash "$NEW_SH" task "First" --origin rule >/dev/null 2>&1
 commit_all
 rm work/tasks/task-0001-first.md
 commit_all
-bash "$NEW_SH" task "After a delete" >/dev/null 2>&1
+bash "$NEW_SH" task "After a delete" --origin rule >/dev/null 2>&1
 if [ -f work/tasks/task-0002-after-a-delete.md ]; then
   echo "ok    a deleted task's id is not reused"; pass=$((pass + 1))
 else

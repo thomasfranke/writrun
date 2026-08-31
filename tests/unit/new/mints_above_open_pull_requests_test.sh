@@ -9,7 +9,7 @@ setup
 stub_forge
 forge_pr 9 added work/tasks/task-0004-theirs.md
 check "the mint reaches past this checkout" 0 "every open pull request" \
-  -- bash "$NEW_SH" task "Mine"
+  -- bash "$NEW_SH" task "Mine" --origin rule
 if [ -f work/tasks/task-0005-mine.md ]; then
   echo "ok    and lands above the id that pull request claims"; pass=$((pass + 1))
 else

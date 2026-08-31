@@ -6,7 +6,7 @@
 # narrower spelling of its number still resolves and still writes the id
 # the task file carries.
 setup
-bash "$NEW_SH" task "A tracked thing" >/dev/null 2>&1
+bash "$NEW_SH" task "A tracked thing" --origin rule >/dev/null 2>&1
 bash "$NEW_SH" spec task-1 "Search and replace" >/dev/null 2>&1
 if [ -f work/specs/spec-0001-search-and-replace.md ] &&
    grep -q '^id: spec-0001$' work/specs/spec-0001-search-and-replace.md &&

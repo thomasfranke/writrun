@@ -17,7 +17,7 @@ Our sections.
 ## Outcome
 _(later)_
 T
-bash "$NEW_SH" task "A thing" >/dev/null 2>&1
+bash "$NEW_SH" task "A thing" --origin rule >/dev/null 2>&1
 bash "$NEW_SH" spec task-001 "Shaped" >/dev/null 2>&1
 if grep -q '^# spec-0001 — Shaped (for task-0001)$' work/specs/spec-0001-shaped.md &&
    grep -q '^Our sections.$' work/specs/spec-0001-shaped.md &&

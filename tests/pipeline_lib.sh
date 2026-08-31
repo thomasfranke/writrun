@@ -183,7 +183,7 @@ setup() {
   git checkout -qb feature
 }
 
-task_file() {   # task_file <id> <status> <spec_ref> [completed] [taken_by]
+task_file() {   # task_file <id> <status> <spec_ref> [completed] [taken_by] [origin]
   cat > "work/tasks/$1.md" <<EOF
 ---
 id: $1
@@ -192,6 +192,7 @@ blocked_reason: null
 taken_by: ${5:-null}
 spec_ref: [$3]
 doc_ref: null
+origin: ${6:-rule}
 priority: medium
 depends_on: []
 milestone: null
