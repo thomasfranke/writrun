@@ -1,8 +1,8 @@
 ---
 id: task-0021
-status: ready
+status: in-progress
 blocked_reason: null
-taken_by: null
+taken_by: thomasfranke
 spec_ref: [spec-0026, spec-0027, spec-0029, spec-0030, spec-0033, spec-0034]
 doc_ref: product/adoption.md#three-stages
 priority: medium
