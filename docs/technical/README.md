@@ -270,13 +270,6 @@ only when it holds a documented key — no empty placeholder objects.
 | `auto_pr` | `stage_2` | `true` / `false` | agents only |
 | `pr_title_style` | `stage_2` | `conventional` / `bracketed` | agents only |
 
-(Until the machinery catches up with this section, the two conduct
-flags `auto_commit` and `credit_ai` still sit in a `stage_1` section
-and `check_settings.sh` still expects them there — the derived task
-moves both. The three declaration keys are likewise ahead of the
-machinery: the file does not carry them yet and the checker does not
-know them; their derived task adds both halves.)
-
 **Every key is present, always** — the same reason the front matter carries
 `null` fields rather than omitting them: a reader sees the whole
 configuration without knowing the defaults. Each key's documented default
@@ -389,8 +382,18 @@ platform credit — a co-author trailer, a session link, a
 generated-with line — while `credit_ai` is `false`. What leaves no
 trace (`auto_commit`, `auto_pr` — whether the agent *asked*) stays
 instruction-bound: no diff can show a question that wasn't asked.
-(Until the machinery catches up, neither check runs; the derived task
-adds both.)
+
+`check_observance.sh` is where both live. The title check strips the
+`[TASK-NNNN]` tags — not the settable part — and reads what is left
+against the declared style: the type against the vocabulary
+`conventions/commits.md` carries, the scope against it too when one is
+present, and nothing about the summary. Case inside a bracketed label
+is not judged, because the convention writes both `[Fix]` and `[DOCS]`.
+The credit check reads the pull request's own commits and body — never
+`main`'s past, since nothing rewrites history — and skips the
+machinery's recording commit **by committer identity**, not by subject:
+the subject is a variable the adopter is invited to edit, the identity
+is the forge's.
 
 ### The shape is a checked contract
 
