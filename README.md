@@ -171,9 +171,10 @@ No secrets, no App token, no PAT. Labels are created on first use.
 | Settings → General | Issues | **On** — the task mirror lives there. Skip if you deleted the two mirror workflows. |
 | Settings → General | Allow squash merging | **On** — every merge is a squash. |
 | Settings → Actions → General | Workflow permissions | **Read and write** — lets `writrun approve` record `draft → approved`. Read-only loses only that convenience; every check still works. |
-| Settings → Branches → rule on `main` | Require a pull request before merging | **On**, 1 approval. |
-| Settings → Branches → rule on `main` | Dismiss stale approvals when new commits are pushed | **Off** — the recording push would dismiss the approval it records. |
-| Settings → Branches → rule on `main` | Required status checks | Optional: the four `writrun check` jobs. If required, **do not apply the rule to administrators** ([why](docs/technical/decisions/README.md)). |
+| Settings → Rules → Rulesets → ruleset on `main` | Block force pushes · Restrict deletions | **On** — safe on any repo: the machinery's recording pushes are ordinary pushes and are unaffected. |
+| Settings → Rules → Rulesets → same ruleset | Require a pull request + the GitHub Actions app on the bypass list | **Recommended, never a condition for adoption.** The bypass is what lets the recording commits (status flips, dates, approvals) keep landing on `main`. The forge only offers the app as a bypass actor on organization-owned repos — on user-owned repos (UI and API alike) it is unavailable, so skip this rule there; everything human still enters through a PR by convention. Approvals: 1 with reviewers; 0 where the maintainer authors the PRs — there the merge is the assent. |
+| Settings → Rules → Rulesets → same ruleset | Dismiss stale pull request approvals | **Off** — the recording push would dismiss the approval it records. Only relevant with the PR rule above. |
+| Settings → Rules → Rulesets → same ruleset | Required status checks | Optional: the four `writrun check` jobs. If required, keep the repository's administrators on the bypass list ([why](docs/technical/decisions/README.md)). |
 
 For this repository itself (not adopters): Settings → General →
 Description = `What is written, runs. Autogen tasks and specs from your

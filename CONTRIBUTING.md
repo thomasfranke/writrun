@@ -218,10 +218,12 @@ from.
   maintainer, and no forge lets a person approve their own — a
   review-based gate would be unsatisfiable, and an unsatisfiable gate gets
   worked around, which is worse than no gate. The flip is written to
-  `main` after the merge, which is why this repository leaves `main`
-  unprotected; protecting it later means allowing the Actions token to
-  push, or the recording stops. Fork PRs need nothing special: the merge
-  is the maintainer's either way.
+  `main` after the merge, which is why `main` must stay reachable by the
+  Actions token. On this user-owned repository the forge offers no
+  bypass for the app, so `main` carries the ruleset half it can — no
+  force pushes, no deletions — and everything human still enters through
+  a pull request by the project's own rule. Fork PRs need nothing
+  special: the merge is the maintainer's either way.
 - `writrun issues` mirrors new tasks into GitHub Issues, one direction
   only. **The file under `work/tasks/` is the authority.** An edit made in
   an Issue is not written back.
