@@ -1,7 +1,7 @@
 ---
 id: spec-0041
 task_ref: task-0024
-status: approved
+status: implemented
 created: 2026-08-31T21:04:45Z
 ---
 
@@ -386,4 +386,43 @@ this is one more instance for its Outcome to point at.
 
 ## Outcome
 
-_(fill after execution)_
+Both halves shipped in `check_doc_shapes.sh`, wired into `writrun check`
+beside the front-matter step and covered by two case files. Nine
+documents were brought up to the shape they teach. The check reports
+7 shown shapes in this repository — 6 whole, 1 fragment, 0 skipped — and
+the suite is 258 case files, 0 failed.
+
+**Where it diverged, and what drafting had not seen.**
+
+- **A schematic is not a third category; it was a stale example.** The
+  `create-task-and-spec` skill printed `id: task-nnnn` and `created:
+  <today, ISO date>`, which no checker can read — and it was *also*
+  missing `queued` and `merged`, which the generator has written for
+  weeks. Fencing it as ```text would have honoured the spec's escape and
+  left the most-copied block in the kit outside the guard forever. It
+  became a real instance instead: a concrete id, a real timestamp, the
+  two missing fields. The escape stays for what genuinely is not
+  canonical.
+- **The annotation rule was not in the Steps and the change does not work
+  without it.** Both schema blocks in `technical/README.md` annotate
+  every field (`# machinery only: …`) and the canonical form has no
+  comments, so the guard would have failed the two blocks it most needs
+  to hold. A trailing ` #` is stripped before the block is read; a bare
+  `#` is not, so `doc_ref: product/concepts/task.md#two-invariants` keeps
+  its anchor. Decision 0062 carries the reasoning and the rejected
+  alternative.
+- **The rule caught its own documentation.** The paragraphs introducing
+  the retired-word half used the token form they refuse. The section now
+  names the word as a word and says why — which is the rule demonstrated
+  rather than described. Worth knowing before writing the next such
+  paragraph.
+- **The spec's own promise list was short by one line.** It promised the
+  decision file and not `decisions/README.md`, so the chronology row was
+  refused under a finished branch and the spec went through an
+  amendment. That is task-0028's defect, met from the inside; spec-0038
+  is approved and unimplemented, and this is one more instance for it.
+
+**What the guard does not reach.** Prose that teaches a shape without
+fencing it as `yaml`, and any document outside the five roots. Both are
+deliberate: the check reads shapes a script can see without judgement,
+and widening the roots is one line when a sixth is worth holding.

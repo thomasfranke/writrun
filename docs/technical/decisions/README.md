@@ -81,3 +81,4 @@ appending a row.
 | [0059](pull-requests/0059-the-pause-is-derived.md) | 2026-08-31 | `pull-requests` | an amendment in flight suspends the task; the pause is derived, the forge carries the relation. |
 | [0060](github-issues/0060-the-merged-close-has-one-owner.md) | 2026-08-31 | `github-issues` | the merged close has one owner, and the label is the queue's to project — completing 0048. |
 | [0061](tasks-and-specs/0061-the-push-is-its-own-act.md) | 2026-08-31 | `tasks-and-specs` | the push is its own act, and gets its own flag — completing 0054. |
+| [0062](tasks-and-specs/0062-a-shown-shape-is-a-checked-shape.md) | 2026-08-31 | `tasks-and-specs` | a shape a document shows is checked like a file it stores. |
