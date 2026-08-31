@@ -272,11 +272,15 @@ shape that is history, or one shown to say what the checker refuses — is
 fenced as ```text, which is the only escape and is always visible in a
 diff.
 
-Its second half holds the *words*. `tests/retired_vocabulary.txt` carries
+Its second half holds the *words*.
+`.writrun/scripts/stage-2-pull-requests/retired_vocabulary.txt` carries
 one line per word this project stopped having, and the backticked form is
 refused wherever the documents instruct — `docs/technical/decisions/` is
 exempt, because a record has to be able to name what it retired, and
-ordinary English is untouched because it carries no backticks. Retiring a
+ordinary English is untouched because it carries no backticks. A
+vocabulary the check cannot find is *said*, never assumed empty: a half
+that answers "clean" for having read nothing is the same blindness a
+block silently skipped is. Retiring a
 word without adding its line is how the next one ships; the file is the
 single source, and it is the price of the guard. **This paragraph cannot
 spell its own example**, and that is the rule working: the token form is
@@ -789,6 +793,13 @@ file whose blind copy would replace the adopting project's own. The mirrored par
 **deliberate full copy**, kept byte-identical to this repository's own
 root files by a unit test (`make template-sync` refreshes; the mirror
 list is `tests/template_mirrors.txt`, the single source of what ships).
+
+**A script's data file ships beside the script.** The vocabulary lives
+in `.writrun/scripts/stage-2-pull-requests/`, next to the check that
+reads it, and not in this repository's `tests/` — the mirror carries
+`.writrun` whole and carries nothing else, so a data file left outside it
+reaches no adopter, and the check they run passes by knowing nothing.
+That is a silence, not a pass, which is why the absent case says so.
 
 **The mirror holds bytes; the kit's own prose is held by words.**
 Everything under `template/` that is *not* mirrored — its `AGENTS.md`,

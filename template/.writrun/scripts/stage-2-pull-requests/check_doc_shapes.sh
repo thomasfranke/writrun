@@ -23,12 +23,17 @@
 #      fragment in the output, because a block silently skipped is the
 #      blindness this check exists to end.
 #
-#   2. **A retired word is refused where it instructs.** The vocabulary
-#      is tests/retired_vocabulary.txt, one line per word. The match is on
-#      the **backticked** form, so ordinary English survives: "what is
-#      pending" is prose, `pending` is the status this project stopped
-#      having. Exempt: docs/technical/decisions/, which is append-only
-#      history — a record has to be able to name what it retired.
+#   2. **A retired word is refused where it instructs.** The vocabulary is
+#      retired_vocabulary.txt, one line per word, and it lives beside this
+#      script — inside `.writrun/`, which the mirror carries whole, because
+#      a script shipped to an adopter without its data file is a check that
+#      passes by knowing nothing. The match is on the **backticked** form,
+#      so ordinary English survives: "what is pending" is prose, `pending`
+#      is the status this project stopped having. Exempt:
+#      docs/technical/decisions/, which is append-only history — a record
+#      has to be able to name what it retired. A vocabulary that is not
+#      there is *said*, never assumed empty: a half silently skipped is the
+#      same blindness a block silently skipped is.
 #
 # **Two display conventions the check understands.** An annotation after
 # a value (` # what this field is`) is stripped before the block is read:
@@ -50,7 +55,17 @@ set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 CHECK_FM="${CHECK_FRONT_MATTER:-.writrun/skills/writrun-check-front-matter/check_front_matter.sh}"
 [ -f "$CHECK_FM" ] || CHECK_FM="$HERE/../../skills/writrun-check-front-matter/check_front_matter.sh"
-VOCAB="${RETIRED_VOCABULARY:-tests/retired_vocabulary.txt}"
+# The vocabulary ships beside this script, so the fallback is the script's
+# own directory and not a second guess at the repository's layout. An
+# address given by hand is honoured as given — falling back from it would
+# answer a question about one file by reading another, and the caller
+# would never learn that the file they named is not there.
+if [ -n "${RETIRED_VOCABULARY:-}" ]; then
+  VOCAB="$RETIRED_VOCABULARY"
+else
+  VOCAB=".writrun/scripts/stage-2-pull-requests/retired_vocabulary.txt"
+  [ -f "$VOCAB" ] || VOCAB="$HERE/retired_vocabulary.txt"
+fi
 
 if [ "$#" -gt 0 ]; then
   ROOTS="$*"
@@ -73,6 +88,25 @@ origin priority depends_on milestone created queued completed merged provenance"
 in_list() {   # in_list <needle> <haystack...>
   local n="$1"; shift
   case " $* " in *" $n "*) return 0 ;; esac
+  return 1
+}
+
+# is_record <path> — the append-only history, which may name what it
+# retired.
+#
+# **The exemption is about a directory, not about how a root was
+# spelled.** `find docs` prints `docs/...`, `find ./docs` prints
+# `./docs/...`, and an absolute root prints an absolute path — the same
+# files, three spellings. A literal prefix glob exempts the records under
+# one of them and rejects them under the next, so a developer running
+# this by hand gets faults CI never shows, on the very files whose whole
+# purpose is to name the word that was retired. The leading `./` is
+# dropped and the directory is matched wherever it is rooted, the kit's
+# copy included: history is history in the template too.
+is_record() {
+  case "${1#./}" in
+    docs/technical/decisions/*|*/docs/technical/decisions/*) return 0 ;;
+  esac
   return 1
 }
 
@@ -200,22 +234,44 @@ done
 
 # ------------------------------------------------------- retired words
 
+words=0
 if [ -f "$VOCAB" ]; then
   while IFS= read -r entry; do
     case "$entry" in ""|\#*) continue ;; esac
     word=$(printf '%s' "$entry" | awk '{print $1}')
     into=$(printf '%s' "$entry" | awk '{print $2}')
     [ -n "$word" ] && [ -n "$into" ] || continue
+    words=$((words + 1))
     for f in $(files); do
-      case "$f" in docs/technical/decisions/*) continue ;; esac
-      hits=$(grep -n -- "\`${word}\`" "$f" || true)
+      is_record "$f" && continue
+      # **The vocabulary is words, so the match is literal.** The file is
+      # documented as one word to the line; read as a basic regular
+      # expression, the first entry carrying a `.`, a `*` or a bracket
+      # would quietly match more than it says or less, and nothing in the
+      # output would show which.
+      hits=$(grep -nF -- "\`${word}\`" "$f" || true)
       [ -n "$hits" ] || continue
-      printf '%s\n' "$hits" | while IFS= read -r hit; do
-        echo "REJECTED: ${f}:${hit%%:*}: \`${word}\` was retired — say \`${into}\`; a record may name it, an instruction may not" >&2
-      done
-      faults=$((faults + 1))
+      # One fault per offence, not per file: the lines are printed one by
+      # one, and a count that moved by one behind them would report three
+      # rejections as one. The loop reads a here-document rather than a
+      # pipe for the same reason — a pipeline's subshell cannot raise the
+      # count it is counting into.
+      while IFS= read -r hit; do
+        [ -n "$hit" ] || continue
+        fault "${f}:${hit%%:*}: \`${word}\` was retired — say \`${into}\`; a record may name it, an instruction may not"
+      done <<HITS
+${hits}
+HITS
     done
   done < "$VOCAB"
+else
+  # **Not there is not empty.** The vocabulary ships beside this script,
+  # so its absence means someone removed it — and a half that answers
+  # "clean" for having read nothing is exactly the silence this check
+  # exists to end. Said rather than faulted: an adopter is entitled to a
+  # project with no retired words, but never to a check that hides which
+  # of the two it found.
+  echo "  no vocabulary at ${VOCAB} — no retired word was read, and none was judged."
 fi
 
 if [ "$faults" -ne 0 ]; then
@@ -226,4 +282,4 @@ if [ "$faults" -ne 0 ]; then
   exit 1
 fi
 
-echo "OK — ${blocks} shown shape(s): $((blocks - fragments - skipped)) whole, ${fragments} fragment(s), ${skipped} not front matter."
+echo "OK — ${blocks} shown shape(s): $((blocks - fragments - skipped)) whole, ${fragments} fragment(s), ${skipped} not front matter; ${words} retired word(s) read."

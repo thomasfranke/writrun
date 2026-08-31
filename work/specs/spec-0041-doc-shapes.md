@@ -422,6 +422,31 @@ the suite is 258 case files, 0 failed.
   amendment. That is task-0028's defect, met from the inside; spec-0038
   is approved and unimplemented, and this is one more instance for it.
 
+- **The vocabulary shipped outside the mirror, which is the whole defect
+  again.** Step 8 said it lives beside the script that reads it, inside
+  `.writrun/`; the implementation put it in `tests/`, and `template/` has
+  no `tests/`. So in every adopter repository the kit's own workflow ran
+  this check with no vocabulary at all — the word half a silent no-op,
+  exit 0, and the summary naming only the shapes. A check that ships to
+  an adopter knowing nothing and reports clean is the defect this spec
+  exists to end, arrived at from the other side. The file moved to where
+  step 8 put it, the mirror carries it, the summary counts the words it
+  read, and an absent vocabulary is now said rather than assumed empty.
+- **The records' exemption was a literal prefix, so it depended on how a
+  root was spelled.** `find docs` prints `docs/…` and `find ./docs`
+  prints `./docs/…`; the same decision records were exempt under the
+  first and rejected under the second, for naming the very words they
+  retired. Green in CI, which passes the defaults, and red for whoever
+  ran the script by hand — the worst-shaped kind of failure. The path is
+  normalised now and the directory is matched wherever it is rooted.
+- **Two smaller ones in the same half.** The vocabulary entry was used as
+  a regular expression, though the file is documented as one word to the
+  line — literal now, so a future entry carrying a `.` matches what it
+  says. And the fault count moved once per *file* while the rejections
+  print once per *offence*, so three of them were reported as one; the
+  loop that prints them raises the count itself, which a pipeline's
+  subshell could not.
+
 **What the guard does not reach.** Prose that teaches a shape without
 fencing it as `yaml`, and any document outside the five roots. Both are
 deliberate: the check reads shapes a script can see without judgement,
