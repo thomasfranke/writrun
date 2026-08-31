@@ -445,8 +445,15 @@ Deterministic, independent of file layout on disk:
    pull request is someone else's stays theirs, however stale: the
    lister names it as in flight rather than hiding it, and taking it
    over — closing or adopting their pull request — is a human decision,
-   never the algorithm's. Only when no resumable task exists does
-   selection proceed.
+   never the algorithm's. **Resuming re-checks the authorization**: read
+   the resumed task's `spec_ref` against the authority branch *and*
+   against open pull requests — an amendment may have suspended the task
+   mid-flight, and the authority branch alone cannot show an amendment
+   still riding an open pull request
+   ([statuses](../product/stage-2-pull-requests/statuses.md#an-amendment-under-an-open-pull-request)).
+   A suspended task is resumed by finishing or waiting out the
+   amendment, never by implementing against a spec whose approval is in
+   question. Only when no resumable task exists does selection proceed.
 1. Read the front-matter of every task.
 2. Keep those with `status: ready` — `backlog`, `blocked` and the
    in-flight and terminal states are excluded here by construction, with
