@@ -3,7 +3,7 @@ id: task-0024
 status: ready
 blocked_reason: null
 taken_by: null
-spec_ref: []
+spec_ref: [spec-0041]
 doc_ref: technical/README.md#task-schema
 origin: report
 priority: medium
@@ -17,7 +17,7 @@ merged: null
 
 # The shapes the docs show are held to the schema
 
-**References:** [technical/README.md#task-schema](../../docs/technical/README.md#task-schema)
+**References:** [technical/README.md#task-schema](../../docs/technical/README.md#task-schema) · [spec-0041](../specs/spec-0041-doc-shapes.md)
 
 A schema is enforced where the machinery reads it and nowhere else, so
 every shape the prose *shows* is unheld — and three of them have fallen
