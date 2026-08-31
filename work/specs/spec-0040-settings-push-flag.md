@@ -84,7 +84,14 @@ defect, unrelated to the settings, and a report of its own.
    the behaviour from before the key existed, like the other two.
    `read_setting.sh`'s `default_for`, `check_settings.sh`'s `HOMES`, its
    boolean vocabulary arm and its printed summary. Documented with the
-   other two.
+   other two. **`HOMES` is the present-always list**, so the key is
+   written into `.writrun/settings.json` in the same step and into every
+   fixture that spells a `stage_2` object out inline — 46 lines across
+   the 11 cases in `tests/integration/stage-2/settings/`, from
+   `a_non_canonical_shape_is_rejected_test.sh`'s eleven down to the
+   single lines in the stage-gate cases. A step that reaches `HOMES` and
+   stops there faults this repository's own file with `'stage_2.auto_push'
+   is missing` and takes a dozen unrelated cases with it.
 2. **`technical/README.md`: `### auto_commit and auto_pr` becomes `###
    The conduct flags`**, covering three. `auto_push` gates the push;
    `auto_pr` stops reaching for the branch and keeps the pull request's
@@ -97,9 +104,19 @@ defect, unrelated to the settings, and a report of its own.
    present the push and the draft as the one act they are: the agent
    composes the branch, the title and the body, presents them together,
    and pushes only on the word — so an adopter who gates the forge is
-   asked before anything of theirs is public, not after.
+   asked before anything of theirs is public, not after. **Before the
+   pull request exists, either flag `false` holds the whole act**: the
+   push and the draft are one moment, and `auto_pr: false` gating only
+   the second half is the defect this spec was written to remove. Once
+   the pull request is open, a further push to the head branch is
+   `auto_push`'s alone — `auto_pr` has already been answered, and the
+   flag that governs work becoming public governs it again.
 4. **Alphabetical inside each section**, in `.writrun/settings.json` and
-   in the kit's, stated as the schema's rule in `#settings`.
+   in the kit's, stated as the schema's rule in `#settings` — and
+   obeyed by that section itself, whose example JSON and key table both
+   carry mint order today (`spec_required` ahead of `decisions_style`,
+   `agent_coauthor` between the two `auto_` flags). A rule stated two
+   paragraphs below a copy that breaks it teaches the copy.
 5. **One place for the machinery's subjects.**
    `.writrun/scripts/stage-2-pull-requests/commit_subject.sh
    <merge|forge>` prints the subject in the declared style, reading
@@ -108,18 +125,41 @@ defect, unrelated to the settings, and a report of its own.
    `queue` joins the scope vocabulary in `commits.md` and the machine
    half in `check_observance.sh`, because that is what these commits are
    about and the two lists are kept in step by that file's own rule.
+   `#pr_title_style` says what the key now reaches: every title, checked
+   at the door, **and** the machinery's own commit subjects, composed
+   from it and checked nowhere — the door reads pull requests, and these
+   commits do not pass one.
 6. **`commits.md` counts its writers and stops claiming the branch.**
    Two workflows commit, not one; and only the pull request title is
-   checked — a branch subject is a courtesy the squash discards.
+   checked — a branch subject is a courtesy the squash discards. The
+   three places that hand the subject to the adopter go with it, because
+   step 5 takes it back: `writrun-approve.yml`'s `COMMIT_TITLE` comment
+   ("the adopter's to edit"), `commits.md`'s instruction to find the
+   variable and edit it, and `technical/README.md`'s observance
+   paragraph, which explains skipping by committer identity because
+   "the subject is a variable the adopter is invited to edit" — the
+   reason survives the change, the premise does not.
 7. **The kit's own settings file.** `tests/template_exceptions.txt`
-   lists `.writrun/settings.json`; `sync_template.sh` preserves every
-   listed path across the copy rather than overwriting it, and names
-   what it kept; the byte-mirror unit test excludes the same list, from
-   the same file, so the exception has one source. The kit's file ships
-   `stage: 1`, `auto_commit`, `auto_pr` and `auto_push` all `false`, and
-   every other key at its documented default — `pr_title_style:
-   conventional`, which is the condition spec-0033 recorded and could
-   not honour.
+   lists `.writrun/settings.json`; `sync_template.sh` **stashes every
+   listed path before the copy and restores it after**, and names what
+   it kept. Not-overwriting is not enough: the mirror list's first entry
+   is `.writrun`, a directory, and the sync does `rm -rf "template/$p"`
+   before `cp -R` — the exception lives inside the tree that is deleted,
+   so a preserve-in-place reading loses the kit's file on the first
+   `make template-sync` and reverts the adopter to `stage: 3` in
+   silence. The byte-mirror unit test excludes the same list, from the
+   same file, so the exception has one source, and **excludes by path,
+   never by name**: `diff -x` matches basenames, and
+   `.writrun/conventions/settings.json` — the legacy address decision
+   0053 still supports and `read_setting.sh` still reads — must stay
+   compared. The kit's file ships `stage: 1`, `auto_commit`, `auto_pr`
+   and `auto_push` all `false`, and every other key at its documented
+   default — `pr_title_style: conventional`, which is the condition
+   spec-0033 recorded and could not honour. "Every other key" is read at
+   the moment this lands, against `HOMES` as it then stands: spec-0036
+   (approved, unimplemented) adds `stage_1.provenance_ledger` to the
+   same three touchpoints this change edits, and a kit file written
+   without it faults for every adopter on their first run.
 8. **`.writrun/README.md` gains the `settings.json` row** — the
    project's, from adoption; `writ update` never touches it — and the
    "never hand-edit" rule gains its one exception by name.
@@ -137,13 +177,24 @@ defect, unrelated to the settings, and a report of its own.
 - When an agent takes a task under `auto_push: false`, it shall present
   the branch, the pull request title and the body together and push
   nothing before an explicit yes.
+- When an agent takes a task under `auto_pr: false` and `auto_push:
+  true`, it shall push nothing before an explicit yes — a branch with no
+  pull request yet is one act, and the stricter flag holds it.
+- When a pull request is already open, a further push to its head branch
+  shall be gated by `auto_push` alone.
 - When the machinery commits, its subject shall be in the style
   `pr_title_style` declares.
 - When `pr_title_style` is `bracketed`, `commit_subject.sh merge` shall
   print a bracketed subject; when it is `conventional`, a conventional
   one.
 - When `sync_template.sh` runs, it shall leave every path in the
-  exceptions list as the kit carries it, and say which paths it kept.
+  exceptions list as the kit carries it — including a path inside a
+  mirrored directory the sync removes wholesale — and say which paths it
+  kept.
+- When the byte-mirror test excludes `.writrun/settings.json`, it shall
+  still compare `.writrun/conventions/settings.json`.
+- When the kit's settings file is checked, it shall carry every key
+  `HOMES` names at that moment, each in its documented home.
 - When the kit's settings file is read, it shall answer `1` for `stage`
   and `false` for all three conduct flags.
 - When the byte-mirror test runs, it shall hold every mirrored path
@@ -163,7 +214,8 @@ defect, unrelated to the settings, and a report of its own.
 - **A first push that is also the pull request's.** `auto_push` and
   `auto_pr` are one question at that moment, and the flow asks once —
   two prompts for one act is the failure this replaces, not an
-  improvement on it.
+  improvement on it. The pair disagreeing does not split it: `false` on
+  either is `false` for the act.
 - **A push that is not a task's** — a docs or report branch — is the
   same act and the same flag. The gate is about work becoming public,
   not about what kind of work it is.
@@ -171,6 +223,10 @@ defect, unrelated to the settings, and a report of its own.
   path that does not exist in `template/` is copied from the root like
   any other, so a fresh clone of the exception is the root's file until
   someone writes the kit's — reported, never silent.
+- **`sync_template.sh` run when the kit's file exists**, which is the
+  ordinary case after this lands. The stash is what carries it across
+  `rm -rf .writrun`; the restore is what puts it back. Preserving in
+  place is not an implementation of this, it is the bug.
 - **`commit_subject.sh` where no settings file exists.** It reads the
   documented default, `conventional`, which is what the workflows write
   today.
@@ -182,17 +238,24 @@ stated value for a present one; `check_settings.sh` accepts both
 booleans and faults on a third value, and names `stage_2` as its home.
 `commit_subject.sh` prints both styles for both events, and the
 documented default when the file is absent. `sync_template.sh` leaves a
-listed exception untouched and reports it; the byte-mirror test reads
-the same exceptions list. The kit's settings file answers `1` and three
-`false`s. A case reading both settings files' keys in order.
+listed exception untouched across a full directory mirror and reports
+it; the byte-mirror test reads the same exceptions list and still
+compares the legacy address. The kit's settings file answers `1` and three
+`false`s. A case reading both settings files' keys in order. And the sweep the
+present-always rule forces: every existing settings fixture carrying an
+inline `stage_2` object gains `auto_push`, or the suite goes red on
+cases with no interest in this change.
 
 ## Definition of Done
 
 - [ ] Every acceptance criterion holds, each with a test.
 - [ ] No literal commit subject remains in either workflow.
-- [ ] `.writrun/settings.json` and the kit's differ only where the
-      exceptions list allows, and both are alphabetical within each
-      section.
+- [ ] `.writrun/settings.json` and the kit's carry the same key set —
+      every key `HOMES` names — and differ only in values, deliberately:
+      `stage` and the three conduct flags. Both alphabetical within each
+      section, and `#settings`' own example with them.
+- [ ] `make template-sync` run twice leaves the kit's settings file as
+      the kit wrote it.
 - [ ] Template synced; suite green.
 
 ## Proposed product changes
@@ -208,6 +271,11 @@ the same exceptions list. The kit's settings file answers `1` and three
 - `technical/README.md#the-conduct-flags` — the section formerly
   `#auto_commit-and-auto_pr`, covering three flags and saying which act
   each one holds.
+- `technical/README.md#pr_title_style` — the key reaches the machinery's
+  own commit subjects too, composed from it and checked nowhere.
+- `technical/README.md#observance-is-checked-where-it-leaves-a-trace` —
+  the recording commit is skipped by committer identity for the reason
+  that outlives the subject becoming the machinery's.
 - `technical/README.md#distribution` — the kit's settings file leaves
   the byte mirror, and the exceptions list is the single source of that.
 - `technical/decisions/tasks-and-specs/0061-the-push-is-its-own-act.md`
