@@ -1,7 +1,7 @@
 ---
 id: spec-0029
 task_ref: task-0021
-status: approved
+status: implemented
 created: 2026-08-31T03:06:42Z
 ---
 
@@ -99,4 +99,24 @@ ruleset change; the template-mirror test covers the workflow copy.
 
 ## Outcome
 
-_(fill after execution)_
+Built as specified: `writrun-approve.yml`'s dependency block no longer
+explains its push by `main` being unprotected. It states reachability as
+the one hard requirement and lists the three shapes that satisfy it —
+unprotected, a partial ruleset whose rules an ordinary fast-forward push
+does not break, and a full ruleset with GitHub Actions on the bypass
+list — with the forge limitation named: the bypass list accepts an
+Integration actor on organization-owned repositories alone. Decision
+0056 records the evolution from 0043's unprotected premise, and its row
+is in the chronology. Decisions 0014 and 0043 were not edited.
+
+**The third Definition-of-Done item is satisfied by observation, not by
+assumption.** The `protect-main` ruleset is active on this repository
+with exactly `creation`, `deletion`, `non_fast_forward` and
+`required_linear_history`, and the merge of #63 produced recording
+commit `d7b42ab` on `main` at 2026-08-31T04:45:39Z — the machinery's own
+push, landing with the partial ruleset live. The silent 403 this spec
+existed to surface did not occur.
+
+Divergence: the spec was amended mid-flight for the same omission as
+spec-0026 — the decision entry was promised and its chronology row was
+not. See spec-0026's Outcome for the full account; scope unmoved.
