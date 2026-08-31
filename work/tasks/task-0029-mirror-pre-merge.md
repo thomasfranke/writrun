@@ -1,6 +1,6 @@
 ---
 id: task-0029
-status: in-review
+status: done
 blocked_reason: null
 taken_by: thomasfranke
 spec_ref: [spec-0039]
@@ -12,7 +12,7 @@ milestone: null
 created: 2026-08-31T15:25:56Z
 queued: 2026-08-31T15:32:42Z
 completed: 2026-08-31T17:05:43Z
-merged: null
+merged: 2026-08-31T18:45:38Z
 ---
 
 # The mirror reads the queue as it was before the merge
