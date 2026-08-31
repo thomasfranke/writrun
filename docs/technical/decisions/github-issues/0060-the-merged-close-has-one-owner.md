@@ -53,3 +53,25 @@ belongs — an empty `spec_ref`, or specs that same merge approved —
 writes no `moved` line and still owes its mirror a label. Deriving that
 set a second time from the range would be a second chance to disagree
 with the recording, so the recording reports it.
+
+Two further consequences of being the only owner, both found in review
+before this shipped. **The mirror steps run on `!cancelled()`, not on
+success.** They sit after the recording commit, so the implicit
+`success()` would have skipped them whenever the push was refused or the
+rebase conflicted — and with the other two workflows standing down, that
+skip is the merged close answering nothing at all: no Issue for a task
+the merge added, an existing one left on `status:proposed`, and no later
+event to correct either. A failed push costs the recording; it must not
+also cost the projection.
+
+**And the mint reports what it minted.** Which mirrors must exist is
+derived from the pull request's files; which get labelled was derived
+from the commit range `merge_commit_sha~1...merge_commit_sha`. Those two
+sets are equal for a squash or a merge commit and not for a rebase
+merge, where that range is only the last rebased commit — so a task file
+added in an earlier one is minted and falls outside the range, and being
+minted without ever being labelled is again a state nothing comes back
+to fix. `mirror_issues.sh` now reports its own set through
+`$GITHUB_OUTPUT`, and the projection is given it alongside `scope`. Same
+rule as `scope` itself: the pass that knows the answer reports it,
+rather than a second derivation getting a second chance to disagree.
