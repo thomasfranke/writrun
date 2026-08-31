@@ -9,9 +9,16 @@ setup
 
 settings_file <<'JSON'
 {
+  "audience_split": false,
   "stage": 3,
-  "pr_title_style": "conventional",
-  "audience_split": false
+  "stage_1": {
+    "auto_commit": true,
+    "credit_ai": true
+  },
+  "stage_2": {
+    "auto_pr": true,
+    "pr_title_style": "conventional"
+  }
 }
 JSON
 check "a key switching off the audience split is refused" 1 \
@@ -20,9 +27,16 @@ check "a key switching off the audience split is refused" 1 \
 
 settings_file <<'JSON'
 {
+  "human_gates": false,
   "stage": 3,
-  "pr_title_style": "conventional",
-  "human_gates": false
+  "stage_1": {
+    "auto_commit": true,
+    "credit_ai": true
+  },
+  "stage_2": {
+    "auto_pr": true,
+    "pr_title_style": "conventional"
+  }
 }
 JSON
 check "and one switching off the gates is refused" 1 \

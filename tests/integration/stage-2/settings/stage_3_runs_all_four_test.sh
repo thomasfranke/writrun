@@ -7,7 +7,14 @@ setup
 settings_file <<'JSON'
 {
   "stage": 3,
-  "pr_title_style": "conventional"
+  "stage_1": {
+    "auto_commit": true,
+    "credit_ai": true
+  },
+  "stage_2": {
+    "auto_pr": true,
+    "pr_title_style": "conventional"
+  }
 }
 JSON
 check "writrun check and approve run" 0 "reaches 2" \
@@ -20,7 +27,14 @@ check "and so do issues and progress" 0 "reaches 3" \
 settings_file <<'JSON'
 {
   "stage": "everything",
-  "pr_title_style": "conventional"
+  "stage_1": {
+    "auto_commit": true,
+    "credit_ai": true
+  },
+  "stage_2": {
+    "auto_pr": true,
+    "pr_title_style": "conventional"
+  }
 }
 JSON
 check "an unreadable level does not silently stop the machinery" 0 \

@@ -27,10 +27,19 @@ CHECK_SETTINGS="$CI_SCRIPTS/stage-2-pull-requests/check_settings.sh"
 STAGE_GATE="$CI_SCRIPTS/stage-2-pull-requests/stage_gate.sh"
 WORKFLOWS="$REPO_ROOT/.github/workflows"
 
-# settings_file — the whole settings file, from stdin. Written verbatim,
-# because half of what the check exists for is the shapes a generator
-# would never produce.
+# settings_file — the whole settings file, from stdin, at the address it
+# lives at today. Written verbatim, because half of what the check exists
+# for is the shapes a generator would never produce.
 settings_file() {
+  mkdir -p .writrun
+  cat > .writrun/settings.json
+}
+
+# legacy_settings_file — the same, at the address the file had before it
+# moved to WritRun's root. The reader honours one left there, flat, under
+# the contract frozen at the move; the check is what names the move
+# (docs/technical/decisions/tasks-and-specs/0053-settings-at-the-root.md).
+legacy_settings_file() {
   mkdir -p .writrun/conventions
   cat > .writrun/conventions/settings.json
 }

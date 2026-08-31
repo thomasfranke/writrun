@@ -1,7 +1,7 @@
 ---
 id: spec-0022
 task_ref: task-0020
-status: approved
+status: implemented
 created: 2026-08-30T13:16:05Z
 ---
 
@@ -94,4 +94,28 @@ were written.
 
 ## Outcome
 
-_(fill after execution)_
+Built as specified: `.writrun/settings.json` is the one address, both
+scripts read it there, and the bridge honours a file left at
+`.writrun/conventions/settings.json` — read flat, under the contract
+frozen at the move, so a sectioned address finds its key at the top
+level there and a key the old contract never had falls back to its
+documented default. `check_settings.sh` faults a legacy-only file by
+naming the move, and faults a leftover one when both exist; the new
+address wins outright either way. The sweep took `AGENTS.md`, the root
+`README.md`, `.writrun/conventions/README.md`, `docs/product/adoption.md`
+(both promised anchors), `stage_gate.sh`'s off-switch message,
+`tests/pipeline_lib.sh`, the `writrun-check.yml` comment, and the
+`template/` mirror.
+
+Divergence: the sweep also fixed a broken link in
+`.writrun/conventions/README.md` — its `decisions/0052` reference was
+missing the `tasks-and-specs/` segment, one line above the `0053`
+reference this change adds. A typo is a commit, and it rode this one.
+
+The one live mention of the old address left outside the scripts and
+`docs/technical/decisions/` is the parenthetical in
+`technical/README.md#settings`, which documents the bridge — permitted by
+this spec's last criterion — but frames it as "until the machinery catches
+up", which is no longer true. Raised in the pull request rather than
+edited: no spec promised a technical-doc change, and an approved spec's
+promises are amended through `draft`, never out-implemented.

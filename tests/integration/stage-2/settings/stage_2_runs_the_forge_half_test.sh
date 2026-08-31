@@ -9,7 +9,14 @@ setup
 settings_file <<'JSON'
 {
   "stage": 2,
-  "pr_title_style": "conventional"
+  "stage_1": {
+    "auto_commit": true,
+    "credit_ai": true
+  },
+  "stage_2": {
+    "auto_pr": true,
+    "pr_title_style": "conventional"
+  }
 }
 JSON
 check "writrun check and approve run" 0 "reaches 2" \

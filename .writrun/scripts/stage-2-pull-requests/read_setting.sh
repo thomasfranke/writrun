@@ -1,15 +1,25 @@
 #!/usr/bin/env bash
-# read_setting.sh — prints one value from .writrun/conventions/settings.json.
+# read_setting.sh — prints one value from .writrun/settings.json.
 #
-# Usage: read_setting.sh <key>
+# Usage: read_setting.sh <address>
 #   Run from the repository root; the path is relative to it.
 #
-# The file is JSON in a restricted shape — flat object, one `"key": value`
-# per line, values `true`, `false`, an unquoted integer, or a double-quoted
-# string (docs/technical/README.md#the-shape-is-a-checked-contract). That
-# restriction is what lets this read it with `sed` alone: requiring `jq`
-# would be this project's first runtime dependency, which the toolchain is
-# built to avoid.
+#   read_setting.sh stage                     a top-level key, bare
+#   read_setting.sh stage_2.pr_title_style    a key inside its section
+#
+# **The address, not the name, is a key's identity.** The file carries one
+# top-level `stage` and one object per stage holding the keys that stage's
+# readers act on (docs/technical/README.md#settings), so the same name in
+# two sections would be two keys.
+#
+# The file is JSON in a restricted shape — two levels and nothing deeper,
+# one `"key": value` per line, values `true`, `false`, an unquoted integer,
+# or a double-quoted string
+# (docs/technical/README.md#the-shape-is-a-checked-contract). That
+# restriction is what lets this read it with `awk` alone: one nesting
+# level, entered and left on lines of fixed shape, is a two-state line
+# reader. Requiring `jq` would be this project's first runtime dependency,
+# which the toolchain is built to avoid.
 #
 # **Absence is not an error.** No file, or no such key, prints the
 # documented default — the same posture list_tasks.sh takes when no forge
@@ -17,7 +27,7 @@
 # behaviour the schema documents; a reader that failed instead would make
 # the file mandatory, which it is not.
 #
-# A key the schema does not document has no documented default, so it
+# An address the schema does not document has no documented default, so it
 # prints nothing. Exit is still 0: this reads a value, it does not judge
 # the file — check_settings.sh does that.
 #
@@ -29,36 +39,82 @@
 set -euo pipefail
 
 KEY="${1:-}"
-[ -n "$KEY" ] || { echo "usage: read_setting.sh <key>" >&2; exit 3; }
+[ -n "$KEY" ] || { echo "usage: read_setting.sh <address>" >&2; exit 3; }
 
-SETTINGS=".writrun/conventions/settings.json"
+SETTINGS=".writrun/settings.json"
+LEGACY=".writrun/conventions/settings.json"
 
-# The documented defaults, which are the values the schema's own example
-# block carries (docs/technical/README.md#settings). They are the stage
-# and style this machinery behaved at before the file existed, so a
-# project without one behaves exactly as it did.
+# The documented defaults, addressed the way the schema addresses them
+# (docs/technical/README.md#settings). Each is the behaviour from before
+# its key existed, so a project without the file, or without the key,
+# behaves exactly as it did.
 default_for() {
   case "$1" in
-    stage)          printf '3' ;;
-    pr_title_style) printf 'conventional' ;;
+    stage)                  printf '3' ;;
+    stage_1.auto_commit)    printf 'true' ;;
+    stage_1.credit_ai)      printf 'true' ;;
+    stage_2.auto_pr)        printf 'true' ;;
+    stage_2.pr_title_style) printf 'conventional' ;;
   esac
 }
 
-[ -f "$SETTINGS" ] || { default_for "$KEY"; echo; exit 0; }
+# The section is everything before the first dot, the name everything
+# after it; a bare address names the top level, whose section is "".
+case "$KEY" in
+  *.*) SECTION="${KEY%%.*}"; NAME="${KEY#*.}" ;;
+  *)   SECTION=""; NAME="$KEY" ;;
+esac
 
-# Everything after the first colon that follows the key, so a quoted value
-# holding a colon of its own ("status:") survives intact.
-raw=$(sed -n "s/^[[:space:]]*\"${KEY}\"[[:space:]]*:[[:space:]]*\(.*\)$/\1/p" \
-  "$SETTINGS" | head -n1)
+# The migration bridge (decision 0053): a file left at the old address is
+# read flat, under the contract frozen at the move — shape included, so a
+# sectioned address finds its key at the top level there. The check is
+# what names the move; this is what keeps the adopter's choice honoured
+# until they make it.
+FILE="$SETTINGS"
+if [ ! -f "$SETTINGS" ]; then
+  if [ -f "$LEGACY" ]; then
+    FILE="$LEGACY"
+    SECTION=""
+  else
+    default_for "$KEY"; echo; exit 0
+  fi
+fi
+
+# pair <section> <name> — the raw text after the addressed key's colon,
+# empty when the file does not carry it. A section is opened by a line
+# whose value is a bare `{` and closed by a line that is a bare `}`, so a
+# quoted value holding a brace or a dot is never mistaken for either: the
+# state machine reads line shapes, never value content.
+pair() {
+  awk -v want_sec="$1" -v want_key="$2" '
+    /^[[:space:]]*"[^"]*"[[:space:]]*:[[:space:]]*\{[[:space:]]*$/ {
+      sec = $0
+      sub(/^[^"]*"/, "", sec); sub(/".*$/, "", sec)
+      next
+    }
+    /^[[:space:]]*\}[[:space:]]*,?[[:space:]]*$/ { sec = ""; next }
+    /^[[:space:]]*"[^"]*"[[:space:]]*:/ {
+      if (found || sec != want_sec) next
+      key = $0
+      sub(/^[^"]*"/, "", key); sub(/".*$/, "", key)
+      if (key != want_key) next
+      val = $0
+      sub(/^[[:space:]]*"[^"]*"[[:space:]]*:[[:space:]]*/, "", val)
+      print val
+      found = 1
+    }
+  ' "$FILE"
+}
+
+raw=$(pair "$SECTION" "$NAME")
 
 if [ -z "$raw" ] && [ "$KEY" = "stage" ]; then
-  # The migration bridge: a settings file written before the rename
-  # says `level`, and reading it as "absent, so the default" would turn
-  # every workflow on for an adopter who chose the full opt-out.
+  # The older bridge, kept: a settings file written before the rename says
+  # `level`, and reading it as "absent, so the default" would turn every
+  # workflow on for an adopter who chose the full opt-out.
   # check_settings.sh names the rename; this keeps their choice honoured
   # until they make it.
-  legacy=$(sed -n 's/^[[:space:]]*"level"[[:space:]]*:[[:space:]]*\(.*\)$/\1/p' \
-    "$SETTINGS" | head -n1 | sed 's/[[:space:]]*$//; s/,$//; s/^"//; s/"$//')
+  legacy=$(pair "" level | sed 's/[[:space:]]*$//; s/,$//; s/^"//; s/"$//')
   case "$legacy" in
     tasks-and-specs) printf '1\n'; exit 0 ;;
     pull-requests)   printf '2\n'; exit 0 ;;

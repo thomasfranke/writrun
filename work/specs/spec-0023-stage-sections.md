@@ -1,7 +1,7 @@
 ---
 id: spec-0023
 task_ref: task-0020
-status: approved
+status: implemented
 created: 2026-08-30T13:16:08Z
 ---
 
@@ -96,4 +96,27 @@ it holds a documented key, so no empty `"stage_3": {}` placeholder.
 
 ## Outcome
 
-_(fill after execution)_
+Built as specified: the file carries one top-level `stage` and the
+`"stage_1"` / `"stage_2"` sections, with no empty placeholder.
+`read_setting.sh` splits the address on its first dot and walks the file
+with one awk state machine — a section opened by a line whose value is a
+bare `{`, closed by a line that is a bare `}` — so a quoted value holding
+a brace, a dot or a colon is never read as structure. Defaults,
+absence-is-not-an-error and the exit codes keep today's contract, and the
+`level` bridge reads through the same machine.
+
+`check_settings.sh` walks the two-level canon with the same shapes and
+names every fault rather than the first: a third nesting level, a section
+that is not `stage_N`, an empty section, a pair at the wrong indent, a
+documented key outside its home (reported both where it sits and as
+missing from where it belongs), and the comma discipline in both
+directions — one too many before a close, one missing between entries.
+The reader stays lenient about indent where the check is strict, as
+before.
+
+Divergence: the comma check is now per container and two-sided, where the
+flat version only caught a trailing comma on the last pair. Sections gave
+the old one-shot `grep | tail -n1` nothing to anchor on, and the missing
+comma between entries is the deviation a sectioned file invites.
+`stage_gate.sh` needed no call-site change — it reads `stage`, which is
+still addressed bare.

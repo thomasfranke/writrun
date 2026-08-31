@@ -147,7 +147,7 @@ reserved — same gates, drawn separately in
 
 Adoption is progressive: three stages, each adding machinery on top of
 the one before and changing nothing beneath. A project declares its
-stage in `.writrun/conventions/settings.json` (`stage: 1`, `2` or `3`);
+stage in `.writrun/settings.json` (`stage: 1`, `2` or `3`);
 everything that belongs to exactly one stage carries a `stage-N-`
 prefix in its name. The full rules live in
 [Adoption](docs/product/adoption.md).
