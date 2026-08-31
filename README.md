@@ -6,7 +6,8 @@
 
 Autogen tasks and specs from your docs.   
 Docs are the executable source. Code is the derived artefact.  
-You write the doc. AI checks the code and generates the tasks and specs, ready for development.
+You write the doc. AI checks the code and generates the tasks and specs, ready for development.  
+And after the merge, a script — not discipline — keeps the docs true.
 
 
 [![license](https://img.shields.io/badge/license-MIT--0-blue)](LICENSE)
@@ -21,10 +22,25 @@ You write the doc. AI checks the code and generates the tasks and specs, ready f
 > names — can still change without notice; nothing is stable to build on
 > yet.
 
+## The half nobody checks
+
+Every spec-driven workflow solves the same half: prompt → spec → code.
+Nobody solves the half that comes **after the merge** — whether the
+docs are still true once the change ships. WritRun's answer is
+mechanical, not disciplinary: **a spec declares, up front, every
+permanent doc its change will touch, and the diff that completes the
+task must touch all of them and nothing else — checked by a script,
+enforced by CI, never left to whoever remembers.** So the docs an
+agent reads next session describe the system that actually exists,
+and the pipeline can run again from them, indefinitely.
+
 What it does:
 
 - **Docs as the source of truth.** You write the rules in `docs/`; code
   is checked against them — never the reverse.
+- **The loop closes by machine.** Every spec carries the list of docs
+  its change will touch; `writrun check` fails the diff that skips one
+  — or touches one it never declared.
 - **Autogen tasks and specs.** Tell your agent
   "update the tasks": it reads what you wrote, compares it to the actual
   project, and generates the tasks and specs that close the gap.
@@ -103,11 +119,12 @@ flowchart LR
     D -->|"same change updates the docs"| A
 ```
 
-**The loop back is the part most spec-driven workflows leave out.** A
-spec names, up front, every permanent doc the finished change will touch;
-the diff that completes the task must touch all of them and nothing else.
-That closing loop is what makes the docs stay true after the agent is done
-— it is checked mechanically, not remembered.
+**The loop back is the headline** — [the half nobody
+checks](#the-half-nobody-checks). Mechanically: the spec's two
+Proposed-changes sections are the merge contract, and
+`writrun-check-spec-deltas` compares them against the completing diff,
+both ways — a promised doc left untouched fails, and so does a
+permanent doc touched without being promised.
 
 How the pipeline actually runs — step by step, with every actor named —
 is the five flows and their special cases, drawn in full in
