@@ -3,7 +3,7 @@ id: task-0029
 status: ready
 blocked_reason: null
 taken_by: null
-spec_ref: []
+spec_ref: [spec-0039]
 doc_ref: product/stage-3-github-issues/labels.md#criteria
 origin: report
 priority: high
@@ -17,7 +17,7 @@ merged: null
 
 # The mirror reads the queue as it was before the merge
 
-**References:** [product/stage-3-github-issues/labels.md#criteria](../../docs/product/stage-3-github-issues/labels.md#criteria)
+**References:** [product/stage-3-github-issues/labels.md#criteria](../../docs/product/stage-3-github-issues/labels.md#criteria) · [spec-0039](../specs/spec-0039-merged-close-owner.md)
 
 `labels.md` already says what should happen: *"When a recording commit
 changes a task's stored status, the machinery shall re-label that task's
