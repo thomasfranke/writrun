@@ -8,10 +8,13 @@ settings_file <<'JSON'
 {
   "stage": 3,
   "stage_1": {
-    "auto_commit": true,
-    "credit_ai": true
+    "spec_required": "when-warranted",
+    "decisions_style": "per-subsystem",
+    "product_layout": "by-concept"
   },
   "stage_2": {
+    "auto_commit": true,
+    "credit_ai": true,
     "auto_pr": true,
     "pr_title_style": "gherkin"
   }
@@ -25,10 +28,13 @@ settings_file <<'JSON'
 {
   "stage": "everything",
   "stage_1": {
-    "auto_commit": true,
-    "credit_ai": true
+    "spec_required": "when-warranted",
+    "decisions_style": "per-subsystem",
+    "product_layout": "by-concept"
   },
   "stage_2": {
+    "auto_commit": true,
+    "credit_ai": true,
     "auto_pr": true,
     "pr_title_style": "conventional"
   }
@@ -44,10 +50,13 @@ settings_file <<'JSON'
 {
   "stage": 3,
   "stage_1": {
-    "auto_commit": "ask",
-    "credit_ai": true
+    "spec_required": "when-warranted",
+    "decisions_style": "per-subsystem",
+    "product_layout": "by-concept"
   },
   "stage_2": {
+    "auto_commit": "ask",
+    "credit_ai": true,
     "auto_pr": true,
     "pr_title_style": "conventional"
   }
@@ -61,10 +70,13 @@ settings_file <<'JSON'
 {
   "stage": 3,
   "stage_1": {
-    "auto_commit": true,
-    "credit_ai": true
+    "spec_required": "when-warranted",
+    "decisions_style": "per-subsystem",
+    "product_layout": "by-concept"
   },
   "stage_2": {
+    "auto_commit": true,
+    "credit_ai": true,
     "auto_pr": 1,
     "pr_title_style": "conventional"
   }
@@ -77,16 +89,82 @@ settings_file <<'JSON'
 {
   "stage": 3,
   "stage_1": {
-    "auto_commit": true,
-    "credit_ai": "no"
+    "spec_required": "when-warranted",
+    "decisions_style": "per-subsystem",
+    "product_layout": "by-concept"
   },
   "stage_2": {
+    "auto_commit": true,
+    "credit_ai": "no",
     "auto_pr": true,
     "pr_title_style": "conventional"
   }
 }
 JSON
 check "and so does credit_ai" 1 "credit_ai 'no' is outside its vocabulary" \
+  -- bash "$CHECK_SETTINGS"
+
+# The three declarations gate nothing mechanical — an agent alone reads
+# them — and are checked for value all the same, for the same reason:
+# a value outside the vocabulary is one an agent would have to guess at.
+settings_file <<'JSON'
+{
+  "stage": 3,
+  "stage_1": {
+    "spec_required": "sometimes",
+    "decisions_style": "per-subsystem",
+    "product_layout": "by-concept"
+  },
+  "stage_2": {
+    "auto_commit": true,
+    "credit_ai": true,
+    "auto_pr": true,
+    "pr_title_style": "conventional"
+  }
+}
+JSON
+check "spec_required takes always or when-warranted" 1 \
+  "spec_required 'sometimes' is outside its vocabulary" \
+  -- bash "$CHECK_SETTINGS"
+
+settings_file <<'JSON'
+{
+  "stage": 3,
+  "stage_1": {
+    "spec_required": "always",
+    "decisions_style": "adr",
+    "product_layout": "by-concept"
+  },
+  "stage_2": {
+    "auto_commit": true,
+    "credit_ai": true,
+    "auto_pr": true,
+    "pr_title_style": "conventional"
+  }
+}
+JSON
+check "decisions_style takes per-subsystem or chronological" 1 \
+  "decisions_style 'adr' is outside its vocabulary" \
+  -- bash "$CHECK_SETTINGS"
+
+settings_file <<'JSON'
+{
+  "stage": 3,
+  "stage_1": {
+    "spec_required": "always",
+    "decisions_style": "chronological",
+    "product_layout": "by-audience"
+  },
+  "stage_2": {
+    "auto_commit": true,
+    "credit_ai": true,
+    "auto_pr": true,
+    "pr_title_style": "conventional"
+  }
+}
+JSON
+check "product_layout takes by-concept or by-feature" 1 \
+  "product_layout 'by-audience' is outside its vocabulary" \
   -- bash "$CHECK_SETTINGS"
 
 finish

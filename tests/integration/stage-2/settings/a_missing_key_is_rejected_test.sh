@@ -10,10 +10,13 @@ settings_file <<'JSON'
 {
   "stage": 3,
   "stage_1": {
-    "auto_commit": true,
-    "credit_ai": true
+    "spec_required": "when-warranted",
+    "decisions_style": "per-subsystem",
+    "product_layout": "by-concept"
   },
   "stage_2": {
+    "auto_commit": true,
+    "credit_ai": true,
     "auto_pr": true
   }
 }
@@ -25,10 +28,13 @@ check "a file missing a documented key is rejected" 1 \
 settings_file <<'JSON'
 {
   "stage_1": {
-    "auto_commit": true,
-    "credit_ai": true
+    "spec_required": "when-warranted",
+    "decisions_style": "per-subsystem",
+    "product_layout": "by-concept"
   },
   "stage_2": {
+    "auto_commit": true,
+    "credit_ai": true,
     "auto_pr": true,
     "pr_title_style": "conventional"
   }
@@ -41,16 +47,38 @@ settings_file <<'JSON'
 {
   "stage": 3,
   "stage_1": {
-    "auto_commit": true
+    "spec_required": "when-warranted",
+    "decisions_style": "per-subsystem",
+    "product_layout": "by-concept"
   },
   "stage_2": {
+    "auto_commit": true,
     "auto_pr": true,
     "pr_title_style": "conventional"
   }
 }
 JSON
 check "a conduct flag is no more optional than the rest" 1 \
-  "'stage_1.credit_ai' is missing" \
+  "'stage_2.credit_ai' is missing" \
+  -- bash "$CHECK_SETTINGS"
+
+settings_file <<'JSON'
+{
+  "stage": 3,
+  "stage_1": {
+    "spec_required": "when-warranted",
+    "product_layout": "by-concept"
+  },
+  "stage_2": {
+    "auto_commit": true,
+    "credit_ai": true,
+    "auto_pr": true,
+    "pr_title_style": "conventional"
+  }
+}
+JSON
+check "and neither is a declaration" 1 \
+  "'stage_1.decisions_style' is missing" \
   -- bash "$CHECK_SETTINGS"
 
 finish

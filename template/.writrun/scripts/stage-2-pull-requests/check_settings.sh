@@ -69,12 +69,24 @@ fi
 STAGES="1 2 3"
 TITLE_STYLES="conventional bracketed"
 BOOLEANS="true false"
+SPEC_REQUIRED="always when-warranted"
+DECISIONS_STYLES="per-subsystem chronological"
+PRODUCT_LAYOUTS="by-concept by-feature"
 
 # Every documented key and the section it lives in — "" is the top level.
 # This is both the present-always list and the homes the check enforces:
 # a documented key found anywhere else is homeless, not merely misplaced,
 # because the address is its identity.
-HOMES=":stage stage_1:auto_commit stage_1:credit_ai stage_2:auto_pr stage_2:pr_title_style"
+#
+# Two kinds live here. `stage_1` holds the three declarations — the
+# variants Adoption orders declared, which gate nothing mechanical and
+# are read by agents alone. `stage_2` holds the conduct flags and the
+# title style, because that is where the actions they govern begin: git
+# starts at Stage 2 (product/adoption.md#three-stages), so below it there
+# is neither a commit nor a pull request for a conduct flag to gate.
+HOMES=":stage \
+stage_1:spec_required stage_1:decisions_style stage_1:product_layout \
+stage_2:auto_commit stage_2:credit_ai stage_2:auto_pr stage_2:pr_title_style"
 
 home_of() {   # home_of <name> — the section the schema gives that key
   for h in $HOMES; do
@@ -248,6 +260,21 @@ while IFS= read -r line || [ -n "$line" ]; do
         *" $val "*) ;;
         *) fault "${key} '${val}' is outside its vocabulary: ${BOOLEANS}" ;;
       esac ;;
+    spec_required)
+      case " $SPEC_REQUIRED " in
+        *" $val "*) ;;
+        *) fault "spec_required '${val}' is outside its vocabulary: ${SPEC_REQUIRED}" ;;
+      esac ;;
+    decisions_style)
+      case " $DECISIONS_STYLES " in
+        *" $val "*) ;;
+        *) fault "decisions_style '${val}' is outside its vocabulary: ${DECISIONS_STYLES}" ;;
+      esac ;;
+    product_layout)
+      case " $PRODUCT_LAYOUTS " in
+        *" $val "*) ;;
+        *) fault "product_layout '${val}' is outside its vocabulary: ${PRODUCT_LAYOUTS}" ;;
+      esac ;;
   esac
 done < "$SETTINGS"
 
@@ -271,5 +298,6 @@ done
 R=".writrun/scripts/stage-2-pull-requests/read_setting.sh"
 echo "OK — ${SETTINGS} is canonical:"
 echo "  stage=$(bash "$R" stage)"
-echo "  stage_1.auto_commit=$(bash "$R" stage_1.auto_commit) stage_1.credit_ai=$(bash "$R" stage_1.credit_ai)"
+echo "  stage_1.spec_required=$(bash "$R" stage_1.spec_required) stage_1.decisions_style=$(bash "$R" stage_1.decisions_style) stage_1.product_layout=$(bash "$R" stage_1.product_layout)"
+echo "  stage_2.auto_commit=$(bash "$R" stage_2.auto_commit) stage_2.credit_ai=$(bash "$R" stage_2.credit_ai)"
 echo "  stage_2.auto_pr=$(bash "$R" stage_2.auto_pr) stage_2.pr_title_style=$(bash "$R" stage_2.pr_title_style)"
