@@ -6,10 +6,10 @@
     "spec_required": "when-warranted"
   },
   "stage_2": {
+    "agent_coauthor": true,
     "auto_commit": false,
     "auto_pr": false,
     "auto_push": false,
-    "credit_ai": true,
     "pr_title_style": "conventional"
   }
 }

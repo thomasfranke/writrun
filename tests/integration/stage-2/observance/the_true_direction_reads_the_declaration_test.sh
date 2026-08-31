@@ -1,0 +1,174 @@
+#!/usr/bin/env bash
+. "$(dirname "$0")/../../../pipeline_lib.sh"
+
+# `agent_coauthor: true` obliges an artifact with a fixed shape and a
+# fixed place, so its absence is visible — which the old definition, a
+# deferral to whatever a platform appended, made impossible.
+#
+# The unit is the pull request, and the amendment to spec-0035 says why:
+# nothing here can decide whose commit a commit is. So the body's credit
+# line is read as the declaration that an agent worked this, and the
+# commits are held to it.
+setup
+
+obliging() {
+  settings_file <<'JSON'
+{
+  "stage": 3,
+  "stage_1": {
+    "spec_required": "when-warranted",
+    "decisions_style": "per-subsystem",
+    "product_layout": "by-concept"
+  },
+  "stage_2": {
+    "agent_coauthor": true,
+    "auto_commit": true,
+    "auto_pr": true,
+    "auto_push": true,
+    "pr_title_style": "conventional"
+  }
+}
+JSON
+}
+
+obliging
+export PR_TITLE="feat(ci): a change"
+
+# Nothing declares agent work: no commit is judged. A human's pull
+# request is asked for nothing, which is the whole reason the unit is not
+# "every commit" — absence read as disobedience would fault the people
+# who never used an agent.
+commit_message "$(printf 'feat(ci): written by a person\n\nNo trailer, and none owed.')"
+export PR_BODY="Just a change I made."
+check "an undeclared pull request judges no commit" 0 \
+  "nothing in the pull request body declares agent work" \
+  -- bash "$CHECK_OBSERVANCE" main...HEAD
+
+# The body declares it, and the commit does not carry the trailer: this
+# is partial compliance, and it is what the direction exists to catch.
+export PR_BODY="$(printf 'A change.\n\n🤖 Generated with Claude Code')"
+check "a declared pull request faults an untrailered commit" 1 \
+  "carries no Co-Authored-By: trailer while agent_coauthor is true" \
+  -- bash "$CHECK_OBSERVANCE" main...HEAD
+
+# The same declaration, the trailer present and naming a model.
+setup
+obliging
+commit_message "$(printf 'feat(ci): written with an agent\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>')"
+check "a trailered commit under a declared pull request passes" 0 \
+  "agent_coauthor is honoured" -- bash "$CHECK_OBSERVANCE" main...HEAD
+
+# A category is not a model. The record has to survive the next model's
+# arrival, and "an AI" answers nothing a quarter later.
+setup
+obliging
+commit_message "$(printf 'feat(ci): written with something\n\nCo-Authored-By: an AI <noreply@example.com>')"
+check "a trailer naming a category is refused" 1 \
+  "a category rather than a model" -- bash "$CHECK_OBSERVANCE" main...HEAD
+check "and the category is named back" 1 "names 'an-ai'" \
+  -- bash "$CHECK_OBSERVANCE" main...HEAD
+
+setup
+obliging
+commit_message "$(printf 'feat(ci): a family is not a model\n\nCo-Authored-By: Claude <noreply@anthropic.com>')"
+check "a bare family name is a category too" 1 \
+  "a category rather than a model" -- bash "$CHECK_OBSERVANCE" main...HEAD
+
+# **A commit carries as many trailers as it had helpers, and every one of
+# them is read.** Stopping at the first made the verdict a function of
+# line order: the same two trailers passed with the person on top and
+# faulted with the person below, which is not a rule anyone could obey —
+# and the passing arrangement is the one an agent reaching for a category
+# would write, since its own line goes last.
+setup
+obliging
+commit_message "$(printf 'feat(ci): a person and a category\n\nCo-Authored-By: Jane Doe <jane@example.com>\nCo-Authored-By: an AI <noreply@example.com>')"
+check "a category below a person is still refused" 1 \
+  "a category rather than a model" -- bash "$CHECK_OBSERVANCE" main...HEAD
+
+setup
+obliging
+commit_message "$(printf 'feat(ci): a category and a person\n\nCo-Authored-By: an AI <noreply@example.com>\nCo-Authored-By: Jane Doe <jane@example.com>')"
+check "and so is a category above one" 1 \
+  "a category rather than a model" -- bash "$CHECK_OBSERVANCE" main...HEAD
+
+# The pair that obeys: a person and a model, and no order of the two
+# changes the answer.
+setup
+obliging
+commit_message "$(printf 'feat(ci): a person and a model\n\nCo-Authored-By: Jane Doe <jane@example.com>\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>')"
+check "a person beside a model passes" 0 "agent_coauthor is honoured" \
+  -- bash "$CHECK_OBSERVANCE" main...HEAD
+
+# The machinery's recording commit is not an agent's action, so no
+# conduct flag reaches it — in this direction either.
+setup
+obliging
+commit_message "$(printf 'feat(ci): written with an agent\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>')"
+bot_commit "$(printf 'chore(queue): record what the merge decided')"
+check "the recording commit owes no trailer" 0 "agent_coauthor is honoured" \
+  -- bash "$CHECK_OBSERVANCE" main...HEAD
+
+# **A merge commit is nobody's writing.** Its message is composed by git,
+# the work it joins already carried whatever credit it owed, and the forge
+# builds one for every pull request it tests — a direction that judged
+# them would fault every branch that ever caught up with its base. This
+# case is the check applied to its own pull request, which is where it
+# was found.
+setup
+obliging
+commit_message "$(printf 'feat(ci): written with an agent\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>')"
+git checkout -q -b side main
+# A file of its own: both branches touching marker.txt would conflict,
+# the merge would abort, and the case would pass for having no merge
+# commit to judge.
+printf 'side work\n' > side.txt
+git add -A >/dev/null
+git commit -q -m "$(printf 'feat(ci): work on the base\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>')"
+git checkout -q feature
+git merge --no-ff side -m "Merge side into feature" >/dev/null
+if ! git rev-parse HEAD^2 >/dev/null 2>&1; then
+  echo "FAIL  the case needs a real merge commit, and the merge did not make one"
+  fail=$((fail + 1))
+fi
+check "a merge commit owes no trailer" 0 "agent_coauthor is honoured" \
+  -- bash "$CHECK_OBSERVANCE" main...HEAD
+
+# **Two of them, because one proves less than it looks.** The exemption
+# is a membership test over a list, and with a single entry a
+# newline-separated list and a space-separated one behave identically —
+# which is how a broken version of this passed here and faulted in CI,
+# where the forge builds a synthetic merge of its own on top.
+git checkout -q -b other main
+printf 'other work\n' > other.txt
+git add -A >/dev/null
+git commit -q -m "$(printf 'feat(ci): more work on the base\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>')"
+git checkout -q feature
+git merge --no-ff other -m "Merge other into feature" >/dev/null
+check "and so does the second one in the same range" 0 \
+  "agent_coauthor is honoured" -- bash "$CHECK_OBSERVANCE" main...HEAD
+
+# A value the vocabulary does not hold is check_settings.sh's to name.
+setup
+settings_file <<'JSON'
+{
+  "stage": 3,
+  "stage_1": {
+    "spec_required": "when-warranted",
+    "decisions_style": "per-subsystem",
+    "product_layout": "by-concept"
+  },
+  "stage_2": {
+    "agent_coauthor": yes,
+    "auto_commit": true,
+    "auto_pr": true,
+    "auto_push": true,
+    "pr_title_style": "conventional"
+  }
+}
+JSON
+commit_message "$(printf 'feat(ci): a change\n\nNo trailer.')"
+check "a value outside the vocabulary judges nothing here" 0 \
+  "which this check does not know" -- bash "$CHECK_OBSERVANCE" main...HEAD
+
+finish

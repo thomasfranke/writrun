@@ -17,7 +17,7 @@ check "and opens pull requests unprompted" 0 "true" \
 check "and pushes unprompted" 0 "true" \
   -- bash "$READ_SETTING" stage_2.auto_push
 check "and credits itself as its platform does" 0 "true" \
-  -- bash "$READ_SETTING" stage_2.credit_ai
+  -- bash "$READ_SETTING" stage_2.agent_coauthor
 check "a spec is written when the work warrants one" 0 "when-warranted" \
   -- bash "$READ_SETTING" stage_1.spec_required
 check "decisions sit per subsystem" 0 "per-subsystem" \

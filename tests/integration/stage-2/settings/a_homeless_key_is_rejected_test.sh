@@ -18,7 +18,7 @@ settings_file <<'JSON'
   },
   "stage_2": {
     "auto_commit": true,
-    "credit_ai": true,
+    "agent_coauthor": true,
     "auto_pr": true
   }
 }
@@ -42,7 +42,7 @@ settings_file <<'JSON'
   "stage_2": {
     "auto_commit": true,
     "auto_pr": true,
-    "credit_ai": true,
+    "agent_coauthor": true,
     "pr_title_style": "conventional"
   }
 }
@@ -65,7 +65,7 @@ settings_file <<'JSON'
   },
   "stage_2": {
     "auto_commit": true,
-    "credit_ai": true,
+    "agent_coauthor": true,
     "pr_title_style": "conventional"
   }
 }
@@ -86,7 +86,7 @@ settings_file <<'JSON'
     "auto_commit": true,
     "auto_pr": true,
     "auto_push": true,
-    "credit_ai": true,
+    "agent_coauthor": true,
     "pr_title_style": "conventional"
   }
 }
@@ -107,7 +107,7 @@ settings_file <<'JSON'
     "decisions_style": "per-subsystem",
     "product_layout": "by-concept",
     "auto_commit": true,
-    "credit_ai": true
+    "agent_coauthor": true
   },
   "stage_2": {
     "auto_pr": true,
@@ -122,7 +122,7 @@ check "and the fault names stage_2 as its home" 1 \
   "its home is stage_2" \
   -- bash "$CHECK_SETTINGS"
 check "the other flag is named the same way" 1 \
-  "'stage_2.credit_ai' is missing" \
+  "'stage_2.agent_coauthor' is missing" \
   -- bash "$CHECK_SETTINGS"
 
 # A declaration is no different: three keys, three homes, same rule.
@@ -138,7 +138,7 @@ settings_file <<'JSON'
     "auto_commit": true,
     "auto_pr": true,
     "auto_push": true,
-    "credit_ai": true,
+    "agent_coauthor": true,
     "pr_title_style": "conventional"
   }
 }
@@ -160,7 +160,7 @@ settings_file <<'JSON'
     "auto_commit": true,
     "auto_pr": true,
     "auto_push": true,
-    "credit_ai": true,
+    "agent_coauthor": true,
     "pr_title_style": "conventional"
   }
 }

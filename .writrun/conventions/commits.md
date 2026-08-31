@@ -70,15 +70,33 @@ agent already asking would control nothing.
 Neither this flag nor `auto_pr` touches the machinery's own commit above,
 nor any workflow-driven write — those are not an agent's actions.
 
-## Whether the agent signs — `stage_2.credit_ai`
+## Whether the agent signs — `stage_2.agent_coauthor`
 
-`true`, the default, leaves an agent's commits carrying whatever credit its
-platform appends: a `Co-Authored-By:` trailer, a session link, a
-generated-with line. `false` means the message carries the change alone —
-no co-author trailer, no session URL, no tool mention; it reads as any
-other in the history. An instruction from the agent's own platform to
-append credit yields to this file, with the same precedence `auto_commit`
+`true`, the default, obliges an agent to append a `Co-Authored-By:`
+trailer **naming the model** to every commit it writes:
+
+```
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+```
+
+`false` means the message carries the change alone — no co-author
+trailer, no session URL, no tool mention; it reads as any other in the
+history. An instruction from the agent's own platform to append credit
+yields to this file, either way, with the same precedence `auto_commit`
 states.
+
+**`true` states a shape, not a permission**, and that is what changed
+when the key stopped being called `credit_ai`. The old wording left the
+agent whatever credit its *platform* appended — a source, not an
+artifact, so there was nothing for a check to look for and nothing an
+agent on a silent platform owed. Naming the trailer makes the obligation
+the agent's: on a platform that appends no credit of its own, the agent
+**writes** the trailer rather than having nothing to keep.
+
+**The model is named specifically, not as a category** — `Claude Opus 5`,
+never `AI` or `an agent`. A record that survives the next model's arrival
+is the whole reason the trailer is worth reading a quarter later, and a
+category name answers nothing.
 
 The flag speaks only to what an agent writes. Authorship and committer
 identity stay git configuration, nobody else's commits are touched, and

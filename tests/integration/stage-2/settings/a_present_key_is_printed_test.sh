@@ -17,7 +17,7 @@ settings_file <<'JSON'
     "auto_commit": false,
     "auto_pr": true,
     "auto_push": false,
-    "credit_ai": true,
+    "agent_coauthor": true,
     "pr_title_style": "bracketed"
   }
 }
@@ -30,7 +30,7 @@ check "a sectioned key prints its value, addressed through its section" 0 \
 check "and so does the conduct flag beside it" 0 "false" \
   -- bash "$READ_SETTING" stage_2.auto_commit
 check "and the rest of stage_2" 0 "true" \
-  -- bash "$READ_SETTING" stage_2.credit_ai
+  -- bash "$READ_SETTING" stage_2.agent_coauthor
 check "and the last of it" 0 "true" \
   -- bash "$READ_SETTING" stage_2.auto_pr
 check "and a stated auto_push overrides its default" 0 "false" \
@@ -57,7 +57,7 @@ settings_file <<'JSON'
   },
   "stage_2": {
     "auto_commit": true,
-    "credit_ai": true,
+    "agent_coauthor": true,
     "auto_pr": true,
     "pr_title_style": "conventional",
     "opener": "{"
@@ -82,7 +82,7 @@ settings_file <<'JSON'
   },
   "stage_2": {
     "auto_commit": true,
-    "credit_ai": true,
+    "agent_coauthor": true,
     "auto_pr": true,
     "pr_title_style": "conventional",
     "note": "two"
