@@ -1,7 +1,8 @@
 # Specs — the detail of one change
 
 **Historical record — not a description of the present.** One file per
-spec, named by id (`spec-001.md`). A spec belongs to exactly one task
+spec, named `spec-NNNN-<subject>.md` — the same shape a task's name has,
+four-digit id and subject slug. A spec belongs to exactly one task
 (`task_ref`) and inherits order and priority from it. Schema in WritRun's
 technical README (`docs/technical/README.md#spec-schema` in the WritRun
 repository).

@@ -1,6 +1,8 @@
 # Tasks — the queue
 
-One file per task, named by id (`task-001.md`), never renamed, never
+One file per task, named `task-NNNN-<subject>.md` — a four-digit id and
+an extremely short subject slug (`task-0005-multi-file-search.md`), so a
+directory listing reads as a queue summary. Never renamed, never
 moved. Status, priority, and dependencies live in front-matter — schema
 and selection algorithm are defined in WritRun's technical README
 (`docs/technical/README.md#task-schema` in the WritRun repository).
