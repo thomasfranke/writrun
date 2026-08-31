@@ -39,10 +39,18 @@
 # already where it belongs writes nothing.
 #
 # Output contract: one `moved <file>: <old> -> <new>` line per write on
-# stdout, and — when $GITHUB_OUTPUT is set — `changed=0|1` plus
-# `tasks=<id ...>` appended there, so a workflow reads results instead
-# of scraping prose. Always exits 0, except 3 when git cannot read the
-# range — an unreadable range is not an empty one.
+# stdout, and — when $GITHUB_OUTPUT is set — `changed=0|1`,
+# `tasks=<id ...>` and `scope=<id ...>` appended there, so a workflow
+# reads results instead of scraping prose. Always exits 0, except 3 when
+# git cannot read the range — an unreadable range is not an empty one.
+#
+# `tasks` and `scope` answer different questions and a caller wants both.
+# `tasks` is what this run *moved*; `scope` is every task the merge put
+# in front of it, moved or not. A task the merge created and settled
+# where it already belonged writes no `moved` line and still owes its
+# mirror a label, so the projection reads `scope` — deriving it a second
+# time from the range would be a second chance to disagree with this
+# one (docs/product/stage-3-github-issues/labels.md).
 #
 # Portable bash 3.2, POSIX awk/sed — no gawk extensions. See the
 # standing rule in docs/technical/decisions/.
@@ -152,6 +160,15 @@ if [ -n "${GITHUB_OUTPUT:-}" ]; then
     printf 'changed=0\n' >> "$GITHUB_OUTPUT"
   fi
   printf 'tasks=%s\n' "$MOVED" >> "$GITHUB_OUTPUT"
+  SCOPE_IDS=""
+  for f in $SCOPE; do
+    id=$(basename "$f" .md | sed -E 's/^(task-[0-9]+).*/\1/')
+    case " $SCOPE_IDS " in
+      *" $id "*) ;;
+      *) SCOPE_IDS="${SCOPE_IDS:+$SCOPE_IDS }$id" ;;
+    esac
+  done
+  printf 'scope=%s\n' "$SCOPE_IDS" >> "$GITHUB_OUTPUT"
 fi
 
 exit 0

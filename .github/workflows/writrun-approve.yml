@@ -60,13 +60,18 @@ jobs:
     # The level gates the whole workflow rather than each job, and it is a
     # job rather than a first step so a project below the level starts no
     # runner at all. It always succeeds: a job that did not run is not a
-    # failure, and stage_gate.sh says which of the two happened.
+    # failure, and stage_gate.sh says which of the two happened. Two
+    # outputs because this workflow now spans two stages: the recording
+    # is Stage 2's, and the mirror steps that follow it are Stage 3's.
     outputs:
       run: ${{ steps.gate.outputs.run }}
+      mirror: ${{ steps.gate3.outputs.run }}
     steps:
       - uses: actions/checkout@v4
       - id: gate
         run: bash .writrun/scripts/stage-2-pull-requests/stage_gate.sh 2
+      - id: gate3
+        run: bash .writrun/scripts/stage-2-pull-requests/stage_gate.sh 3
 
   approve-specs:
     # Merged, not merely closed. A pull request abandoned without merging
@@ -182,20 +187,57 @@ jobs:
           git pull --rebase origin "$BASE_REF"
           git push origin "HEAD:${BASE_REF}"
 
-      - name: Re-derive the label of every task this merge moved
-        if: steps.flip.outputs.changed == '1' || steps.status.outputs.changed == '1'
-        # Sequential in the same job, and deliberately *after* the commit:
-        # the script reads the queue from disk, and the flip is only in
-        # the queue once it has been written there. Reading the merge's
-        # own diff instead is what made `status:ready` unreachable —
-        # right for what the merge carried, wrong for what it caused
+      # The two steps below are **the merged close's whole mirror
+      # answer**, and no other workflow gives one: writrun-issues.yml and
+      # writrun-progress.yml both stand down for a merge. That is the
+      # point. They used to answer it too, concurrently, and the label
+      # that stood was whichever run finished last — on mirror #66 the
+      # correct write landed and was overwritten three seconds later by
+      # one derived from the merge's own diff. Ordering across workflows
+      # is not something a forge offers; one owner is
+      # (docs/technical/decisions/github-issues/, 0060).
+      #
+      # Both are gated on Stage 3 rather than on the job's Stage 2, so an
+      # adopter that deleted the two mirror workflows reaches for no
+      # mirror here either. Neither writes a file, so neither can race
+      # the push above — they follow it.
+
+      - name: Mint the mirrors this merge owes
+        if: needs.gate.outputs.mirror == 'true'
+        # Existence only: which tasks the queue just gained is the diff's
+        # to answer, and this is the catch-up for a mirror the open event
+        # missed or deferred. It writes no `status:` label — that is the
+        # step below's, from the file.
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_STATE: ${{ github.event.pull_request.state }}
+          PR_DRAFT: ${{ github.event.pull_request.draft }}
+          PR_MERGED: ${{ github.event.pull_request.merged }}
+          PR_AUTHOR_ASSOCIATION: ${{ github.event.pull_request.author_association }}
+          PR_HTML_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          bash .writrun/scripts/stage-3-github-issues/mirror_issues.sh \
+            "${{ github.repository }}" \
+            "${{ github.event.pull_request.number }}"
+
+      - name: Label every task this merge touched, from the queue
+        if: needs.gate.outputs.mirror == 'true'
+        # Deliberately *after* the commit: the script reads the queue from
+        # disk, and the flip is only in the queue once it has been written
+        # there. Reading the merge's own diff instead is what made
+        # `status:ready` unreachable — right for what the merge carried,
+        # wrong for what it caused
         # (docs/product/stage-3-github-issues/labels.md).
         #
-        # A label is not a file, so nothing here is committed or pushed;
-        # this step cannot race the push above because it follows it.
+        # `scope`, not `tasks`: every task the merge put in front of the
+        # recording, not only those it moved. A task born ready — an
+        # empty `spec_ref`, or specs this same merge approved — settles
+        # where it already belongs, writes no `moved` line, and still
+        # owes its mirror a label. And no condition on `changed`: a
+        # recording that wrote nothing still leaves mirrors to label.
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           bash .writrun/scripts/stage-3-github-issues/rederive_labels.sh \
-            "${{ github.repository }}" ${{ steps.flip.outputs.specs }} ${{ steps.status.outputs.tasks }}
+            "${{ github.repository }}" ${{ steps.flip.outputs.specs }} ${{ steps.status.outputs.scope }}
