@@ -1,6 +1,6 @@
 ---
 id: task-0021
-status: in-review
+status: done
 blocked_reason: null
 taken_by: thomasfranke
 spec_ref: [spec-0026, spec-0027, spec-0029, spec-0030, spec-0033, spec-0034]
@@ -11,7 +11,7 @@ milestone: null
 created: 2026-08-31T02:47:35Z
 queued: 2026-08-31T04:04:03Z
 completed: 2026-08-31T04:56:25Z
-merged: null
+merged: 2026-08-31T11:30:53Z
 ---
 
 # Catch the machinery up with the restaged docs
