@@ -86,8 +86,8 @@ PRODUCT_LAYOUTS="by-concept by-feature"
 # is neither a commit nor a pull request for a conduct flag to gate.
 HOMES=":stage \
 stage_1:decisions_style stage_1:product_layout stage_1:spec_required \
-stage_2:auto_commit stage_2:auto_pr stage_2:auto_push stage_2:credit_ai \
-stage_2:pr_title_style"
+stage_2:agent_coauthor stage_2:auto_commit stage_2:auto_pr \
+stage_2:auto_push stage_2:pr_title_style"
 
 home_of() {   # home_of <name> — the section the schema gives that key
   for h in $HOMES; do
@@ -246,6 +246,8 @@ while IFS= read -r line || [ -n "$line" ]; do
   case "$key" in
     level)
       fault "'level' was renamed: declare 'stage' (1|2|3) instead — the reader honours the old value meanwhile, but only this check will tell you" ;;
+    credit_ai)
+      fault "'credit_ai' was renamed: declare 'agent_coauthor' (true|false) instead — the key names the artifact it obliges, a Co-Authored-By: trailer naming the model, rather than the platform it came from; the value carries over unchanged" ;;
     stage)
       case " $STAGES " in
         *" $val "*) ;;
@@ -256,7 +258,7 @@ while IFS= read -r line || [ -n "$line" ]; do
         *" $val "*) ;;
         *) fault "pr_title_style '${val}' is outside its vocabulary: ${TITLE_STYLES}" ;;
       esac ;;
-    auto_commit|auto_pr|auto_push|credit_ai)
+    agent_coauthor|auto_commit|auto_pr|auto_push)
       case " $BOOLEANS " in
         *" $val "*) ;;
         *) fault "${key} '${val}' is outside its vocabulary: ${BOOLEANS}" ;;
@@ -300,5 +302,5 @@ R=".writrun/scripts/stage-2-pull-requests/read_setting.sh"
 echo "OK — ${SETTINGS} is canonical:"
 echo "  stage=$(bash "$R" stage)"
 echo "  stage_1.decisions_style=$(bash "$R" stage_1.decisions_style) stage_1.product_layout=$(bash "$R" stage_1.product_layout) stage_1.spec_required=$(bash "$R" stage_1.spec_required)"
-echo "  stage_2.auto_commit=$(bash "$R" stage_2.auto_commit) stage_2.auto_pr=$(bash "$R" stage_2.auto_pr) stage_2.auto_push=$(bash "$R" stage_2.auto_push)"
-echo "  stage_2.credit_ai=$(bash "$R" stage_2.credit_ai) stage_2.pr_title_style=$(bash "$R" stage_2.pr_title_style)"
+echo "  stage_2.agent_coauthor=$(bash "$R" stage_2.agent_coauthor) stage_2.auto_commit=$(bash "$R" stage_2.auto_commit)"
+echo "  stage_2.auto_pr=$(bash "$R" stage_2.auto_pr) stage_2.auto_push=$(bash "$R" stage_2.auto_push) stage_2.pr_title_style=$(bash "$R" stage_2.pr_title_style)"

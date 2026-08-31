@@ -12,7 +12,7 @@ settings_file <<'JSON'
   "stage": 3,
   "stage_1": {
     "auto_commit": true,
-    "credit_ai": true
+    "agent_coauthor": true
   },
   "stage_2": {
     "auto_pr": true,
@@ -34,7 +34,7 @@ settings_file <<'JSON'
   },
   "stage_1": {
     "auto_commit": true,
-    "credit_ai": true
+    "agent_coauthor": true
   },
   "stage_2": {
     "auto_pr": true,
@@ -52,7 +52,7 @@ settings_file <<'JSON'
   "prefixes": ["task", "spec"],
   "stage_1": {
     "auto_commit": true,
-    "credit_ai": true
+    "agent_coauthor": true
   },
   "stage_2": {
     "auto_pr": true,
@@ -67,7 +67,7 @@ settings_file <<'JSON'
 {
   "stage": 3, "stage_1": {
     "auto_commit": true,
-    "credit_ai": true
+    "agent_coauthor": true
   },
   "stage_2": {
     "auto_pr": true,
@@ -83,7 +83,7 @@ settings_file <<'JSON'
   "stage": 3,
   "stage_1": {
   "auto_commit": true,
-    "credit_ai": true
+    "agent_coauthor": true
   },
   "stage_2": {
     "auto_pr": true,
@@ -101,7 +101,7 @@ settings_file <<'JSON'
   "stage": 2,
   "stage_1": {
     "auto_commit": true,
-    "credit_ai": true
+    "agent_coauthor": true
   },
   "stage_2": {
     "auto_pr": true,
@@ -120,7 +120,7 @@ settings_file <<'JSON'
   "stage": 3,
   "stage_1": {
     "auto_commit": true,
-    "credit_ai": true
+    "agent_coauthor": true
   },
   "stage_2": {
     "auto_pr": true,
@@ -140,7 +140,7 @@ settings_file <<'JSON'
   "stage": 3,
   "stage_1": {
     "auto_commit": true,
-    "credit_ai": true
+    "agent_coauthor": true
   },
   "stage_2": {
     "auto_pr": true,
@@ -157,7 +157,7 @@ settings_file <<'JSON'
   "stage": 3,
   "stage_1": {
     "auto_commit": true,
-    "credit_ai": true,
+    "agent_coauthor": true,
   },
   "stage_2": {
     "auto_pr": true,
@@ -174,7 +174,7 @@ settings_file <<'JSON'
   "stage": 3
   "stage_1": {
     "auto_commit": true,
-    "credit_ai": true
+    "agent_coauthor": true
   },
   "stage_2": {
     "auto_pr": true,
@@ -194,7 +194,7 @@ settings_file <<'JSON'
   "stage": 3,
   "stage_1": {
     "auto_commit": true,
-    "credit_ai": true
+    "agent_coauthor": true
   },
   "stage_2": {
     "auto_pr": true,

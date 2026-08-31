@@ -16,10 +16,12 @@
 #      branch's history, so a title in the other style is a permanent
 #      entry in a log the project decided would read one way.
 #
-#   2. **Nothing carries platform credit while `stage_2.credit_ai` is
-#      `false`.** A co-author trailer, a session link or a generated-with
+#   2. **`stage_2.agent_coauthor` is honoured in both directions.** At
+#      `false`, a co-author trailer, a session link or a generated-with
 #      line in a commit message or the pull request body is exactly the
-#      write that flag forbids, and it is visible from here.
+#      write the flag forbids. At `true`, the flag obliges an artifact
+#      with a fixed shape and a fixed place — a `Co-Authored-By:` trailer
+#      naming the model — so its absence is visible too.
 #
 # **What leaves no trace stays instruction-bound.** The three conduct
 # flags — `auto_commit`, `auto_push`, `auto_pr` — govern whether the
@@ -165,10 +167,10 @@ fi
 
 # --------------------------------------------------------------- credit
 
-CREDIT=$(bash "$READ_SETTING" stage_2.credit_ai)
+CREDIT=$(bash "$READ_SETTING" stage_2.agent_coauthor)
 
 if [ "$CREDIT" != "false" ]; then
-  echo "credit_ai is '${CREDIT}' — the adopter allows platform credit, so nothing is judged here."
+  echo "agent_coauthor is '${CREDIT}'."
 else
   # Trailers and whole lines, never a subject: a title that *mentions*
   # a trailer ("remove the Co-Authored-By trailer") is prose about the
@@ -223,14 +225,14 @@ else
     git_read "git log -1 --format=%B ${sha}" log -1 --format='%B' "$sha"
     hit=$(printf '%s\n' "$GIT_OUT" \
       | grep -E "$CREDIT_LINES|$CREDIT_PROSE" | head -n 1 || true)
-    [ -z "$hit" ] || fault "commit ${sha} carries platform credit while credit_ai is false: ${hit}"
+    [ -z "$hit" ] || fault "commit ${sha} carries platform credit while agent_coauthor is false: ${hit}"
   done
 
   body="${PR_BODY:-}"
   if [ -n "$body" ]; then
     hit=$(printf '%s\n' "$body" \
       | grep -E "$CREDIT_LINES|$CREDIT_PROSE" | head -n 1 || true)
-    [ -z "$hit" ] || fault "the pull request body carries platform credit while credit_ai is false: ${hit}"
+    [ -z "$hit" ] || fault "the pull request body carries platform credit while agent_coauthor is false: ${hit}"
   fi
 fi
 
@@ -244,4 +246,4 @@ if [ "$faults" -ne 0 ]; then
   exit 1
 fi
 
-echo "OK — the title observes '${STYLE}', and credit_ai is honoured."
+echo "OK — the title observes '${STYLE}', and agent_coauthor is honoured."

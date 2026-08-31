@@ -16,7 +16,7 @@ settings_file <<'JSON'
   },
   "stage_2": {
     "auto_commit": true,
-    "credit_ai": true,
+    "agent_coauthor": true,
     "auto_pr": true
   }
 }
@@ -36,7 +36,7 @@ settings_file <<'JSON'
     "auto_commit": true,
     "auto_pr": true,
     "auto_push": true,
-    "credit_ai": true,
+    "agent_coauthor": true,
     "pr_title_style": "conventional"
   }
 }
@@ -60,7 +60,7 @@ settings_file <<'JSON'
 }
 JSON
 check "a conduct flag is no more optional than the rest" 1 \
-  "'stage_2.credit_ai' is missing" \
+  "'stage_2.agent_coauthor' is missing" \
   -- bash "$CHECK_SETTINGS"
 
 settings_file <<'JSON'
@@ -74,7 +74,7 @@ settings_file <<'JSON'
     "auto_commit": true,
     "auto_pr": true,
     "auto_push": true,
-    "credit_ai": true,
+    "agent_coauthor": true,
     "pr_title_style": "conventional"
   }
 }

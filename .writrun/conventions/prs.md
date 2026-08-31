@@ -107,9 +107,16 @@ asked anything. It sits in `stage_2`, beside
 `auto_commit`, because git begins at Stage 2; below that there is
 neither a commit nor a pull request for either flag to gate.
 
-`stage_2.credit_ai` reaches the body as it reaches a commit message: with
-`false`, nothing an agent writes into the forge carries a generated-with
-line, a session URL or any other platform credit — and from Stage 2 that
-is checked too, over the pull request's own commits and body. What no
-diff can show — whether the agent *asked* before committing or opening —
-stays instruction-bound, and no check pretends otherwise.
+`stage_2.agent_coauthor` reaches the body as it reaches a commit
+message. With `false`, nothing an agent writes into the forge carries a
+generated-with line, a session URL or any other credit — and from Stage 2
+that is checked, over the pull request's own commits and body. With
+`true`, the body carries a credit line and the commits carry the
+model-naming trailer [commits.md](commits.md) describes; **the commits
+are what a check reads**, because a trailer has a fixed shape and a fixed
+place and a body's credit line has neither, so the body's half stays
+instruction-bound and is stated as such rather than guessed at.
+
+What no diff can show — whether the agent *asked* before committing,
+pushing or opening — stays instruction-bound too, and no check pretends
+otherwise.
