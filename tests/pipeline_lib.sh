@@ -25,6 +25,7 @@ CI_SCRIPTS="$REPO_ROOT/.writrun/scripts"
 READ_SETTING="$CI_SCRIPTS/stage-2-pull-requests/read_setting.sh"
 CHECK_SETTINGS="$CI_SCRIPTS/stage-2-pull-requests/check_settings.sh"
 STAGE_GATE="$CI_SCRIPTS/stage-2-pull-requests/stage_gate.sh"
+CHECK_OBSERVANCE="$CI_SCRIPTS/stage-2-pull-requests/check_observance.sh"
 WORKFLOWS="$REPO_ROOT/.github/workflows"
 
 # settings_file — the whole settings file, from stdin, at the address it
@@ -230,3 +231,23 @@ EOF
 }
 
 commit_all() { git add -A >/dev/null; git commit -qm "change"; }
+
+# commit_message <message> — one commit carrying exactly this message,
+# body and trailers included. The credit check reads whole messages, so a
+# case that needs a trailer needs a commit that really has one.
+commit_message() {
+  printf 'change %s\n' "$(date +%s%N 2>/dev/null || date +%s)" >> marker.txt
+  git add -A >/dev/null
+  git commit -q -m "$1"
+}
+
+# bot_commit <message> — the machinery's own recording commit, written
+# with the committer identity the approve workflow sets. Never an agent's
+# action, so no conduct flag reaches it.
+bot_commit() {
+  printf 'recorded %s\n' "$(date +%s%N 2>/dev/null || date +%s)" >> marker.txt
+  git add -A >/dev/null
+  git -c user.name='github-actions[bot]' \
+      -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+      commit -q -m "$1"
+}

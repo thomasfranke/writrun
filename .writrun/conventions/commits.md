@@ -12,7 +12,7 @@ summary`:
 - **Types**: `docs`, `feat`, `fix`, `refactor`, `chore`.
 - **Scopes** (optional — omit when a change genuinely spans the
   repository): `about`, `product`, `technical`, `tasks`, `specs`,
-  `skills`, `ci`, `tests`, `agents`.
+  `skills`, `ci`, `tests`, `agents`, `readme`, `setup`.
 - Example: `docs(product): add the coverage-rule concept chapter`.
 
 Under `bracketed` — the same two vocabularies, capitalised inside
@@ -20,10 +20,19 @@ brackets, then a sentence: `[Docs][Product] Add the coverage-rule concept
 chapter`.
 
 Either way the `[TASK-NNNN]` tags come first and sit **outside** whichever
-grammar follows. That is deliberate and costs nothing: nothing in this
-project parses a subject — not the checks, and not the release notes,
-which the forge generates from pull requests. History here is read by eye
-and by `git log --grep`, and neither is a strict parser.
+grammar follows, so the one parser that exists never has to know both at
+once: from Stage 2, `writrun check` strips the tags and reads what is
+left against the declared style — the type against the list above, the
+scope against it too when one is present, and nothing at all about the
+summary that follows. Anything downstream of that is read by eye and by
+`git log --grep`, neither of which is a strict parser; the release notes
+the forge generates come from pull requests and parse nothing here.
+
+**Editing the two vocabularies above is editing what the check
+accepts.** They are this project's, like every other line in this
+folder, and `check_observance.sh` carries the machine half of the same
+statement — change one and change the other, or a type this file offers
+is a type the door refuses.
 
 - Trivial work is a commit, never a task (principle 6).
 
@@ -33,7 +42,7 @@ earned — has its title as a variable in `writrun-approve.yml`; edit it to
 match whatever this file says. It is one commit because it records one
 event.
 
-## Who presses commit — `stage_1.auto_commit`
+## Who presses commit — `stage_2.auto_commit`
 
 `true`, the default, lets an agent commit on its own as its flow requires.
 `false` gates the action and never the work: the agent still composes the
@@ -50,7 +59,7 @@ agent already asking would control nothing.
 Neither this flag nor `auto_pr` touches the machinery's own commit above,
 nor any workflow-driven write — those are not an agent's actions.
 
-## Whether the agent signs — `stage_1.credit_ai`
+## Whether the agent signs — `stage_2.credit_ai`
 
 `true`, the default, leaves an agent's commits carrying whatever credit its
 platform appends: a `Co-Authored-By:` trailer, a session link, a

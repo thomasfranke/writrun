@@ -22,10 +22,18 @@
     machines and people both scan.
   - `bracketed` — a human sentence behind bracketed labels:
     `[TASK-0012][Fix][CI] Debounce mirror updates`, and
-    `[DOCS] The merge is the assenting act`. Nothing here parses a
-    subject, so this costs no guarantee; it reads as prose rather than as
+    `[DOCS] The merge is the assenting act`. The labels are read against
+    the same two vocabularies, and the sentence after them is not parsed
+    at all — so this costs no guarantee; it reads as prose rather than as
     a grammar, which suits a project whose history is read mostly by
     people.
+
+  **Whichever is declared, `writrun check` reads the title against it**
+  from Stage 2 on — the style is a setting an agent was told to obey, and
+  a title is where disobeying it leaves a trace
+  ([observance](https://github.com/thomasfranke/writrun/blob/main/docs/technical/README.md#observance-is-checked-where-it-leaves-a-trace)).
+  Case inside the brackets is not judged: `[Fix]` and `[DOCS]` are both
+  the vocabulary, spelled two ways this file itself uses.
 
   Neither is more correct. Pick the one your readers already know, state
   it in the settings file, and let the agents follow it.
@@ -61,10 +69,13 @@ allowed.
 **It holds the draft too.** The pull request that reports a task as taken
 is mechanical, but mechanical is not exempt — the flag gates the action,
 not the reason for it. The agent presents, waits, and the taking flow
-continues unchanged afterwards. It sits in `stage_2` rather than beside
-`auto_commit` because pull requests begin at Stage 2; below that there is
-nothing for it to gate.
+continues unchanged afterwards. It sits in `stage_2`, beside
+`auto_commit`, because git begins at Stage 2; below that there is
+neither a commit nor a pull request for either flag to gate.
 
-`stage_1.credit_ai` reaches the body as it reaches a commit message: with
+`stage_2.credit_ai` reaches the body as it reaches a commit message: with
 `false`, nothing an agent writes into the forge carries a generated-with
-line, a session URL or any other platform credit.
+line, a session URL or any other platform credit — and from Stage 2 that
+is checked too, over the pull request's own commits and body. What no
+diff can show — whether the agent *asked* before committing or opening —
+stays instruction-bound, and no check pretends otherwise.
