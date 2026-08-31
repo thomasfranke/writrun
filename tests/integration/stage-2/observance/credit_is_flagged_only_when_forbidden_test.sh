@@ -112,4 +112,19 @@ export PR_TITLE="feat(ci): a clean message"
 check "the recording commit is never judged" 0 "credit_ai is honoured" \
   -- bash "$CHECK_OBSERVANCE" main...HEAD
 
+# The range arrives written for `git diff`, where `A...B` is "B since
+# the merge base". Read as a log range the same three dots mean the
+# symmetric difference, which would judge whatever the base gained since
+# the branch point — another pull request's commits, blamed on this one.
+setup
+forbidding
+commit_message "feat(ci): a clean message"
+git checkout -q main
+commit_message "$(printf 'chore(ci): work that landed in another pull request\n\nCo-Authored-By: Some Agent <noreply@example.com>')"
+git checkout -q feature
+export PR_TITLE="feat(ci): a clean message"
+check "a commit the base gained since the branch point is not judged" 0 \
+  "credit_ai is honoured" \
+  -- bash "$CHECK_OBSERVANCE" main...HEAD
+
 finish

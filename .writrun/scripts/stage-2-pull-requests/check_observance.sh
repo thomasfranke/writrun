@@ -178,8 +178,40 @@ else
   # The commits in the range, minus the machinery's own. The committer
   # name is read rather than the message, so the skip is by identity and
   # no subject text can imitate it.
-  git_read "git log --format ${RANGE}" \
-    log --format='%h%x09%cn' "$RANGE"
+  # `A...B` reaches this script written for `git diff`, where it means
+  # "B since the merge base" — every sibling check is handed the same
+  # string. `git log` reads the same three dots as the *symmetric
+  # difference*, so it would also hand back the commits the base gained
+  # since the branch point: work that landed in another pull request,
+  # judged as if this one had written it. The two ends are resolved here
+  # and one side is asked for, the same derivation check_derived_work.sh
+  # makes when it needs a base.
+  case "$RANGE" in
+    *...*)
+      left="${RANGE%%...*}"
+      right="${RANGE##*...}"
+      # A merge-base that could not be computed is not a base of
+      # "nothing", it is an unanswered question — and this is a gate.
+      if ! BASE=$(git merge-base "${left:-HEAD}" "${right:-HEAD}" 2>&1); then
+        echo "git merge-base ${left:-HEAD} ${right:-HEAD} failed:" >&2
+        printf '%s\n' "$BASE" | head -n 2 >&2
+        exit 3
+      fi
+      TIP="${right:-HEAD}"
+      ;;
+    *..*)
+      BASE="${RANGE%%..*}"
+      TIP="${RANGE##*..}"
+      TIP="${TIP:-HEAD}"
+      ;;
+    *)
+      BASE="$RANGE"
+      TIP="HEAD"
+      ;;
+  esac
+
+  git_read "git log --format ${BASE}..${TIP}" \
+    log --format='%h%x09%cn' "${BASE}..${TIP}"
   shas=$(printf '%s\n' "$GIT_OUT" \
     | grep -vF "	${BOT_COMMITTER}" \
     | cut -f1 || true)
