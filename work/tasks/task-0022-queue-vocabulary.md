@@ -1,0 +1,31 @@
+---
+id: task-0022
+status: backlog
+blocked_reason: null
+taken_by: null
+spec_ref: [spec-0028, spec-0031, spec-0032]
+doc_ref: technical/README.md#task-schema
+priority: medium
+depends_on: []
+milestone: null
+created: 2026-08-31T03:38:14Z
+queued: null
+completed: null
+merged: null
+---
+
+# Make the queue navigable and origin-aware
+
+The docs gave the queue's own files a richer voice and the generator
+has not caught up. References are navigable by rule — a reader follows
+a task to its docs and specs, and a spec to its task, by clicking —
+yet the generated bodies still carry them as bare strings. A task now
+records its origin, `rule` or `report`, projected as an `origin:`
+label on its Stage 3 mirror — yet the generator writes no such field
+and the mirror shows no such chip. And the third kind of change is
+called reporting, on `report/` branches, while the shipped conventions
+still say tracking on `queue/`.
+
+Bring the generator, the checker, the mirror and the shipped
+conventions up to the vocabulary the docs now state, and backfill the
+existing queue so no file predates its own language.

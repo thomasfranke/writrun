@@ -1,6 +1,6 @@
 ---
 id: spec-0028
-task_ref: task-0021
+task_ref: task-0022
 status: draft
 created: 2026-08-31T02:58:23Z
 ---
@@ -32,7 +32,7 @@ rendering, not this spec's).
    `[product/adoption.md#three-stages](../../docs/product/adoption.md#three-stages)`
    — resolved relative to `work/tasks/`.
 2. `new.sh spec`: the generated body's References line links the task
-   file — `[task-0021](../tasks/task-0021-commits-stage-two.md)` — and
+   file — `[task-0022](../tasks/task-0022-queue-vocabulary.md)` — and
    the same run appends a matching spec link to the task's References
    line, in the same edit that appends to `spec_ref`.
 3. The shipped default templates in `.writrun/templates/` carry the
