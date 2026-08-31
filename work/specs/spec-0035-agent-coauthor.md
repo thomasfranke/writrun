@@ -1,7 +1,7 @@
 ---
 id: spec-0035
 task_ref: task-0025
-status: approved
+status: draft
 created: 2026-08-31T14:24:45Z
 ---
 
@@ -40,10 +40,37 @@ stay git configuration; and commit signing, which is unrelated.
    [0055](../../docs/technical/decisions/tasks-and-specs/0055-conduct-flags-live-in-stage-2.md)
    established for the last move.
 3. `check_observance.sh`: keep the `false` direction as it stands
-   (commits and body); add the `true` direction over commits only, faulting
-   an agent's commit with no model-naming `Co-Authored-By:` trailer.
-   Reuse the existing committer-identity resolution — the same one that
-   skips the machinery's recording commit — to decide whose commit it is.
+   (commits and body); add the `true` direction over commits only.
+
+   **The unit judged is the pull request, not the commit** — this is the
+   amendment. The step as approved said to reuse "the existing
+   committer-identity resolution" to decide whose commit it is, and that
+   resolution answers a different question: it knows the forge's bot from
+   everyone else, and nothing distinguishes an agent's commit from a
+   person's. On the platform this repository runs on, an agent commits
+   under the human who ran it — same name, same email. The check receives
+   `PR_TITLE` and `PR_BODY` and no identity at all.
+
+   So the declaration is read where one exists: **the pull request body.**
+   At `true` the flag obliges a credit line there, and that line is the
+   pull request saying an agent worked it. When the body carries it, every
+   commit in the range that is not the machinery's must carry a
+   model-naming `Co-Authored-By:` trailer; when nothing declares agent
+   work anywhere, there is nothing to judge and the check says so.
+
+   What this catches is partial compliance — the agent that trailered
+   three commits of five, or wrote the body line and none of the trailers.
+   What it cannot catch is an agent that credits itself nowhere, which is
+   the same blind spot `auto_commit` has and for the same reason: absence
+   is not evidence.
+
+   **The model is named specifically, not as a category.** The trailer's
+   name is refused when it is, in whole, one of a small vocabulary —
+   `AI`, `an AI`, `agent`, `bot`, `assistant`, `LLM`, `model` and the
+   articled forms. This is a tripwire, not a proof: a name written to
+   evade it evades it, exactly as `check_settings.sh`'s core-rule stems
+   do, and what it catches is the honest attempt reaching for a category
+   because nobody said not to.
 4. `commits.md` and `prs.md`: restate the contract as a shape, including
    that an agent on a platform appending no credit **writes** the trailer.
 5. `make template-sync`.
@@ -51,11 +78,15 @@ stay git configuration; and commit signing, which is unrelated.
 
 ## Acceptance criteria (EARS)
 
-- When `agent_coauthor` is `true` and a commit written by an agent carries
-  no `Co-Authored-By:` trailer naming a model, `writrun check` shall exit
-  non-zero naming that commit.
-- When `agent_coauthor` is `true` and a commit was written by a person,
-  `writrun check` shall not fault it for the absent trailer.
+- When `agent_coauthor` is `true` and the pull request body carries a
+  credit line, `writrun check` shall exit non-zero naming any commit in
+  the range, other than the machinery's own, that carries no
+  `Co-Authored-By:` trailer naming a model.
+- When `agent_coauthor` is `true` and the pull request body carries no
+  credit line, `writrun check` shall judge no commit for an absent
+  trailer, and shall say that nothing declared agent work.
+- When a `Co-Authored-By:` trailer names a category rather than a model,
+  `writrun check` shall exit non-zero naming the trailer.
 - When `agent_coauthor` is `false` and any commit or the pull request body
   carries platform credit, `writrun check` shall exit non-zero — unchanged
   from today.
@@ -76,8 +107,16 @@ stay git configuration; and commit signing, which is unrelated.
   for a model identifier, and this is the criterion most likely to need a
   judgement call about strictness — decide it explicitly rather than by
   what the regex happens to allow.
-- **A person's commit on an agent's branch**, and the reverse: authorship
-  is per-commit, so the direction is judged per-commit and never per-branch.
+- **A person's commit on an agent's branch.** It faults, and that is the
+  cost of this amendment paid in the open. The spec as approved said the
+  direction is judged per-commit and never per-branch; per-commit needs a
+  signal that does not exist, so the unit is the pull request and a human
+  commit on a declared-agent branch is asked for the trailer too. The
+  cheap answer is to trailer it — the trailer names who helped write the
+  change, and on a branch an agent worked, it did. The alternative
+  considered and rejected was a settings key listing agent identities:
+  it delivers the per-commit judgement exactly, and it asks every adopter
+  to maintain a list whose omission silently switches the gate off.
 - **Stage 1**: no workflow runs, so neither direction is checked; the
   contract stays instruction-bound there, as every conduct flag does.
 - **A commit that predates the flip**: nothing rewrites history, and the
@@ -108,9 +147,33 @@ mirror test proves `template/` carries all of it.
 
 ## Proposed technical changes
 
-- none — the key, its default and its two-directional check were authored
-  first (`technical/README.md#agent_coauthor`,
-  `#observance-is-checked-where-it-leaves-a-trace`).
+- `technical/README.md#observance-is-checked-where-it-leaves-a-trace` —
+  the `true` direction's unit is the pull request, and the sentence
+  saying "which commits are an agent's is the same committer-identity
+  question the skip above already answers" goes with the amendment: that
+  question has no answer in the data the check receives. The rest of the
+  section — the key, its default, the `false` direction — was authored
+  first and stands.
+
+## Amendment — 2026-08-31
+
+Returned to `draft` under an open pull request. **#81 is the suspended
+pull request, and this amendment is what suspends it**; the two name each
+other by hand, because the machinery that would derive the pause is
+spec-0037's and is not implemented yet
+([statuses](../../docs/product/stage-2-pull-requests/statuses.md#an-amendment-under-an-open-pull-request)).
+The task cannot advance until this is re-approved.
+
+What changed: step 3's unit, the two `true`-direction acceptance
+criteria, the per-commit edge case, the category-name decision the
+approved text left to the implementer, and the Proposed technical
+changes, which were `none` and can no longer be — the amendment makes one
+sentence of `#observance-is-checked-where-it-leaves-a-trace` false, so
+the implementation must correct it and the promise list has to say so.
+
+What did not change: the rename, the migration reject, the `false`
+direction, and the conventions — all of which are already implemented on
+#81 and are untouched by this.
 
 ## Outcome
 
