@@ -83,6 +83,31 @@ bot_commit "$(printf 'chore(queue): record what the merge decided')"
 check "the recording commit owes no trailer" 0 "agent_coauthor is honoured" \
   -- bash "$CHECK_OBSERVANCE" main...HEAD
 
+# **A merge commit is nobody's writing.** Its message is composed by git,
+# the work it joins already carried whatever credit it owed, and the forge
+# builds one for every pull request it tests — a direction that judged
+# them would fault every branch that ever caught up with its base. This
+# case is the check applied to its own pull request, which is where it
+# was found.
+setup
+obliging
+commit_message "$(printf 'feat(ci): written with an agent\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>')"
+git checkout -q -b side main
+# A file of its own: both branches touching marker.txt would conflict,
+# the merge would abort, and the case would pass for having no merge
+# commit to judge.
+printf 'side work\n' > side.txt
+git add -A >/dev/null
+git commit -q -m "$(printf 'feat(ci): work on the base\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>')"
+git checkout -q feature
+git merge --no-ff side -m "Merge side into feature" >/dev/null
+if ! git rev-parse HEAD^2 >/dev/null 2>&1; then
+  echo "FAIL  the case needs a real merge commit, and the merge did not make one"
+  fail=$((fail + 1))
+fi
+check "a merge commit owes no trailer" 0 "agent_coauthor is honoured" \
+  -- bash "$CHECK_OBSERVANCE" main...HEAD
+
 # A value the vocabulary does not hold is check_settings.sh's to name.
 setup
 settings_file <<'JSON'

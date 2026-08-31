@@ -224,10 +224,20 @@ the-model claude gpt copilot"
   esac
 
   git_read "git log --format ${BASE}..${TIP}" \
-    log --format='%h%x09%cn' "${BASE}..${TIP}"
+    log --format='%h%x09%cn%x09%p' "${BASE}..${TIP}"
   shas=$(printf '%s\n' "$GIT_OUT" \
-    | grep -vF "	${BOT_COMMITTER}" \
+    | grep -vF "	${BOT_COMMITTER}	" \
     | cut -f1 || true)
+
+  # **A merge commit is nobody's writing.** Its parents field carries two
+  # ids, and its message is composed by git — the work it joins already
+  # carried whatever credit it owed, in the commits that did the writing.
+  # The forge builds one of these for every pull request it tests, so a
+  # direction that judged them would fault every branch that ever caught
+  # up with its base. Same reason as the recording commit's exemption:
+  # the flag reaches what an agent *wrote*.
+  merges=$(printf '%s\n' "$GIT_OUT" \
+    | awk -F'	' 'NF >= 3 && $3 ~ / / { print $1 }' || true)
 
 body="${PR_BODY:-}"
 
@@ -272,10 +282,18 @@ true)
       | grep -E "$CREDIT_LINES|$CREDIT_PROSE" | head -n 1 || true)
   fi
 
+  # The trailer half walks the authored commits alone.
+  authored=""
+  for sha in $shas; do
+    [ -n "$sha" ] || continue
+    case " $merges " in *" $sha "*) continue ;; esac
+    authored="$authored $sha"
+  done
+
   if [ -z "$declared" ]; then
     echo "agent_coauthor is true and nothing in the pull request body declares agent work — no commit judged."
   else
-    for sha in $shas; do
+    for sha in $authored; do
       [ -n "$sha" ] || continue
       git_read "git log -1 --format=%B ${sha}" log -1 --format='%B' "$sha"
       trailer=$(printf '%s\n' "$GIT_OUT" | grep -E "$TRAILER" | head -n 1 || true)

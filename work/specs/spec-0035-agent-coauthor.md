@@ -203,6 +203,16 @@ than discovered by whoever hits it.
   model, and the record exists to survive the next model's arrival. The
   amendment listed the category words and this widens the list by the
   same argument.
+- **A merge commit owes no trailer**, and this was found by the check
+  running on its own pull request: it faulted the branch's own merge of
+  `main` and the synthetic merge the forge builds to test every pull
+  request. A merge's message is composed by git, and the work it joins
+  already carried whatever credit it owed in the commits that did the
+  writing. The spec's principle already covers it — the flag reaches what
+  an agent *wrote*, which is why the machinery's recording commit is
+  exempt — but the mechanism is different: two parents rather than a
+  committer identity. Named here because it is a judgement made during
+  implementation, not one the spec settled.
 - **A value outside the vocabulary judges nothing**, and says so, the way
   the title check already treats a `pr_title_style` it does not know.
   `check_settings.sh` is where that fault is named; faulting honest
