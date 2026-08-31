@@ -58,6 +58,17 @@ provenance: []                     # append-only ledger, one entry per line; alw
 ---
 ```
 
+**Both blocks above are read by a check, and they are read differently.**
+The schema block is a whole front matter — it opens with `---` — so
+`check_doc_shapes.sh` runs `check_front_matter.sh` over it, the same
+script that reads the queue's own files; the annotation after each value
+is stripped first, because an annotation is not part of the shape being
+taught. The block below is a **fragment**: entries with no file around
+them, so there is nothing to hold to the whole contract, and its keys are
+checked against the schema's fields and the block is *named* as a
+fragment in the output. A fragment silently skipped and a fragment
+checked look identical from outside, which is why one of them says so.
+
 A task that keeps a ledger carries entries instead of the empty list, one
 flow mapping to the line:
 
@@ -246,6 +257,28 @@ project's instruction for what belongs in each
 `writrun check` runs it before the lifecycle rules, so a file the
 line-based readers would misread never merges — and `new.sh` only ever
 generates this form, so the contract costs nothing on the happy path.
+
+**The shape is held wherever it is shown, not only where it is stored.**
+A schema enforced at the machinery's door leaves every example a chapter
+prints unheld, and an example is documentation that lies with a straight
+face: a reader copies it and the first check refuses what it taught. This
+repository's own concept chapters printed a task with no `origin` and a
+bare `created` date, and the adoption kit shipped that for weeks with
+nothing noticing. `check_doc_shapes.sh` reads every fenced `yaml` block
+under `docs/`, `template/`, `.writrun/` and the root's three documents,
+and hands the whole ones to the same checker. **The language tag is the
+declaration of intent**: a block that is deliberately not canonical — a
+shape that is history, or one shown to say what the checker refuses — is
+fenced as ```text, which is the only escape and is always visible in a
+diff.
+
+Its second half holds the *words*. `tests/retired_vocabulary.txt` carries
+one line per word this project stopped having, and the backticked form is
+refused wherever the documents instruct — `docs/technical/decisions/` is
+exempt, because a record has to be able to name what it retired, and
+ordinary English is untouched because it carries no backticks. Retiring a
+word without adding its line is how the next `pending` ships; the file is
+the single source, and it is the price of the guard.
 
 ## Settings
 
@@ -753,6 +786,16 @@ file whose blind copy would replace the adopting project's own. The mirrored par
 **deliberate full copy**, kept byte-identical to this repository's own
 root files by a unit test (`make template-sync` refreshes; the mirror
 list is `tests/template_mirrors.txt`, the single source of what ships).
+
+**The mirror holds bytes; the kit's own prose is held by words.**
+Everything under `template/` that is *not* mirrored — its `AGENTS.md`,
+its `WRITRUN.md`, its `docs/` and `work/` chapters — has no byte-for-byte
+guard, and cannot have one: those documents differ from this
+repository's on purpose. What they share is the vocabulary, so
+`check_doc_shapes.sh` reads them for both halves — the front matter they
+show, and the words they use. That is the structural reason the kit
+shipped `pending` long after the queue stopped having it, and the reason
+a second mirror was not the answer.
 
 **One file leaves the mirror on purpose: `.writrun/settings.json`.** The
 kit ships it cautious — `stage: 1`, every conduct flag `false` — because
