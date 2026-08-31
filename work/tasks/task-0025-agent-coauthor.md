@@ -1,6 +1,6 @@
 ---
 id: task-0025
-status: in-review
+status: done
 blocked_reason: null
 taken_by: thomasfranke
 spec_ref: [spec-0035]
@@ -12,7 +12,7 @@ milestone: null
 created: 2026-08-31T14:23:13Z
 queued: 2026-08-31T15:20:54Z
 completed: 2026-08-31T22:38:41Z
-merged: null
+merged: 2026-08-31T23:35:01Z
 ---
 
 # The agent's credit names its model, and the check reads both directions
