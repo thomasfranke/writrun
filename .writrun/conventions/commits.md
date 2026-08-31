@@ -12,7 +12,7 @@ summary`:
 - **Types**: `docs`, `feat`, `fix`, `refactor`, `chore`.
 - **Scopes** (optional — omit when a change genuinely spans the
   repository): `about`, `product`, `technical`, `tasks`, `specs`,
-  `skills`, `ci`, `tests`, `agents`, `readme`, `setup`.
+  `skills`, `ci`, `tests`, `agents`, `readme`, `setup`, `queue`.
 - Example: `docs(product): add the coverage-rule concept chapter`.
 
 Under `bracketed` — the same two vocabularies, capitalised inside
@@ -36,11 +36,22 @@ is a type the door refuses.
 
 - Trivial work is a commit, never a task (principle 6).
 
-The one commit the machinery makes — `writrun approve` recording what a
-merge decided: the specs it approved, and the `queued`/`merged` dates it
-earned — has its title as a variable in `writrun-approve.yml`; edit it to
-match whatever this file says. It is one commit because it records one
-event.
+**Two workflows commit, and their subjects obey the declaration like
+everyone else's.** `writrun approve` records what a merge decided — the
+specs it approved, and the `queued`/`merged` dates it earned — and
+`writrun progress` records what a pull request event moved. Both take
+their subject from
+[`commit_subject.sh`](../scripts/stage-2-pull-requests/commit_subject.sh),
+which composes it from `pr_title_style` under the scope `queue`; neither
+carries a literal, because nothing squashes these and a subject in the
+other style would sit on `main` for good. Each is one commit because each
+records one event.
+
+**A branch's own subjects are a convention kept by hand.** Squash-only
+means only the pull request title reaches `main`, so `writrun check` reads
+that title and nothing else — a subject on a branch is a courtesy to
+whoever reads the branch, and a gate that failed a pull request over text
+the merge discards would be enforcing where nothing is left behind.
 
 ## Who presses commit — `stage_2.auto_commit`
 

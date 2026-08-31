@@ -161,11 +161,11 @@ jobs:
 
       - name: Commit
         if: steps.flip.outputs.changed == '1' || steps.stamp.outputs.changed == '1' || steps.status.outputs.changed == '1'
-        # COMMIT_TITLE is the adopter's to edit: it only has to satisfy the
-        # adopting project's own commit convention — nothing in WritRun
-        # parses commit messages.
+        # The subject is composed by commit_subject.sh, in the style
+        # `pr_title_style` declares — not a literal here, because two
+        # workflows write these commits and nothing squashes them: a
+        # subject in the other style lands on `main` permanently.
         env:
-          COMMIT_TITLE: "chore(queue): record what the merge decided"
           BASE_REF: ${{ github.event.pull_request.base.ref }}
           MERGED_BY: ${{ github.event.pull_request.merged_by.login }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -179,7 +179,7 @@ jobs:
           # queue passed through a state where only half of it was true.
           git add work
           git commit \
-            -m "$COMMIT_TITLE" \
+            -m "$(bash .writrun/scripts/stage-2-pull-requests/commit_subject.sh merge)" \
             -m "Assent given by @${MERGED_BY} merging #${PR_NUMBER}."
           # Another change may have landed between the merge and this run.
           # Rebase onto it rather than force: the flip is an addition to

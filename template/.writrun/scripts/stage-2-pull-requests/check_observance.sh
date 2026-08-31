@@ -21,16 +21,17 @@
 #      line in a commit message or the pull request body is exactly the
 #      write that flag forbids, and it is visible from here.
 #
-# **What leaves no trace stays instruction-bound.** `auto_commit` and
-# `auto_pr` govern whether the agent *asked* before acting, and no diff
-# can show a question that wasn't asked. They are not checked, and this
-# script does not pretend otherwise — a check that guessed at them would
-# fail honest agents and pass the dishonest one that committed silently.
+# **What leaves no trace stays instruction-bound.** The three conduct
+# flags — `auto_commit`, `auto_push`, `auto_pr` — govern whether the
+# agent *asked* before acting, and no diff can show a question that
+# wasn't asked. They are not checked, and this script does not pretend
+# otherwise: a check that guessed at them would fail honest agents and
+# pass the dishonest one that committed silently.
 #
-# **The machinery's own recording commit is never judged.** It is not an
-# agent's action, so no conduct flag reaches it; it is skipped by its
-# committer identity, which the workflow sets and nothing else in a pull
-# request's range carries.
+# **The machinery's own recording commits are never judged.** They are
+# not an agent's action, so no conduct flag reaches them; they are
+# skipped by their committer identity, which the workflows set and
+# nothing else in a pull request's range carries.
 #
 # Exit 0: the range and the title observe what the settings declare.
 # Exit 1: they do not, with every offence named.
@@ -48,10 +49,11 @@ READ_SETTING="$HERE/read_setting.sh"
 faults=0
 fault() { echo "REJECTED: $*" >&2; faults=$((faults + 1)); }
 
-# The committer the approve workflow writes its one recording commit as.
-# Matching on the identity rather than the subject is deliberate: the
-# subject is a variable the adopter is invited to edit (conventions/
-# commits.md), the identity is the forge's.
+# The committer both recording workflows write their commits as. Matching
+# on the identity rather than the subject is deliberate: the subject is
+# composed from `pr_title_style` (commit_subject.sh) and is therefore
+# text like any other, while what makes these commits exempt is who wrote
+# them — and only the identity says that.
 BOT_COMMITTER="github-actions[bot]"
 
 # git_read <label> <git-args...> — runs git and leaves its stdout in
@@ -87,7 +89,7 @@ TITLE="${PR_TITLE:-}"
 # statement, and the two are kept in step by hand — the file is prose an
 # agent reads, not a format a script can parse.
 TYPES="docs feat fix refactor chore"
-SCOPES="about product technical tasks specs skills ci tests agents readme setup"
+SCOPES="about product technical tasks specs skills ci tests agents readme setup queue"
 
 # The `[TASK-NNNN]` tag is not the settable part: one bracket per task,
 # uppercase, no separator, leading the title. Stripping it leaves the
