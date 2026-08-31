@@ -80,11 +80,14 @@ work in may have rewritten it.
 
 **The values live in
 [`settings.json`](.writrun/settings.json); the `.md` files
-explain them.** Read the settings before writing a branch name, a commit
-subject or a PR title — the tag, the branch prefixes and the label names
-are settings, not constants, and a project you work in may hold different
-ones. Where the two ever disagree, the settings file is what the machinery
-obeys, so it is what you obey.
+explain them.** Read the settings before committing, opening a PR, or
+deciding whether a task needs a spec — the stage, the conduct flags,
+the title style and the project's three declarations (`spec_required`,
+`decisions_style`, `product_layout`) are settings, not constants, and a
+project you work in may hold different ones. The task tag, the branch
+prefixes and the label names are the methodology's constants — the
+conventions files state them. Where prose and settings ever disagree,
+the settings file is what the machinery obeys, so it is what you obey.
 
 When you edit anything under `docs/`, check `work/tasks/` for
 non-completed tasks whose `doc_ref` points into the files you are

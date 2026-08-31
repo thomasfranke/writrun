@@ -245,6 +245,11 @@ only when it holds a documented key — no empty placeholder objects.
 ```json
 {
   "stage": 3,
+  "stage_1": {
+    "spec_required": "when-warranted",
+    "decisions_style": "per-subsystem",
+    "product_layout": "by-concept"
+  },
   "stage_2": {
     "auto_commit": true,
     "credit_ai": true,
@@ -257,15 +262,20 @@ only when it holds a documented key — no empty placeholder objects.
 | Key | Section | Values | Read by |
 |---|---|---|---|
 | `stage` | top level | `1` / `2` / `3` | the workflows, and agents |
+| `spec_required` | `stage_1` | `always` / `when-warranted` | agents only |
+| `decisions_style` | `stage_1` | `per-subsystem` / `chronological` | agents only |
+| `product_layout` | `stage_1` | `by-concept` / `by-feature` | agents only |
 | `auto_commit` | `stage_2` | `true` / `false` | agents only |
 | `credit_ai` | `stage_2` | `true` / `false` | agents only |
 | `auto_pr` | `stage_2` | `true` / `false` | agents only |
 | `pr_title_style` | `stage_2` | `conventional` / `bracketed` | agents only |
 
 (Until the machinery catches up with this section, the two conduct
-flags `auto_commit` and `credit_ai` still sit in a `stage_1` section;
-`check_settings.sh` still expects them there, and the derived task
-moves both.)
+flags `auto_commit` and `credit_ai` still sit in a `stage_1` section
+and `check_settings.sh` still expects them there — the derived task
+moves both. The three declaration keys are likewise ahead of the
+machinery: the file does not carry them yet and the checker does not
+know them; their derived task adds both halves.)
 
 **Every key is present, always** — the same reason the front matter carries
 `null` fields rather than omitting them: a reader sees the whole
@@ -305,9 +315,11 @@ bracketed      [TASK-0007][Feat][CI] Record approval on the merge
                [DOCS] The merge is the assenting act
 ```
 
-Read by agents, never by code — nothing parses the summary after the tag,
-not the checks and not the release notes, which the forge generates from
-pull requests.
+Composed by agents, and from Stage 2 checked at the door —
+[observance](#observance-is-checked-where-it-leaves-a-trace): `writrun
+check` fails a title that ignores the declared style. Nothing parses
+the summary beyond that — not the release notes, which the forge
+generates from pull requests.
 
 **The `[TASK-NNNN]` tag is in both and is not settable.** It is how
 the machinery and `list_tasks.sh` learn which tasks a pull request
@@ -351,6 +363,34 @@ precedence the conduct flags above state. The flag speaks only to what
 the agent writes: authorship identity stays git configuration, other
 authors' commits are untouched, and nothing rewrites history — the flag
 binds from the write after the flip.
+
+### The three declarations
+
+Unlike the conduct flags, these gate no action — each answers, once, a
+question every agent session otherwise re-asks. `spec_required` is the
+project's word on when a task needs a spec: `always`, or
+`when-warranted` (the default — the creation skill's own judgement
+guidance applies). `decisions_style` names where dated decisions live:
+`per-subsystem` (the methodology's default) or `chronological` (one
+numbered log — this repository's own shape). `product_layout` names
+how the product half is organized: `by-concept` (chapters about ideas
+— this repository's shape) or `by-feature` (one doc per feature —
+TOM's shape). Each is a declared variant from
+[Adoption's open list](../product/adoption.md#mandatory-core-vs-documented-variant),
+stated here so it is never reverse-engineered from the file tree.
+
+### Observance is checked where it leaves a trace
+
+A conduct flag binds the agent, but only some disobedience is visible
+afterwards — and what is visible is checked, not trusted. From Stage
+2, `writrun check` fails a pull request whose title ignores the
+declared `pr_title_style`, and one whose commits or body carry
+platform credit — a co-author trailer, a session link, a
+generated-with line — while `credit_ai` is `false`. What leaves no
+trace (`auto_commit`, `auto_pr` — whether the agent *asked*) stays
+instruction-bound: no diff can show a question that wasn't asked.
+(Until the machinery catches up, neither check runs; the derived task
+adds both.)
 
 ### The shape is a checked contract
 

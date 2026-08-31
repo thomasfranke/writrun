@@ -3,7 +3,7 @@ id: task-0021
 status: backlog
 blocked_reason: null
 taken_by: null
-spec_ref: [spec-0026, spec-0027, spec-0029, spec-0030]
+spec_ref: [spec-0026, spec-0027, spec-0029, spec-0030, spec-0033, spec-0034]
 doc_ref: product/adoption.md#three-stages
 priority: medium
 depends_on: []
