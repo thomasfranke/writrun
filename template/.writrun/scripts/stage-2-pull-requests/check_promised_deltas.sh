@@ -71,15 +71,36 @@ git_read() {
   rm -f "$err"
 }
 
+# Read line by line and never with `for s in $GIT_OUT`: word splitting
+# turns one spec path containing a space into two paths that exist
+# nowhere, each skipped by the `-f` test below — an implemented spec
+# dropped in silence, which for a gate is the same failure as reading
+# nothing at all. The accumulator is newline-separated for the same
+# reason, and a here-document rather than a pipe so the loop can write
+# into it at all.
 implemented=""
 git_read "git diff --name-only ${RANGE} -- work/specs" \
   diff --name-only "$RANGE" -- 'work/specs/*.md'
-for s in $GIT_OUT; do
+while IFS= read -r s; do
+  [ -n "$s" ] || continue
+
+  # git quotes a path holding control characters or non-ASCII bytes. A
+  # spec path never needs it, so a quoted one is a path this check cannot
+  # parse, and an unparseable input is refused rather than skipped.
+  case "$s" in
+    '"'*)
+      echo "cannot read the changed path ${s} — refusing rather than skipping it" >&2
+      exit 3
+      ;;
+  esac
+
   [ -f "$s" ] || continue
   [ "$(fm_field status < "$s")" = "implemented" ] || continue
   [ "$(git show "${BASE}:$s" 2>/dev/null | fm_field status)" = "implemented" ] && continue
-  implemented="$implemented $s"
-done
+  implemented="${implemented}${s}"$'\n'
+done <<TOUCHED
+${GIT_OUT}
+TOUCHED
 
 if [ -z "$implemented" ]; then
   echo "No spec reached 'implemented' — authoring change, deltas not applicable."
@@ -87,9 +108,12 @@ if [ -z "$implemented" ]; then
 fi
 
 ids=""
-for s in $implemented; do
+while IFS= read -r s; do
+  [ -n "$s" ] || continue
   id=$(sed -n 's/^id: *//p' "$s" | head -n1)
   ids="${ids:+${ids},}${id}"
-done
+done <<IMPLEMENTED
+${implemented}
+IMPLEMENTED
 echo "Checking ${ids}"
 bash "$CHECK_DELTAS" "$ids" "$RANGE"
