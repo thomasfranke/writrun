@@ -316,9 +316,9 @@ for f in "$TASK_DIR"/*.md; do
     who=$(taken_by "$id")
     pause=$(suspension "$f")
     if [ -n "$who" ]; then
-      inflight="${inflight}${id}|${who}|${tt}|${pause}"$'\n'
+      inflight="${inflight}${id}|${who}|${pause}|${tt}"$'\n'
     else
-      resumable="${resumable}${id}|${tt}|${pause}"$'\n'
+      resumable="${resumable}${id}|${pause}|${tt}"$'\n'
     fi
     continue
   fi
@@ -379,7 +379,7 @@ done
 
 if [ -n "$resumable" ]; then
   echo "In progress — resume before selecting anything new:"
-  printf '%s' "$resumable" | while IFS='|' read -r id tt pause; do
+  printf '%s' "$resumable" | while IFS='|' read -r id pause tt; do
     [ -n "$id" ] || continue
     printf '  %-10s %s\n' "$id" "$tt"
     [ -n "$pause" ] && printf '  %-10s paused — %s; the work waits on the re-approval\n' "" "$pause"
@@ -402,7 +402,7 @@ fi
 if [ -n "$inflight" ]; then
   echo
   echo "In flight — an open pull request already exists:"
-  printf '%s' "$inflight" | sed '/^$/d' | sort | while IFS='|' read -r id who tt pause; do
+  printf '%s' "$inflight" | sed '/^$/d' | sort | while IFS='|' read -r id who pause tt; do
     printf '  %-10s %-16s %s\n' "$id" "$who" "$tt"
     [ -n "$pause" ] && printf '  %-10s %-16s paused — %s; the work waits on the re-approval\n' "" "" "$pause"
   done
