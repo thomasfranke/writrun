@@ -1,20 +1,42 @@
 ---
 name: writrun-create-task-and-spec
-description: Use this skill when creating a new task or spec in a project that follows the WritRun methodology — when the user asks to track a piece of work, when work is found that isn't yet tracked, or when an existing task needs its spec drafted before implementation can start. Covers front-matter schema, id assignment, when a spec is warranted, and how to fill the Proposed changes sections.
+description: Use this skill when creating a new task, spec or report in a project that follows the WritRun methodology — when the user asks to track a piece of work, when work is found that isn't yet tracked, when something is observed that is worth writing down but not yet worth working, or when an existing task needs its spec drafted before implementation can start. Covers front-matter schema, id assignment, which of the three kinds a change needs, when a spec is warranted, and how to fill the Proposed changes sections.
 ---
 
-# Create a task, and its spec when warranted
+# Create a task, its spec when warranted, or a report
 
 Turns the WritRun schema into a checklist instead of something re-derived
 from memory each session. Read `docs/technical/README.md` in the target
 project first if it's present — it may state adopter-specific choices (id
 prefix, whether a spec is mandatory) that override the defaults below.
 
-## Does this even need a task?
+## Which of the three?
 
-A typo or a one-line fix is a commit, not a task. Create one only for work
-that justifies tracking: a behaviour change, a new subsystem, anything a
-future reader might reasonably ask "why was this done" about.
+A typo or a one-line fix is a commit, not a task. Create a task only for
+work that justifies tracking: a behaviour change, a new subsystem,
+anything a future reader might reasonably ask "why was this done" about.
+
+**A report is the third answer, and it is the cheap one.** A task says
+work will happen; a spec says how. A report commits to nothing — it says
+only that something was seen, and that seeing it was worth a file. Its
+bar is deliberately far below a task's: a task needs work worth
+tracking, a report needs an observation worth remembering.
+
+| You have | Write |
+|---|---|
+| work that justifies tracking | a task |
+| an observation, and no decision yet about what follows | a report |
+| a one-line fix you are making now | a commit — and a report only if the finding outlives it |
+
+The line between the first two is what the sentence *says*, not how
+important it is. "The mirror shows `backlog` for four tasks `main` holds
+as `ready`" is a report. "Fix the mirror to read the merged ref" is a
+task with no task file — it names an action, so it is a commitment
+wearing a report's front matter.
+
+When in doubt, write the report. It costs one file, it can be triaged
+into a task in one command, and the failure it exists to prevent — the
+finding that stayed in a conversation — is not recoverable later.
 
 ## Creating a task
 
@@ -201,6 +223,100 @@ Then fill in the skeleton:
 If the script isn't available, do the same steps by hand, including the
 manual `spec_ref` append on the task file.
 
+## Recording a report
+
+Same generator, third subcommand:
+
+```bash
+bash .writrun/skills/writrun-create-task-and-spec/new.sh report "<title>" \
+  --slug <two-or-three-words> \
+  [--doc-ref path/to/doc.md#anchor]
+```
+
+`--slug` means the same thing here, and is chosen for the same reason.
+
+**It takes neither `--origin` nor `--priority`, and both refuse by
+name.** `origin` is a fact about how a *task* came to exist and a report
+is one of its two answers — a report has no origin of its own.
+`priority` orders work, and a report commits to none: whether anything
+follows is triage's answer, written as the report's status.
+
+`--doc-ref` is the doc this observation is **answered by** — the rule
+that was violated, or the rule that had to be written. One field under
+both readings, because those are the same sentence read before and after
+the rule existed. Leave it out when nothing documents the thing observed,
+which is the common case: a typo violates no rule.
+
+The generated file carries `status: open`, `task_ref: []` and
+`triaged: null`. Then write the body: **what was observed, with whatever
+evidence is at hand** — the error, the log excerpt, the four Issue
+numbers. What should be done about it is triage's output, never the
+report's content. The moment a report carries scope, steps or a plan it
+has become a task wearing the wrong front matter, and `work/` has grown
+a second queue nobody selects from.
+
+### Recording rides any change
+
+A report may be added in **any** change — an implementing branch, an
+authoring branch, a branch that is mostly about something else. The
+one-kind-per-change rule does not reach it, and this exemption is the
+whole feasibility of the feature: findings arrive while you are busy
+with something else, and a note that costs its own branch, its own pull
+request and its own review is a note nobody writes.
+
+The `report/` branch prefix is for a change that carries *only*
+reporting. Do not wait for one.
+
+### Triage, and the statuses that record it
+
+A report's status is **the route triage took, not a lifecycle**. One
+non-terminal value and four ends:
+
+| Status | Means | What names the outcome |
+|---|---|---|
+| `open` | recorded, not yet triaged | — |
+| `tracked` | a task now carries the work | `task_ref` |
+| `authored` | no rule stated what "correct" was; a rule was written | `doc_ref` |
+| `fixed` | a trivial change handled it | the git history |
+| `declined` | not a defect, or not worth acting on | the body says why |
+
+**There is no `resolved`.** Whether the underlying problem is fixed is
+the *task's* status, one hop away through `task_ref`; a second copy of
+it would need a second writer to stay true.
+
+Triage answers two questions in order — *is this worth acting on at
+all?*, then *is what "correct" means already written?* Both are yours to
+answer, `declined` included: triage is not a human gate. Declining
+destroys nothing — the file stays, the body carries the reason, and at
+Stage 3 the mirror closes *not planned* where a person can disagree.
+Disagreeing records a second report; **nothing reopens one**, and a
+recurrence is a second observation with its own id and its own date.
+
+On the `tracked` route, let the generator close the link:
+
+```bash
+bash .writrun/skills/writrun-create-task-and-spec/new.sh task "<title>" \
+  --from-report report-nnnn --slug <two-or-three-words> [...]
+```
+
+`--from-report` **states the origin** rather than defaulting it — the
+flag names the report the task was born from, which is the whole content
+of `origin: report`, so `--origin` becomes unnecessary and `--origin
+rule` alongside it is refused. It appends the new task's id to that
+report's `task_ref` (never overwriting, because triage can split one
+finding into several tasks), stamps `triaged`, and moves a report still
+`open` to `tracked`. Those move together by contract: `triaged` is null
+exactly while a report is `open`.
+
+The other three ends are written by hand, in the same change that took
+the route: the status and the `triaged` timestamp, together. Any queue
+file touched by hand goes through `writrun-check-front-matter` before it
+is committed.
+
+**Evidence lives in the file, never only in an Issue.** The mirror is
+one-way, so anything attached to a mirrored Issue never reaches the
+report or the task that is the authority.
+
 ## When completing a task
 
 1. Fill the spec's **Outcome** section: what was actually built, and any
@@ -240,3 +356,8 @@ manual `spec_ref` append on the task file.
 - Never rename or renumber an existing id.
 - Never move status information into a folder structure — it lives in
   front-matter only.
+- Never reopen a report, and never move it from one end to another. The
+  same thing seen again is a second observation: record a second report.
+- Never let a report carry scope, steps or a plan. That is a task, and
+  the wrong front matter around it hides it from the only queue anyone
+  selects from.

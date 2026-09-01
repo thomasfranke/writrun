@@ -74,15 +74,20 @@ case "$RANGE" in
 esac
 
 # queue_id <path> — "<kind><TAB><number>" for a queue file, where kind is
-# task or spec and number is the id's digits with leading zeros dropped.
-# Prints nothing for anything else: a README, a path outside work/, or a
-# filename whose prefix is malformed.
+# task, spec or report and number is the id's digits with leading zeros
+# dropped. Prints nothing for anything else: a README, a path outside
+# work/, or a filename whose prefix is malformed.
+#
+# The three kinds number independently — report-0001 and task-0001 are
+# not a collision — so the kind travels with the number and every
+# comparison below is on the pair.
 queue_id() {
   printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | awk -F/ -v tab="$TAB" '
     NF != 3 || $1 != "work" { next }
-    $2 == "tasks" { kind = "task" }
-    $2 == "specs" { kind = "spec" }
-    kind == ""    { next }
+    $2 == "tasks"   { kind = "task" }
+    $2 == "specs"   { kind = "spec" }
+    $2 == "reports" { kind = "report" }
+    kind == ""      { next }
     {
       name = $3
       sub(/\.md$/, "", name)
@@ -122,8 +127,8 @@ git_read() {
 }
 
 mine=""
-git_read "git diff --name-only --diff-filter=A ${RANGE} -- work/tasks work/specs" \
-  diff --name-only --diff-filter=A "$RANGE" -- 'work/tasks/*.md' 'work/specs/*.md'
+git_read "git diff --name-only --diff-filter=A ${RANGE} -- work/tasks work/specs work/reports" \
+  diff --name-only --diff-filter=A "$RANGE" -- 'work/tasks/*.md' 'work/specs/*.md' 'work/reports/*.md'
 while IFS= read -r f; do
   [ -n "$f" ] || continue
   k=$(queue_id "$f")
@@ -141,8 +146,8 @@ fi
 # --- what the base branch already holds -----------------------------------
 
 held=""
-git_read "git ls-tree -r --name-only ${BASE} -- work/tasks work/specs" \
-  ls-tree -r --name-only "$BASE" -- work/tasks work/specs
+git_read "git ls-tree -r --name-only ${BASE} -- work/tasks work/specs work/reports" \
+  ls-tree -r --name-only "$BASE" -- work/tasks work/specs work/reports
 while IFS= read -r f; do
   [ -n "$f" ] || continue
   k=$(queue_id "$f")
