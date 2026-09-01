@@ -10,7 +10,7 @@ task_file task-0028 ready spec-0038
 spec_file spec-0038 task-0028 draft technical/decisions/0059-the-pause-is-derived.md
 commit_all
 
-check "a chronological entry owes the index too" 1 "and not docs/technical/decisions/README.md" \
+check "a chronological entry owes the index too" 1 "and not technical/decisions/README.md" \
   -- bash "$CI_SCRIPTS/stage-2-pull-requests/check_promise_companions.sh" main...HEAD
 
 finish

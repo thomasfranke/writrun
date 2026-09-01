@@ -12,9 +12,12 @@ spec_file spec-0038 task-0028 draft \
   technical/decisions/tasks-and-specs/0059-the-pause-is-derived.md
 commit_all
 
-check "an entry promised without the index is refused" 1 "and not docs/technical/decisions/README.md" \
+check "an entry promised without the index is refused" 1 "and not technical/decisions/README.md" \
   -- bash "$CI_SCRIPTS/stage-2-pull-requests/check_promise_companions.sh" main...HEAD
 check "and the spec is named" 1 "spec-0038 promises" \
+  -- bash "$CI_SCRIPTS/stage-2-pull-requests/check_promise_companions.sh" main...HEAD
+
+refute "and names it as a spec writes it, not as the repository stores it" "docs/technical/decisions/README.md" \
   -- bash "$CI_SCRIPTS/stage-2-pull-requests/check_promise_companions.sh" main...HEAD
 
 finish
