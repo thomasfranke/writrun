@@ -210,9 +210,27 @@ fi
 # all. For the whole window an amendment is open, the files alone report
 # a healthy queue.
 #
-# Only pull requests carrying no task id are read: one that carries an id
-# is work on that task, and a task's own pull request touching its own
-# spec is the completion flow, not an amendment.
+# Only pull requests carrying no task id are read, and that is the whole
+# rule rather than a shorthand for "not this task's own": an amendment is
+# a `queue/` change that deliberately carries no id (decision 0059),
+# while a pull request carrying one is work on that task — and a task's
+# own pull request touches its own spec at the end of every
+# implementation, which would otherwise report every finished task as
+# suspended by itself. Two shapes therefore fall outside this half and
+# are held by the gate instead, which makes no such exclusion: an
+# amendment cut on an id-carrying branch, and one named after the spec
+# (`spec/NNNN-...`), which resolves through the spec's task_ref back to
+# the task above and reads as work on it.
+#
+# A file list is all the forge is asked for, so this half reads "touches
+# one of its specs" where the rule reads "proposes returning one of its
+# specs to `draft`" — a name cannot answer the narrower question, and
+# spec-0037 chose the name. The widening is deliberate and it errs toward
+# the pause: a `queue/` change that only fixes a typo in the spec of a
+# task in flight reads as an amendment here, while the gate, which has
+# both ends of the diff, correctly says nothing is suspended. A pause
+# that turns out to be nothing costs a look; a missed one costs work
+# built on an authorization that was being withdrawn.
 #
 # Set WRITRUN_PR_FILES to bypass `gh` — lines of "number<TAB>path". The
 # forge half degrades exactly as the list above does: with no answer, a
@@ -371,7 +389,13 @@ for f in "$TASK_DIR"/*.md; do
   # "held back" — nothing is wrong with the task; someone is on it.
   who=$(taken_by "$id")
   if [ -n "$who" ]; then
-    inflight="${inflight}${id}|${who}|${tt}"$'\n'
+    # Four fields, the same shape step 0 packs: a record one field short
+    # would slide the title into the pause slot and print it as a reason
+    # nobody derived. The pause is derived here too — this task reads
+    # `ready` only because its status commit has not landed yet, and the
+    # amendment that suspends it does not wait for that.
+    pause=$(suspension "$f")
+    inflight="${inflight}${id}|${who}|${pause}|${tt}"$'\n'
   else
     available="${available}$(rank "$pr")|${cr}|${id}|${pr}|${tt}"$'\n'
   fi
