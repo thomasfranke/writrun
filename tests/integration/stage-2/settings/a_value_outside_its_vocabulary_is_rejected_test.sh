@@ -135,7 +135,8 @@ settings_file <<'JSON'
   "stage_1": {
     "spec_required": "when-warranted",
     "decisions_style": "per-subsystem",
-    "product_layout": "by-concept"
+    "product_layout": "by-concept",
+    "provenance_ledger": false
   },
   "stage_2": {
     "auto_commit": true,
