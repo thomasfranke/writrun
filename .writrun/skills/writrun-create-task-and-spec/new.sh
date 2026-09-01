@@ -304,6 +304,105 @@ body_template_for() {
   fi
 }
 
+# --- editing a file that already exists -------------------------------
+#
+# Three edits, shared by every subcommand that makes them: a spec appends
+# its id to its task, a task appends its id to the report it was triaged
+# from, and that triage moves the report's status and date. They were
+# written twice, once per subcommand, and the two copies are the reason
+# this section exists — the anchoring below had to be added to both, and
+# a fix that lands in one of two identical awk programs is a fix that
+# lands in neither.
+#
+# **Every one of them is bounded to the front-matter block.** A body that
+# quotes front matter is what evidence looks like — this repository's own
+# reports paste `status: open` into a fenced block — and an unanchored
+# `/^status: /` rewrites it, silently falsifying the evidence while every
+# check still passes, because the file is still canonical. The block is
+# the only place these fields mean anything.
+#
+# Portable single-arg sub() only: no gawk-only 3-arg match (see
+# writrun-check-spec-deltas/check_deltas.sh's own history with this).
+
+# append_list_field <file> <field> <id> — add an id to an inline list,
+# keeping what is there. Append, never overwrite: `spec_ref` and
+# `task_ref` are lists because a task can need several specs and triage
+# can split one finding into several tasks, and the second run must find
+# the first one's id still in place.
+append_list_field() {
+  local file field newid
+  file="$1"; field="$2"; newid="$3"
+  awk -v field="$field" -v newid="$newid" '
+    NR == 1 { infm = ($0 == "---"); print; next }
+    infm && /^---$/ { infm = 0; print; next }
+    infm && index($0, field ": [") == 1 {
+      line = $0
+      sub("^" field ": \\[", "", line)
+      sub(/\]$/, "", line)
+      if (line == "") { print field ": [" newid "]" }
+      else { print field ": [" line ", " newid "]" }
+      next
+    }
+    { print }
+  ' "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
+}
+
+# set_fm_field <file> <field> <value> — replace a field's value.
+set_fm_field() {
+  local file field value
+  file="$1"; field="$2"; value="$3"
+  awk -v field="$field" -v value="$value" '
+    NR == 1 { infm = ($0 == "---"); print; next }
+    infm && /^---$/ { infm = 0; print; next }
+    infm && index($0, field ": ") == 1 { print field ": " value; next }
+    { print }
+  ' "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
+}
+
+# append_body_link <file> <kind> <link> — the matching body link, in the
+# same run as the front-matter append: the two must never disagree about
+# which ids a file carries. An existing References line gains the link; a
+# file that had nothing to link gets the line — under the body's first
+# heading, whatever its level, or straight after the front matter when
+# the body opens without one. That last fallback belongs to the
+# invariant: an insert that finds no anchor must not quietly not happen,
+# and a body shaped unlike the ones we imagined is still a body the front
+# matter has to agree with.
+#
+# Unless the project asked for no links at all. A <kind> template without
+# {{references}} opted its bodies out — taste, not contract, as the
+# header says — and an opt-out that lasted until the file's first
+# reference would be no opt-out. The front matter carries the id either
+# way: that half is the machine contract, and never the template's to
+# shape.
+append_body_link() {
+  local file kind link tpl
+  file="$1"; kind="$2"; link="$3"
+  tpl=$(body_template_for "$kind")
+  if [[ -n "$tpl" ]] && ! grep -q '{{references}}' "$tpl"; then return 0; fi
+  if grep -q '^\*\*References:\*\* ' "$file"; then
+    awk -v link="$link" '
+      !done && /^\*\*References:\*\* / { print $0 " · " link; done = 1; next }
+      { print }
+    ' "$file" > "${file}.tmp"
+  elif grep -qE '^#+ ' "$file"; then
+    awk -v link="$link" '
+      !done && /^#+ / { print; print ""; print "**References:** " link; done = 1; next }
+      { print }
+    ' "$file" > "${file}.tmp"
+  else
+    awk -v link="$link" '
+      fm < 2 && /^---$/ {
+        fm++; print
+        if (fm == 2) { print ""; print "**References:** " link }
+        next
+      }
+      { print }
+    ' "$file" > "${file}.tmp"
+  fi
+  mv "${file}.tmp" "$file"
+}
+
 # The contract fields — the script's to write, never a template's.
 TASK_CONTRACT="id status blocked_reason taken_by spec_ref doc_ref origin priority depends_on milestone created completed provenance"
 SPEC_CONTRACT="id task_ref status created"
@@ -541,20 +640,7 @@ EOF
     # So this edit belongs here rather than in an agent's memory — the
     # generator is the only place that knows both ids at once.
     if [[ -n "$report_file" ]]; then
-      # Append, never overwrite: `task_ref` is a list because triage can
-      # split one finding into several tasks, and the second run must find
-      # the first one's id still there.
-      awk -v newid="$id" '
-        /^task_ref: \[/ {
-          line = $0
-          sub(/^task_ref: \[/, "", line)
-          sub(/\]$/, "", line)
-          if (line == "") { print "task_ref: [" newid "]" }
-          else { print "task_ref: [" line ", " newid "]" }
-          next
-        }
-        { print }
-      ' "$report_file" > "${report_file}.tmp" && mv "${report_file}.tmp" "$report_file"
+      append_list_field "$report_file" task_ref "$id"
 
       # `open` becomes `tracked` and the date is stamped, in the same run.
       # A report already `tracked` keeps both: the date belongs to the
@@ -562,46 +648,11 @@ EOF
       # judgement. `triaged` is null exactly while a report is `open`, so
       # these two move together or the file stops being canonical.
       if [[ "$report_status" = "open" ]]; then
-        awk -v when="$(date -u +%Y-%m-%dT%H:%M:%SZ)" '
-          /^status: / { print "status: tracked"; next }
-          /^triaged: / { print "triaged: " when; next }
-          { print }
-        ' "$report_file" > "${report_file}.tmp" && mv "${report_file}.tmp" "$report_file"
+        set_fm_field "$report_file" status tracked
+        set_fm_field "$report_file" triaged "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
       fi
 
-      # ...and the body link, for the same invariant the spec append keeps:
-      # front matter and body never disagree about which ids a file
-      # carries. A report template without {{references}} opted its bodies
-      # out, and the opt-out holds here too.
-      report_tpl=$(body_template_for report)
-      report_links=1
-      if [[ -n "$report_tpl" ]] && ! grep -q '{{references}}' "$report_tpl"; then
-        report_links=0
-      fi
-      task_link="[${id}](../tasks/$(basename "$file"))"
-      if [[ "$report_links" -eq 1 ]]; then
-        if grep -q '^\*\*References:\*\* ' "$report_file"; then
-          awk -v link="$task_link" '
-            !done && /^\*\*References:\*\* / { print $0 " · " link; done = 1; next }
-            { print }
-          ' "$report_file" > "${report_file}.tmp"
-        elif grep -qE '^#+ ' "$report_file"; then
-          awk -v link="$task_link" '
-            !done && /^#+ / { print; print ""; print "**References:** " link; done = 1; next }
-            { print }
-          ' "$report_file" > "${report_file}.tmp"
-        else
-          awk -v link="$task_link" '
-            fm < 2 && /^---$/ {
-              fm++; print
-              if (fm == 2) { print ""; print "**References:** " link }
-              next
-            }
-            { print }
-          ' "$report_file" > "${report_file}.tmp"
-        fi
-        mv "${report_file}.tmp" "$report_file"
-      fi
+      append_body_link "$report_file" report "[${id}](../tasks/$(basename "$file"))"
 
       if [[ "$report_status" = "open" ]]; then
         echo "Created ${file} (${id}), appended to ${report_file}'s task_ref — it is now tracked"
@@ -734,66 +785,8 @@ TODO
 _(fill after execution)_
 EOF
 
-    # Append the new spec's id to the task's spec_ref list. Portable
-    # single-arg sub() only — no gawk-only 3-arg match (see
-    # writrun-check-spec-deltas/check_deltas.sh's own history with this).
-    awk -v newid="$id" '
-      /^spec_ref: \[/ {
-        line = $0
-        sub(/^spec_ref: \[/, "", line)
-        sub(/\]$/, "", line)
-        if (line == "") { print "spec_ref: [" newid "]" }
-        else { print "spec_ref: [" line ", " newid "]" }
-        next
-      }
-      { print }
-    ' "$task_file" > "${task_file}.tmp" && mv "${task_file}.tmp" "$task_file"
-
-    # ...and the matching body link, in the same run: front matter and
-    # body must never disagree about which specs a task has. An existing
-    # References line gains the link; a task that had nothing to link
-    # gets the line — under the body's first heading, whatever its
-    # level, or straight after the front matter when the body opens
-    # without one. That last fallback belongs to the invariant: an
-    # insert that finds no anchor must not quietly not happen, and a
-    # body shaped unlike the ones we imagined is still a body the front
-    # matter has to agree with.
-    #
-    # Unless the project asked for no links at all. A task template
-    # without {{references}} opted its bodies out — taste, not contract,
-    # as the header says — and an opt-out that lasted until the task's
-    # first spec would be no opt-out. The front matter carries the spec
-    # either way: that half is the machine contract, and never the
-    # template's to shape.
-    task_tpl=$(body_template_for task)
-    body_links=1
-    if [[ -n "$task_tpl" ]] && ! grep -q '{{references}}' "$task_tpl"; then
-      body_links=0
-    fi
-    spec_link="[${id}](../specs/$(basename "$file"))"
-    if [[ "$body_links" -eq 1 ]]; then
-      if grep -q '^\*\*References:\*\* ' "$task_file"; then
-        awk -v link="$spec_link" '
-          !done && /^\*\*References:\*\* / { print $0 " · " link; done = 1; next }
-          { print }
-        ' "$task_file" > "${task_file}.tmp"
-      elif grep -qE '^#+ ' "$task_file"; then
-        awk -v link="$spec_link" '
-          !done && /^#+ / { print; print ""; print "**References:** " link; done = 1; next }
-          { print }
-        ' "$task_file" > "${task_file}.tmp"
-      else
-        awk -v link="$spec_link" '
-          fm < 2 && /^---$/ {
-            fm++; print
-            if (fm == 2) { print ""; print "**References:** " link }
-            next
-          }
-          { print }
-        ' "$task_file" > "${task_file}.tmp"
-      fi
-      mv "${task_file}.tmp" "$task_file"
-    fi
+    append_list_field "$task_file" spec_ref "$id"
+    append_body_link "$task_file" task "[${id}](../specs/$(basename "$file"))"
 
     echo "Created ${file} (${id}), appended to ${task_file}'s spec_ref"
     mint_report
