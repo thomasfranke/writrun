@@ -26,7 +26,13 @@ about it is triage's output, not the report's content.
 Record first, triage second. A report costs nothing to write and may
 ride any change you already have open — you do not need a `report/`
 branch to note something down, and waiting for one is how the finding
-gets lost.
+gets lost. That prefix is for a change that carries *only* reporting.
+
+**The generator does not mint reports yet** —
+[task-0031](../tasks/task-0031-report-kind.md) teaches it, along with
+the gates and the mirror. Until it lands, write the file by hand against
+the [schema](../../docs/technical/README.md#report-schema) and pick the
+next free id yourself; no check will catch a malformed one for you.
 
 Do not select work from this directory. Reports are not queued work; the
 [selection algorithm](../../docs/technical/README.md#task-selection-algorithm)

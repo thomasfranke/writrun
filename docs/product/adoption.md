@@ -65,7 +65,10 @@ All of the following, or the project is *adopting*, not *adopted*:
   permanent docs** — the `docs/` / `work/` split — even if empty. The
   separation is what matters; an empty `work/tasks/` with the right schema
   and selection algorithm documented is adoption, an empty `work/tasks/`
-  with no schema at all is not.
+  with no schema at all is not. A
+  [report](concepts/report.md) folder is **not** part of this minimum: a
+  project that never records one simply has no `work/reports/`, and its
+  absence is never read as a gap.
 - **The four human gates**, named somewhere in the project's own
   `AGENTS.md`: who approves a doc change, who declares an authored rule
   finished, who approves a spec, and what an agent does when a task's

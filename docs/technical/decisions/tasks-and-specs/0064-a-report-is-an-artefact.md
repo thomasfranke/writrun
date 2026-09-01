@@ -52,6 +52,21 @@ which from Stage 2 is the machinery's alone. No forge event corresponds
 to "triaged", and inventing one would mean deriving a judgement from a
 merge.
 
+**Triage is not a fifth human gate, and `declined` is not an exception
+to that.** A gate exists where a decision would otherwise stand with
+nobody having assented to it; declining stands nothing — the file
+remains, the body carries the reason, and the mirror closes *not
+planned* where a person sees it and can record a second report. The
+alternative was gating the one route that produces nothing, which would
+put the whole cost back at the far end of a pipeline built to be cheap
+at both.
+
+`doc_ref` was almost split in two — one field for the rule violated, one
+for the rule written. It is one fact under both routes, *the doc this
+observation is answered by*, read before and after that doc existed. Two
+fields would have made a schema wider to say once what a status already
+distinguishes.
+
 **A report is mirrored at Stage 3, like a task.** `open` is a state that
 needs somebody looking at it, and a file nobody is prompted to read is a
 file that rots — the failure this concept exists to end, not one it can

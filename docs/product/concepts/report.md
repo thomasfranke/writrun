@@ -50,12 +50,26 @@ can take:
 underlying problem is fixed is the *task's* status, one hop away through
 `task_ref`. Copying it here would put one fact under two writers, and
 the copy would start drifting the day someone updated one of them. What
-a report knows and nothing else does is which of the five rows above it
-ended on.
+a report knows and nothing else does is which of the four ends above it
+came to rest on.
 
 A report is never reopened. The same thing happening again is a second
 observation, so it is a second report — ids are never reused, and a
 recurrence that shares a file loses the date of the first sighting.
+
+### Declining is the agent's, and is reversible by a second report
+
+`declined` is the one end that produces nothing, and it is still the
+agent's to write without asking — triage is not a human gate
+([gates](../stage-1-tasks-and-specs/gates.md)). What makes that safe is
+that declining destroys nothing: the file stays, the body carries the
+reason, and at Stage 3 the mirror closes as *not planned*, which is
+where a person sees the judgement and can disagree with it.
+
+Disagreeing does not reopen the report — nothing reopens one. It records
+a second one, or writes the task the first should have produced. The
+first report keeps its date and its reasoning, which is what makes the
+disagreement legible later.
 
 **Who writes the status is a human or an agent, always.** This is the
 one place `work/` differs from the task queue, where from Stage 2 the

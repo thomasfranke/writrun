@@ -260,10 +260,14 @@ finding that is a scan of `work/reports/`, which costs a grep and
 touches no contract.
 
 `doc_ref` is a path relative to `docs/` with an anchor, exactly as a
-task's is, and carries a different fact per route: for `tracked` and
-`fixed` it names the doc the observed behaviour violates; for `authored`
-it names the doc the missing rule was written into. It stays `null` when
-the thing observed was never documented.
+task's is. One fact under both routes — **the doc this observation is
+answered by** — which reads as the violated rule for `tracked`, and as
+the rule that had to be written for `authored`. Those are the same
+sentence read before and after the rule existed, not two fields sharing
+a name. It stays `null` when nothing documents the thing observed, which
+is the common case for `fixed`: a typo violates no rule, and a report
+that ends `fixed` usually names no doc at all. `declined` may name the
+doc that says the behaviour was never a defect, and is otherwise `null`.
 
 At Stage 3 a report is mirrored like a task — `writrun:report`, titled
 `[REPORT-NNNN]`, `status:open` until triage closes it
@@ -753,14 +757,17 @@ The operation, deterministic end to end:
    body through a normal queue change. A client implements this as a
    search over `work/tasks/` front matter and titles, never as a
    question to the reporter.
-3. **Triage** answers one question — *is what "correct" means already
+3. **Triage** answers two questions in order — *is this worth acting on
+   at all?*, then, for what survives, *is what "correct" means already
    written?* Four outcomes, and each writes the report's terminal
-   status: a defect against documented behaviour → a task, `tracked`;
-   a rule nobody wrote → route to authoring, `authored`; a trivial fix
-   → a commit, `fixed`; not a defect, or not worth acting on →
-   `declined`, with the reason in the body. The fourth is new: while
-   reports evaporated there was nothing to close, so the table never
-   had to name it.
+   status: not a defect, or not worth acting on → `declined`, with the
+   reason in the body; a defect against documented behaviour → a task,
+   `tracked`; a rule nobody wrote → route to authoring, `authored`; a
+   trivial fix → a commit, `fixed`. The first question is new: while
+   reports evaporated there was nothing to close, so one question
+   sufficed and the table never had to name a "no". Both are the
+   agent's to answer, `declined` included — triage is not a human gate
+   ([gates](../product/stage-1-tasks-and-specs/gates.md)).
 4. **Generation**, on the defect path: `new.sh task` with
    `--origin report`, `--doc-ref` when a doc states the violated
    behaviour (null when the broken thing was never documented),
@@ -787,6 +794,11 @@ ordinary PR at whatever size the outage demands, and the report runs
 immediately behind it, triaging what remains — the patch itself gets
 no retroactive task
 ([the reporting rules](../product/stage-1-tasks-and-specs/authoring.md#reporting--work-found-or-reported-mid-flight)).
+This is the one case where step 1 follows the work instead of leading
+it: "capture costs nothing" is the reason recording comes first, and no
+reason of that shape outranks a live outage. The report still gets
+written — `tracked` when work remains, `fixed` when the patch was all of
+it — because an outage nobody recorded is the finding most worth having.
 
 What a client (`writ report`) builds on is exactly the public contract
 below: the task, spec and report schemas (`origin: report`

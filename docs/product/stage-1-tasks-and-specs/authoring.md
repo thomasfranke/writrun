@@ -121,8 +121,12 @@ makes the work *legitimate* is, as always, a doc — here one that
 already stands: the task points back at it through `doc_ref`. The doc
 does not generate a reported task; it validates it.
 
-Triage is the agent's work, and it asks one question — *is what
-"correct" means already written, or does a human need to decide it?*
+Triage is the agent's work, and it asks two questions in order. First,
+*is this worth acting on at all?* — the cheap bar the report was let
+through on is not the bar for spending work, and a "no" here is a real
+answer, not a failure to reach one. Then, for everything that survives:
+*is what "correct" means already written, or does a human need to decide
+it?*
 
 **Triage ends the report**, and the status it writes is which row it
 landed on — that is the whole record, and nothing else keeps it.
@@ -160,17 +164,26 @@ normal queue change.
 **An outage inverts the order, never the obligation.** When documented
 behaviour is down and users are hurting, the fix does not wait for the
 queue: it ships first, through an ordinary branch and PR, at whatever
-size the outage demands. The report follows immediately behind it and
-runs the normal triage over **what remains** — the proper fix behind
-the patch, the missing test, the doc gap. The patch itself gets no
-retroactive task: the queue tracks what is pending, and git already
-records what happened.
+size the outage demands. This is the one case where recording follows
+instead of leading — the rule that a report is written before triage
+answers "capture must cost nothing", and nothing about it is worth a
+minute of an outage. The report follows immediately behind the patch and
+runs the normal triage over **what remains** — the proper fix behind the
+patch, the missing test, the doc gap. It ends `tracked` when something
+remains and `fixed` when the patch was the whole of it, and it is
+recorded either way: an outage nobody wrote down is the finding most
+worth keeping. The patch itself gets no retroactive task: the queue
+tracks what is pending, and git already records what happened.
 
-From Stage 2 up, reporting rides a branch whose prefix is `report/` on
-purpose — carrying no task id, because a reporting PR records work, it
-is not working it, and must not read as in flight — and flow 2 takes
-over at the merge
-([the Stage 2 chapter](../stage-2-pull-requests/README.md)).
+From Stage 2 up, a change that is *only* reporting rides a branch whose
+prefix is `report/` on purpose — carrying no task id, because such a PR
+records work, it is not working it, and must not read as in flight — and
+flow 2 takes over at the merge
+([the Stage 2 chapter](../stage-2-pull-requests/README.md)). **That
+prefix is for the change that carries nothing else.** A report added
+alongside other work needs no branch of its own, which is the exemption
+above seen from the forge side: requiring the prefix in every case would
+put back exactly the cost the exemption exists to remove.
 
 ## Criteria
 
@@ -192,11 +205,15 @@ over at the merge
   it violates, the task shall be created directly, with `doc_ref` naming
   that doc — no new rule and no doc edit shall be required first.
 - When work is reported, the report shall be recorded as a file before it
-  is triaged, and shall be kept whatever route triage takes.
+  is triaged — except where documented behaviour is down, which inverts
+  the order below — and shall be kept whatever route triage takes.
 - When a report is triaged, its status shall record which route was
   taken, and shall never restate whether the work it produced is done.
 - When a report is recorded, the change carrying it shall not be required
-  to carry nothing else.
+  to carry nothing else, and no `report/` branch shall be required of a
+  change that carries other work.
+- When triage finds a report not worth acting on, the agent shall decline
+  it and record the reason in its body, without escalating to a human.
 - When a report asks for behaviour no permanent doc states, the agent
   shall stop and route it through authoring rather than decide the rule
   itself.
@@ -205,5 +222,6 @@ over at the merge
   agent shall name that task instead of creating a second one, and new
   evidence shall enrich the existing task's body.
 - When documented behaviour is down, the fix shall ship first and the
-  report shall follow immediately, triaging what remains; the shipped
-  patch itself shall not receive a retroactive task.
+  report shall follow immediately, triaging what remains; the report
+  shall still be recorded, and the shipped patch itself shall not
+  receive a retroactive task.

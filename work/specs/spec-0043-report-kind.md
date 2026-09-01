@@ -55,7 +55,12 @@ the report is added beside them, never folded into them.
    file, so this step also **records the first real report** and points
    the schema example at it; the block in `technical/README.md` then
    returns from ```text to ```yaml, which is the shape 0062 requires and
-   the authoring change could not deliver without this code.
+   the authoring change could not deliver without this code. The
+   script's own header defines the ```text fence as "a chapter showing
+   what the checker refuses, or a shape that is history" — the report
+   schema is neither, and rode the fence only because the checker did
+   not know the kind. Flipping the block back retires that third
+   meaning; nothing in the header needs to gain it.
 6. `check_front_matter.sh` — a third directory, and the report schema:
    the five-value status vocabulary, `task_ref` as a list even with one
    element, `doc_ref` resolved relative to `docs/` exactly as a task's,
@@ -100,6 +105,9 @@ the report is added beside them, never folded into them.
 - When a report is triaged, the mirror shall close its Issue —
   completed for `tracked`, `authored` and `fixed`; not planned for
   `declined` — and shall leave no `status:` label on it.
+- When a report already mirrored `status:proposed` is triaged by a later
+  commit on the same open pull request, the mirror shall close it on the
+  next synchronize, without waiting for the merge.
 - When a report id appears in a pull request title, the machinery shall
   not read it as a carried task.
 
@@ -109,6 +117,15 @@ the report is added beside them, never folded into them.
   a report may arrive already terminal. The mirror must create the Issue
   closed rather than opening one it immediately closes, and must not
   treat the missing `open` phase as drift to repair.
+- **Triaged while still proposed.** A report recorded `open` in one
+  commit and triaged in a later one *of the same open pull request* has
+  a mirror already labelled `status:proposed`. The re-projection path
+  cannot reach it: `project_pr_tasks.sh` learns its ids from the head
+  branch name and the `[TASK-NNNN]` tags in the title, and a report has
+  neither by design. `mirror_issues.sh` must therefore update an
+  existing proposed report mirror from the diff on every synchronize,
+  not only create missing ones — or the Issue keeps saying `open` about
+  a report the branch already ended.
 - **A pull request that closes unmerged.** A `status:proposed` report
   mirror retires with it, exactly as a task's does.
 - **Several tasks from one report.** `task_ref` is a list because triage
@@ -137,8 +154,9 @@ the report is added beside them, never folded into them.
 - Doc shapes: the schema block passes as ```yaml once the prefix map
   knows `report-` and the example names a real file.
 - Mirror: proposed → open → closed-completed; the `declined` route
-  closing not planned; the born-terminal report; no `origin:` label on
-  a report mirror.
+  closing not planned; the born-terminal report; the proposed report
+  triaged on a later commit of the same pull request; no `origin:` label
+  on a report mirror.
 - The existing suite stays green — the task and spec paths are untouched
   by every step above, and that is the evidence for it.
 

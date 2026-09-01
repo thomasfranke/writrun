@@ -121,7 +121,7 @@ This is this repo's concrete answer to the general rule in
 | Spec `draft → approved` | **Human only.** The assenting act here is **the maintainer's squash-merge** — this repository's pull requests are authored by its maintainer, who cannot review them, so a review-based gate would never be satisfiable. CI records the flip on `main` after the merge. Never self-approve, and never write the field on verbal permission relayed through you: a merged PR is the record, and nothing else is. |
 | Task with empty `spec_ref` | If the task body + `doc_ref` is not a sufficient brief, **stop and ask for a spec** — do not improvise scope. |
 | Changing repository/forge settings (Actions permissions, rulesets, merge methods) | **Owner assents in session, per set of changes.** Settings live outside the repository — no diff, no review, no merge gate sees them — so present current → target values first and apply only on an explicit yes (docs/product/stage-2-pull-requests/setup.md). |
-| Everything else (creating tasks, drafting specs, implementing approved specs, filling Outcome) | Agent, autonomously. |
+| Everything else (creating tasks, drafting specs, implementing approved specs, filling Outcome, triaging a report) | Agent, autonomously. Triage included when it ends `declined`: the report is kept and its body says why, so the judgement stays visible rather than standing unassented (docs/product/concepts/report.md). |
 
 ## Completing a task
 

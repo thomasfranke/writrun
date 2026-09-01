@@ -38,9 +38,19 @@ the gate exists to prevent: a spec reaching `approved`, or a permanent doc
 change standing as final, with no person having assented to it at all.
 
 Everything else in the pipeline — creating tasks, drafting specs,
-implementing an approved spec, filling a spec's Outcome — is agent work,
-autonomously, by default. Implementing is also the one step equally a
-person's to take (flow 4); the gates do not change with who takes it.
+implementing an approved spec, filling a spec's Outcome, triaging a
+report — is agent work, autonomously, by default. Implementing is also
+the one step equally a person's to take (flow 4); the gates do not change
+with who takes it.
+
+**Triage is not a fifth gate, including when it declines.** The gates
+above exist where a decision would otherwise stand with nobody having
+assented to it; declining a report decides nothing that stands, because
+the report is kept and its body says why, so the judgement stays visible
+to whoever disagrees with it
+([report](../concepts/report.md#declining-is-the-agents-and-is-reversible-by-a-second-report)).
+An agent that had to escalate every "not worth acting on" would make the
+cheap bar expensive again at the far end.
 
 ## Criteria
 
