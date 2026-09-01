@@ -1,7 +1,7 @@
 ---
 id: spec-0037
 task_ref: task-0027
-status: approved
+status: implemented
 created: 2026-08-31T14:48:55Z
 ---
 
@@ -103,9 +103,9 @@ ignored. Mirror test proves `template/` carries it all.
 
 ## Definition of Done
 
-- [ ] Every acceptance criterion holds, each with a test.
-- [ ] No task file gains or changes any field.
-- [ ] Template synced; suite green.
+- [x] Every acceptance criterion holds, each with a test.
+- [x] No task file gains or changes any field.
+- [x] Template synced; suite green.
 
 ## Proposed product changes
 
@@ -122,4 +122,100 @@ ignored. Mirror test proves `template/` carries it all.
 
 ## Outcome
 
-_(fill after execution)_
+Built as scoped, on all three surfaces, with no new field, no new status
+and no write to any task file. The suspension exists nowhere on disk: it
+is computed from the union every time somebody asks.
+
+**The lister reads both halves and says which one answered.** For a task
+in flight it derives the pause from its own checkout — a spec in
+`spec_ref` that is not `approved` or `implemented` — and from the open
+pull requests, reading the file list of every pull request that carries
+no task id and matching the specs it touches against the same
+`spec_ref`. Either half alone is enough, both are named at once when
+both fire, and the reason is printed on a second line under the task,
+beside the number that caused it, so the In-flight section reads exactly
+as it did before whenever nothing is suspended. Two guards keep the
+forge half honest rather than eager: a pull request carrying a task id
+is never read — an amendment is a `queue/` change that carries none by
+decision 0059, while a task's own pull request touches its own spec at
+the end of every implementation and would otherwise report every
+finished task as suspended by itself; and no file list is fetched at all
+unless some task is actually in flight, so the common case pays for no
+API call. `WRITRUN_PR_FILES` — lines of `number<TAB>path`, the shape the
+spec left open — injects file lists the way `WRITRUN_PR_LIST` injects
+the list itself.
+
+**The degrade says what it could not see.** Without a forge answer the
+lister still reports the files-only half, and its note now states that
+an amendment riding an open pull request would not have been seen — the
+one sentence that keeps silence from reading as "nobody is suspended".
+A pull request that answers the list query but not its own file query
+gets its own note; it is a narrower view than no view at all, and
+reporting them identically would hide the difference.
+
+**The skill's resume step re-checks authorization.** Step 0 now says in
+its own words what the algorithm already said in the technical README:
+a resumed task's `spec_ref` is read against the checkout *and* the open
+pull requests, and a suspended task is resumed by finishing or waiting
+out the amendment — never by implementing through it. The reach section
+gained the third blind spot of a files-only read, and Never gained the
+line that the wait is the correct outcome rather than an obstacle.
+
+**The gate holds the side that can be held.** `check_amendment_reference.sh`
+finds the specs the change returns from `approved`/`implemented` to
+`draft` — read from front matter at both ends of the range, never
+grepped from the diff — resolves the in-flight tasks referencing them,
+asks the forge which open pull request works each, and fails unless the
+body names it as `#N` or as a `/pull/N` URL. The failure names the task,
+the number, and the line to add. A resting task's spec amended the old
+way reaches none of that and never touches the forge.
+
+**Divergences.**
+
+- **A sibling script, not an extension of `check_queue_impact.sh`.** The
+  spec allowed either. That check is advisory *by contract* — it states
+  in its own header that it always exits 0, because file-level overlap
+  is a signal and never a failure — and a gate living inside it would
+  have had to break the contract its own reasoning rests on. The two
+  answer different questions about the same diff and now sit as
+  neighbours in the check workflow.
+- **The pause is named in the resume section too.** The spec named the
+  In-flight section. The resume step is the other place the queue is
+  read, and it is precisely where the re-check the same spec asks for
+  happens, so a task with no open pull request and a suspended spec is
+  named the same way. Same derivation, one more caller.
+- **A stale flight state fails nothing.** Not in the criteria: a task
+  reading `in-progress` with no open pull request has no number to name,
+  so the gate says so and passes. Failing an amendment over a field
+  somebody else left stale would block the change most likely to be
+  fixing it.
+- **`ql_carried_of` extracted in `queue_lib.sh`.** The gate has to ask
+  "which tasks does *that* pull request carry" about a pull request that
+  is not the one CI is running on, and the existing helper read the
+  question out of the environment. It now takes the branch and title as
+  arguments, and `ql_carried_from_env` is one line calling it with the
+  two variables — no behaviour change for its existing callers, and one
+  copy of the tag parser rather than a third.
+- **The lister's forge half reads a name, not a transition.** The
+  criterion says an open pull request *proposes returning one of its
+  specs to `draft`*; step 1 says its *file list touches one of its
+  specs*, and the file list is what was built. A filename cannot answer
+  the narrower question, and asking for the content of every spec on
+  every id-less pull request would buy a call per file for an answer the
+  gate — which holds both ends of the diff — already computes exactly.
+  The widening errs toward the pause: a `queue/` change that only fixes a
+  typo in an in-flight task's spec reads as an amendment in the lister
+  and as nothing at all in the gate. A pause that turns out to be
+  nothing costs a look; a missed one costs work built on an
+  authorization being withdrawn. Named in the code beside the
+  derivation, so the next reader meets it before the surprise does.
+
+- **The `edited` trigger's comment gained a second job.** Adding the
+  reference to a body is a body edit, so this check needs the same
+  rerun-on-edit the derived-work check does. The trigger already
+  covered it; only the comment naming why was one job short.
+
+**What it costs.** One extra `gh api` call per open pull request that
+carries no task id, and only while some task is in flight — bounded by
+the same 200-pull-request fetch limit the rest of the machinery uses,
+and skipped entirely on a queue with nothing in flight.

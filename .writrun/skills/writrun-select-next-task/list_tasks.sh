@@ -14,6 +14,11 @@
 # in the Available list may be taken, and taking a lower one bypasses
 # nothing. That is the whole reason this prints a list instead of an answer.
 #
+# A task already in flight is reported as such, and reported as *paused*
+# when an amendment has put one of its specs' approval back in question —
+# derived from this checkout and the open pull requests together, never
+# from a stored field (docs/product/stage-2-pull-requests/statuses.md#an-amendment-under-an-open-pull-request).
+#
 # Exit codes: 0 something is available; 1 nothing is; 3 no work/tasks/.
 #
 # Portable awk/sed only — no gawk extensions.
@@ -57,6 +62,21 @@ num_file() {
   return 0
 }
 
+# id_num <spec-0007> — an id's digits with the zero padding dropped, so
+# a comparison never depends on the width the id was written at. The
+# companion to num_file, for the times the file is not what is wanted.
+id_num() {
+  printf '%s' "$1" | tr '[:upper:]' '[:lower:]' \
+    | sed -n 's/^[a-z][a-z]*-0*\([0-9][0-9]*\)$/\1/p'
+}
+
+# spec_num_of <path> — the spec a repository path belongs to, as a bare
+# number; nothing for a path that is not a spec file.
+spec_num_of() {
+  printf '%s' "$1" | tr '[:upper:]' '[:lower:]' \
+    | sed -n 's|^work/specs/spec-0*\([0-9][0-9]*\).*|\1|p'
+}
+
 spec_status() {
   local f
   f=$(queue_file "$SPEC_DIR" "$1")
@@ -94,6 +114,7 @@ rank() {
 # says so rather than implying nobody is working.
 
 taken=""       # id|#number|author
+idless=""      # numbers of the open pull requests carrying no task id
 pr_source="none"
 
 pr_lines=""
@@ -164,10 +185,95 @@ if [ "$pr_source" != "none" ]; then
       if [ -n "$tf" ]; then ref=$(field "$tf" id)
       else ref=$(printf 'task-%04d' "$tn"); fi
     fi
-    [ -n "$ref" ] && taken="${taken}$(printf '%s' "$ref" | tr '[:upper:]' '[:lower:]')|#${num}|${author}"$'\n'
+    if [ -n "$ref" ]; then
+      taken="${taken}$(printf '%s' "$ref" | tr '[:upper:]' '[:lower:]')|#${num}|${author}"$'\n'
+    else
+      # It works no task — but it may still be amending one's spec, which
+      # is what suspends that task. Kept for the file-list pass below.
+      idless="${idless}${num}"$'\n'
+    fi
   done <<EOF
 $pr_lines
 EOF
+fi
+
+# --- what an open pull request proposes for a spec ------------------------
+#
+# An amendment cut while a task rides an open pull request suspends that
+# task: a spec whose approval is in question authorizes nothing, so the
+# work waits until the amendment merges
+# (docs/product/stage-2-pull-requests/statuses.md#an-amendment-under-an-open-pull-request).
+# The pause is derived and never stored (decision 0059), and it is
+# visible only in the union of two halves — this checkout, where an
+# already-landed amendment shows the spec back in `draft`, and the open
+# pull requests, where one still riding shows nothing on the branch at
+# all. For the whole window an amendment is open, the files alone report
+# a healthy queue.
+#
+# Only pull requests carrying no task id are read, and that is the whole
+# rule rather than a shorthand for "not this task's own": an amendment is
+# a `queue/` change that deliberately carries no id (decision 0059),
+# while a pull request carrying one is work on that task — and a task's
+# own pull request touches its own spec at the end of every
+# implementation, which would otherwise report every finished task as
+# suspended by itself. Two shapes therefore fall outside this half and
+# are held by the gate instead, which makes no such exclusion: an
+# amendment cut on an id-carrying branch, and one named after the spec
+# (`spec/NNNN-...`), which resolves through the spec's task_ref back to
+# the task above and reads as work on it.
+#
+# A file list is all the forge is asked for, so this half reads "touches
+# one of its specs" where the rule reads "proposes returning one of its
+# specs to `draft`" — a name cannot answer the narrower question, and
+# spec-0037 chose the name. The widening is deliberate and it errs toward
+# the pause: a `queue/` change that only fixes a typo in the spec of a
+# task in flight reads as an amendment here, while the gate, which has
+# both ends of the diff, correctly says nothing is suspended. A pause
+# that turns out to be nothing costs a look; a missed one costs work
+# built on an authorization that was being withdrawn.
+#
+# Set WRITRUN_PR_FILES to bypass `gh` — lines of "number<TAB>path". The
+# forge half degrades exactly as the list above does: with no answer, a
+# spec already returned to draft here is still caught, which is the whole
+# Stage 1 story.
+
+amend=""            # <spec-number>|#<pr-number>
+files_partial=""
+
+# Nothing but an in-flight task can be suspended, so a queue with none
+# asks the forge nothing — the fetch is per pull request, and paying for
+# it to answer a question nobody has is how a lister becomes too slow to
+# run.
+any_in_flight=""
+grep -lE '^status: (in-progress|in-review)[[:space:]]*$' "$TASK_DIR"/*.md \
+  >/dev/null 2>&1 && any_in_flight=yes
+
+if [ -n "$any_in_flight" ] && [ -n "${WRITRUN_PR_FILES:-}" ]; then
+  while IFS="$(printf '\t')" read -r num path; do
+    [ -n "$num" ] && [ -n "$path" ] || continue
+    printf '%s' "$idless" | grep -qxF "$num" || continue
+    sn=$(spec_num_of "$path")
+    [ -n "$sn" ] && amend="${amend}${sn}|#${num}"$'\n'
+  done <<EOF
+$WRITRUN_PR_FILES
+EOF
+elif [ -n "$any_in_flight" ] && [ "$pr_source" = "gh" ] && [ -n "$idless" ]; then
+  for num in $idless; do
+    # `{owner}/{repo}` is resolved by gh from the checkout's remote, the
+    # same endpoint and pagination the id check reads.
+    if ! files=$(gh api "repos/{owner}/{repo}/pulls/${num}/files" --paginate \
+          --jq '.[].filename' 2>/dev/null); then
+      files_partial=yes
+      continue
+    fi
+    while IFS= read -r path; do
+      [ -n "$path" ] || continue
+      sn=$(spec_num_of "$path")
+      [ -n "$sn" ] && amend="${amend}${sn}|#${num}"$'\n'
+    done <<EOF
+$files
+EOF
+  done
 fi
 
 taken_by() {
@@ -176,6 +282,31 @@ taken_by() {
       printf '%s by @%s' "$num" "$who"; break
     }
   done
+}
+
+# suspension <task-file> — why a task in flight cannot advance, or
+# nothing. Both halves of the union in one string: a spec that is no
+# longer approved here, and a spec an open pull request proposes to
+# change. Partial authorization is not authorization — one spec of
+# several is enough.
+suspension() {
+  local why="" s ss sn pr
+  for s in $(list_field "$1" spec_ref); do
+    [ -n "$s" ] || continue
+    ss=$(spec_status "$s")
+    case "$ss" in
+      approved|implemented) ;;
+      *) why="${why}${s} is ${ss} here; " ;;
+    esac
+    sn=$(id_num "$s")
+    [ -n "$sn" ] || continue
+    for pr in $(printf '%s' "$amend" \
+        | awk -F'|' -v n="$sn" '$1 == n { print $2 }' | sort -u); do
+      why="${why}${s} is amended by ${pr}; "
+    done
+  done
+  [ -n "$why" ] && printf '%s' "${why%; }"
+  return 0
 }
 
 available=""
@@ -201,10 +332,11 @@ for f in "$TASK_DIR"/*.md; do
   # is a human decision (technical/README.md#task-selection-algorithm).
   if [ "$st" = "in-progress" ] || [ "$st" = "in-review" ]; then
     who=$(taken_by "$id")
+    pause=$(suspension "$f")
     if [ -n "$who" ]; then
-      inflight="${inflight}${id}|${who}|${tt}"$'\n'
+      inflight="${inflight}${id}|${who}|${pause}|${tt}"$'\n'
     else
-      resumable="${resumable}${id}|${tt}"$'\n'
+      resumable="${resumable}${id}|${pause}|${tt}"$'\n'
     fi
     continue
   fi
@@ -257,7 +389,13 @@ for f in "$TASK_DIR"/*.md; do
   # "held back" — nothing is wrong with the task; someone is on it.
   who=$(taken_by "$id")
   if [ -n "$who" ]; then
-    inflight="${inflight}${id}|${who}|${tt}"$'\n'
+    # Four fields, the same shape step 0 packs: a record one field short
+    # would slide the title into the pause slot and print it as a reason
+    # nobody derived. The pause is derived here too — this task reads
+    # `ready` only because its status commit has not landed yet, and the
+    # amendment that suspends it does not wait for that.
+    pause=$(suspension "$f")
+    inflight="${inflight}${id}|${who}|${pause}|${tt}"$'\n'
   else
     available="${available}$(rank "$pr")|${cr}|${id}|${pr}|${tt}"$'\n'
   fi
@@ -265,8 +403,10 @@ done
 
 if [ -n "$resumable" ]; then
   echo "In progress — resume before selecting anything new:"
-  printf '%s' "$resumable" | while IFS='|' read -r id tt; do
-    [ -n "$id" ] && printf '  %-10s %s\n' "$id" "$tt"
+  printf '%s' "$resumable" | while IFS='|' read -r id pause tt; do
+    [ -n "$id" ] || continue
+    printf '  %-10s %s\n' "$id" "$tt"
+    [ -n "$pause" ] && printf '  %-10s paused — %s; the work waits on the re-approval\n' "" "$pause"
   done
   echo
 fi
@@ -286,8 +426,9 @@ fi
 if [ -n "$inflight" ]; then
   echo
   echo "In flight — an open pull request already exists:"
-  printf '%s' "$inflight" | sed '/^$/d' | sort | while IFS='|' read -r id who tt; do
+  printf '%s' "$inflight" | sed '/^$/d' | sort | while IFS='|' read -r id who pause tt; do
     printf '  %-10s %-16s %s\n' "$id" "$who" "$tt"
+    [ -n "$pause" ] && printf '  %-10s %-16s paused — %s; the work waits on the re-approval\n' "" "" "$pause"
   done
 fi
 
@@ -302,7 +443,14 @@ fi
 if [ "$pr_source" = "none" ]; then
   echo
   echo "Note: could not reach GitHub, so nothing above accounts for work"
-  echo "already in flight. Check open pull requests before starting."
+  echo "already in flight, nor for an amendment suspending a task from an"
+  echo "open pull request — only a spec already returned to draft on this"
+  echo "checkout was seen. Check open pull requests before starting."
+elif [ -n "$files_partial" ]; then
+  echo
+  echo "Note: an open pull request would not yield its file list, so a task"
+  echo "it suspends is not named above. Check open pull requests before"
+  echo "starting."
 elif [ "$pr_source" = "gh" ] \
     && [ "$(printf '%s\n' "$pr_lines" | grep -c .)" -ge "$PR_FETCH_LIMIT" ]; then
   echo

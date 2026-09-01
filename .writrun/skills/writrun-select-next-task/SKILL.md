@@ -18,8 +18,20 @@ answer — don't shortcut or reorder these steps.
    it — or its open pull request is this session's own, stop here and
    resume that task instead of selecting new work. One whose open pull
    request belongs to someone else is theirs, however stale: name it,
-   never take it over on your own. Only proceed to step 1 if no
-   resumable task exists.
+   never take it over on your own.
+
+   **Resuming re-checks the authorization.** Read the resumed task's
+   `spec_ref` against this checkout *and* against the open pull
+   requests: a spec back in `draft` here, or one an open pull request
+   proposes to change, means an amendment has suspended the task. The
+   checkout alone cannot show the second — while the amendment rides an
+   open pull request the files still say `approved` — so the union is
+   the answer, and the lister below derives it for you. A suspended task
+   is resumed by finishing or waiting out the amendment, never by
+   implementing against a spec whose approval is in question
+   (docs/product/stage-2-pull-requests/statuses.md#an-amendment-under-an-open-pull-request).
+
+   Only proceed to step 1 if no resumable task exists.
 
 1. Read the front-matter of every task in `work/tasks/`.
 2. Keep only tasks with `status: ready`. (This excludes `backlog`,
@@ -125,6 +137,11 @@ the file cannot see:
   request as a draft before the work starts; when resuming on a machine
   or repo you share, check `git branch` (and `git branch -r`) before
   concluding nothing is unfinished.
+- **An amendment still riding an open pull request** — the specs on the
+  authority branch read `approved` for the whole window it is open, so
+  the files report a healthy queue while the task cannot move. The
+  lister's forge query covers it; without one, say the pause could be
+  hidden rather than reporting the task as advanceable.
 
 ## Never
 
@@ -137,6 +154,9 @@ the file cannot see:
   `in-progress` task must be surfaced before anything new is picked up,
   and on a `main` checkout the place it shows is the In flight section or
   the branch list, not the task files.
+- Never implement through a suspension. A task whose spec an open pull
+  request proposes to return to `draft` waits for that pull request, and
+  the wait is the correct outcome — not an obstacle to route around.
 - Never implement an approved spec whose `doc_ref` section now
   contradicts it. The doc wins; the spec is amended through `draft` and
   re-approved — never quietly out-implemented, and never edited while it

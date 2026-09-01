@@ -133,7 +133,16 @@ case "${1:-}" in
       prev="$a"
     done
     case "$field" in
-      number) cat "$FORGE_DIR/pr_numbers" 2>/dev/null ;;
+      number)         cat "$FORGE_DIR/pr_numbers" 2>/dev/null ;;
+      # Two consumers of the same list, told apart by the fields they ask
+      # for the way the `api` arm below tells its two apart by --jq: the
+      # lister asks for the author column and the amendment check does
+      # not, and handing four columns to a three-column reader puts the
+      # title where the author goes.
+      *author*)       cat "$FORGE_DIR/pr_lines" 2>/dev/null ;;
+      *headRefName*)  [ -f "$FORGE_DIR/pr_lines" ] &&
+                        awk -F'\t' -v OFS='\t' '{ print $1, $2, $4 }' \
+                          "$FORGE_DIR/pr_lines" ;;
     esac
     ;;
   api)
@@ -169,6 +178,20 @@ forge_pr() {
     || printf '%s\n' "$1" >> "$FORGE_DIR/pr_numbers"
   printf '%s\n' "$3" >> "$FORGE_DIR/pr_${1}_paths"
   [ "$2" = added ] && printf '%s\n' "$3" >> "$FORGE_DIR/pr_${1}_added"
+  return 0
+}
+
+# forge_open_pr <number> <branch> [title] [author] — one open pull request
+# as the richer query sees it: the number, the head branch, the author and
+# the title, which is where the [TASK-NNNN] tags live. Stored in the four
+# -column shape the widest consumer asks for; the stub projects it down
+# for the narrower one. Joins the plain number list too, so a case may mix
+# this with forge_pr's file lists.
+forge_open_pr() {
+  printf '%s\t%s\t%s\t%s\n' "$1" "$2" "${4:-someone}" "${3:-}" \
+    >> "$FORGE_DIR/pr_lines"
+  grep -qxF "$1" "$FORGE_DIR/pr_numbers" 2>/dev/null \
+    || printf '%s\n' "$1" >> "$FORGE_DIR/pr_numbers"
   return 0
 }
 

@@ -11,9 +11,13 @@ depends_on: []
 milestone: null
 created: 2026-08-31T14:48:46Z
 queued: 2026-08-31T15:04:28Z
-completed: null
+completed: 2026-09-01T14:49:48Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-opus-5, login: thomasfranke, input: 126, output: 71469, cache_read: 7019446, cache_write: 74741}
+  - {by: agent, model: claude-opus-5, login: thomasfranke, input: 4, output: 794, cache_read: 0, cache_write: 55834}
+  - {by: agent, model: claude-opus-5, login: thomasfranke, input: 32, output: 4787, cache_read: 427922, cache_write: 111438}
+  - {by: agent, model: claude-opus-5, login: thomasfranke, input: 12, output: 3819, cache_read: 1191437, cache_write: 7966}
 ---
 
 # An amendment in flight suspends the task, and the system names it
