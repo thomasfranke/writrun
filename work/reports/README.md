@@ -28,10 +28,14 @@ ride any change you already have open — you do not need a `report/`
 branch to note something down, and waiting for one is how the finding
 gets lost. That prefix is for a change that carries *only* reporting.
 
-Use the generator rather than the schema from memory:
+Use the generator rather than the schema from memory, **from the
+repository root** — every path it reads and writes is relative to the
+working directory, so run from here and it mints an id the queue already
+holds into a `work/reports/` nested under this one, which no check and no
+mirror ever looks at:
 
 ```bash
-bash ../../.writrun/skills/writrun-create-task-and-spec/new.sh report "<title>" \
+bash .writrun/skills/writrun-create-task-and-spec/new.sh report "<title>" \
   --slug <two-or-three-words> [--doc-ref path/to/doc.md#anchor]
 ```
 

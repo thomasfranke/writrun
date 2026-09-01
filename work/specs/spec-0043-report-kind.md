@@ -278,6 +278,84 @@ it would be an authoring change, and this one is not.
   adopter's side: the generator creates it on the first run, and every
   gate reads its absence as zero reports. A case asserts all four.
 
+### What the review changed
+
+A code review of the branch before merge found eight faults, all in the
+new report paths and seven of them of one shape: **a reader that could
+not tell a report's front matter from a report's body.** That is the
+kind's own hazard, and the spec did not see it coming — a report's
+evidence *is* quoted front matter ("the file says `status: open` and the
+mirror says otherwise"), so every reader and every writer this spec added
+had to know the difference, and none of them did.
+
+- **The mirror read `status:` from the whole patch.** A body-only edit
+  adding a fenced `status: declined` closed the mirror of a report still
+  open, and quoted evidence could reopen a triaged one. The block is
+  bounded now: for an added file the patch is the whole file and line 1
+  opens it; for a modified one the base-branch checkout — which this
+  workflow already runs in — says where the block ends, and a line
+  outside it is a line about something else. A patch that can prove
+  neither says nothing, which was already the safe branch.
+
+- **`new.sh`'s three `--from-report` rewrites matched every line of the
+  file**, so a report whose evidence quoted `status: open`, `triaged:
+  null` and `task_ref: []` had all three falsified by triage — and the
+  file stayed canonical, so nothing downstream noticed. All three are
+  anchored to the block now, and the anchoring is in one place: the
+  spec-append and the report-append were two copies of the same fifty
+  lines, which is why the fix had to be written twice before it was
+  written once. `append_list_field`, `set_fm_field` and
+  `append_body_link` are shared by both subcommands.
+
+- **Authority was asked after the mirror lookup, not before.** The gate
+  read as "a drive-by pull request cannot spray Issues", but it sat
+  inside the create path, which a report already on the authority branch
+  never reaches. An unrecognized fork author's patch claiming `status:
+  declined` therefore fell through to adoption and closed the project's
+  own report mirror — with `issues: write`, on `pull_request_target`.
+  Both loops now gate every write, not the creating one.
+
+- **A retired report's mirror could never be restored.** The sweep read
+  only open mirrors and the label projection only ever sees ids from a
+  merge, so a report living on `main` whose mirror an abandoned branch
+  closed was unreachable to every later pass. A pull request that closes
+  unmerged now reconciles each mirror it owns against the base branch
+  rather than against a diff that no longer means anything — which also
+  ends the mirror born `completed` for a report the queue never received.
+
+- **An empty status collapsed the tab-separated row** and the title
+  landed where the status belongs, so a report headed `# fixed` closed
+  its own mirror. The task loop's `-` placeholder was the defence, and
+  the report loop had dropped it.
+
+- **The relabelling PUT wrote the whole label set from the kind and the
+  new status**, deleting whatever a reviewer had added — on every push,
+  silently, while the close path two branches up was keeping them and a
+  case was pinning that it did. It keeps them now, and a mirror that
+  already says what this pass would write is left alone: two API calls
+  per live report per push, for nothing.
+
+- **`check_front_matter.sh` never paired an end with what names it.**
+  `status: tracked` with `task_ref: []` was canonical — a report
+  permanently claiming work nothing carries, and a mirror closed
+  `completed` on the strength of it. `tracked` now requires a task and
+  `authored` a doc, following the table in `concepts/report.md`; `fixed`
+  and `declined` name their outcome where this checker cannot follow, and
+  that asymmetry is the concept's.
+
+- **Two documents were wrong about their own commands.**
+  `work/reports/README.md` showed the generator invoked with `../../`,
+  implying its own directory as the working one — which mints a
+  duplicate id into a `work/reports/` nested under this one that no gate
+  ever reads. `writrun-check-front-matter`'s SKILL.md still documented
+  two arguments and two kinds, so an adopter with a non-default layout
+  would have had reports silently unchecked.
+
+Four cases were added for the mirror's four and two for the generator and
+the checker; `modified_report` in the fixture now writes the base-branch
+file with the patch, because a modified file is on the base branch by
+definition and the reader that bounds the block needs it there.
+
 ### What this did not touch
 
 The task and spec schemas, exactly as scoped: no field was added to
