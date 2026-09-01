@@ -133,7 +133,8 @@ case "${1:-}" in
       prev="$a"
     done
     case "$field" in
-      number) cat "$FORGE_DIR/pr_numbers" 2>/dev/null ;;
+      number)         cat "$FORGE_DIR/pr_numbers" 2>/dev/null ;;
+      *headRefName*)  cat "$FORGE_DIR/pr_lines" 2>/dev/null ;;
     esac
     ;;
   api)
@@ -169,6 +170,17 @@ forge_pr() {
     || printf '%s\n' "$1" >> "$FORGE_DIR/pr_numbers"
   printf '%s\n' "$3" >> "$FORGE_DIR/pr_${1}_paths"
   [ "$2" = added ] && printf '%s\n' "$3" >> "$FORGE_DIR/pr_${1}_added"
+  return 0
+}
+
+# forge_open_pr <number> <branch> [title] — one open pull request as the
+# richer query sees it: the number, the head branch and the title, which
+# is where the [TASK-NNNN] tags live. Joins the plain number list too, so
+# a case may mix this with forge_pr's file lists.
+forge_open_pr() {
+  printf '%s\t%s\t%s\n' "$1" "$2" "${3:-}" >> "$FORGE_DIR/pr_lines"
+  grep -qxF "$1" "$FORGE_DIR/pr_numbers" 2>/dev/null \
+    || printf '%s\n' "$1" >> "$FORGE_DIR/pr_numbers"
   return 0
 }
 

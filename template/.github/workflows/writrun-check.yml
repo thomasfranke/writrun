@@ -9,9 +9,10 @@ name: writrun check
 # integration tier executes it — YAML here only wires events to scripts.
 # The reasoning for each check is documented in its script.
 
-# `edited` is here for one job: the derived-work check reads the PR body,
-# and declaring "Derived work: none" is a body edit — the check must rerun
-# when that happens, not wait for a push.
+# `edited` is here for the two jobs that read the PR body: declaring
+# "Derived work: none" and naming the pull request an amendment suspends
+# are both body edits — those checks must rerun when one happens, not
+# wait for a push.
 on:
   pull_request:
     types: [opened, synchronize, reopened, edited]
@@ -143,6 +144,32 @@ jobs:
         run: |
           bash .writrun/scripts/stage-2-pull-requests/check_derived_work.sh \
             "origin/${{ github.base_ref }}...HEAD"
+
+  amendment:
+    name: an amendment names what it suspends
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The check reads each spec's status at both ends of the range,
+          # so the history both ends need must be present.
+          fetch-depth: 0
+
+      - name: An amendment under an open pull request names it
+        # The body carries the reference, and adding it is a body edit —
+        # which is why `edited` is in this workflow's trigger list. It
+        # goes through env, never inline interpolation: attacker-
+        # controlled text on a fork PR. Reasoning in the script.
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          bash .writrun/scripts/stage-2-pull-requests/check_amendment_reference.sh \
+            "origin/${{ github.base_ref }}...HEAD" \
+            "${{ github.repository }}" \
+            "${{ github.event.pull_request.number }}"
 
   observance:
     name: the settings are observed

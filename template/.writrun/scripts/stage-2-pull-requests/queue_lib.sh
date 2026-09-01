@@ -79,19 +79,23 @@ ql_resting() {
   printf 'ready'
 }
 
-# ql_carried_from_env — the task ids whose work a pull request carries:
-# the head branch's own (task/NNNN-*) plus every [TASK-NNNN] tag leading
-# the title, deduplicated, both read from env as data (PR_HEAD_REF,
-# PR_TITLE — a fork's to write; digits only survive).
-ql_carried_from_env() {
+# ql_carried_of <head-branch> <title> — the task ids whose work a pull
+# request carries: the head branch's own (task/NNNN-*) plus every
+# [TASK-NNNN] tag leading the title, deduplicated. Both arguments are a
+# fork's to write, so only digits survive.
+#
+# Taking the pair as arguments is what lets a caller ask the question of
+# *another* pull request — the amendment check has to, to name the one it
+# suspends — while the env-reading form below stays the shape CI uses.
+ql_carried_of() {
   local carried="" num rest tg
-  case "${PR_HEAD_REF:-}" in
+  case "${1:-}" in
     task/[0-9]*)
-      num=$(ql_task_num "$PR_HEAD_REF")
+      num=$(ql_task_num "$1")
       [ -n "$num" ] && carried="task-$num"
       ;;
   esac
-  rest="${PR_TITLE:-}"
+  rest="${2:-}"
   while :; do
     rest=$(printf '%s' "$rest" | sed 's/^[[:space:]]*//')
     tg=$(printf '%s' "$rest" | sed -n 's/^\[[Tt][Aa][Ss][Kk]-0*\([0-9][0-9]*\)\].*/\1/p')
@@ -103,4 +107,10 @@ ql_carried_from_env() {
     rest=$(printf '%s' "$rest" | sed 's/^\[[Tt][Aa][Ss][Kk]-[0-9][0-9]*\]//')
   done
   printf '%s' "$carried"
+}
+
+# ql_carried_from_env — the same question about the pull request CI is
+# running on, read from env as data (PR_HEAD_REF, PR_TITLE).
+ql_carried_from_env() {
+  ql_carried_of "${PR_HEAD_REF:-}" "${PR_TITLE:-}"
 }
