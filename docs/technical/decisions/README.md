@@ -82,3 +82,4 @@ appending a row.
 | [0060](github-issues/0060-the-merged-close-has-one-owner.md) | 2026-08-31 | `github-issues` | the merged close has one owner, and the label is the queue's to project — completing 0048. |
 | [0061](tasks-and-specs/0061-the-push-is-its-own-act.md) | 2026-08-31 | `tasks-and-specs` | the push is its own act, and gets its own flag — completing 0054. |
 | [0062](tasks-and-specs/0062-a-shown-shape-is-a-checked-shape.md) | 2026-08-31 | `tasks-and-specs` | a shape a document shows is checked like a file it stores. |
+| [0063](pull-requests/0063-title-and-subject-are-two-texts.md) | 2026-09-01 | `pull-requests` | the pull request title and the commit subject are two texts — narrowing 0046 and 0052. |

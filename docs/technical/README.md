@@ -379,7 +379,8 @@ not permission to drop them.
 
 ### `pr_title_style`
 
-Governs every title, including authoring ones, which carry no task tag:
+Governs every pull request title, including authoring ones, which carry no
+task tag — and nothing else:
 
 ```
 conventional   [TASK-0007] feat(ci): record approval on the merge
@@ -395,14 +396,14 @@ check` fails a title that ignores the declared style. Nothing parses
 the summary beyond that — not the release notes, which the forge
 generates from pull requests.
 
-**It governs the machinery's own commit subjects too**, and those pass no
-door. `writrun approve` and `writrun progress` each write a commit onto
-the default branch, and nothing squashes them — a subject in the
-undeclared style would sit in the history for good. Both take theirs from
-`commit_subject.sh`, which composes it from this key under the scope
-`queue`, so the declaration has one reader rather than two literals free
-to drift. There is no check behind it because there is no door: what
-replaces one is that the subject has a single writer.
+**The commit subject is not this key's, and is not settable.** It is
+Conventional Commits everywhere, whatever the title style: the squash
+dialog's subject is the merging maintainer's to type, and the
+machinery's own recording commits take theirs from `commit_subject.sh`
+under the scope `queue`, now one literal per event rather than one per
+event per style. A project choosing `bracketed` chooses it for the queue
+its people read, never for `main`
+([0063](decisions/pull-requests/0063-title-and-subject-are-two-texts.md)).
 
 **The `[TASK-NNNN]` tag is in both and is not settable.** It is how
 the machinery and `list_tasks.sh` learn which tasks a pull request
@@ -536,8 +537,8 @@ is not judged, because the convention writes both `[Fix]` and `[DOCS]`.
 The credit check reads the pull request's own commits and body — never
 `main`'s past, since nothing rewrites history — and skips the
 machinery's recording commits **by committer identity**, not by subject.
-The subject is now the machinery's own, composed from `pr_title_style`
-([above](#pr_title_style)) — but reading it would still be the wrong
+The subject is now the machinery's own, and constant whatever the title
+style says — but reading it would still be the wrong
 test: a subject is text, and what makes those commits exempt is who
 wrote them, which only the identity says.
 
