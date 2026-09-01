@@ -136,7 +136,8 @@ both fire, and the reason is printed on a second line under the task,
 beside the number that caused it, so the In-flight section reads exactly
 as it did before whenever nothing is suspended. Two guards keep the
 forge half honest rather than eager: a pull request carrying a task id
-is never read, because a task's own pull request touches its own spec at
+is never read — an amendment is a `queue/` change that carries none by
+decision 0059, while a task's own pull request touches its own spec at
 the end of every implementation and would otherwise report every
 finished task as suspended by itself; and no file list is fetched at all
 unless some task is actually in flight, so the common case pays for no
@@ -195,6 +196,20 @@ way reaches none of that and never touches the forge.
   arguments, and `ql_carried_from_env` is one line calling it with the
   two variables — no behaviour change for its existing callers, and one
   copy of the tag parser rather than a third.
+- **The lister's forge half reads a name, not a transition.** The
+  criterion says an open pull request *proposes returning one of its
+  specs to `draft`*; step 1 says its *file list touches one of its
+  specs*, and the file list is what was built. A filename cannot answer
+  the narrower question, and asking for the content of every spec on
+  every id-less pull request would buy a call per file for an answer the
+  gate — which holds both ends of the diff — already computes exactly.
+  The widening errs toward the pause: a `queue/` change that only fixes a
+  typo in an in-flight task's spec reads as an amendment in the lister
+  and as nothing at all in the gate. A pause that turns out to be
+  nothing costs a look; a missed one costs work built on an
+  authorization being withdrawn. Named in the code beside the
+  derivation, so the next reader meets it before the surprise does.
+
 - **The `edited` trigger's comment gained a second job.** Adding the
   reference to a body is a body edit, so this check needs the same
   rerun-on-edit the derived-work check does. The trigger already
