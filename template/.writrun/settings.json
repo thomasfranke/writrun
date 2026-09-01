@@ -3,6 +3,7 @@
   "stage_1": {
     "decisions_style": "per-subsystem",
     "product_layout": "by-concept",
+    "provenance_ledger": false,
     "spec_required": "when-warranted"
   },
   "stage_2": {
