@@ -53,6 +53,13 @@ jobs:
         # enforced here, not assumed there. Reasoning in the script.
         run: bash .writrun/skills/writrun-check-front-matter/check_front_matter.sh
 
+      - name: The shapes the docs show are canonical too
+        # The step above holds the queue's own files. This one holds the
+        # front matter the prose *shows*, with the same script — an
+        # example is documentation that lies with a straight face, and it
+        # is what a newcomer copies first.
+        run: bash .writrun/scripts/stage-2-pull-requests/check_doc_shapes.sh
+
       - name: Check lifecycle transitions
         run: |
           bash .writrun/skills/writrun-check-task-state/check_state.sh \

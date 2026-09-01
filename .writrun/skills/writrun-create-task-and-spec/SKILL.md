@@ -69,19 +69,21 @@ field present explicitly, an empty list never the same as an omitted field:
 
 ```yaml
 ---
-id: task-nnnn
+id: task-0007
 status: backlog
 blocked_reason: null
 taken_by: null
 spec_ref: []
-doc_ref: null            # or --doc-ref's value
-origin: rule                  # or report — --origin's value, always one of the two
-priority: medium              # or --priority's value
-depends_on: []                 # or --depends-on's value, as a list
-milestone: null                # or --milestone's value
-created: <today, ISO date>
+doc_ref: null                       # or --doc-ref's value
+origin: rule                        # or report — --origin's value, always one of the two
+priority: medium                    # or --priority's value
+depends_on: []                      # or --depends-on's value, as a list
+milestone: null                     # or --milestone's value
+created: 2026-08-21T09:14:00Z       # now, in UTC
+queued: null                        # machinery only
 completed: null
-provenance: []                 # the ledger, empty until somebody records
+merged: null
+provenance: []                      # the ledger, empty until somebody records
 ---
 ```
 

@@ -24,7 +24,7 @@
 #   - values are bare: no quotes, no `>` / `|` block scalars, no
 #     trailing whitespace
 #   - every schema field present exactly once, even when null
-#   - lists are inline — `[]` or `[spec-001, spec-002]` — and their
+#   - lists are inline — `[]` or `[spec-0001, spec-0002]` — and their
 #     items are well-formed ids
 #   - `id` agrees with the filename; statuses and priority hold only
 #     their documented values; `blocked` and `blocked_reason` come

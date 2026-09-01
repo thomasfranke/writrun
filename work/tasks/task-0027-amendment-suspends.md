@@ -1,8 +1,8 @@
 ---
 id: task-0027
-status: ready
+status: in-progress
 blocked_reason: null
-taken_by: null
+taken_by: thomasfranke
 spec_ref: [spec-0037]
 doc_ref: product/stage-2-pull-requests/statuses.md#an-amendment-under-an-open-pull-request
 origin: rule

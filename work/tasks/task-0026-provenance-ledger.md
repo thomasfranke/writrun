@@ -1,8 +1,8 @@
 ---
 id: task-0026
-status: ready
+status: in-review
 blocked_reason: null
-taken_by: null
+taken_by: thomasfranke
 spec_ref: [spec-0036]
 doc_ref: product/concepts/provenance.md#what-an-entry-holds
 origin: rule

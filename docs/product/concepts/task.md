@@ -60,11 +60,15 @@ blocked_reason: null
 taken_by: null
 spec_ref: [spec-0011]
 doc_ref: product/editor/search-and-replace.md#scope
+origin: rule
 priority: high
 depends_on: [task-0003]
 milestone: v0.1-core
-created: 2026-08-21
+created: 2026-08-21T09:14:00Z
+queued: 2026-08-21T11:02:37Z
 completed: null
+merged: null
+provenance: []
 ---
 
 # Search and replace across multiple files

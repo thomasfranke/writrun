@@ -70,7 +70,7 @@ The spec for the task shown in [Task](task.md#example):
 id: spec-0011
 task_ref: task-0005
 status: draft
-created: 2026-08-21
+created: 2026-08-21T09:31:00Z
 ---
 
 # spec-0011 — Search and replace across multiple files

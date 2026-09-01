@@ -24,8 +24,10 @@ Read in this order, stopping as soon as you have what the task needs:
 ### Picking work
 
 Use the [`writrun-select-next-task`](.writrun/skills/writrun-select-next-task/SKILL.md)
-skill. A task is available only when it is `pending` **and** every spec in
-its `spec_ref` is `approved`.
+skill. A task is available only when it is `ready` — a status the
+machinery writes from the fact that every spec in its `spec_ref` is
+`approved`. A `backlog` task has not passed the approval gate, so it is
+not authorized work.
 
 ### Creating tasks and specs
 
@@ -84,8 +86,15 @@ declaration says to open directly.
 2. Update every permanent doc listed in the spec's **Proposed changes** —
    in the same change; touch nothing permanent that isn't listed.
 3. Run `writrun-check-spec-deltas` (exit 0), fill the spec's **Outcome**,
-   set spec `implemented` and task `completed`, run
-   `writrun-check-task-state` (exit 0), open the PR.
+   set the spec to `implemented`, run `writrun-check-task-state` (exit 0),
+   and mark the pull request ready for review.
+
+**The task's status line is not yours to write.** From Stage 2 the
+machinery owns it: the draft pull request makes the task `in-progress`,
+ready-for-review makes it `in-review`, the merge makes it `done`. What
+you write on the task is its `completed` date — by hand, when the work is
+finished. At Stage 1 no workflow runs, so a person moves the status
+deliberately and says so in the table above.
 
 ### The settings
 

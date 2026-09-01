@@ -22,21 +22,21 @@ asking an LLM to review its own diff.
 
 ## Steps
 
-1. Identify the spec id for the change being completed (e.g. `spec-004`).
+1. Identify the spec id for the change being completed (e.g. `spec-0004`).
 2. Run:
    ```bash
-   bash .writrun/skills/writrun-check-spec-deltas/check_deltas.sh spec-004
+   bash .writrun/skills/writrun-check-spec-deltas/check_deltas.sh spec-0004
    ```
    Pass a specific diff range as a second argument if the default
    (working tree vs. `HEAD`) isn't right — e.g. a branch comparison:
    ```bash
-   bash .writrun/skills/writrun-check-spec-deltas/check_deltas.sh spec-004 main...HEAD
+   bash .writrun/skills/writrun-check-spec-deltas/check_deltas.sh spec-0004 main...HEAD
    ```
    A change that implements **several specs at once** — completing a
    multi-spec task in one change — passes them all in one call,
    comma-separated:
    ```bash
-   bash .writrun/skills/writrun-check-spec-deltas/check_deltas.sh spec-004,spec-005 main...HEAD
+   bash .writrun/skills/writrun-check-spec-deltas/check_deltas.sh spec-0004,spec-0005 main...HEAD
    ```
    MISSING is still judged per spec (each contract must be honoured in
    full, and the report names which spec's promise went unmet); UNDECLARED
