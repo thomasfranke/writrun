@@ -15,6 +15,7 @@ completed: 2026-09-01T00:01:24Z
 merged: null
 provenance:
   - {by: agent, model: claude-opus-5, login: thomasfranke, input: 290, output: 133260, cache_read: 18586838, cache_write: 217605}
+  - {by: agent, model: claude-opus-5, login: thomasfranke, input: 212, output: 61556, cache_read: 7621315, cache_write: 319156}
 ---
 
 # A task records what its work cost and which agent did it

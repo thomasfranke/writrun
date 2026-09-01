@@ -13,8 +13,14 @@
 # record_provenance.sh takes, so composing the two is a pipe and not a
 # format:
 #
-#   read_usage.sh task-0026 | while read -r t rest; do \
-#     bash .writrun/scripts/stage-1-tasks-and-specs/record_provenance.sh $t $rest; done
+#   read_usage.sh task-0026 \
+#     | xargs -L1 bash .writrun/scripts/stage-1-tasks-and-specs/record_provenance.sh
+#
+# `xargs` rather than a `while read` loop, because the loop's `$rest` has
+# to word-split to become arguments and zsh does not split unquoted
+# parameters — the whole tail arrives as one argument, and the writer
+# rejects it. Loudly, so nothing is lost; but a composition this file
+# hands out has to run in the shell the reader is standing in.
 #
 # **The join already exists.** The platform stamps every message with the
 # git branch it ran on, and this methodology's branch convention puts the
@@ -67,7 +73,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --transcripts) need_value "$1" $#; DIR="$2"; shift 2 ;;
     --login)       need_value "$1" $#; LOGIN="$2"; shift 2 ;;
-    -h|--help)     sed -n '2,45p' "$0"; exit 0 ;;
+    -h|--help)     sed -n '2,51p' "$0"; exit 0 ;;
     -*)            echo "read_usage.sh: unknown option '$1'" >&2; exit 3 ;;
     *)             WANT="$1"; shift ;;
   esac
