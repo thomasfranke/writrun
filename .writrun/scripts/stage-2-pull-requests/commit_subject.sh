@@ -2,7 +2,6 @@
 # commit_subject.sh — prints the subject of a commit the machinery makes.
 #
 # Usage: commit_subject.sh <merge|forge>
-#   Run from the repository root; the paths are relative to it.
 #
 #   commit_subject.sh merge    what `writrun approve` records after a merge
 #   commit_subject.sh forge    what `writrun progress` records from an event
