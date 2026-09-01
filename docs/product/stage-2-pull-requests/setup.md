@@ -9,7 +9,7 @@ run all of it; none of it is a condition for using WritRun.
 | Setting | Value | Why |
 |---|---|---|
 | Actions workflow permissions | **Read and write** | lets `writrun approve` record `draft → approved` and the dates. Read-only loses only that convenience; every check still works. |
-| Allow squash merging | **On** | every merge is a squash — the PR title is the commit that lands. |
+| Allow squash merging | **On** | every merge is a squash. The PR title only *seeds* the subject the dialog offers: the commit that lands is Conventional Commits, and the merging maintainer types it when the declared title style is anything else. |
 | Automatically delete head branches | **On** | a merged branch has no further job — the queue and the mirror never read one — and the branch list stays a list of work in flight. |
 | Ruleset on `main`: restrict creations, restrict deletions, block force pushes, require linear history | **On — recommended everywhere** | the most restrictive set that never touches the machinery: recording pushes are ordinary fast-forward appends, and squash merges are linear. Nobody deletes, recreates or rewrites `main`. |
 | Ruleset on `main`: require a pull request, with the **GitHub Actions app** on the bypass list | **Recommended, organization-owned repos only** | the bypass is what lets the recording commits keep landing. The forge offers the app as a bypass actor only on organization-owned repos — on user-owned repos, UI and API alike, it is unavailable, so this rule is skipped there and everything human enters through a PR by convention. |
