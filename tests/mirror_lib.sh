@@ -135,10 +135,17 @@ EOF
 }
 
 # modified_report <id> <status> <triaged> — the patch a triage really
-# leaves behind: two changed lines, context around them, and no `id:`
-# anywhere in it. That absence is the point — the id has to come from the
-# path, because an edit to the status line carries nothing else.
+# leaves behind: two changed lines, context around them, and no added
+# `id:` line in it. That absence is the point — the id has to come from
+# the path, because an edit to the status line carries nothing else.
+#
+# The base-branch file comes with it, because a *modified* file is on the
+# base branch by definition and the workflow checks that branch out. It
+# is what bounds the front-matter block: a hunk that starts partway down
+# the file cannot show where the block ends, and a reader that guesses
+# reads a report's own body evidence as its status.
 modified_report() {
+  base_report "$1" open
   pr_patch modified "work/reports/$1.md" <<EOF
 @@ -2,5 +2,5 @@
  id: $1
