@@ -45,10 +45,11 @@ printf '%s\n' "$*" >> "$FAKE_GH_LOG"
 shift
 path=""
 method=GET
+jq=""
 while [ $# -gt 0 ]; do
   case "$1" in
     -X) method="$2"; shift 2 ;;
-    --jq) shift 2 ;;
+    --jq) jq="$2"; shift 2 ;;
     --paginate) shift ;;
     -f|-F) shift 2 ;;
     *) [ -z "$path" ] && path="$1"; shift ;;
@@ -66,7 +67,19 @@ case "$method $path" in
       echo "gh: Not Found (HTTP 404)" >&2
       exit 1
     fi ;;
+  # Two lists, told apart by the label filter exactly as the forge tells
+  # them apart. A kind with no canned file answers empty, which is what a
+  # repository that has never used it really answers.
+  "GET repos/"*"/issues?labels=writrun:report"*)
+    cat "$FAKE_GH_DIR/report_issues" 2>/dev/null ;;
   "GET repos/"*"/issues?"*)        cat "$FAKE_GH_DIR/issues" 2>/dev/null ;;
+  "POST repos/"*"/issues")
+    # `--jq .number` is how the caller asks for the new Issue's number,
+    # and a create it cannot read the number back from is a create it
+    # cannot close. The counter makes each one distinct.
+    n=$(cat "$FAKE_GH_DIR/next_issue" 2>/dev/null || echo 100)
+    echo $((n + 1)) > "$FAKE_GH_DIR/next_issue"
+    if [ "$jq" = ".number" ]; then echo "$n"; else printf '{"number": %s}\n' "$n"; fi ;;
   "POST repos/"*"/labels")
     if [ -e "$FAKE_GH_DIR/labels_422" ]; then
       echo "gh: Validation Failed (HTTP 422)" >&2
@@ -102,6 +115,59 @@ pr_file() {
 # stdin: for a modified file, whose patch mixes context and +/- lines.
 pr_patch() {
   printf '%s\t%s\t%s\n' "$1" "$2" "$(b64)" >> "$FAKE_GH_DIR/pr_files"
+}
+
+# added_report <id> <title> [status] [task-refs-csv] [triaged] — a
+# schema-correct report file entering the diff.
+added_report() {
+  pr_file added "work/reports/$1.md" <<EOF
+---
+id: $1
+status: ${3:-open}
+task_ref: [${4:-}]
+doc_ref: null
+created: 2026-08-23T00:00:00Z
+triaged: ${5:-null}
+---
+
+# $2
+EOF
+}
+
+# modified_report <id> <status> <triaged> — the patch a triage really
+# leaves behind: two changed lines, context around them, and no `id:`
+# anywhere in it. That absence is the point — the id has to come from the
+# path, because an edit to the status line carries nothing else.
+modified_report() {
+  pr_patch modified "work/reports/$1.md" <<EOF
+@@ -2,5 +2,5 @@
+ id: $1
+-status: open
++status: $2
+ task_ref: []
+ doc_ref: null
+-triaged: null
++triaged: $3
+EOF
+}
+
+# base_report <id> <status> [task-refs-csv] [triaged] — a report as the
+# authority branch already holds it, for the readers that ask the queue
+# on disk.
+base_report() {
+  mkdir -p work/reports
+  cat > "work/reports/$1.md" <<EOF
+---
+id: $1
+status: $2
+task_ref: [${3:-}]
+doc_ref: null
+created: 2026-08-23T00:00:00Z
+triaged: ${4:-null}
+---
+
+# Report $1
+EOF
 }
 
 # added_task <id> <title> [spec-refs-csv] [origin] — a schema-correct
@@ -188,6 +254,25 @@ EOF
 # know, which is a different fact and answers 404.
 forge_pr_state() {
   printf '%s\n' "$2" > "$FAKE_GH_DIR/pr_${1}_state"
+}
+
+# forge_report_issue <number> <state> <labels-csv> <title> [introduced-by-pr]
+# — one row of the forge's writrun:report issue list, same shape and same
+# ownership line as a task mirror's.
+forge_report_issue() {
+  local body
+  if [ "${5:-}" = "none" ]; then
+    body="Mirrors a report file, which is the authority."
+  else
+    body=$(printf '%s\n' \
+      "Mirrors a report file, which is the authority." \
+      "| Introduced by | #${5:-7} |")
+  fi
+  printf '%s\t%s\t%s\t%s\t%s\n' \
+    "$1" "$2" "$3" \
+    "$(printf '%s' "$4" | b64)" \
+    "$(printf '%s' "$body" | b64)" \
+    >> "$FAKE_GH_DIR/report_issues"
 }
 
 # forge_issue <number> <state> <labels-csv> <title> [introduced-by-pr] —
