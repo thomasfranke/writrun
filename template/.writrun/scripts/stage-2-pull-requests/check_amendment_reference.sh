@@ -102,14 +102,47 @@ esac
 git_read "git diff --name-only ${RANGE} -- work/specs" \
   diff --name-only "$RANGE" -- 'work/specs/*.md'
 
+# Read line by line and never with `for s in $GIT_OUT`: word splitting
+# turns one path containing a space into two paths that exist nowhere,
+# each skipped by the `-f` test below — an amendment dropped in silence,
+# which for a gate is the same failure as reading nothing at all.
+touched="$GIT_OUT"
+
 amended=""
-for s in $GIT_OUT; do
+while IFS= read -r s; do
+  [ -n "$s" ] || continue
+
+  # git quotes a path holding control characters or non-ASCII bytes. A
+  # spec path never needs it, so a quoted one is a path this check cannot
+  # parse, and an unparseable input is refused rather than skipped.
+  case "$s" in
+    '"'*)
+      echo "cannot read the changed path ${s} — refusing rather than skipping it" >&2
+      exit 3
+      ;;
+  esac
+
   [ -f "$s" ] || continue
   [ "$(ql_fm_field status "$s")" = "draft" ] || continue
-  was=$(git show "${BASE}:$s" 2>/dev/null | ql_fm_field status /dev/stdin) || was=""
+
+  # What the spec was at the base, through git_read for the reason its
+  # own comment gives: `$(git … ) || was=""` cannot tell "this spec is
+  # new on the branch" from "git could not be read", and the second one
+  # silently becomes "nothing is suspended" — the gate passing exactly
+  # where it must fire. `ls-tree` separates the two: absent from a tree
+  # it could read is an answer, a tree it could not read is not.
+  git_read "git ls-tree ${BASE} -- ${s}" ls-tree "$BASE" -- "$s"
+  if [ -z "$GIT_OUT" ]; then
+    continue    # not in the base tree: a new spec, never an amendment
+  fi
+  git_read "git show ${BASE}:${s}" show "${BASE}:$s"
+  was=$(printf '%s\n' "$GIT_OUT" | ql_fm_field status /dev/stdin)
+
   case "$was" in approved|implemented) ;; *) continue ;; esac
   amended="${amended}$(ql_fm_field id "$s")"$'\n'
-done
+done <<EOF
+$touched
+EOF
 
 if [ -z "$amended" ]; then
   echo "This change returns no approved spec to draft — nothing is suspended."
