@@ -81,6 +81,7 @@ depends_on: []                 # or --depends-on's value, as a list
 milestone: null                # or --milestone's value
 created: <today, ISO date>
 completed: null
+provenance: []                 # the ledger, empty until somebody records
 ---
 ```
 
@@ -209,6 +210,27 @@ manual `spec_ref` append on the task file.
    `status` line **never**: from Stage 2 up that line is the machinery's,
    and the merge is what flips the task to `done` when it lands your
    date (product/stage-2-pull-requests/statuses.md).
+4. Record what the work cost, where the project keeps a ledger:
+
+   ```bash
+   bash .writrun/scripts/stage-1-tasks-and-specs/record_provenance.sh \
+     task-nnnn by=agent model=<the model id> login=<who ran it> \
+     input=N output=N cache_read=N cache_write=N
+   ```
+
+   The writer only ever **appends**, and that is the whole shape of the
+   permission: this is the one machine field a branch may write, because
+   no forge event carries a token count — only the session that spent
+   them knows. An entry already written is never edited, and
+   `writrun-check-task-state` refuses a diff that edits one.
+
+   `record_provenance.sh` reads `stage_1.provenance_ledger` first, so
+   running it in a project that declares none writes nothing and says so
+   — run it unconditionally rather than deciding for the project. Where
+   the agent platform keeps usage data, `read_usage.sh` proposes the
+   entry from it and its output is this script's argument list; where it
+   does not, the counts come from wherever the platform reports them, and
+   a task worked by hand records `by=human` with no model and no counts.
 
 ## Never
 
