@@ -77,6 +77,13 @@ fi
 # check_front_matter.sh — not because one of the two is redundant, but
 # because a writer that can emit a file its own checker rejects is a
 # writer nobody can run unattended.
+# **A category is not a model** — the same tripwire check_front_matter.sh
+# carries, for the same reason: `model: ai` satisfies every shape check
+# and answers nothing a quarter later. The list is written out here as
+# well because the checker is a skill that runs standalone; the two are
+# held together by this comment and by the test that walks both.
+MODEL_CATEGORIES="ai llm agent model assistant bot claude gpt gemini llama opus sonnet haiku fable"
+
 case "$by" in
   agent|human) ;;
   "") echo "record_provenance.sh: by= is required — an entry names a person or an agent" >&2; exit 1 ;;
@@ -87,6 +94,11 @@ printf '%s' "$login" | grep -qE '^[A-Za-z0-9-]+(\[bot\])?$' \
 if [ "$by" = agent ]; then
   [ -n "$model" ] \
     || { echo "record_provenance.sh: an agent's entry names its model" >&2; exit 1; }
+  case " $MODEL_CATEGORIES " in
+    *" $(printf '%s' "$model" | tr '[:upper:]' '[:lower:]') "*)
+      echo "record_provenance.sh: model='${model}' is a category, not a model id — a category answers nothing a quarter later" >&2
+      exit 1 ;;
+  esac
 else
   [ -z "$model" ] \
     || { echo "record_provenance.sh: a human entry carries no model" >&2; exit 1; }
@@ -123,8 +135,7 @@ awk -v line="$LINE" '
   NR == 1 && $0 == "---" { infm = 1; print; next }
   infm && /^---$/ {
     if (inl && !written) { print line; written = 1 }
-    if (!written) { exit 9 }
-    infm = 0; print; next
+    infm = 0; closed = 1; print; next
   }
   infm && /^provenance:[[:space:]]*\[\][[:space:]]*$/ {
     print "provenance:"; print line; written = 1; next
@@ -133,9 +144,17 @@ awk -v line="$LINE" '
   infm && inl && /^  - / { print; next }
   infm && inl { print line; written = 1; inl = 0; print; next }
   { print }
+  # **At the end, not at the closing fence.** A file whose first line is
+  # not `---` reaches no fence rule at all — guarded there, awk copies
+  # the file through unchanged, exits 0, and the caller is told the entry
+  # was appended when nothing was. That is the silent wrong answer this
+  # whole script is written against. `closed` is checked beside it
+  # because front matter that never closes is not front matter: the
+  # writer refuses the file rather than deciding for itself where it ends.
+  END { if (!written || !closed) exit 9 }
 ' "$TASK_FILE" > "$TASK_FILE.tmp" || {
   rm -f "$TASK_FILE.tmp"
-  echo "record_provenance.sh: ${TASK_FILE} carries no provenance field — migrate it first" >&2
+  echo "record_provenance.sh: ${TASK_FILE} has no provenance field in closed front matter — migrate it first" >&2
   exit 1
 }
 mv "$TASK_FILE.tmp" "$TASK_FILE"

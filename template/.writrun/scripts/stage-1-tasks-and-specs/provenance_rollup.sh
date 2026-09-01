@@ -35,16 +35,37 @@ set -euo pipefail
 MILESTONE=""
 TASK_DIR="work/tasks"
 
+usage() {
+  echo "usage: provenance_rollup.sh [--milestone M] [--tasks DIR]" >&2
+  exit 3
+}
+
+# `need_value` rather than `${2:-}`: an option written last has no $2 to
+# default, and `shift 2` on a one-element list is a shell error that
+# `set -e` turns into a silent exit 1 — a usage error reported as a
+# crash, and not as the exit 3 the header promises.
+need_value() {   # need_value <flag> <argc>
+  [ "$2" -ge 2 ] || { echo "provenance_rollup.sh: $1 takes a value" >&2; usage; }
+}
+
 while [ $# -gt 0 ]; do
   case "$1" in
-    --milestone) MILESTONE="${2:-}"; shift 2 ;;
-    --tasks)     TASK_DIR="${2:-}"; shift 2 ;;
+    --milestone) need_value "$1" $#; MILESTONE="$2"; shift 2 ;;
+    --tasks)     need_value "$1" $#; TASK_DIR="$2"; shift 2 ;;
     -h|--help)   sed -n '2,28p' "$0"; exit 0 ;;
-    *)           echo "usage: provenance_rollup.sh [--milestone M] [--tasks DIR]" >&2; exit 3 ;;
+    *)           usage ;;
   esac
 done
 
 [ -d "$TASK_DIR" ] || { echo "provenance_rollup.sh: no such directory: ${TASK_DIR}" >&2; exit 3; }
+
+# An unmatched glob arrives at awk as the literal pattern, and awk dies
+# on a file by that name — so a project before its first task, which is
+# a queue with nothing in it and not an error, would get exit 2 and
+# `awk: can't open file` where the header promises 0. /dev/null reads as
+# no records, and the END block prints the empty report it should.
+set -- "$TASK_DIR"/task-*.md
+[ -e "$1" ] || set -- /dev/null
 
 # One awk over every task file: the front matter alone, the ledger read
 # entry by entry. A body line spelling `provenance:` at column 0 is prose.
@@ -117,4 +138,4 @@ awk -v want="$MILESTONE" '
       tasks + 0, (want == "" ? "" : " (milestone " want ")"), with + 0, without + 0
     print "Counts, never money — convert at report time against the published rate card."
   }
-' "$TASK_DIR"/task-*.md
+' "$@"

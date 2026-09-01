@@ -33,9 +33,14 @@
 # precondition for the methodology.
 #
 # The default transcript directory is Claude Code's, addressed the way it
-# addresses itself — the working directory's path with every `/` turned
-# into `-`. $WRITRUN_TRANSCRIPTS overrides it, which is also how the tests
-# reach a fixture.
+# addresses itself — the working directory's path with every character
+# that is not a letter or a digit turned into `-`. Not `/` alone: a
+# repository checked out under a path holding a space, a `.` or a `_`
+# folds those too, and a mapping that handled only the separator would
+# resolve to a directory that does not exist — which the `-d` guard below
+# reads as "nothing to propose" and reports as silence.
+# $WRITRUN_TRANSCRIPTS overrides it, which is also how the tests reach a
+# fixture.
 #
 # Exit codes: 0 always, except 3 for a usage error.
 #
@@ -50,26 +55,42 @@ DIR="${WRITRUN_TRANSCRIPTS:-}"
 LOGIN=""
 WANT=""
 
+# `need_value` rather than `${2:-}`: an option written last has no $2 to
+# default, and `shift 2` on a one-element list is a shell error that
+# `set -e` turns into a silent exit 1 — a usage error reported as a
+# crash, and not as the exit 3 the header promises.
+need_value() {   # need_value <flag> <argc>
+  [ "$2" -ge 2 ] || { echo "read_usage.sh: $1 takes a value" >&2; exit 3; }
+}
+
 while [ $# -gt 0 ]; do
   case "$1" in
-    --transcripts) DIR="${2:-}"; shift 2 ;;
-    --login)       LOGIN="${2:-}"; shift 2 ;;
-    -h|--help)     sed -n '2,40p' "$0"; exit 0 ;;
+    --transcripts) need_value "$1" $#; DIR="$2"; shift 2 ;;
+    --login)       need_value "$1" $#; LOGIN="$2"; shift 2 ;;
+    -h|--help)     sed -n '2,45p' "$0"; exit 0 ;;
     -*)            echo "read_usage.sh: unknown option '$1'" >&2; exit 3 ;;
     *)             WANT="$1"; shift ;;
   esac
 done
 
 if [ -z "$DIR" ]; then
-  DIR="${HOME}/.claude/projects/$(pwd | sed 's|/|-|g')"
+  DIR="${HOME}/.claude/projects/$(pwd | sed 's|[^A-Za-z0-9]|-|g')"
 fi
 
 [ -d "$DIR" ] || exit 0
 set -- "$DIR"/*.jsonl
 [ -e "$1" ] || exit 0
 
+# An empty WANT_NUM disables the filter below, so an argument that names
+# no number must never reach it: `read_usage.sh task-abc` would otherwise
+# propose an entry for *every* task in the queue, and the composition the
+# header documents would write the typo onto all of them.
 WANT_NUM=""
-if [ -n "$WANT" ]; then WANT_NUM=$(ql_task_num "$WANT"); fi
+if [ -n "$WANT" ]; then
+  WANT_NUM=$(ql_task_num "$WANT")
+  [ -n "$WANT_NUM" ] \
+    || { echo "read_usage.sh: '${WANT}' names no task number" >&2; exit 3; }
+fi
 
 # One pass over every transcript. A record counts when it carries a usage
 # object and ran on a branch that names a task; the group is the session

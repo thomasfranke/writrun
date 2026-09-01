@@ -78,7 +78,7 @@ PRODUCT_LAYOUTS="by-concept by-feature"
 # a documented key found anywhere else is homeless, not merely misplaced,
 # because the address is its identity.
 #
-# Two kinds live here. `stage_1` holds the three declarations — the
+# Two kinds live here. `stage_1` holds the four declarations — the
 # variants Adoption orders declared, which gate nothing mechanical and
 # are read by agents alone. `stage_2` holds the conduct flags and the
 # title style, because that is where the actions they govern begin: git
