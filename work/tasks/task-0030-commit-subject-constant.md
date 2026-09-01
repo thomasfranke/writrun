@@ -1,8 +1,8 @@
 ---
 id: task-0030
-status: ready
+status: in-progress
 blocked_reason: null
-taken_by: null
+taken_by: thomasfranke
 spec_ref: [spec-0042]
 doc_ref: technical/README.md#pr_title_style
 origin: rule
