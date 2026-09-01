@@ -13,8 +13,14 @@ report_file report-0001 open
 check "open, awaiting triage, is canonical" 0 "all canonical" \
   -- bash "$CHECK_FRONT_MATTER"
 
+# Each end carries what names its outcome, so the four are shown with
+# both: the status word is what this case is about, and a report missing
+# the field its end requires is refused for that instead
+# (report_ends_name_their_outcome).
+mkdir -p docs/product
+: > docs/product/rule.md
 for st in tracked authored fixed declined; do
-  report_file report-0001 "$st" task-0001 2026-08-23T00:00:00Z
+  report_file report-0001 "$st" task-0001 2026-08-23T00:00:00Z product/rule.md
   check "'${st}' is one of the four ends" 0 "all canonical" \
     -- bash "$CHECK_FRONT_MATTER"
 done

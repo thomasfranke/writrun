@@ -41,7 +41,9 @@
 #     `open` and the four ends, and `triaged` is set exactly when the
 #     status is one of the four. Null while `open` because nothing has
 #     been decided; set when something has, because a judgement with no
-#     date is a judgement nothing can be ordered against
+#     date is a judgement nothing can be ordered against. The two ends
+#     this file can follow carry what names their outcome with them:
+#     `tracked` a non-empty `task_ref`, `authored` a `doc_ref`
 #     (docs/product/concepts/report.md#statuses--the-route-not-a-lifecycle)
 #   - `provenance` is the one field allowed to open a block list, and the
 #     only shape it may take is a dash-opened line per entry, each entry a
@@ -479,6 +481,26 @@ check_report() {   # check_report <file>
       [ "$tri" != "null" ] \
         || fail "$f" "status is '$st' but triaged is null — the date is when triage decided, and every end has one"
       ;;
+  esac
+
+  # An end and the field that names its outcome are one judgement written
+  # twice, so they are paired the way `triaged` is. The table in
+  # concepts/report.md is the contract: `tracked` is named by `task_ref`,
+  # `authored` by the `doc_ref` the rule was written into. The other two
+  # ends name their outcome where this checker cannot follow — `fixed` in
+  # the git history, `declined` in the body — so they are not paired here,
+  # and that asymmetry is the concept's, not an omission.
+  #
+  # Unpaired, `status: tracked` with `task_ref: []` passed every gate: a
+  # report permanently claiming work that nothing carries, and a mirror
+  # closed `completed` on the strength of it.
+  case "$st" in
+    tracked)
+      [ "$(get "$block" task_ref)" != "[]" ] \
+        || fail "$f" "status is tracked but task_ref is empty — tracked means a task now carries the work, and task_ref is what names it" ;;
+    authored)
+      [ "$(get "$block" doc_ref)" != "null" ] \
+        || fail "$f" "status is authored but doc_ref is null — authored means a rule was written, and doc_ref is what names it" ;;
   esac
   return 0
 }
