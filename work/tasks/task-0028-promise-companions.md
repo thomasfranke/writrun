@@ -11,9 +11,10 @@ depends_on: []
 milestone: null
 created: 2026-08-31T14:48:47Z
 queued: 2026-08-31T15:04:28Z
-completed: null
+completed: 2026-09-01T17:55:00Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-opus-5, login: thomasfranke, input: 110, output: 39261, cache_read: 6563952, cache_write: 49930}
 ---
 
 # A promise that adds a decisions entry promises the index

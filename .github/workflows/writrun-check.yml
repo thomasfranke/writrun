@@ -85,6 +85,15 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: A promise includes its mandatory companions
+        # The entry gate to the step below's completion gate: this one
+        # judges a promise's own completeness where the spec is created or
+        # amended, so the step below fires less — never differently. The
+        # order is the order the cheap fix comes in.
+        run: |
+          bash .writrun/scripts/stage-2-pull-requests/check_promise_companions.sh \
+            "origin/${{ github.base_ref }}...HEAD"
+
       - name: Check spec deltas
         run: |
           bash .writrun/scripts/stage-2-pull-requests/check_promised_deltas.sh \
