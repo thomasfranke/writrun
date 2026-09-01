@@ -13,6 +13,7 @@ created: 2026-08-30T13:15:57Z
 queued: 2026-08-30T22:44:13Z
 completed: 2026-08-30T23:05:45Z
 merged: 2026-08-31T02:33:23Z
+provenance: []
 ---
 
 # Settings live at WritRun's root, sectioned by stage, and govern the agent's git actions
