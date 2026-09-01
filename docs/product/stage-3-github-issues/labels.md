@@ -42,6 +42,39 @@ diff, which reports what a merge *carried* and misses what it *caused*
 (the merge that brings a task in is the merge that approves its specs,
 so its diff still reads them `draft`).
 
+## The report mirror
+
+**Reports are mirrored too, as a separate kind.** A report's mirror
+carries `writrun:report` where a task's carries `writrun:task`, and is
+titled `[REPORT-NNNN] <report title>` — the same shape as a task's, so
+the same lookup finds it and the two never meet in one filter.
+
+| Label | The report is |
+|---|---|
+| `status:proposed` | proposed by an open pull request — not on the authority branch yet. The same structural reason a task's mirror has one. |
+| `status:open` | recorded, awaiting triage. **This is the state the mirror exists for**: a report nobody is prompted to read is a report that rots, and rotting is the failure the concept exists to end. |
+| *(none — the mirror is closed)* | triaged, and out of the pipeline: closed **completed** for `tracked`, `authored` and `fixed`, closed **not planned** for `declined`. |
+
+The four ends collapse into two closes on purpose. A `route:` label
+would carry the remaining distinction, and it is not worth a fifth
+thing for the machinery to keep true — the file says which route was
+taken, and the close already separates the report that was acted on
+from the one that was not.
+
+**A report's mirror carries no `origin:` label.** Origin is a fact about
+how a *task* came to exist, and a report is one of the two answers to
+it; a report has no origin of its own to project.
+
+**Triage closes the mirror, and a task's mirror is what opens next.** On
+the `tracked` route the report's Issue closes and the task's appears
+beside it carrying `origin:report` — two Issues, linked by the ids their
+titles spell. Nothing converts an Issue from one kind into the other.
+
+**A pull request title never carries `[REPORT-NNNN]`.** The bracketed
+tag on a PR title is how the machinery learns which *tasks* the pull
+request carries; a report id there would be read as work in flight that
+nobody is working.
+
 ## Criteria
 
 - When a task is mirrored while the pull request that creates it is still
@@ -57,3 +90,10 @@ so its diff still reads them `draft`).
 - When a task is mirrored, its mirror shall carry the `origin:` label
   matching the task's stored `origin`, and the label shall stay on the
   mirror through every state, closed included.
+- When a report is mirrored, its mirror shall carry `writrun:report` and
+  a title naming the report's id, distinctly from a task's mirror.
+- When a report is recorded and awaiting triage, its mirror shall report
+  it as open.
+- When a report is triaged, the machinery shall close its mirror — as
+  completed for `tracked`, `authored` and `fixed`; as not planned for
+  `declined`.

@@ -1,0 +1,116 @@
+# Report
+
+**What was observed.** A bug someone hit, a gap an agent found, a
+"that's wrong but not now" noticed halfway through unrelated work. One
+file per report in [`work/reports/`](../../../work/reports/README.md),
+named by id plus a tiny subject slug (`report-0003-mirror-lag.md`),
+never renamed, never moved.
+
+A report is the cheapest thing this methodology asks anyone to write,
+and that is deliberate. Everything else in `work/` is a commitment — a
+task says work will happen, a spec says how. **A report commits to
+nothing.** It says only that something was seen, and that seeing it was
+worth a file.
+
+## Two invariants
+
+- **A report is never worked.** It is *triaged*, and triage ends it. What
+  gets worked is the task triage produced, if it produced one.
+- **A report records; a task plans.** The moment a report starts
+  carrying scope, steps or a plan, it has become a task wearing the
+  wrong front matter — and `work/` has grown a second queue nobody
+  selects from.
+
+## What earns a report
+
+Anything you would otherwise mention in a conversation and lose. The bar
+is far below a task's on purpose: a task needs work that justifies
+tracking, a report needs only an observation that justifies remembering.
+
+The bar it does have: a report states what was **observed**, not what
+should be done about it. "The mirror shows `backlog` for four tasks
+`main` holds as `ready`" is a report. "Fix the mirror to read the merged
+ref" is a task with no task file.
+
+## Statuses — the route, not a lifecycle
+
+A report has one non-terminal state and four ends, and the four are the
+routes [triage](../stage-1-tasks-and-specs/authoring.md#reporting--work-found-or-reported-mid-flight)
+can take:
+
+| Status | Means | What names the outcome |
+|---|---|---|
+| `open` | recorded, not yet triaged | — |
+| `tracked` | a task now carries the work | `task_ref` |
+| `authored` | no rule stated what "correct" was; a rule was written | `doc_ref` |
+| `fixed` | a trivial change handled it | the git history |
+| `declined` | not a defect, or not worth acting on | the body says why |
+
+**There is no `resolved`, and the omission is the design.** Whether the
+underlying problem is fixed is the *task's* status, one hop away through
+`task_ref`. Copying it here would put one fact under two writers, and
+the copy would start drifting the day someone updated one of them. What
+a report knows and nothing else does is which of the five rows above it
+ended on.
+
+A report is never reopened. The same thing happening again is a second
+observation, so it is a second report — ids are never reused, and a
+recurrence that shares a file loses the date of the first sighting.
+
+**Who writes the status is a human or an agent, always.** This is the
+one place `work/` differs from the task queue, where from Stage 2 the
+status line has exactly one writer and it is the machinery. No forge
+event corresponds to "this was triaged": the judgement is the point, and
+a merge cannot make it.
+
+## The mirror shows what is waiting
+
+At [Stage 3](../stage-3-github-issues/labels.md#the-report-mirror) a
+report appears in GitHub Issues as `[REPORT-NNNN]`, beside the task
+mirrors, carrying `writrun:report` and `status:open`. Triage closes it —
+completed when it was acted on, not planned when it was `declined`.
+
+This is not decoration. `open` is the one state that asks something of a
+person, and a file nobody is prompted to open is a file that rots, which
+would leave this concept worse than the conversation it replaced. Below
+Stage 3 the same job is a `grep` over `work/reports/`, and remembering
+to run it is the adopter's.
+
+## Recording rides any change
+
+A report may be added in **any** change — an implementing branch, an
+authoring branch, a branch that is mostly about something else. The
+one-kind-per-change rule does not reach it.
+
+That is an exemption, and it is the reason the feature works at all.
+Findings arrive while you are busy with something else; that is what
+makes them findings. A note that costs its own branch, its own pull
+request and its own review is a note nobody writes, and the observation
+goes back to being lost in a conversation — which is the state this
+concept exists to end.
+
+## Example
+
+```markdown
+---
+id: report-0003
+status: tracked
+task_ref: [task-0031]
+doc_ref: product/stage-3-github-issues/labels.md#criteria
+created: 2026-09-01T14:02:11Z
+triaged: 2026-09-01T14:40:03Z
+---
+
+# The mirror shows backlog for tasks main holds as ready
+
+Four Issues right now — #66, #67, #70, #71 — carry `status:backlog`
+while the authority branch has those tasks `ready`, every spec they
+reference `approved`.
+
+Noticed while working task-0026; not investigated further. `labels.md`
+already states the behaviour that is missing, so this is a defect
+against a documented rule rather than a question about what should
+happen.
+
+**Triage:** defect against `labels.md#criteria` → task-0031.
+```

@@ -64,12 +64,18 @@ Two, and they are not handled the same way — see
 | Is | a rule that isn't true yet | work reported or discovered that an existing rule already authorizes | an approved spec |
 | Touches | `docs/` + the work it derives | `work/` only — no permanent doc | code + the docs its spec promised |
 | Branch | `docs/short-name` | `report/short-name` | `task/NNNN-short-name` |
-| PR states | the tasks and specs it created | the tasks and specs it adds, and the rule they derive from | the spec(s) it implements, every carried task tagged `[TASK-NNNN]` leading the title |
+| PR states | the tasks and specs it created | the report, the tasks and specs it adds, and the rule they derive from | the spec(s) it implements, every carried task tagged `[TASK-NNNN]` leading the title |
 | `writrun-check-spec-deltas` | does not apply | does not apply | must exit 0 |
 | `writrun-check-task-state` | must exit 0 | must exit 0 | must exit 0 |
 
 Never more than one kind in one change. A change that closes the loop on
 one rule while introducing another is two changes.
+
+**Recording a report is the one exemption.** A report is a note about
+what was observed — neither a rule nor work — so it may ride whatever
+change is already open, for the same reason a typo is a commit rather
+than a task. A finding that costs its own branch is a finding nobody
+writes down ([`concepts/report.md`](docs/product/concepts/report.md)).
 
 When derivation runs (authoring or reporting), **present the derived tasks
 and specs in the session before opening the PR** — the human reviews the

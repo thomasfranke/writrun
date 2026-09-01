@@ -21,6 +21,7 @@ docs/
 work/
   tasks/              # the queue — front-matter only, no technical detail
   specs/              # the detail of one change — EARS criteria, proposed doc deltas
+  reports/            # what was observed — findings, and which way triage sent each
 AGENTS.md             # entry point for AI agents, links into the above
 .writrun/             # WritRun's home: skills, scripts, shipped templates, conventions
 .github/workflows/    # only what the platform dictates lives here
@@ -225,6 +226,56 @@ against before merge — every listed path+anchor should appear touched in the
 diff, and the diff shouldn't quietly touch a permanent doc that wasn't listed.
 This turns "update the docs in the same PR" from a prose reminder into
 something a script or a reviewing agent can verify mechanically.
+
+## Report schema
+
+```text
+---
+id: report-0003
+status: open                       # open | tracked | authored | fixed | declined
+task_ref: []                       # the tasks triage produced; a list, always
+doc_ref: null                      # the doc violated, or the doc the rule was written into
+created: 2026-09-01T14:02:11Z
+triaged: null                      # when triage decided; null while open
+---
+```
+
+A report file is named `report-NNNN-<subject>.md`, the same shape as a
+task's and a spec's. Its id is minted by the same generator over the
+same three views — the directory, the git history, and every open pull
+request — and is never reused.
+
+`status` is the **route triage took**, not a lifecycle. `open` is the
+only non-terminal value; the four others are the ways a report ends, and
+they are the triage table's outcomes
+([report](../product/concepts/report.md#statuses--the-route-not-a-lifecycle)).
+There is no `resolved`: whether the underlying work is done is the
+task's status, reachable through `task_ref`, and a second copy of that
+fact would need a second writer to stay true.
+
+`task_ref` is a list even with one element, like `spec_ref` — and it is
+the **only** link between the two kinds. The task schema is unchanged:
+nothing on a task points back at the report that produced it, and
+finding that is a scan of `work/reports/`, which costs a grep and
+touches no contract.
+
+`doc_ref` is a path relative to `docs/` with an anchor, exactly as a
+task's is, and carries a different fact per route: for `tracked` and
+`fixed` it names the doc the observed behaviour violates; for `authored`
+it names the doc the missing rule was written into. It stays `null` when
+the thing observed was never documented.
+
+At Stage 3 a report is mirrored like a task — `writrun:report`, titled
+`[REPORT-NNNN]`, `status:open` until triage closes it
+([labels](../product/stage-3-github-issues/labels.md#the-report-mirror)).
+A pull request title never carries a `[REPORT-NNNN]` tag: that bracket
+is how the machinery reads which tasks a pull request carries.
+
+**The status line's writer is a human or an agent, at every stage.**
+This is the one place `work/` departs from the task queue, whose status
+line from Stage 2 has exactly one writer and it is the machinery — no
+forge event corresponds to a judgement
+([0064](decisions/tasks-and-specs/0064-a-report-is-an-artefact.md)).
 
 ## Front matter is canonical
 
@@ -678,8 +729,10 @@ methodology leaves to the adopting project, stated explicitly in its
 The cheapest way work enters the system, and the one a client wraps
 first: **a report is one free-form sentence** — "checkout returns
 500", "the generator reuses ids" — plus whatever evidence is at hand.
-No form, no template, no schema: the report is a trigger, not an
-artefact, and everything structured about it is produced *from* it,
+No form and no prose requirement — but the report is **kept**,
+not consumed: it becomes a file that records the observation and,
+later, the route triage sent it down ([report schema](#report-schema)).
+Everything else structured about it is still produced *from* it,
 downstream. The product-side flow, gates and triage table live in
 [authoring — reporting](../product/stage-1-tasks-and-specs/authoring.md#reporting--work-found-or-reported-mid-flight);
 this section is the operation's contract, for agents today and the CLI
@@ -687,18 +740,28 @@ tomorrow.
 
 The operation, deterministic end to end:
 
-1. **Dedup** — before anything, the non-completed tasks are read; a
-   report matching one **ends the operation**, returning that task's
-   id. New evidence the report carried enriches the existing task's
+1. **Record** — the observation becomes a file: `new.sh report`,
+   `status: open`, evidence in the body as text and links. This runs
+   **before** triage and before the dedup search, because capture is
+   the step that has to cost nothing — a duplicate report is cheaper
+   than a finding nobody wrote down. It rides whatever change is
+   already open: a report is neither a rule nor work, so the
+   one-kind-per-change rule does not reach it.
+2. **Dedup** — at triage, the non-completed tasks are read; a report
+   matching one ends `tracked` against that task and the operation
+   stops there. New evidence it carried enriches the existing task's
    body through a normal queue change. A client implements this as a
    search over `work/tasks/` front matter and titles, never as a
    question to the reporter.
-2. **Triage** answers one question — *is what "correct" means already
-   written?* Three outcomes, and each names its artefact:
-   a defect against a documented behaviour → a task, directly; a rule
-   nobody wrote → route to authoring, produce nothing; a trivial fix →
-   a commit, produce nothing.
-3. **Generation**, on the defect path: `new.sh task` with
+3. **Triage** answers one question — *is what "correct" means already
+   written?* Four outcomes, and each writes the report's terminal
+   status: a defect against documented behaviour → a task, `tracked`;
+   a rule nobody wrote → route to authoring, `authored`; a trivial fix
+   → a commit, `fixed`; not a defect, or not worth acting on →
+   `declined`, with the reason in the body. The fourth is new: while
+   reports evaporated there was nothing to close, so the table never
+   had to name it.
+4. **Generation**, on the defect path: `new.sh task` with
    `--origin report`, `--doc-ref` when a doc states the violated
    behaviour (null when the broken thing was never documented),
    priority from impact; a spec via `new.sh spec` when the fix is more
@@ -707,11 +770,16 @@ The operation, deterministic end to end:
    mirror is one-way, so anything attached only to an Issue never
    reaches the file that is the authority. The generated queue is
    **presented to the human before any PR opens** (the
-   derivation-review gate).
-4. **Recording**, at Stage 2+: branch `report/short-name` — no task id
+   derivation-review gate). The new task's id is written onto the
+   report's `task_ref`, which is the only link between the two — the
+   task schema carries nothing pointing back.
+5. **Recording**, at Stage 2+: branch `report/short-name` — no task id
    in the name, because the PR records work rather than working it —
    and a PR that only adds queue files. The merge authorizes the task;
-   the approval gate takes over.
+   the approval gate takes over. **This branch is for a change that is
+   only a report**; a report file added alongside other work needs no
+   branch of its own, which is step 1's exemption seen from the forge
+   side.
 
 One inversion a client must know: **an outage ships the fix first.**
 When documented behaviour is down, the patch goes out through an
@@ -721,9 +789,9 @@ no retroactive task
 ([the reporting rules](../product/stage-1-tasks-and-specs/authoring.md#reporting--work-found-or-reported-mid-flight)).
 
 What a client (`writ report`) builds on is exactly the public contract
-below: the task and spec schemas (`origin: report` included), the
-generator's arguments and refusals, the `report/` branch prefix, and
-the `## Derived work` marker in the PR body. The triage judgement
+below: the task, spec and report schemas (`origin: report`
+included), the generator's arguments and refusals, the `report/` branch
+prefix, and the `## Derived work` marker in the PR body. The triage judgement
 itself is the one step that is not mechanical — a client either asks
 an agent to make it or asks the person, and the contract stays the
 same either way.

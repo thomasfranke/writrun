@@ -99,9 +99,20 @@ the list is not a claim that nothing else will follow.
 
 Not every task descends from a fresh rule. A bug someone hits, a gap an
 agent finds in the code or the machinery — work already authorized by a
-doc that exists — is **reported**: a change that only adds task and
-spec, touches no permanent doc, and implements nothing. The third kind
-of change, next to authoring and implementing (`AGENTS.md`).
+doc that exists — is **reported**.
+
+**The report is written down first, and kept.** It becomes a file in
+[`work/reports/`](../../../work/reports/README.md) with `status: open`,
+before anyone decides what to do with it: capture has to cost nothing,
+or the small findings that arrive mid-flight go back to being lost in a
+conversation ([report](../concepts/report.md)). Recording one **rides
+whatever change is already open** — a report is neither a rule nor
+work, so the one-kind-per-change rule does not reach it.
+
+At Stage 2+ a change that is *only* recording — the report, plus the
+task and spec triage produced from it — touches no permanent doc and
+implements nothing. That is the third kind of change, next to authoring
+and implementing (`AGENTS.md`).
 
 **The trigger and the authorization are different things.** What makes
 the task exist *now* is the report — a person saying "the checkout
@@ -113,29 +124,36 @@ does not generate a reported task; it validates it.
 Triage is the agent's work, and it asks one question — *is what
 "correct" means already written, or does a human need to decide it?*
 
-| The report | The route |
-|---|---|
-| A real defect — a broken screen, a 500, documented behaviour gone | A task, directly. The defect violates the doc of the feature itself; `doc_ref` names it — or stays `null` when the broken feature was never documented, with the evidence in the task body. |
-| A behavioural disagreement — "shouldn't it do X instead?" | **Authoring.** No doc states the rule, so fixing means deciding it — the agent stops and hands the pen back; the rule is written first and the task derives from it. |
-| A trivial fix — a typo, an obvious one-liner | A commit, never a task (principle 6). |
+**Triage ends the report**, and the status it writes is which row it
+landed on — that is the whole record, and nothing else keeps it.
+
+| The report | The route | Report ends |
+|---|---|---|
+| A real defect — a broken screen, a 500, documented behaviour gone | A task, directly. The defect violates the doc of the feature itself; `doc_ref` names it — or stays `null` when the broken feature was never documented, with the evidence in the report body. | `tracked` |
+| A behavioural disagreement — "shouldn't it do X instead?" | **Authoring.** No doc states the rule, so fixing means deciding it — the agent stops and hands the pen back; the rule is written first and the task derives from it. | `authored` |
+| A trivial fix — a typo, an obvious one-liner | A commit, never a task (principle 6). | `fixed` |
+| Not a defect at all, or not worth acting on | Nothing. The body says why, which is the part worth keeping. | `declined` |
 
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'background':'#0d1117','primaryColor':'#161b22','primaryTextColor':'#e6edf3','primaryBorderColor':'#8b949e','lineColor':'#ffffff','secondaryColor':'#161b22','tertiaryColor':'#161b22','fontSize':'14px'}}}%%
 flowchart LR
-    A["HUMAN or AGENT<br/>reports work found<br/>an existing doc authorizes it"]
-    B["AGENT triages<br/>defect · rule missing · trivial"]
-    C["AGENT<br/>writrun-create-task-and-spec<br/>task: backlog · spec: draft<br/>doc_ref names the rule"]
+    A["HUMAN or AGENT<br/>records the report<br/>work/reports/ · status: open"]
+    B["AGENT triages<br/>defect · rule missing · trivial · not a defect"]
+    C["AGENT<br/>writrun-create-task-and-spec<br/>task: backlog · spec: draft<br/>report: tracked"]
     D["The approval gate takes over<br/>spec assented · task ready"]
     A --> B -->|"defect"| C --> D
-    B -->|"rule missing"| E["Flow 1 — authoring<br/>human writes the rule first"]
-    B -->|"trivial"| F["A commit, no task"]
+    B -->|"rule missing"| E["Flow 1 — authoring<br/>report: authored"]
+    B -->|"trivial"| F["A commit, no task<br/>report: fixed"]
+    B -->|"not a defect"| G["No work<br/>report: declined"]
 ```
 
 **A report is checked against the queue before it becomes a task.**
 The same defect reported twice — by two people, or by one person and
 an agent — is one piece of work, not two: triage starts by reading the
-non-completed tasks, and a report that matches one ends there, naming
-the existing task rather than minting a double. New evidence the
+non-completed tasks, and a report that matches one ends `tracked`
+against the existing task rather than minting a double. The duplicate
+report is kept, not deleted: two people hitting the same thing is
+evidence about the thing. New evidence the
 second report carried enriches the existing task's body, through a
 normal queue change.
 
@@ -173,6 +191,12 @@ over at the merge
 - When work is reported and a permanent doc already states the behaviour
   it violates, the task shall be created directly, with `doc_ref` naming
   that doc — no new rule and no doc edit shall be required first.
+- When work is reported, the report shall be recorded as a file before it
+  is triaged, and shall be kept whatever route triage takes.
+- When a report is triaged, its status shall record which route was
+  taken, and shall never restate whether the work it produced is done.
+- When a report is recorded, the change carrying it shall not be required
+  to carry nothing else.
 - When a report asks for behaviour no permanent doc states, the agent
   shall stop and route it through authoring rather than decide the rule
   itself.
