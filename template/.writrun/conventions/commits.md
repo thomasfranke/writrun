@@ -1,13 +1,16 @@
 # Commits
 
-**Squash-only means the PR title is the commit that lands**, so the shape
-of a commit subject is the shape [prs.md](prs.md) describes, and which of
-the two it is comes from [`settings.json`](../settings.json)'s
-`stage_2.pr_title_style`. This file covers the vocabulary each style uses.
-
-Under `conventional` — [Conventional
+**The commit subject is a constant** — [Conventional
 Commits](https://www.conventionalcommits.org/), `type(scope): imperative
-summary`:
+summary` — in every project, whatever
+[`settings.json`](../settings.json)'s `stage_2.pr_title_style` declares.
+That key reaches the pull request title and stops there: a queue of open
+pull requests is read by the people working it, while `main` is read by
+bisect, by release tooling and by whoever arrives in a year, and that
+audience is the same everywhere
+([0063](https://github.com/thomasfranke/writrun/blob/main/docs/technical/decisions/pull-requests/0063-title-and-subject-are-two-texts.md)).
+This file carries the two vocabularies the subject uses; what a title
+does with the same two is [prs.md](prs.md)'s.
 
 - **Types**: `docs`, `feat`, `fix`, `refactor`, `chore`.
 - **Scopes** (optional — omit when a change genuinely spans the
@@ -15,18 +18,18 @@ summary`:
   `skills`, `ci`, `tests`, `agents`, `readme`, `setup`, `queue`.
 - Example: `docs(product): add the coverage-rule concept chapter`.
 
-Under `bracketed` — the same two vocabularies, capitalised inside
-brackets, then a sentence: `[Docs][Product] Add the coverage-rule concept
-chapter`.
-
-Either way the `[TASK-NNNN]` tags come first and sit **outside** whichever
-grammar follows, so the one parser that exists never has to know both at
-once: from Stage 2, `writrun check` strips the tags and reads what is
-left against the declared style — the type against the list above, the
-scope against it too when one is present, and nothing at all about the
-summary that follows. Anything downstream of that is read by eye and by
-`git log --grep`, neither of which is a strict parser; the release notes
-the forge generates come from pull requests and parse nothing here.
+**The `[TASK-NNNN]` tags lead the title and stay out of the subject.**
+On the title they sit **outside** whichever grammar follows, so the one
+parser that exists never has to know both at once: from Stage 2,
+`writrun check` strips the tags and reads what is left against the
+declared style — the type against the list above, the scope against it
+too when one is present, and nothing at all about the summary that
+follows. What lands on `main` carries no tag; the `(#NN)` the forge
+appends to a squash subject is the hop back to the pull request, which
+still carries them and is still what the machinery parses. Anything
+downstream of that is read by eye rather than by a strict parser; the
+release notes the forge generates come from pull requests and parse
+nothing here.
 
 **Editing the two vocabularies above is editing what the check
 accepts.** They are this project's, like every other line in this
@@ -36,22 +39,24 @@ is a type the door refuses.
 
 - Trivial work is a commit, never a task (principle 6).
 
-**Two workflows commit, and their subjects obey the declaration like
-everyone else's.** `writrun approve` records what a merge decided — the
-specs it approved, and the `queued`/`merged` dates it earned — and
-`writrun progress` records what a pull request event moved. Both take
-their subject from
+**Two workflows commit, and their subjects are the constant above.**
+`writrun approve` records what a merge decided — the specs it approved,
+and the `queued`/`merged` dates it earned — and `writrun progress`
+records what a pull request event moved. Both take their subject from
 [`commit_subject.sh`](../scripts/stage-2-pull-requests/commit_subject.sh),
-which composes it from `pr_title_style` under the scope `queue`; neither
-carries a literal, because nothing squashes these and a subject in the
-other style would sit on `main` for good. Each is one commit because each
-records one event.
+one literal per event under the scope `queue`; the text lives there and
+not in either workflow, because two callers writing it separately are two
+places to edit, and nothing squashes these — a subject that drifted would
+sit on `main` for good. Each is one commit because each records one
+event.
 
 **A branch's own subjects are a convention kept by hand.** Squash-only
-means only the pull request title reaches `main`, so `writrun check` reads
-that title and nothing else — a subject on a branch is a courtesy to
-whoever reads the branch, and a gate that failed a pull request over text
-the merge discards would be enforcing where nothing is left behind.
+discards every one of them — what reaches `main` is a single subject,
+seeded by the pull request title and typed in the merge box — so
+`writrun check` reads that title and nothing else. A subject on a branch
+is a courtesy to whoever reads the branch, and a gate that failed a pull
+request over text the merge discards would be enforcing where nothing is
+left behind.
 
 ## Who presses commit — `stage_2.auto_commit`
 

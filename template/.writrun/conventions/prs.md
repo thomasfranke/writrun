@@ -5,28 +5,35 @@
 
   **The tag is not the settable part.** One bracket per task, uppercase,
   no separator — `[TASK-0012]`, or `[TASK-0012][TASK-0014]` when several.
-  It leads because the squash puts the title into `main`'s history, where
-  a scanning eye reads the left edge: what work this was comes before
-  what kind of change it was, and a task's story stays a `git log
-  --grep`. It is also how the machinery learns which tasks the PR
-  carries, so it stays whatever the style. Authoring and reporting PRs
-  carry none — their tasks are born in the PR, not worked by it.
+  It leads because a title is read in a list of open pull requests the
+  way a subject is read in a log — down the left edge — so what work this
+  was comes before what kind of change it was. It is also how the
+  machinery learns which tasks the PR carries, so it stays whatever the
+  style. Authoring and reporting PRs carry none — their tasks are born in
+  the PR, not worked by it.
 
   **`stage_2.pr_title_style` chooses what follows**, and the choice is
-  about who reads the history:
+  about the people who read the queue — the open pull requests, which are
+  worked by the team that wrote them:
 
-  - `conventional` — the Conventional Commit the squash will produce:
+  - `conventional` — the same grammar the commits use:
     `[TASK-0012] fix(ci): debounce mirror updates`, and
     `docs(product): the merge is the assenting act` for an authoring PR.
-    Familiar to tooling built around the convention, and a log that
-    machines and people both scan.
+    One shape to learn, and a queue that scans like the log beside it.
   - `bracketed` — a human sentence behind bracketed labels:
     `[TASK-0012][Fix][CI] Debounce mirror updates`, and
     `[DOCS] The merge is the assenting act`. The labels are read against
     the same two vocabularies, and the sentence after them is not parsed
     at all — so this costs no guarantee; it reads as prose rather than as
-    a grammar, which suits a project whose history is read mostly by
-    people.
+    a grammar, which suits a queue read mostly by people.
+
+  **What lands on `main` is neither of these, and is not settable.** The
+  squash dialog's subject is the merging maintainer's to type — the title
+  only seeds it — and the grammar there is Conventional Commits in every
+  project, [`commits.md`](commits.md)'s constant. The `[TASK-NNNN]` tag
+  goes no further than the title; the `(#NN)` the forge appends to the
+  subject is the hop back to the pull request that carries it
+  ([0063](https://github.com/thomasfranke/writrun/blob/main/docs/technical/decisions/pull-requests/0063-title-and-subject-are-two-texts.md)).
 
   **Whichever is declared, `writrun check` reads the title against it**
   from Stage 2 on — the style is a setting an agent was told to obey, and

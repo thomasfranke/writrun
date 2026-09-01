@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 . "$(dirname "$0")/../../../pipeline_lib.sh"
 
-# The machinery writes commits that nothing squashes, so a subject in the
-# undeclared style sits on the default branch for good. Two workflows
-# write them; the subject is composed in one place, from the same key
-# every agent-written title obeys.
+# The machinery writes commits that nothing squashes, and what they land
+# on is `main` — read by bisect, by release tooling and by whoever
+# arrives in a year, an audience that is the same in every project. So
+# the subject is Conventional Commits everywhere and `pr_title_style`,
+# which governs the pull request title, is not consulted at all
+# (docs/technical/decisions/pull-requests/0063-title-and-subject-are-two-texts.md).
 SUBJECT="$CI_SCRIPTS/stage-2-pull-requests/commit_subject.sh"
 
 setup
@@ -25,12 +27,15 @@ settings_file <<'JSON'
   }
 }
 JSON
-check "the merge recording takes the declared style" 0 \
-  "\[Chore\]\[Queue\] Record what the merge decided" \
+check "the merge recording is conventional under the bracketed style" 0 \
+  "chore(queue): record what the merge decided" \
   -- bash "$SUBJECT" merge
-check "and so does the forge recording" 0 \
-  "\[Chore\]\[Queue\] Record what the forge just did" \
+check "and so is the forge recording" 0 \
+  "chore(queue): record what the forge just did" \
   -- bash "$SUBJECT" forge
+refute "the style the titles take does not dress the subject" \
+  "\[Chore\]\[Queue\]" \
+  -- bash "$SUBJECT" merge
 
 settings_file <<'JSON'
 {
@@ -49,19 +54,24 @@ settings_file <<'JSON'
   }
 }
 JSON
-check "the other style is written the other way" 0 \
+check "the other declaration writes the same subject" 0 \
   "chore(queue): record what the merge decided" \
   -- bash "$SUBJECT" merge
 check "for both events" 0 "chore(queue): record what the forge just did" \
   -- bash "$SUBJECT" forge
 
-# Absence is not an error anywhere else the settings are read, and this
-# is no exception: the documented default is what the workflows wrote
-# before the key was consulted at all.
-rm -f .writrun/settings.json
-check "no settings file gives the documented default" 0 \
+# The key is not read, so neither is the file it lives in. A settings
+# file the reader could not parse is the evidence: under the old script
+# this line ran `read_setting.sh`, and here nothing looks.
+printf 'not json at all\n' > .writrun/settings.json
+check "an unreadable settings file is not even opened" 0 \
   "chore(queue): record what the merge decided" \
   -- bash "$SUBJECT" merge
+
+rm -f .writrun/settings.json
+check "and neither is a settings file that is absent" 0 \
+  "chore(queue): record what the forge just did" \
+  -- bash "$SUBJECT" forge
 
 check "an event the machinery does not have is a usage error" 3 \
   "usage: commit_subject.sh" \
