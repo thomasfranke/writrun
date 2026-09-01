@@ -11,8 +11,10 @@ depends_on: []
 milestone: null
 created: 2026-08-31T14:23:35Z
 queued: 2026-08-31T15:20:54Z
-completed: null
+completed: 2026-09-01T00:01:24Z
 merged: null
+provenance:
+  - {by: agent, model: claude-opus-5, login: thomasfranke, input: 290, output: 133260, cache_read: 18586838, cache_write: 217605}
 ---
 
 # A task records what its work cost and which agent did it

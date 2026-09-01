@@ -1,7 +1,7 @@
 ---
 id: spec-0036
 task_ref: task-0026
-status: approved
+status: implemented
 created: 2026-08-31T14:24:46Z
 ---
 
@@ -131,4 +131,70 @@ transcript and against an empty directory.
 
 ## Outcome
 
-_(fill after execution)_
+Built as scoped: the field end to end, the key, the writer, the helper and
+the rollup, with every queue file migrated and the kit synced.
+
+**The three questions, answered.**
+
+1. **The writer class exists, and it is shaped rather than fenced.** A
+   branch may *append* a `provenance` entry and may never edit one it
+   found — rule I in `check_state.sh`, ungated by stage, because the field
+   exists wherever tasks do. The permission cannot widen into "a branch
+   may edit front matter" because it is not a permission over the field at
+   all: the check reads the base's entries and requires them to still be
+   there, in order, byte for byte, with the branch's own entries after
+   them. An edit in place, a removal and a reorder each fail it, and a
+   reorder is the one that says why order rather than membership is what
+   is compared — every entry still present, and the chronology gone.
+2. **Nothing converts, anywhere.** The stronger answer than "fetch the
+   rate card at report time" turned out to be that the rollup has no
+   business holding one: it prints the four counts unfolded, per task and
+   summed, and says in its own output that conversion happens against the
+   published card on the day the question is asked. That preserves exactly
+   what the question was protecting — cache reads outrun the other columns
+   by around two orders of magnitude in this repository's own history, and
+   a total that folded them together would misreport spend rather than
+   round it — without putting a number in the repository that goes stale.
+   Recorded as a divergence below, because the spec asked for pricing and
+   got a refusal to price.
+3. **The helper reads and owns nothing.** `read_usage.sh` joins the
+   session's git branch to `task/NNNN` the branch convention already
+   supplies, degrades to silence on a missing directory, an empty one and
+   an empty file, is wired into no check, and prints proposals in exactly
+   `record_provenance.sh`'s argument form so composing them is a pipe. It
+   writes nothing and stores nothing; `$WRITRUN_TRANSCRIPTS` is the only
+   way it is pointed anywhere, which is also how the tests reach a
+   fixture.
+
+**Divergences.**
+
+- **The rollup does not price.** Question 2 above. The spec's own reason
+  for pricing the cache tiers separately is the reason the columns stay
+  separate; the multiplication is left to the asker.
+- **A category is refused as a model.** Not in the spec's criteria, but
+  the schema chapter states it ("the specific model id, never a
+  category"), and a rule the machinery states and nothing holds is the
+  defect task-0024 exists about. Same tripwire posture as
+  `check_observance.sh`'s trailer check: a name written to evade it evades
+  it.
+- **This repository declares `true`, the adoption kit ships `false`.** The
+  documented default is `false` and the kit keeps it, the same way it
+  ships every conduct flag cautious. This repository keeps a ledger
+  because it is the project whose own history the field was derived from.
+- **The block-list allowance is named by the caller, not global.**
+  `check_shape` takes the ledger field as an argument, so a task gets the
+  exception and a spec does not — a spec reaching for a block list is
+  refused exactly as it was before.
+- **One awk detail is load-bearing enough to be a test.** The platform's
+  usage object repeats every count inside an `iterations` array, so the
+  helper reads the *first* occurrence of each key; the fixture transcript
+  carries that array for the sole purpose of failing if that ever
+  regresses. (The first draft also passed the count patterns as awk
+  `/regex/` literals, which in an argument position evaluate to `$0 ~
+  /re/` — every column came back equal to the number of matching lines.
+  The fixture's real-shaped numbers are what caught it.)
+
+**What was not built, deliberately.** No gate, no priority input, no
+review signal, no fraction-of-lines metric, and no check that reads the
+ledger's contents — the chapter refuses all of them, and the field is a
+record or it is the tracker this methodology is not.
