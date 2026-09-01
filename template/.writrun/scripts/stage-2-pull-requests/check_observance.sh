@@ -12,9 +12,11 @@
 # otherwise pure trust:
 #
 #   1. **The title obeys `stage_2.pr_title_style`.** The style is the
-#      adopter's choice and the squash puts the title into the authority
-#      branch's history, so a title in the other style is a permanent
-#      entry in a log the project decided would read one way.
+#      adopter's choice and the title is the whole of what that key
+#      governs, so a title in the other style is the one place the
+#      disobedience shows — the queue the project decided would read one
+#      way. What the squash lands on `main` is a separate text and a
+#      constant; this check never sees it.
 #
 #   2. **`stage_2.agent_coauthor` is honoured in both directions.** At
 #      `false`, a co-author trailer, a session link or a generated-with
@@ -52,10 +54,10 @@ faults=0
 fault() { echo "REJECTED: $*" >&2; faults=$((faults + 1)); }
 
 # The committer both recording workflows write their commits as. Matching
-# on the identity rather than the subject is deliberate: the subject is
-# composed from `pr_title_style` (commit_subject.sh) and is therefore
-# text like any other, while what makes these commits exempt is who wrote
-# them — and only the identity says that.
+# on the identity rather than the subject is deliberate: the subject is a
+# constant (commit_subject.sh) and is therefore text like any other,
+# while what makes these commits exempt is who wrote them — and only the
+# identity says that.
 BOT_COMMITTER="github-actions[bot]"
 
 # git_read <label> <git-args...> — runs git and leaves its stdout in
