@@ -267,25 +267,43 @@ ${7:-provenance: []}
 EOF
 }
 
-spec_file() {   # spec_file <id> <task> <status> [promised-path]
-  cat > "work/specs/$1.md" <<EOF
+# spec_file <id> <task> <status> [promised-path...]
+#
+# Every promised path lands in the section the schema puts it in — a
+# `technical/…` path under Proposed technical changes, everything else
+# under Proposed product changes — so a fixture promise has the shape a
+# real one has. A section that gets none says "none", which is the other
+# shape a promise comes in and the one a companion check must ignore.
+spec_file() {
+  local id="$1" task="$2" status="$3"
+  shift 3
+  local p product="" technical=""
+  for p in "$@"; do
+    [ -n "$p" ] || continue
+    case "$p" in
+      technical/*) technical="${technical}- \`${p}\` — test promise."$'\n' ;;
+      *)           product="${product}- \`${p}\` — test promise."$'\n' ;;
+    esac
+  done
+  [ -n "$product" ]   || product="- none — no behaviour change"$'\n'
+  [ -n "$technical" ] || technical="- none — no machinery change"$'\n'
+
+  cat > "work/specs/${id}.md" <<EOF
 ---
-id: $1
-task_ref: $2
-status: $3
+id: ${id}
+task_ref: ${task}
+status: ${status}
 created: 2026-08-22T00:00:00Z
 ---
 
-# $1 — test
+# ${id} — test
 
 ## Proposed product changes
 
-$( [ -n "${4:-}" ] && echo "- \`$4\` — test promise." || echo "- none — no behaviour change" )
-
+${product}
 ## Proposed technical changes
 
-- none — no machinery change
-
+${technical}
 ## Outcome
 
 _(fill after execution)_
