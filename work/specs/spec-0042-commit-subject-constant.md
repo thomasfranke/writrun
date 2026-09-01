@@ -170,3 +170,12 @@ evidence the spec asked for.
   the observable form of "reads no setting": under the old script that
   line went through `read_setting.sh`, and here nothing opens the file
   at all.
+- **One clause in `commits.md` beyond the rewrite step 3 asked for.**
+  Deleting the `bracketed` paragraph left the file stating the constant
+  and the no-tag rule with nothing scoping either, so the only reading
+  available for a *branch* subject forbade the tag — the thing every
+  commit on this branch and its predecessors carries, and the thing
+  `writrun check` never looks at. The closing paragraph now says
+  outright that the constant binds what reaches `main` and not what a
+  branch carries there. Nothing gained a gate; the file stopped
+  forbidding by omission.

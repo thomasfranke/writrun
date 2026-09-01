@@ -56,7 +56,11 @@ seeded by the pull request title and typed in the merge box — so
 `writrun check` reads that title and nothing else. A subject on a branch
 is a courtesy to whoever reads the branch, and a gate that failed a pull
 request over text the merge discards would be enforcing where nothing is
-left behind.
+left behind. **So the constant above binds what reaches `main`** — the
+squash subject and the machinery's own two — and not what a branch
+carries on the way there: a branch subject that leads with `[TASK-NNNN]`
+and dresses itself in the declared style is reading its own audience
+right, and breaks nothing this file asks for.
 
 ## Who presses commit — `stage_2.auto_commit`
 
