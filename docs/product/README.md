@@ -12,7 +12,7 @@ here, never restated.
 
 ## Chapters
 
-Read in order, like a book — the six `concepts/*.md` chapters come first
+Read in order, like a book — the seven `concepts/*.md` chapters come first
 because every later chapter is written in the nouns they establish, and none
 of those nouns are redefined downstream:
 
@@ -24,16 +24,18 @@ of those nouns are redefined downstream:
 | 4 | [`concepts/task.md`](concepts/task.md) | What a task is: the request, its two invariants (identity ≠ order, no technical detail). |
 | 5 | [`concepts/spec.md`](concepts/spec.md) | What a spec is: the elaboration, its lifecycle, the approval gate, the doc-delta contract. |
 | 6 | [`concepts/provenance.md`](concepts/provenance.md) | What the provenance ledger is: who did a task's work and what it cost. |
-| 7 | [`tasks-and-specs/`](stage-1-tasks-and-specs/README.md) | The docs → task → spec → code flow and where humans gate it. Stage 1 — true at every stage. |
-| 8 | [`pull-requests/`](stage-2-pull-requests/README.md) | What branches, pull requests and CI add — Stage 2. |
-| 9 | [`github-issues/`](stage-3-github-issues/README.md) | What the GitHub Issues mirror adds — Stage 3. |
-| 10 | [`adoption.md`](adoption.md) | What a project must have, at minimum, to claim adoption. |
+| 7 | [`concepts/report.md`](concepts/report.md) | What a report is: the observation, its four ends, and why there is no `resolved`. |
+| 8 | [`tasks-and-specs/`](stage-1-tasks-and-specs/README.md) | The docs → task → spec → code flow and where humans gate it. Stage 1 — true at every stage. |
+| 9 | [`pull-requests/`](stage-2-pull-requests/README.md) | What branches, pull requests and CI add — Stage 2. |
+| 10 | [`github-issues/`](stage-3-github-issues/README.md) | What the GitHub Issues mirror adds — Stage 3. |
+| 11 | [`adoption.md`](adoption.md) | What a project must have, at minimum, to claim adoption. |
 
 Every chapter above traces to a concrete case, not an invented example: the
 first five concepts and the pipeline generalize swoop's mature,
 fully-designed pipeline; provenance generalizes this repository's own
-agent-worked queue; adoption's worked example is TOM's real, partial
-adoption.
+agent-worked queue; report generalizes the findings this repository kept
+losing to its own sessions, which is how the gap was noticed at all;
+adoption's worked example is TOM's real, partial adoption.
 
 ## Rules for this folder
 
