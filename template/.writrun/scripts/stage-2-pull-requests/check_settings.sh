@@ -78,14 +78,15 @@ PRODUCT_LAYOUTS="by-concept by-feature"
 # a documented key found anywhere else is homeless, not merely misplaced,
 # because the address is its identity.
 #
-# Two kinds live here. `stage_1` holds the three declarations — the
+# Two kinds live here. `stage_1` holds the four declarations — the
 # variants Adoption orders declared, which gate nothing mechanical and
 # are read by agents alone. `stage_2` holds the conduct flags and the
 # title style, because that is where the actions they govern begin: git
 # starts at Stage 2 (product/adoption.md#three-stages), so below it there
 # is neither a commit nor a pull request for a conduct flag to gate.
 HOMES=":stage \
-stage_1:decisions_style stage_1:product_layout stage_1:spec_required \
+stage_1:decisions_style stage_1:product_layout stage_1:provenance_ledger \
+stage_1:spec_required \
 stage_2:agent_coauthor stage_2:auto_commit stage_2:auto_pr \
 stage_2:auto_push stage_2:pr_title_style"
 
@@ -258,7 +259,7 @@ while IFS= read -r line || [ -n "$line" ]; do
         *" $val "*) ;;
         *) fault "pr_title_style '${val}' is outside its vocabulary: ${TITLE_STYLES}" ;;
       esac ;;
-    agent_coauthor|auto_commit|auto_pr|auto_push)
+    agent_coauthor|auto_commit|auto_pr|auto_push|provenance_ledger)
       case " $BOOLEANS " in
         *" $val "*) ;;
         *) fault "${key} '${val}' is outside its vocabulary: ${BOOLEANS}" ;;
@@ -301,6 +302,7 @@ done
 R=".writrun/scripts/stage-2-pull-requests/read_setting.sh"
 echo "OK — ${SETTINGS} is canonical:"
 echo "  stage=$(bash "$R" stage)"
-echo "  stage_1.decisions_style=$(bash "$R" stage_1.decisions_style) stage_1.product_layout=$(bash "$R" stage_1.product_layout) stage_1.spec_required=$(bash "$R" stage_1.spec_required)"
+echo "  stage_1.decisions_style=$(bash "$R" stage_1.decisions_style) stage_1.product_layout=$(bash "$R" stage_1.product_layout)"
+echo "  stage_1.provenance_ledger=$(bash "$R" stage_1.provenance_ledger) stage_1.spec_required=$(bash "$R" stage_1.spec_required)"
 echo "  stage_2.agent_coauthor=$(bash "$R" stage_2.agent_coauthor) stage_2.auto_commit=$(bash "$R" stage_2.auto_commit)"
 echo "  stage_2.auto_pr=$(bash "$R" stage_2.auto_pr) stage_2.auto_push=$(bash "$R" stage_2.auto_push) stage_2.pr_title_style=$(bash "$R" stage_2.pr_title_style)"

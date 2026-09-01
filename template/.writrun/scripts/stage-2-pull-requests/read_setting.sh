@@ -54,6 +54,7 @@ default_for() {
     stage_1.spec_required)   printf 'when-warranted' ;;
     stage_1.decisions_style) printf 'per-subsystem' ;;
     stage_1.product_layout)  printf 'by-concept' ;;
+    stage_1.provenance_ledger) printf 'false' ;;
     stage_2.agent_coauthor)  printf 'true' ;;
     stage_2.auto_commit)     printf 'true' ;;
     stage_2.auto_pr)         printf 'true' ;;

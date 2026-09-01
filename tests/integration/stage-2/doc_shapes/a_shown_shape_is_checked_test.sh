@@ -33,6 +33,7 @@ created: ${2:-2026-08-21T09:14:00Z}
 queued: null
 completed: null
 merged: null
+provenance: []
 ---
 \`\`\`
 EOF

@@ -286,7 +286,7 @@ body_template_for() {
 }
 
 # The contract fields — the script's to write, never a template's.
-TASK_CONTRACT="id status blocked_reason taken_by spec_ref doc_ref origin priority depends_on milestone created completed"
+TASK_CONTRACT="id status blocked_reason taken_by spec_ref doc_ref origin priority depends_on milestone created completed provenance"
 SPEC_CONTRACT="id task_ref status created"
 
 # template_extensions — stdin: a rendered template. Prints the lines of
@@ -457,6 +457,7 @@ created: $(date -u +%Y-%m-%dT%H:%M:%SZ)
 queued: null
 completed: null
 merged: null
+provenance: []
 EOF
       if [[ -n "$tpl_ext" ]]; then printf '%s\n' "$tpl_ext"; fi
       printf '%s\n\n' "---"

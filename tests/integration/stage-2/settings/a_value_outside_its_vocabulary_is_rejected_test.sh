@@ -135,7 +135,8 @@ settings_file <<'JSON'
   "stage_1": {
     "spec_required": "when-warranted",
     "decisions_style": "per-subsystem",
-    "product_layout": "by-concept"
+    "product_layout": "by-concept",
+    "provenance_ledger": false
   },
   "stage_2": {
     "auto_commit": true,
@@ -148,7 +149,7 @@ settings_file <<'JSON'
 JSON
 check "a gated push is canonical" 0 "is canonical" -- bash "$CHECK_SETTINGS"
 
-# The three declarations gate nothing mechanical — an agent alone reads
+# The four declarations gate nothing mechanical — an agent alone reads
 # them — and are checked for value all the same, for the same reason:
 # a value outside the vocabulary is one an agent would have to guess at.
 settings_file <<'JSON'

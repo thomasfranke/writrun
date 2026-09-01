@@ -26,6 +26,38 @@ READ_SETTING="$CI_SCRIPTS/stage-2-pull-requests/read_setting.sh"
 CHECK_SETTINGS="$CI_SCRIPTS/stage-2-pull-requests/check_settings.sh"
 STAGE_GATE="$CI_SCRIPTS/stage-2-pull-requests/stage_gate.sh"
 CHECK_OBSERVANCE="$CI_SCRIPTS/stage-2-pull-requests/check_observance.sh"
+
+# The Stage 1 half: the ledger's writer, the helper that proposes an entry
+# from the agent platform's usage data, and the rollup. No forge is
+# involved in any of the three — the field they work on exists wherever
+# tasks do.
+RECORD_PROVENANCE="$CI_SCRIPTS/stage-1-tasks-and-specs/record_provenance.sh"
+READ_USAGE="$CI_SCRIPTS/stage-1-tasks-and-specs/read_usage.sh"
+PROVENANCE_ROLLUP="$CI_SCRIPTS/stage-1-tasks-and-specs/provenance_rollup.sh"
+
+# ledger_kept — a settings file whose one interesting line declares that
+# this project keeps a ledger. Everything else is the documented default,
+# spelled out because every documented key is present, always.
+ledger_kept() {
+  settings_file <<'JSON'
+{
+  "stage": 1,
+  "stage_1": {
+    "decisions_style": "per-subsystem",
+    "product_layout": "by-concept",
+    "provenance_ledger": true,
+    "spec_required": "when-warranted"
+  },
+  "stage_2": {
+    "agent_coauthor": true,
+    "auto_commit": true,
+    "auto_pr": true,
+    "auto_push": true,
+    "pr_title_style": "conventional"
+  }
+}
+JSON
+}
 WORKFLOWS="$REPO_ROOT/.github/workflows"
 
 # settings_file — the whole settings file, from stdin, at the address it
@@ -183,7 +215,12 @@ setup() {
   git checkout -qb feature
 }
 
-task_file() {   # task_file <id> <status> <spec_ref> [completed] [taken_by] [origin]
+# task_file <id> <status> <spec_ref> [completed] [taken_by] [origin] [ledger]
+#
+# `ledger` is the whole provenance field as it should appear — the empty
+# `provenance: []` unless a case is about the ledger, in which case it is
+# the block form, entry lines and all.
+task_file() {
   cat > "work/tasks/$1.md" <<EOF
 ---
 id: $1
@@ -200,6 +237,7 @@ created: 2026-08-22T00:00:00Z
 queued: null
 completed: ${4:-null}
 merged: null
+${7:-provenance: []}
 ---
 
 # Test task $1

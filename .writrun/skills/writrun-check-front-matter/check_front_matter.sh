@@ -34,6 +34,13 @@
 #     it
 #   - `origin` is `rule` or `report`, always present on a task — how it
 #     came to exist is a fact, and there is no third answer
+#   - `provenance` is the one field allowed to open a block list, and the
+#     only shape it may take is a dash-opened line per entry, each entry a
+#     YAML flow mapping written whole on that line. `provenance: []` is
+#     the other legal spelling. An entry opened as a block mapping — its
+#     keys on lines of their own — is refused, because that is precisely
+#     the shape the line-based readers cannot see
+#     (docs/technical/README.md#task-schema).
 #
 # Unknown keys in canonical shape are allowed — an adopter may extend.
 # The schemas themselves: docs/technical/README.md.
@@ -82,10 +89,127 @@ require_once() {   # require_once <file> <block> <field>
   [ "$n" = "1" ] || fail "$1" "field '$3' must appear exactly once (found $n)"
 }
 
-check_shape() {   # check_shape <file> <block> — every line is `key: value`
-  local line key val
+# The ledger's vocabulary. `by` and `login` are the two an entry always
+# carries — who did the work and who answers for it; `model` belongs to an
+# agent's entry alone, and the four counts are the platform's own numbers,
+# kept as counts because a stored currency figure becomes a lie about the
+# past the next time a price changes (docs/technical/README.md#task-schema).
+LEDGER_KEYS="by model login input output cache_read cache_write"
+LEDGER_COUNTS="input output cache_read cache_write"
+
+# **A category is not a model** — the same refusal check_observance.sh
+# makes of the commit trailer, for the same reason: `model: ai` satisfies
+# every shape check and answers nothing a quarter later, which is the one
+# question the field exists for. A tripwire, not a proof: a name written
+# to evade it evades it.
+MODEL_CATEGORIES="ai llm agent model assistant bot claude gpt gemini llama opus sonnet haiku fable"
+
+check_entry() {   # check_entry <file> <field> <line> — one ledger entry
+  local f="$1" field="$2" line="$3"
+  local inner rest pair key val seen="" by="" login="" model="" counts=""
+  case "$line" in
+    "  - {"*"}")
+      inner="${line#  - \{}"
+      inner="${inner%\}}"
+      ;;
+    *)
+      fail "$f" "'$field' entry is not a flow mapping: '$line' — an entry is written whole on one line as '  - {key: value, ...}', never opened as a block mapping"
+      return 0
+      ;;
+  esac
+
+  rest="$inner"
+  while [ -n "$rest" ]; do
+    case "$rest" in
+      *", "*) pair="${rest%%, *}"; rest="${rest#*, }" ;;
+      *)      pair="$rest"; rest="" ;;
+    esac
+    case "$pair" in
+      *": "*) key="${pair%%: *}"; val="${pair#*: }" ;;
+      *) fail "$f" "'$field' entry holds '$pair', which is not 'key: value'"; continue ;;
+    esac
+    case " $LEDGER_KEYS " in
+      *" $key "*) ;;
+      *) fail "$f" "'$field' entry holds '$key', which the ledger's vocabulary does not have: ${LEDGER_KEYS}"; continue ;;
+    esac
+    case " $seen " in
+      *" $key "*) fail "$f" "'$field' entry repeats '$key'"; continue ;;
+    esac
+    seen="$seen $key"
+    case "$val" in
+      ""|\"*|\'*|*\{*|*\}*) fail "$f" "'$field' entry's '$key' is '$val' — values are written bare"; continue ;;
+    esac
+    case " $LEDGER_COUNTS " in
+      *" $key "*)
+        counts="$counts $key"
+        printf '%s' "$val" | grep -qE '^[0-9]+$' \
+          || fail "$f" "'$field' entry's '$key' is '$val' — a count is a bare non-negative integer, never a converted sum"
+        ;;
+    esac
+    case "$key" in
+      by)    by="$val" ;;
+      login) login="$val" ;;
+      model) model="$val" ;;
+    esac
+  done
+
+  case "$by" in
+    agent|human) ;;
+    "") fail "$f" "'$field' entry names no actor — every entry carries 'by: agent' or 'by: human'"; return 0 ;;
+    *)  fail "$f" "'$field' entry's 'by' is '$by' — an entry names a person or an agent and nothing else" ;;
+  esac
+
+  if [ -z "$login" ]; then
+    fail "$f" "'$field' entry carries no login — every entry names who answers for it, which on an agent's entry is the person who ran it"
+  else
+    printf '%s' "$login" | grep -qE '^[A-Za-z0-9-]+(\[bot\])?$' \
+      || fail "$f" "'$field' entry's login '$login' is not a bare forge login"
+  fi
+
+  if [ "$by" = "agent" ]; then
+    if [ -z "$model" ]; then
+      fail "$f" "'$field' agent entry names no model — the record survives the next model's arrival only by naming this one"
+    else
+      case " $MODEL_CATEGORIES " in
+        *" $(printf '%s' "$model" | tr '[:upper:]' '[:lower:]') "*)
+          fail "$f" "'$field' entry's model '$model' is a category, not a model id — a category answers nothing a quarter later" ;;
+      esac
+    fi
+  fi
+
+  if [ "$by" = "human" ]; then
+    [ -z "$model" ] \
+      || fail "$f" "'$field' human entry carries model '$model' — a person's entry names no model"
+    [ -z "$counts" ] \
+      || fail "$f" "'$field' human entry carries counts (${counts# }) — a person's entry carries none, and no check reads that absence as a gap"
+  fi
+  return 0
+}
+
+check_shape() {   # check_shape <file> <block> [ledger-field]
+  # Every line is `key: value`, with exactly one exception: the ledger
+  # field opens a block list of one-line entries. The exception is named
+  # by the caller — a spec has no ledger, so a block there is a fault as
+  # it always was.
+  local line key val ledger="${3:-}" in_ledger=0 entries=0
   while IFS= read -r line; do
     [ -n "$line" ] || { fail "$1" "front matter holds an empty line"; continue; }
+
+    if [ -n "$ledger" ] && [ "$line" = "${ledger}:" ]; then
+      in_ledger=1; entries=0; continue
+    fi
+    if [ "$in_ledger" = "1" ]; then
+      case "$line" in
+        "  - "*) entries=$((entries + 1)); check_entry "$1" "$ledger" "$line"; continue ;;
+        [[:space:]]*|-*)
+          fail "$1" "'$ledger' holds '$line' — an entry is one line, opened by '  - ' and written whole as a flow mapping"
+          continue ;;
+        *)
+          [ "$entries" -gt 0 ] \
+            || fail "$1" "'$ledger' opens a block list with no entries — an empty ledger is written inline as []"
+          in_ledger=0 ;;
+      esac
+    fi
     case "$line" in
       *": "*) key="${line%%: *}"; val="${line#*: }" ;;
       *:)     fail "$1" "field '${line%:}' has no inline value — block forms are outside the contract"; continue ;;
@@ -102,6 +226,9 @@ check_shape() {   # check_shape <file> <block> — every line is `key: value`
   done <<EOF
 $2
 EOF
+  if [ "$in_ledger" = "1" ] && [ "$entries" -eq 0 ]; then
+    fail "$1" "'$ledger' opens a block list with no entries — an empty ledger is written inline as []"
+  fi
   return 0
 }
 
@@ -153,14 +280,14 @@ check_id() {   # check_id <file> <block> — id agrees with the filename's id
 }
 
 check_task() {   # check_task <file>
-  local block f st reason pr org ref
+  local block f st reason pr org ref prov
   f="$1"
   if ! block=$(fm_block "$f"); then
     fail "$f" "front matter must open at line 1 with --- and close with ---"
     return 0
   fi
-  check_shape "$f" "$block"
-  for field in id status blocked_reason taken_by spec_ref doc_ref origin priority depends_on milestone created queued completed merged; do
+  check_shape "$f" "$block" provenance
+  for field in id status blocked_reason taken_by spec_ref doc_ref origin priority depends_on milestone created queued completed merged provenance; do
     require_once "$f" "$block" "$field"
   done
   check_id "$f" "$block"
@@ -246,6 +373,15 @@ check_task() {   # check_task <file>
   check_date "$f" "$block" queued null-ok
   check_date "$f" "$block" completed null-ok
   check_date "$f" "$block" merged null-ok
+
+  # The ledger inline is only ever the empty list: entries are written one
+  # to the line, and check_shape has already read each of them. A project
+  # that declares no ledger carries `[]` here forever, which is a complete
+  # statement and not a gap (product/concepts/provenance.md).
+  prov=$(get "$block" provenance)
+  if [ -n "$prov" ] && [ "$prov" != "[]" ]; then
+    fail "$f" "provenance '$prov' — an inline ledger is only ever [], and entries are written one to the line beneath 'provenance:'"
+  fi
   return 0
 }
 

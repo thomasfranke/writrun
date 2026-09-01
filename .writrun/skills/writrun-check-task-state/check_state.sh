@@ -25,6 +25,14 @@
 #      and `backlog` or `ready`; an in-flight task cannot be blocked.
 #   H. `dropped` is terminal: reachable by hand from any non-terminal
 #      state, left by nothing.
+#   I. A branch may add a `provenance` entry and may never edit one it
+#      found. This is the single exception to rules E and F's premise —
+#      the one machine field a branch writes — and it exists because no
+#      forge event carries a token count: only the session that spent
+#      them knows. The permission is shaped so it cannot widen into "a
+#      branch may edit front matter": appending is a different act from
+#      editing, and every entry the base already held must still be
+#      there, unchanged and in order.
 #
 # A transition is read from the front matter at the two ends of the range
 # — the file as the base knew it against the file as it is now — never
@@ -113,6 +121,22 @@ fm_field() {
 # `git show` is that case, not an error).
 fm_now()  { fm_field "$2" < "$1"; }
 fm_base() { git show "${BASE}:$1" 2>/dev/null | fm_field "$2" || true; }
+
+# fm_ledger — the provenance entries, one per line, in order, from the
+# front-matter block alone. The whole line is printed: rule I compares
+# entries as written, because "unchanged" is about the text a reviewer
+# reads, not about a value some parser recovered from it.
+fm_ledger() {
+  awk '
+    NR == 1 { if ($0 != "---") exit; next }
+    /^---$/ { exit }
+    /^provenance:[[:space:]]*$/ { inl = 1; next }
+    inl && /^  - / { print; next }
+    inl { inl = 0 }
+  '
+}
+ledger_now()  { fm_ledger < "$1"; }
+ledger_base() { git show "${BASE}:$1" 2>/dev/null | fm_ledger || true; }
 
 for f in $CHANGED; do
   case "$f" in
@@ -233,6 +257,25 @@ for f in $CHANGED; do
         echo "FORBIDDEN: ${f} moves dropped -> ${new} — dropped is terminal." >&2
         echo "  A dropped task stays dropped; new work is a new task." >&2
         status=1
+      fi
+
+      # I — the ledger is append-only. An entry is a fact about work
+      # that happened; rewriting one rewrites the past, and the reason
+      # this field exists at all is that the field beside it (taken_by)
+      # keeps erasing itself.
+      if ! is_added "$f"; then
+        pv_old=$(ledger_base "$f")
+        if [ -n "$pv_old" ]; then
+          pv_new=$(ledger_now "$f")
+          kept=$(printf '%s\n' "$pv_new" | head -n "$(printf '%s\n' "$pv_old" | wc -l | tr -d ' ')")
+          if [ "$kept" != "$pv_old" ]; then
+            echo "FORBIDDEN: ${f} edits a provenance entry it found rather than adding one." >&2
+            echo "  The ledger is append-only: an entry records work that happened," >&2
+            echo "  and every entry the base held stays as written, in order." >&2
+            echo "  Add your entry at the end and leave the others alone." >&2
+            status=1
+          fi
+        fi
       fi
 
       # C — the completed date is the worker's declaration of finishing,

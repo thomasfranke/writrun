@@ -13,6 +13,7 @@ created: 2026-08-28T00:00:00Z
 queued: 2026-08-28T23:01:30Z
 completed: 2026-08-29T03:27:50Z
 merged: 2026-08-29T17:15:35Z
+provenance: []
 ---
 
 # Read adopter choices from a settings file
