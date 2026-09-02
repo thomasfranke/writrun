@@ -1,8 +1,8 @@
 ---
 id: task-0033
-status: ready
+status: in-progress
 blocked_reason: null
-taken_by: null
+taken_by: thomasfranke
 spec_ref: [spec-0044]
 doc_ref: product/concepts/report.md#recording-rides-any-change--routing-to-the-queue-does-not
 origin: rule
