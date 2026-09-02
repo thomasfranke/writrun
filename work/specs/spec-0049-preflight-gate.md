@@ -143,7 +143,7 @@ still null is named in the summary — and on a failing run too — and the
 delta stage's "authoring change, deltas not applicable" line is that same
 fact seen mechanically.
 
-Four cases in `tests/unit/preflight/` cover the ordering, the inference,
+Five cases in `tests/unit/preflight/` cover the ordering, the inference,
 the comma list, the warning, the offline note, per-stage exit-code
 propagation and the exit-4 code. `AGENTS.md`'s completion sequence
 collapsed from five steps to four: today's 3 and 5 are now "run preflight
@@ -153,3 +153,11 @@ Divergence: the "stages after it did not run" half of the stop line is
 printed only when a stage after it exists — the third stage's failure
 says the stage and the code, and claims nothing about stages there are
 none of.
+
+Two review corrections. A zero-padded id resolves: `0034` is how the
+queue spells an id everywhere, and stripping the padding only when a
+`task-` prefix carried it made the queue's own spelling name no file —
+the rule now lives in one step in `ql_task_num`, which every caller
+shares. And each stage streams as it runs instead of appearing whole
+when it ends; the capture stays, because the summary names the deltas
+stage 2 checked out of its own output.

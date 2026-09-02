@@ -65,7 +65,10 @@ fm_field() {
   ' "$2"
 }
 
-task_num() { printf '%s' "$1" | sed -E 's/^task-0*//; s/^task\/0*//; s/[^0-9].*$//'; }
+# The zeros are stripped in a step of their own — see ql_task_num, whose
+# rule this is: `0034` is how the queue spells an id, so it is what a
+# caller types, and it has to resolve to the same file `34` does.
+task_num() { printf '%s' "$1" | sed -E 's/^task-//; s/^task\///; s/^0+//; s/[^0-9].*$//'; }
 
 task_file() {
   local num f n
@@ -152,10 +155,15 @@ TASKS
 
 stage() {   # stage <n> <name> <cmd...>
   local n="$1" name="$2"; shift 2
-  local out code
+  local out code log
   echo "== ${n}/3 ${name} =="
-  out=$("$@" 2>&1); code=$?
-  printf '%s\n' "$out"
+  # Streamed and captured in one pass. Capturing alone prints nothing
+  # until the stage is over, and the whole-queue sweep takes long enough
+  # that the silence reads as a hang; the capture is still needed,
+  # because stage 2 names the deltas it checked out of its own output.
+  log=$(mktemp "${TMPDIR:-/tmp}/writrun-preflight.XXXXXX")
+  "$@" 2>&1 | tee "$log"; code=${PIPESTATUS[0]}
+  out=$(cat "$log"); rm -f "$log"
   echo
   if [ "$code" -ne 0 ]; then
     if [ "$n" -lt 3 ]; then

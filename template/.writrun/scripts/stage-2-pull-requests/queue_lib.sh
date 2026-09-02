@@ -34,8 +34,13 @@ ql_set_field() {
 
 # ql_task_num <anything> — the task number, zero-padding stripped;
 # empty when the input names none.
+#
+# The zeros go in a step of their own, after the prefix rather than with
+# it: `0034` is how every queue file and every [TASK-NNNN] tag spells the
+# id, so it is what a person retypes — and stripping the padding only
+# when a `task-` prefix carried it made that spelling resolve to nothing.
 ql_task_num() {
-  printf '%s' "$1" | sed -E 's/^task-0*//; s/^task\/0*//; s/[^0-9].*$//'
+  printf '%s' "$1" | sed -E 's/^task-//; s/^task\///; s/^0+//; s/[^0-9].*$//'
 }
 
 # ql_task_file <task-id-or-number> — the work/tasks file whose id is
