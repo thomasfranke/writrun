@@ -101,8 +101,11 @@ A fixture reproducing `spec-0044`'s five real paths, each refused and
 each naming its `docs/…` reading; a promise naming a not-yet-existing
 `product/` doc, passing; a non-`.md`, non-folder path refused; "none"
 ignored; an offending spec on the base branch the range does not touch,
-ignored; an unreadable range and a missing argument, both exit 3. Mirror
-test.
+ignored; a promise the base already carried on a spec the range *does*
+touch, ignored, with a path the same change adds still refused beside
+it; a top-level `README.md` promise passing against a root that holds
+that name; a leading slash refused; an unreadable range and a missing
+argument, both exit 3. Mirror test.
 
 ## Definition of Done
 
@@ -130,8 +133,8 @@ test.
 
 `check_promise_paths.sh` ships, wired into `writrun-check.yml` **before**
 the companions step, and refuses a promise on the two conditions the
-spec named. Seven case files under
-`tests/integration/stage-2/promise_paths/`, eighteen assertions.
+spec named. Ten case files under
+`tests/integration/stage-2/promise_paths/`, twenty-five assertions.
 
 `spec-0044`'s five real paths are refused one by one, each shown the
 `docs/…` reading that made it unkeepable — the fixture reproduces them
@@ -146,6 +149,25 @@ lines of awk, without the prefix — and applies the prefix only to print
 the reading back. Coupling to either sibling would have meant recovering
 the written form by stripping a prefix that a promise beginning `docs/`
 makes ambiguous.
+
+**Three readings of the two conditions the first cut got wrong**, each
+now with a case that fails without it:
+
+- The base is read per spec, not only per range. The criterion names the
+  spec the range does not touch, but the boundary the header states is
+  wider: a promise that already reached the base is history whichever
+  spec carries it. Without the base read, a completion run flipping
+  `approved` to `implemented` is refused with a message offering a
+  one-edit fix that is by then an amendment under an open pull request.
+- A path with no slash has no first segment. Reading its whole text as
+  one compared it against the repository's root *files*, so a promise of
+  `README.md` — the top-level form the third criterion says shall pass —
+  was refused wherever the root holds that name, which is everywhere.
+- A leading slash is refused outright. Its empty first segment slipped
+  past condition one, and the suffix passed condition two, so `/tests/`
+  was accepted as resolving — while `check_deltas.sh` reads it as
+  `docs//tests/`, which no diff can match. That is the late refusal this
+  check exists to move earlier, admitted by the check itself.
 
 **No divergence from Scope.** `new.sh`'s templates stay untouched
 (spec-0038's reasoning), and neither the completion gate nor the

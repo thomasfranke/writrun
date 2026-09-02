@@ -58,6 +58,31 @@ if [ "$#" -lt 1 ] || [ -z "${1:-}" ]; then
 fi
 RANGE="$1"
 
+# --- the range's base ------------------------------------------------------
+#
+# The same resolution the companions check uses. A merge-base that could
+# not be computed is not a base of "nothing", it is an unanswered
+# question.
+#
+# What it is for: a promise that already reached the base is out of
+# reach here — the fix there is an amendment under an open pull request,
+# not the one edit this refusal offers. Without it a completion run that
+# merely flips `approved` to `implemented` is refused with a message
+# insisting on a cheap fix that no longer exists.
+case "$RANGE" in
+  *...*)
+    left="${RANGE%%...*}"
+    right="${RANGE##*...}"
+    if ! BASE=$(git merge-base "${left:-HEAD}" "${right:-HEAD}" 2>&1); then
+      echo "git merge-base ${left:-HEAD} ${right:-HEAD} failed:" >&2
+      printf '%s\n' "$BASE" | head -n 2 >&2
+      exit 3
+    fi
+    ;;
+  *..*) BASE="${RANGE%%..*}" ;;
+  *)    BASE="$RANGE" ;;
+esac
+
 # git_read <label> <git-args...> — runs git and leaves its stdout in
 # GIT_OUT. On failure it prints what git said and exits 3, because a
 # check that could not read its input must never report the empty result
@@ -147,13 +172,36 @@ while IFS= read -r spec; do
   id=$(fm_field id "$spec")
   [ -n "$id" ] || id="$spec"
 
+  # What the same spec already promised at the base. A path in this list
+  # is history — refusing it here would offer a one-edit fix for
+  # something that is now an amendment under an open pull request. A
+  # spec the base does not have promises nothing there, and `git show`
+  # failing is exactly that, so its stderr is dropped rather than read
+  # as an unanswered question.
+  base_promised=$(git show "${BASE}:${spec}" 2>/dev/null | promised_written || true)
+
   while IFS= read -r p; do
     [ -n "$p" ] || continue
+
+    if [ -n "$base_promised" ] && printf '%s\n' "$base_promised" | grep -qxF -- "$p"; then
+      continue
+    fi
 
     # The reading `check_deltas.sh` will take, and the one the refusal
     # prints: the author's fix is to write a path that reads as a real
     # documentation path, so they are shown the one theirs read as.
     as_read="docs/${p}"
+
+    # A leading slash is refused before anything reads a segment: it is
+    # not a root-relative promise but an unreadable one, prefixed into
+    # `docs//…`, which no diff can match — and its empty first segment
+    # would otherwise slip past condition one untested.
+    case "$p" in
+      /*)
+        fault "${id} promises \`${p}\`, read as ${as_read} — a leading slash makes a path no diff can match."
+        continue
+        ;;
+    esac
 
     # Condition one — root-relative. The first segment is compared
     # against the repository's own top level, so nothing here is a list
@@ -161,7 +209,16 @@ while IFS= read -r spec; do
     # what makes the documentation reading win where the two collide:
     # a project with both `docs/tests/` and `tests/` promises into its
     # docs, which is the only reading that can ever be kept.
-    first="${p%%/*}"
+    #
+    # Only a path carrying a slash has a first segment to compare. A
+    # promise naming a doc at `docs/`'s own top level — `about.md` —
+    # has none, and reading its whole text as a segment would compare it
+    # against the repository's root *files* and refuse `README.md`,
+    # which is a promise the criterion says shall pass.
+    case "$p" in
+      */*) first="${p%%/*}" ;;
+      *)   first="" ;;
+    esac
     if [ -n "$first" ] && [ -e "$first" ] && [ ! -e "docs/${first}" ]; then
       fault "${id} promises \`${p}\`, read as ${as_read} — \`${first}\` is a repository-root entry and docs/${first} does not exist, so no diff can ever touch it."
       continue
