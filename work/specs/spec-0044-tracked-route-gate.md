@@ -169,3 +169,59 @@ case for it.
   explicit, three times — and recorded instead as
   [report-0007](../reports/report-0007-the-head-branch.md), which rides
   this change the way recording is allowed to.
+
+### What review changed
+
+A review of the finished branch found three things, two of them defects
+in what this spec shipped and one structural. All three are answered
+here rather than deferred, because a gate that is wrong in CI is a gate
+every future change has to work around.
+
+- **The rule had no stage condition, and its whole premise is a pull
+  request.** Below Stage 2 a project has no forge, no branches and no
+  squash-merge to be the assent — it takes the tracked route on `main`,
+  because that is the only place it has. Rule K refused it there,
+  advising a `report/` branch the project cannot open. It now carries
+  `[ "$STAGE" -ge 2 ]`, like rules E and F and for the same reason, and
+  stands down silently: a stage a rule does not apply at is not a rule
+  that could not be run, so there is nothing to announce. This also
+  restores rule J's claim in the docblock to being true — it is again
+  the one report rule with no stage condition.
+
+- **The base side was read at the current path**, so a renamed file's
+  base read empty and every rule downstream judged a birth. A report
+  `tracked` since long before the range, moved to a better slug, was
+  refused for reaching `tracked` — and the verdict's advice ("leave the
+  report open here") is uncompliable, since rule J forbids
+  `tracked -> open`. Queue files are never renamed (AGENTS.md), so this
+  was latent rather than live; the base is now read at the path the
+  range says the file had, through `git diff --name-status -M`.
+
+- **The generator that drives the route into the gate did not know
+  about it.** `new.sh task --from-report` flipped the report, stamped
+  `triaged` and minted the task with no awareness of the branch, and
+  `writrun-create-task-and-spec`'s SKILL.md said only that the `report/`
+  prefix is for a change carrying only reporting and not to wait for
+  one — true of recording, and the opposite of true of this route. An
+  agent following the documented command from a `task/` branch got no
+  warning and a change CI refuses twice, whose undo is three files by
+  hand. `new.sh` now refuses first, writing nothing, with the branch to
+  open in the message; the SKILL states the requirement where the route
+  is documented, and both skills' Never lists name the rename that
+  would clear the check without clearing anything else.
+
+**This reaches past Scope, which named `check_state.sh`, the workflow,
+one SKILL, the tests and the template sync.** The judgement is that
+shipping a door while leaving the repository's own tool walking into it
+is not a smaller change than the spec's — it is the same change,
+unfinished. Nothing under `docs/` moved, so **Proposed product changes**
+and **Proposed technical changes** stay `none` and the delta gate is
+untouched.
+
+The structural half of the third finding is not fixed here and is not
+fixable by a rule this spec authorizes: the gate is a branch-*name*
+test, so renaming a head branch to `report/…` clears it, and a real
+check would have to read the diff instead. Recorded as
+[report-0008](../reports/report-0008-prefix-not-property.md), which
+rides this change the way recording is allowed to — and which the
+`tracked` route, by the rule this spec just built, may not.
