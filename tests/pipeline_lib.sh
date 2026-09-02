@@ -18,6 +18,7 @@ CHECK_STATE="$REPO_ROOT/.writrun/skills/writrun-check-task-state/check_state.sh"
 CHECK_DELTAS="$REPO_ROOT/.writrun/skills/writrun-check-spec-deltas/check_deltas.sh"
 LIST_TASKS="$REPO_ROOT/.writrun/skills/writrun-select-next-task/list_tasks.sh"
 NEW_SH="$REPO_ROOT/.writrun/skills/writrun-create-task-and-spec/new.sh"
+BRIEF="$REPO_ROOT/.writrun/skills/writrun-select-next-task/brief.sh"
 
 # The workflow step scripts — what the integration tier exercises, the same
 # way the unit tier exercises the skills.
