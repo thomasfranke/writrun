@@ -16,9 +16,9 @@ created: 2026-09-02T06:02:26Z
 ## Scope
 
 In scope: `docs/technical/README.md`; five new chapter files beside it;
-every in-repo relative reference to a moved anchor (in `docs/` —
-`docs/technical/decisions/` included — `AGENTS.md`, `README.md`,
-`CONTRIBUTING.md`); `AGENTS.md`'s reading order, which currently names
+every in-repo relative reference to a moved anchor (in `docs/` outside
+`decisions/`, `AGENTS.md`, `README.md`, `CONTRIBUTING.md`);
+`AGENTS.md`'s reading order, which currently names
 the whole README before any queue touch; the script comments and
 stderr messages that cite `docs/technical/README.md` as the schemas'
 address — bare repo paths, not URLs, and anchorless, so no stub can
@@ -26,9 +26,11 @@ keep them true.
 
 Out of scope: the content itself — sections move verbatim, and any
 rewording beyond what re-linking requires is a separate change. Also
-out: moving `docs/technical/decisions/` (the folder stays; only the
-two decision files whose relative links reach moved anchors are
-re-linked, declared below); `.writrun/conventions/`, whose references
+out: `docs/technical/decisions/` entirely — a dated decision is a
+record, and the machinery's own companion rule treats the index as
+that folder's only rewritten file, so the two entries whose relative
+links reach moved anchors are left alone and land on stubs, which
+keep resolving; `.writrun/conventions/`, whose references
 are absolute GitHub URLs that the stub headings keep valid (the
 `SKILL.md` copies are spec-0046's); `template/`'s own kit docs, which
 also reference by absolute URL; `work/` — a queue file's `doc_ref` is
@@ -57,8 +59,10 @@ never rewritten under another task's change.
 3. Rewrite the in-repo relative references to point at the chapters
    directly (readers land on content, not stubs): the `docs/product/`
    chapters, `docs/about.md`, `AGENTS.md`, `README.md`,
-   `CONTRIBUTING.md`, and the two `docs/technical/decisions/` files
-   that reach the README by `../../README.md#`. Cross-references
+   `CONTRIBUTING.md`. The two `docs/technical/decisions/` entries
+   that reach the README by `../../README.md#` are deliberately not
+   rewritten — a dated decision is a record — and their links land on
+   stubs, which keep resolving. Cross-references
    between moved sections are rewritten among the chapters —
    including the README's own bare `#fragment` links whose two ends
    now live in different chapters; a chapter ships with no dead
@@ -90,10 +94,10 @@ never rewritten under another task's change.
   README takes today shall hold: every `technical/README.md#` hit
   over `docs/`, `AGENTS.md`, `README.md` and `CONTRIBUTING.md`
   resolves to a heading still present in the README; every relative
-  `README.md#` hit under `docs/technical/decisions/` resolves there
-  or was rewritten to its chapter; and every bare `](#…)` link
-  inside `docs/technical/*.md` resolves to a heading in its own
-  file.
+  `README.md#` hit under `docs/technical/decisions/` still resolves
+  to a README heading — a stub's, by design, since decision entries
+  are never rewritten; and every bare `](#…)` link inside
+  `docs/technical/*.md` resolves to a heading in its own file.
 - When `check_doc_shapes.sh` and the full suite run, they shall pass
   without modification.
 
@@ -146,12 +150,6 @@ carry no edit and are deliberately not promised.
 - `technical/selection.md` — new: the selection algorithm, verbatim.
 - `technical/reporting.md` — new: the report entry point, verbatim.
 - `technical/distribution.md` — new: the distribution section, verbatim.
-- `technical/decisions/tasks-and-specs/0008-ready-for-development-is.md`
-  — link target only: `../../README.md#task-selection-algorithm`
-  becomes the chapter's.
-- `technical/decisions/tasks-and-specs/0064-a-report-is-an-artefact.md`
-  — link target only: `../../README.md#the-report-entry-point`
-  becomes the chapter's.
 
 ## Outcome
 
