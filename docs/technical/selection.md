@@ -79,6 +79,13 @@ work. A project with several contributors reads it as the person the
 forge names, which is what `taken_by` carries — the rule is the same
 question with a different population.
 
+**This is not the open-pull-request test below.** That one says whether
+the flight state is still true; this one says whose it is, and only the
+two together decide. So a one-agent project resumes a task whose pull
+request is open, because the population it belongs to is the session
+reading it, while a multi-contributor project names the same task and
+leaves it — [where step 0 can see](#where-step-0-can-see-and-where-it-cannot).
+
 **A `backlog` task is not authorized work.** `ready` is written by the
 machinery from the fact that every spec in `spec_ref` is `approved`, and
 the algorithm cross-checks the two rather than trusting either alone. So

@@ -10,8 +10,10 @@ stopping as soon as you have what the task needs:
    bash .writrun/scripts/stage-1-tasks-and-specs/session_card.sh
    ```
 
-   Open a conventions file only for a *why* the card leaves open — never
-   for a value, and never against one.
+   Open a conventions file for a *why* the card leaves open, and for what
+   is no value at all:
+   [`prose.md`](.writrun/conventions/prose.md) is how this project writes
+   docs, skills and comments. Never for a value, and never against one.
 1. [`docs/about.md`](docs/about.md) — what this project is. Always read.
 2. [`docs/product/README.md`](docs/product/README.md) — the rules this
    repo is checked against. Read the chapter you are touching before
@@ -94,6 +96,9 @@ This repo's answer; every project states its own. Reasoning:
 - Never create a spec without a task — `task_ref` must resolve.
 - Never rename or move a task or spec file. Identity is not order.
 - Never track trivial work. A typo is a commit.
+- Never write `status: approved` yourself, and never on permission
+  relayed through you. The merge is the record and nothing else is
+  ([gates](docs/product/stage-1-tasks-and-specs/gates.md)).
 - Never edit an approved spec's body while it stays `approved`, and never
   edit under `docs/` without naming the non-completed tasks whose
   `doc_ref` points into it, while the edit is still in front of the human
