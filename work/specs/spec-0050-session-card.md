@@ -18,16 +18,22 @@ created: 2026-09-02T06:02:32Z
 ## Scope
 
 In scope: `session_card.sh` in
-`.writrun/scripts/stage-1-tasks-and-specs/`; `AGENTS.md` naming it as
-the session-start read; its contract in `technical/distribution.md`
-and one line in `technical/settings.md` (the card as the file's
-rendered view); unit tests; template sync.
+`.writrun/scripts/stage-1-tasks-and-specs/`; one flag on
+`read_setting.sh` — `--origin`, printing `declared` or `default`
+beside the value, since today the script prints a defaulted value
+and a declared one identically and the card must tell them apart;
+`AGENTS.md` naming the card as the session-start read; its contract
+in `technical/distribution.md` and one line in
+`technical/settings.md` (the card as the file's rendered view); unit
+tests; template sync.
 
 Out of scope: any new source of truth — the card computes nothing and
 decides nothing; every line is read from `settings.json` (via
-`read_setting.sh`, defaults included), from `check_observance.sh`'s
-`TYPES=`/`SCOPES=` lines (the machine half of the vocabulary, single
-source), or is a methodology constant the contract already fixes.
+`read_setting.sh`, defaults included — its `--origin` flag is this
+spec's one script change, and a second parser of the file stays
+out), from `check_observance.sh`'s `TYPES=`/`SCOPES=` lines (the
+machine half of the vocabulary, single source), or is a methodology
+constant the contract already fixes.
 
 ## Steps
 
@@ -40,10 +46,12 @@ source), or is a methodology constant the contract already fixes.
    the task-tag shape; the three `stage_1` declarations
    (`spec_required`, `decisions_style`, `product_layout`) and
    `provenance_ledger`.
-2. Sources: settings via `read_setting.sh` so absent files or keys
-   print the documented defaults, marked as defaults; vocabularies
-   extracted from `check_observance.sh`'s two assignment lines —
-   extraction failing is a loud exit 3, never a silently shorter card.
+2. Sources: settings via `read_setting.sh`, each key read for its
+   value and its `--origin` — absent files or keys print the
+   documented defaults, and the flag is what lets the card mark a
+   default as one; vocabularies extracted from
+   `check_observance.sh`'s two assignment lines — extraction failing
+   is a loud exit 3, never a silently shorter card.
 3. `AGENTS.md`: the card joins the session start — run it instead of
    re-reading the conventions for values; open a conventions file when
    the card leaves a *why* question.
@@ -79,7 +87,9 @@ source), or is a methodology constant the contract already fixes.
 
 Unit, `tests/unit/session_card/`, against fixture settings files:
 each style's example rendering, flags false, absent file → defaults
-marked, vocabulary extraction, the loud exit 3, the line-count bound.
+marked, vocabulary extraction, the loud exit 3, the line-count
+bound; and for `read_setting.sh --origin`: a declared key, a
+defaulted key, an absent file.
 
 ## Definition of Done
 
@@ -96,7 +106,7 @@ marked, vocabulary extraction, the loud exit 3, the line-count bound.
 - `technical/distribution.md` — the script's contract joins the
   operational half.
 - `technical/settings.md` — one line: the card is the file's rendered
-  view.
+  view; `--origin` joins the reader's documented contract.
 
 ## Outcome
 

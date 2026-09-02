@@ -23,8 +23,9 @@ skills are mirrored byte-identical).
 
 Out of scope: every script (no behaviour change anywhere); the YAML
 `description` front matter of each skill (it is the retrieval trigger
-and already earns its length); `AGENTS.md` (its pointers to the skills
-stay as they are).
+and already earns its length); `AGENTS.md` — this spec adds no
+`AGENTS.md` edit of its own (spec-0049 is the one reshaping the
+completion steps' skill pointers, and that edit is its).
 
 Builds on spec-0045 — the chapters are where the prose lands — and is
 implemented after it in the same change.
@@ -67,9 +68,11 @@ implemented after it in the same change.
 
 ## Edge cases
 
-- A sentence that is half rule, half interpretation (the
-  check-task-state "run it **after** step 4" warning) — the rule half
-  lives in the chapter; the skill keeps the one operational line.
+- A sentence that is half rule, half interpretation — the
+  "run it **after** step 4" ordering warning, which lives in
+  `AGENTS.md`'s completion steps, not in a skill: spec-0049 encodes
+  that ordering in `preflight.sh`, and the check-task-state skill
+  keeps one operational when-to-run line.
 - The select skill's "when a person asks what is available" conduct —
   agent conduct, not machinery: it stays in the skill, compressed.
 - Adopters who copied the fat skills — they update with the next kit
@@ -92,10 +95,18 @@ copies moved together.
 
 ## Proposed technical changes
 
-- `technical/selection.md` — absorbs what the select skill alone said.
-- `technical/schemas.md` — absorbs what the create skill alone said.
-- `technical/reporting.md` — absorbs any triage sentence the create
-  skill alone carried.
+- `technical/selection.md` — gains the line naming its skill as the
+  operational pointer, plus whatever the audit shows the select skill
+  alone said.
+- `technical/schemas.md` — the same, for the create skill's schema
+  prose.
+- `technical/reporting.md` — the same, for triage (report-0004 says
+  the triage table already stands in three docs, so the definite
+  delta is the pointer line; sentences move only where the audit
+  finds one unstated).
+- `technical/distribution.md` — absorbs the check skills' operational
+  warnings no chapter states today ("pass all four gates or none";
+  deltas never checked one spec at a time).
 
 ## Outcome
 

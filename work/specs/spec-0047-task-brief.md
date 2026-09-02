@@ -32,10 +32,17 @@ the gates'. `brief.sh` is a reader, no git, no network, no writes.
    priority, each spec's id and status — then the task file whole,
    then each `spec_ref` entry's file whole, then the `doc_ref`
    section, each part behind a `== <path> ==` divider.
-2. `doc_ref` resolution: split `path#anchor`; the section runs from
-   the heading whose GitHub-style slug equals the anchor to the next
-   heading of the same or higher level. No anchor → the whole file.
-   First match wins on a duplicate slug, and the divider says so.
+2. `doc_ref` resolution: split `path#anchor`; the path is written
+   relative to `docs/` (the schema's contract —
+   `check_front_matter.sh` refuses a `docs/` prefix), so the file
+   read is `docs/<path>`, never `<path>` from the repository root.
+   The section runs from the heading whose slug equals the anchor to
+   the next heading of the same or higher level. No anchor → the
+   whole file. Slugs follow GitHub's actual rule — lowercase, spaces
+   to hyphens, backticks dropped, punctuation stripped *except*
+   hyphens and underscores, and duplicate heading text taking
+   `-1`/`-2` suffixes in document order — so every anchor names
+   exactly one heading.
 3. Failure is loud and partial output is honest: task not found →
    exit 1; a `spec_ref` entry or the `doc_ref` anchor unresolvable →
    print what resolved, name what did not, exit 2.
@@ -56,15 +63,25 @@ the gates'. `brief.sh` is a reader, no git, no network, no writes.
 - When `spec_ref` is empty or `doc_ref` is null, it shall say so in
   the corresponding divider and exit 0 — an empty list is an answer,
   not an error.
+- When the resolved section is a spec-0045 stub — its whole body the
+  one line linking the heading's new home — it shall follow that
+  link once and print the chapter section it names, the divider
+  showing both hops.
 
 ## Edge cases
 
-- `doc_ref` with an anchor whose heading contains punctuation — slug
-  rule: lowercase, spaces to hyphens, punctuation stripped (the rule
-  GitHub applies, which is what every `doc_ref` in the queue targets).
-- A `doc_ref` into `technical/README.md` after spec-0045 — it lands on
-  a stub; the stub's one line names the chapter, which the reader then
-  briefs. Stale refs surface rather than silently truncating.
+- `doc_ref` with an anchor whose heading carries punctuation —
+  `#pr_title_style` keeps its underscores and `#blocked-vs-depends_on`
+  keeps hyphens and underscore while dropping the dot: the slug rule
+  above is GitHub's own, which is what every `doc_ref` already in the
+  queue targets; a strip-everything rule would resolve neither.
+- A `doc_ref` into `technical/README.md` after spec-0045 — the anchor
+  lands on a stub whose whole body is the one line linking the
+  heading's new home; `brief.sh` recognises that shape and follows
+  the link once, briefing the chapter's section, so the reader gets
+  content and never a brief that looks complete while holding one
+  link. The queue's refs stay README-shaped deliberately — spec-0045
+  rewrites `docs/`, not `work/`.
 - A spec listed twice in `spec_ref` — printed once, noted.
 
 ## Tests required
@@ -72,7 +89,9 @@ the gates'. `brief.sh` is a reader, no git, no network, no writes.
 Unit, `tests/unit/brief/`: the happy path (order and dividers), id
 spellings (`34`, `task-0034`), exit 1, exit 2 with partial output,
 empty `spec_ref`, null `doc_ref`, anchor-to-section extraction
-including the next-same-level boundary.
+including the next-same-level boundary, the `docs/`-relative base (a
+`doc_ref` never carries the prefix), underscore-keeping slugs, a
+duplicate heading's `-1` suffix, the stub follow.
 
 ## Definition of Done
 
