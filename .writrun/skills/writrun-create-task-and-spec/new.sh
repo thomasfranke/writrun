@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# new.sh — scaffolds a schema-correct task or spec file.
+# new.sh — scaffolds a schema-correct task, spec or report file.
 #
 # Usage:
 #   new.sh task "<title>" --origin rule|report \
@@ -7,11 +7,20 @@
 #                          [--priority high|medium|low] \
 #                          [--depends-on task-nnn[,task-mmm...]] \
 #                          [--doc-ref path/to/doc.md#anchor] \
-#                          [--milestone name]
+#                          [--milestone name] \
+#                          [--from-report report-nnn]
 #   new.sh spec task-nnn "<title>" [--slug words-here]
+#   new.sh report "<title>" [--slug words-here] [--doc-ref path/to/doc.md#anchor]
 #
-# Run from the repository root — paths are relative to work/tasks and
-# work/specs there.
+# Run from the repository root — paths are relative to work/tasks,
+# work/specs and work/reports there.
+#
+# **A report takes neither --origin nor --priority, and both are refused
+# by name rather than as unknown flags.** `origin` is a fact about how a
+# *task* came to exist and a report is one of its two answers — a report
+# has no origin of its own. `priority` orders work, and a report commits
+# to none: it says something was seen, and triage decides whether
+# anything follows (docs/product/concepts/report.md).
 #
 # Exists because the schema in docs/technical/README.md is precise about
 # details easy to get wrong from memory: spec_ref/depends_on are always
@@ -24,7 +33,13 @@
 # correctly every time.
 #
 # `new.sh spec` also appends the new spec's id to its task's spec_ref list
-# — appends, never overwrites existing entries.
+# — appends, never overwrites existing entries. `new.sh task
+# --from-report` is the same edit one kind up: the new task's id joins
+# that report's `task_ref`, its `triaged` date is stamped, and a report
+# still `open` becomes `tracked` — which is the route the append just
+# took. That third write is not optional bookkeeping: `triaged` is null
+# while a report is `open`, so stamping the date without moving the
+# status would write a file the front-matter check refuses.
 #
 # The next id is minted above the queue, the history, *and* every open pull
 # request — an id is unique across all three
@@ -35,9 +50,9 @@
 # cut from the same main both claimed 0009 here.
 #
 # Body templates resolve in three layers — the project's shape wins:
-#   1. .writrun/conventions/templates/{task,spec}.md   — the project customized
-#   2. .writrun/templates/{task,spec}.md      — WritRun's shipped default
-#   3. the skeleton built into this script    — safety: works anywhere
+#   1. .writrun/conventions/templates/{task,spec,report}.md  — the project customized
+#   2. .writrun/templates/{task,spec,report}.md   — WritRun's shipped default
+#   3. the skeleton built into this script         — safety: works anywhere
 # The template's {{id}}, {{title}}, {{task_ref}} and {{references}} are
 # substituted.
 #
@@ -47,8 +62,9 @@
 # reader here is line-based — while the generated *body* carries the same
 # references as relative markdown links: a task's body links its
 # `doc_ref` and each spec in `spec_ref`, a spec's body links its
-# `task_ref`, and the `spec_ref` append below adds the body link in the
-# same edit. A template that drops {{references}} simply gets no links —
+# `task_ref`, a report's body links its `doc_ref`, and both appends below
+# — a spec onto its task, a task onto its report — add the body link in
+# the same edit. A template that drops {{references}} simply gets no links —
 # taste, not contract.
 #
 # The *contract* front matter is always generated here, never templated —
@@ -139,8 +155,11 @@ next_id() {
 
   # Scan case-insensitively so historical uppercase IDs contribute to the
   # next number while newly generated filenames remain lowercase.
+  # A directory that is not there is zero files, not a failure: an adopter
+  # who has never recorded a report has no work/reports/, and minting the
+  # first id is exactly the moment that is still true.
   while IFS= read -r f; do bump "$f"; done \
-    < <(find "$dir" -maxdepth 1 -type f -iname "${prefix}-*.md" -print)
+    < <(find "$dir" -maxdepth 1 -type f -iname "${prefix}-*.md" -print 2>/dev/null)
 
   # An id is never reused, including after its file was deleted — and a
   # deleted file is invisible to the scan above. Every id this directory
@@ -285,9 +304,109 @@ body_template_for() {
   fi
 }
 
+# --- editing a file that already exists -------------------------------
+#
+# Three edits, shared by every subcommand that makes them: a spec appends
+# its id to its task, a task appends its id to the report it was triaged
+# from, and that triage moves the report's status and date. They were
+# written twice, once per subcommand, and the two copies are the reason
+# this section exists — the anchoring below had to be added to both, and
+# a fix that lands in one of two identical awk programs is a fix that
+# lands in neither.
+#
+# **Every one of them is bounded to the front-matter block.** A body that
+# quotes front matter is what evidence looks like — this repository's own
+# reports paste `status: open` into a fenced block — and an unanchored
+# `/^status: /` rewrites it, silently falsifying the evidence while every
+# check still passes, because the file is still canonical. The block is
+# the only place these fields mean anything.
+#
+# Portable single-arg sub() only: no gawk-only 3-arg match (see
+# writrun-check-spec-deltas/check_deltas.sh's own history with this).
+
+# append_list_field <file> <field> <id> — add an id to an inline list,
+# keeping what is there. Append, never overwrite: `spec_ref` and
+# `task_ref` are lists because a task can need several specs and triage
+# can split one finding into several tasks, and the second run must find
+# the first one's id still in place.
+append_list_field() {
+  local file field newid
+  file="$1"; field="$2"; newid="$3"
+  awk -v field="$field" -v newid="$newid" '
+    NR == 1 { infm = ($0 == "---"); print; next }
+    infm && /^---$/ { infm = 0; print; next }
+    infm && index($0, field ": [") == 1 {
+      line = $0
+      sub("^" field ": \\[", "", line)
+      sub(/\]$/, "", line)
+      if (line == "") { print field ": [" newid "]" }
+      else { print field ": [" line ", " newid "]" }
+      next
+    }
+    { print }
+  ' "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
+}
+
+# set_fm_field <file> <field> <value> — replace a field's value.
+set_fm_field() {
+  local file field value
+  file="$1"; field="$2"; value="$3"
+  awk -v field="$field" -v value="$value" '
+    NR == 1 { infm = ($0 == "---"); print; next }
+    infm && /^---$/ { infm = 0; print; next }
+    infm && index($0, field ": ") == 1 { print field ": " value; next }
+    { print }
+  ' "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
+}
+
+# append_body_link <file> <kind> <link> — the matching body link, in the
+# same run as the front-matter append: the two must never disagree about
+# which ids a file carries. An existing References line gains the link; a
+# file that had nothing to link gets the line — under the body's first
+# heading, whatever its level, or straight after the front matter when
+# the body opens without one. That last fallback belongs to the
+# invariant: an insert that finds no anchor must not quietly not happen,
+# and a body shaped unlike the ones we imagined is still a body the front
+# matter has to agree with.
+#
+# Unless the project asked for no links at all. A <kind> template without
+# {{references}} opted its bodies out — taste, not contract, as the
+# header says — and an opt-out that lasted until the file's first
+# reference would be no opt-out. The front matter carries the id either
+# way: that half is the machine contract, and never the template's to
+# shape.
+append_body_link() {
+  local file kind link tpl
+  file="$1"; kind="$2"; link="$3"
+  tpl=$(body_template_for "$kind")
+  if [[ -n "$tpl" ]] && ! grep -q '{{references}}' "$tpl"; then return 0; fi
+  if grep -q '^\*\*References:\*\* ' "$file"; then
+    awk -v link="$link" '
+      !done && /^\*\*References:\*\* / { print $0 " · " link; done = 1; next }
+      { print }
+    ' "$file" > "${file}.tmp"
+  elif grep -qE '^#+ ' "$file"; then
+    awk -v link="$link" '
+      !done && /^#+ / { print; print ""; print "**References:** " link; done = 1; next }
+      { print }
+    ' "$file" > "${file}.tmp"
+  else
+    awk -v link="$link" '
+      fm < 2 && /^---$/ {
+        fm++; print
+        if (fm == 2) { print ""; print "**References:** " link }
+        next
+      }
+      { print }
+    ' "$file" > "${file}.tmp"
+  fi
+  mv "${file}.tmp" "$file"
+}
+
 # The contract fields — the script's to write, never a template's.
 TASK_CONTRACT="id status blocked_reason taken_by spec_ref doc_ref origin priority depends_on milestone created completed provenance"
 SPEC_CONTRACT="id task_ref status created"
+REPORT_CONTRACT="id status task_ref doc_ref created triaged"
 
 # template_extensions — stdin: a rendered template. Prints the lines of
 # its leading front-matter block (the extension fields); nothing when the
@@ -352,8 +471,9 @@ EOF
 }
 
 usage() {
-  echo "Usage: new.sh task \"<title>\" --origin rule|report [--slug words-here] [--priority high|medium|low] [--depends-on task-nnn,...] [--doc-ref path#anchor] [--milestone name]" >&2
+  echo "Usage: new.sh task \"<title>\" --origin rule|report [--slug words-here] [--priority high|medium|low] [--depends-on task-nnn,...] [--doc-ref path#anchor] [--milestone name] [--from-report report-nnn]" >&2
   echo "       new.sh spec task-nnn \"<title>\" [--slug words-here]" >&2
+  echo "       new.sh report \"<title>\" [--slug words-here] [--doc-ref path#anchor]" >&2
   exit 3
 }
 
@@ -370,16 +490,19 @@ case "$cmd" in
     depends_on=""
     doc_ref=null
     origin=""
+    origin_given=""
     milestone=null
     slug_given=""
+    from_report=""
     while [[ $# -gt 0 ]]; do
       case "$1" in
         --slug) slug_given="${2-}"; slug_chosen=1; shift 2 ;;
         --priority) priority="$2"; shift 2 ;;
         --depends-on) depends_on="$2"; shift 2 ;;
         --doc-ref) doc_ref="$2"; shift 2 ;;
-        --origin) origin="${2-}"; shift 2 ;;
+        --origin) origin="${2-}"; origin_given=1; shift 2 ;;
         --milestone) milestone="$2"; shift 2 ;;
+        --from-report) from_report="${2-}"; shift 2 ;;
         *) echo "Unknown flag: $1" >&2; exit 3 ;;
       esac
     done
@@ -389,6 +512,20 @@ case "$cmd" in
       *) echo "Invalid --priority '$priority' — expected high, medium, or low" >&2; exit 3 ;;
     esac
 
+    # **`--from-report` states the origin rather than defaulting it.** The
+    # flag names the report this task was born from, which is the whole
+    # content of `origin: report` — so the fact is typed, once, and the
+    # two cannot disagree. `--origin rule` alongside it is refused for the
+    # same reason: a task cannot be derived from a rule and born from a
+    # report, and picking a winner silently is the wrong fact nobody typed.
+    if [[ -n "$from_report" ]]; then
+      if [[ -n "$origin_given" && "$origin" != "report" ]]; then
+        echo "--from-report names the report this task was born from, which is 'origin: report' — --origin '$origin' contradicts it" >&2
+        exit 3
+      fi
+      origin=report
+    fi
+
     # No default, deliberately. `origin` is a fact about how the task came
     # to exist, written once and never rewritten — and a default would
     # record one of the two silently, for whichever kind of change happened
@@ -396,7 +533,7 @@ case "$cmd" in
     # to prevent, so an unstated origin refuses (docs/technical/README.md#task-schema).
     case "$origin" in
       rule|report) ;;
-      "") echo "--origin is required — 'rule' for a task derived from an authored rule, 'report' for one born from a report" >&2; exit 3 ;;
+      "") echo "--origin is required — 'rule' for a task derived from an authored rule, 'report' for one born from a report (or --from-report, which states it)" >&2; exit 3 ;;
       *) echo "Invalid --origin '$origin' — expected rule or report" >&2; exit 3 ;;
     esac
 
@@ -404,6 +541,28 @@ case "$cmd" in
     # and touch nothing, and an id minted for a file never written is an
     # id the next run would mint again anyway.
     if [[ -n "${slug_chosen:-}" ]]; then check_slug "$slug_given"; fi
+
+    # The report is resolved here, before anything is written, for the same
+    # reason: a task created against a report that does not resolve leaves
+    # the link half made, and nothing downstream would ever notice.
+    report_file=""
+    report_status=""
+    if [[ -n "$from_report" ]]; then
+      report_file=$(queue_file work/reports report "$from_report")
+      [[ -n "$report_file" && -f "$report_file" ]] \
+        || { echo "No such report: ${from_report} — --from-report names a report that is already recorded" >&2; exit 3; }
+      report_status=$(sed -n 's/^status: *//p' "$report_file" | head -n1 | sed 's/[[:space:]]*$//')
+      case "$report_status" in
+        open|tracked) ;;
+        authored|fixed|declined)
+          echo "${report_file} is '${report_status}' — a terminal report is never re-routed" >&2
+          echo "Triage ended it, and a recurrence is a new report: ids are never reused and a second sighting keeps its own date (docs/product/concepts/report.md)." >&2
+          exit 3 ;;
+        *)
+          echo "${report_file} carries status '${report_status}', which is not a report status" >&2
+          exit 3 ;;
+      esac
+    fi
 
     forge_scan
     id="task-$(next_id work/tasks task)"
@@ -472,6 +631,38 @@ in the spec.
 EOF
       fi
     } > "$file"
+
+    # --- the mechanical half of triage ------------------------------------
+    #
+    # The link runs one way: the report names the tasks triage produced,
+    # and the task schema is untouched
+    # (docs/technical/decisions/tasks-and-specs/0064-a-report-is-an-artefact.md).
+    # So this edit belongs here rather than in an agent's memory — the
+    # generator is the only place that knows both ids at once.
+    if [[ -n "$report_file" ]]; then
+      append_list_field "$report_file" task_ref "$id"
+
+      # `open` becomes `tracked` and the date is stamped, in the same run.
+      # A report already `tracked` keeps both: the date belongs to the
+      # first task triage produced, and a second one does not re-date the
+      # judgement. `triaged` is null exactly while a report is `open`, so
+      # these two move together or the file stops being canonical.
+      if [[ "$report_status" = "open" ]]; then
+        set_fm_field "$report_file" status tracked
+        set_fm_field "$report_file" triaged "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+      fi
+
+      append_body_link "$report_file" report "[${id}](../tasks/$(basename "$file"))"
+
+      if [[ "$report_status" = "open" ]]; then
+        echo "Created ${file} (${id}), appended to ${report_file}'s task_ref — it is now tracked"
+      else
+        echo "Created ${file} (${id}), appended to ${report_file}'s task_ref"
+      fi
+      mint_report
+      exit 0
+    fi
+
     echo "Created ${file} (${id})"
     mint_report
     ;;
@@ -594,68 +785,93 @@ TODO
 _(fill after execution)_
 EOF
 
-    # Append the new spec's id to the task's spec_ref list. Portable
-    # single-arg sub() only — no gawk-only 3-arg match (see
-    # writrun-check-spec-deltas/check_deltas.sh's own history with this).
-    awk -v newid="$id" '
-      /^spec_ref: \[/ {
-        line = $0
-        sub(/^spec_ref: \[/, "", line)
-        sub(/\]$/, "", line)
-        if (line == "") { print "spec_ref: [" newid "]" }
-        else { print "spec_ref: [" line ", " newid "]" }
-        next
-      }
-      { print }
-    ' "$task_file" > "${task_file}.tmp" && mv "${task_file}.tmp" "$task_file"
-
-    # ...and the matching body link, in the same run: front matter and
-    # body must never disagree about which specs a task has. An existing
-    # References line gains the link; a task that had nothing to link
-    # gets the line — under the body's first heading, whatever its
-    # level, or straight after the front matter when the body opens
-    # without one. That last fallback belongs to the invariant: an
-    # insert that finds no anchor must not quietly not happen, and a
-    # body shaped unlike the ones we imagined is still a body the front
-    # matter has to agree with.
-    #
-    # Unless the project asked for no links at all. A task template
-    # without {{references}} opted its bodies out — taste, not contract,
-    # as the header says — and an opt-out that lasted until the task's
-    # first spec would be no opt-out. The front matter carries the spec
-    # either way: that half is the machine contract, and never the
-    # template's to shape.
-    task_tpl=$(body_template_for task)
-    body_links=1
-    if [[ -n "$task_tpl" ]] && ! grep -q '{{references}}' "$task_tpl"; then
-      body_links=0
-    fi
-    spec_link="[${id}](../specs/$(basename "$file"))"
-    if [[ "$body_links" -eq 1 ]]; then
-      if grep -q '^\*\*References:\*\* ' "$task_file"; then
-        awk -v link="$spec_link" '
-          !done && /^\*\*References:\*\* / { print $0 " · " link; done = 1; next }
-          { print }
-        ' "$task_file" > "${task_file}.tmp"
-      elif grep -qE '^#+ ' "$task_file"; then
-        awk -v link="$spec_link" '
-          !done && /^#+ / { print; print ""; print "**References:** " link; done = 1; next }
-          { print }
-        ' "$task_file" > "${task_file}.tmp"
-      else
-        awk -v link="$spec_link" '
-          fm < 2 && /^---$/ {
-            fm++; print
-            if (fm == 2) { print ""; print "**References:** " link }
-            next
-          }
-          { print }
-        ' "$task_file" > "${task_file}.tmp"
-      fi
-      mv "${task_file}.tmp" "$task_file"
-    fi
+    append_list_field "$task_file" spec_ref "$id"
+    append_body_link "$task_file" task "[${id}](../specs/$(basename "$file"))"
 
     echo "Created ${file} (${id}), appended to ${task_file}'s spec_ref"
+    mint_report
+    ;;
+
+  report)
+    shift
+    title="${1:-}"
+    [[ -z "$title" ]] && usage
+    shift
+    doc_ref=null
+    slug_given=""
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --slug) slug_given="${2-}"; slug_chosen=1; shift 2 ;;
+        --doc-ref) doc_ref="$2"; shift 2 ;;
+        # Named refusals, not "unknown flag". Both of these are real flags
+        # one kind over, so a person reaching for them has the wrong model
+        # of what a report is — and the message is the cheapest place to
+        # correct it (docs/product/concepts/report.md).
+        --origin)
+          echo "--origin is a task's — a report has none: it is what 'origin: report' refers to" >&2
+          exit 3 ;;
+        --priority)
+          echo "--priority is a task's — a report commits to no work, so nothing prioritises it" >&2
+          echo "Whether anything follows is triage's answer, and it is written as the report's status." >&2
+          exit 3 ;;
+        *) echo "Unknown flag: $1" >&2; exit 3 ;;
+      esac
+    done
+
+    if [[ -n "${slug_chosen:-}" ]]; then check_slug "$slug_given"; fi
+
+    forge_scan
+    id="report-$(next_id work/reports report)"
+    if [[ -n "${slug_chosen:-}" ]]; then slug="$slug_given"; else slug=$(slugify "$title"); fi
+    file="work/reports/${id}${slug:+-$slug}.md"
+    [[ -e "$file" ]] && { echo "$file already exists" >&2; exit 3; }
+
+    # A report's body links its doc_ref, resolved from work/reports/ — the
+    # same two hops up a task's takes, because the two directories sit
+    # side by side. The front-matter value stays exactly as typed, relative
+    # to docs/, because that is what the machinery reads. `task_ref` is
+    # empty at creation: the links arrive through --from-report, at triage.
+    doc_link=""
+    if [[ "$doc_ref" != "null" ]]; then
+      doc_link="[${doc_ref}](../../docs/${doc_ref})"
+    fi
+    references=$(refs_line "$doc_link")
+
+    tpl=$(body_template_for report)
+    tpl_ext=""
+    tpl_body=""
+    if [[ -n "$tpl" ]]; then
+      rendered=$(render_template "$tpl" "$id" "$title" "" "$references")
+      tpl_ext=$(printf '%s\n' "$rendered" | template_extensions)
+      tpl_body=$(printf '%s\n' "$rendered" | template_body)
+      validate_extensions "$tpl" "$tpl_ext" "$REPORT_CONTRACT"
+    fi
+
+    mkdir -p work/reports
+    {
+      cat <<EOF
+---
+id: ${id}
+status: open
+task_ref: []
+doc_ref: ${doc_ref}
+created: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+triaged: null
+EOF
+      if [[ -n "$tpl_ext" ]]; then printf '%s\n' "$tpl_ext"; fi
+      printf '%s\n\n' "---"
+      if [[ -n "$tpl" ]]; then
+        printf '%s\n' "$tpl_body"
+      else
+        printf '# %s\n\n' "$title"
+        [[ -n "$references" ]] && printf '%s\n\n' "$references"
+        cat <<EOF
+TODO: what was observed, and the evidence at hand. What should be done
+about it is triage's output, never this file's content.
+EOF
+      fi
+    } > "$file"
+    echo "Created ${file} (${id})"
     mint_report
     ;;
 

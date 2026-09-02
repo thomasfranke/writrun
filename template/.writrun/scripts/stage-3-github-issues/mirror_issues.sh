@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # mirror_issues.sh — reconciles the GitHub Issues mirror with a pull
-# request's task files.
+# request's task and report files.
 #
 # Usage: mirror_issues.sh <owner/repo> <pr-number>
 #   The pull request's fields arrive via the environment — never inline
@@ -12,8 +12,23 @@
 #     PR_AUTHOR_ASSOCIATION  OWNER | MEMBER | COLLABORATOR | ...
 #     PR_HTML_URL            the PR's URL, linked from every mirror body
 #
-# The file under work/tasks/ is the authority; the Issue is a projection
-# of it, one direction only. This is a reconciliation, not a handler per
+# **Runs in the base branch's checkout, and reads it.** The diff is the
+# forge's to tell; `work/reports/` on disk is the branch the pull request
+# targets, and it answers the two questions the diff cannot: where a
+# modified report's front-matter block ends — a hunk that starts partway
+# down the file cannot show it — and, once a pull request closes without
+# merging, which of the reports it touched were already there. The pull
+# request's own files are never read from disk; they are not checked out
+# (writrun-issues.yml runs on pull_request_target and takes the base).
+#
+# **Two kinds, side by side and never folded into one another.** A task's
+# mirror carries `writrun:task`, a report's carries `writrun:report`, and
+# the two lists are fetched and reconciled separately — nothing ever
+# converts an Issue from one kind into the other
+# (docs/product/stage-3-github-issues/labels.md#the-report-mirror).
+#
+# The file under work/tasks/ or work/reports/ is the authority; the Issue
+# is a projection of it, one direction only. This is a reconciliation, not a handler per
 # event type: the desired mirror set is a function of the PR's state and
 # the task files its diff adds, and every trigger re-syncs to it. That is
 # what keeps the late cases honest — a task added in a later push gains
@@ -35,10 +50,11 @@
 # be on PATH and authenticated (GH_TOKEN in CI; a stub in the test suite).
 #
 # Output contract: prose on stdout, and — when $GITHUB_OUTPUT is set —
-# `tasks=<id ...>` appended there, naming every task whose mirror this
-# pass minted or found to be its own. The projection that labels them
-# next reads it, so the set it labels is the set that was really minted
-# rather than one re-derived from a commit range (see below).
+# `tasks=<id ...>` and `reports=<id ...>` appended there, naming every
+# task and report whose mirror this pass minted or found to be its own.
+# The projection that labels them next reads both, so the set it labels
+# is the set that was really minted rather than one re-derived from a
+# commit range (see below).
 #
 # Exit codes: 0 reconciled (including nothing to do); 3 usage error. An
 # unexpected forge failure aborts non-zero via set -e.
@@ -82,11 +98,112 @@ FILES=$(gh api "repos/${REPO}/pulls/${PR}/files" --paginate \
 # file's patch is a '+' line, so stripping that column reconstructs the
 # file without fetching across repositories — which a fork PR would
 # otherwise require.
-fm_field() {   # fm_field <body> <name>
+#
+# **The front matter is read from the patch's line numbers, never by
+# matching a field name wherever it appears.** A report's body quotes
+# front matter — that is what evidence looks like, and this repository's
+# own reports do it — so a body line at column 0 is indistinguishable
+# from a real field to a reader that only greps. `status: declined` in a
+# fenced block would have closed the mirror of a report still open.
+#
+# fm_end_of <file> — the line the front-matter block closes on, in a file
+# the base-branch checkout holds. Nothing when the file has no block,
+# which is also the answer for a file that is not there.
+fm_end_of() {
+  awk 'NR == 1 && $0 != "---" { exit } NR > 1 && /^---$/ { print NR; exit }' "$1"
+}
+
+# patch_fm <base-file> — a unified diff on stdin, the front matter of the
+# file *after* the patch on stdout. Two ways to know where the block ends,
+# and which one applies is decided by whether the file existed before:
+#
+#   - **Added**: the patch is the whole file, so line 1 of it opens the
+#     block and the next `---` closes it. Nothing is read from a file
+#     whose first line is not `---`; it has no front matter to read.
+#   - **Modified**: the hunks show a window into the file, and the window
+#     rarely starts at line 1. The bound comes from the base checkout
+#     instead — the block's closing line in the file as the authority
+#     branch holds it — and a line counts as front matter when its
+#     position in *that* file is inside it. Added lines carry the position
+#     they are inserted at, which is the position that decides them.
+#
+# A patch that shows neither prints nothing, and nothing is the honest
+# answer: this diff says where the body went, not where the status is.
+# The caller's "says nothing about its status" branch is where that
+# belongs.
+patch_fm() {
+  local bound
+  bound=0
+  if [ -n "$1" ] && [ -f "$1" ]; then bound=$(fm_end_of "$1"); fi
+  awk -v bound="${bound:-0}" '
+    /^@@/ {
+      # A second hunk in an added file means a gap, and a block still
+      # open across it cannot be proven contiguous.
+      if (started) exit
+      o = $0; sub(/^@@[^-]*-/, "", o); sub(/[ ,].*/, "", o); oln = o + 0
+      n = $0; sub(/^@@[^+]*\+/, "", n); sub(/[ ,].*/, "", n); nln = n + 0
+      inhunk = 1
+      next
+    }
+    !inhunk { next }
+    /^\\/  { next }                       # "\ No newline at end of file"
+    {
+      ch = substr($0, 1, 1)
+      line = ($0 == "" ? "" : substr($0, 2))
+      if (ch == "-") { oln++; next }      # not in the file any more
+      if (bound > 0) {
+        if (oln <= bound && line != "---") print line
+      } else if (nln == 1) {
+        if (line != "---") exit
+        started = 1
+      } else if (started) {
+        if (line == "---") exit
+        print line
+      }
+      if (ch != "+") oln++                # context advances both files
+      nln++
+    }
+  '
+}
+
+fm_field() {   # fm_field <front-matter> <name>
   printf '%s\n' "$1" | sed -n "s/^$2: *//p" | head -n1 | sed 's/[[:space:]]*$//'
 }
 first_heading() {
   printf '%s\n' "$1" | sed -n 's/^# //p' | head -n1 | sed 's/[[:space:]]*$//'
+}
+
+# base_file_of <report-id> — the report as the base-branch checkout holds
+# it, which is what this workflow runs in (writrun-issues.yml checks the
+# base out). Nothing when the branch does not carry the report: for an
+# added file that is the normal answer, and for a modified one it means
+# the bound below has to come from the patch alone.
+#
+# The id is matched on its number, not its text, for the reason every
+# other lookup here does: `report-004` and `report-0004` are one report.
+base_file_of() {
+  local want f n
+  want=$(num_of_id "$1")
+  [ -n "$want" ] || return 0
+  for f in work/reports/report-*.md; do
+    [ -f "$f" ] || continue
+    n=$(num_of_id "$(basename "$f" | tr '[:upper:]' '[:lower:]' \
+      | sed -n 's/^\(report-[0-9][0-9]*\).*/\1/p')")
+    [ -n "$n" ] || continue
+    if [ "$n" -eq "$want" ] 2>/dev/null; then printf '%s' "$f"; return 0; fi
+  done
+  return 0
+}
+
+# base_status_of <report-file> — the status the authority branch records,
+# read from the front-matter block alone for the same reason the patch is.
+base_status_of() {
+  [ -f "$1" ] || return 0
+  awk '
+    NR == 1 { if ($0 != "---") exit; next }
+    /^---$/ { exit }
+    sub(/^status: */, "") { sub(/[[:space:]]*$/, ""); print; exit }
+  ' "$1"
 }
 
 # A mirror's title names its task, and that is how a mirror is found —
@@ -100,23 +217,35 @@ first_heading() {
 # that only knows the new shape does not report a miss — it mints a
 # second mirror for a task that already has one.
 
-# id_of_title <title> — the task id a mirror's title names, lowercased and
-# at whatever width the title spells it; nothing for a title that names no
-# task, which is every foreign Issue the `writrun:task` filter let through.
+# id_of_title <title> [kind] — the id a mirror's title names, lowercased
+# and at whatever width the title spells it; nothing for a title that
+# names none, which is every foreign Issue the label filter let through.
+# The kind is `task` unless said otherwise, because that is what every
+# caller predating the report mirror means.
+#
+# The title is lowercased before the match rather than matched with a
+# character class per letter: the result was already lowercased on the
+# way out, so the two are the same answer and one of them is legible.
 id_of_title() {
-  printf '%s' "$1" | sed -n \
-    -e 's/^\[\([Tt][Aa][Ss][Kk]-[0-9][0-9]*\)\].*/\1/p' \
-    -e 's/^\([Tt][Aa][Ss][Kk]-[0-9][0-9]*\)[[:space:]].*/\1/p' \
-    | head -n1 | tr '[:upper:]' '[:lower:]'
+  local kind="${2:-task}"
+  printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | sed -n \
+    -e "s/^\[\(${kind}-[0-9][0-9]*\)\].*/\1/p" \
+    -e "s/^\(${kind}-[0-9][0-9]*\)[[:space:]].*/\1/p" \
+    | head -n1
 }
 
-# num_of_id <task-id> — the number in `task-0006`, leading zeros dropped.
-# Comparisons are on the number, never the text: the id is the number, not
-# how many zeroes precede it, so a mirror titled at one width is still
-# found by an id spelled at another.
+# num_of_id <id> — the number in `task-0006` or `report-0003`, leading
+# zeros dropped. Comparisons are on the number, never the text: the id is
+# the number, not how many zeroes precede it, so a mirror titled at one
+# width is still found by an id spelled at another.
+#
+# The kind is not carried here because it never has to be: each list is
+# filtered by its own label before any number is compared, so a task's 3
+# and a report's 3 are never in the same list to be confused.
 num_of_id() {
-  printf '%s' "$1" | tr '[:upper:]' '[:lower:]' \
-    | sed -n 's/^task-0*\([0-9][0-9]*\)$/\1/p'
+  printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | sed -n \
+    -e 's/^task-0*\([0-9][0-9]*\)$/\1/p' \
+    -e 's/^report-0*\([0-9][0-9]*\)$/\1/p'
 }
 
 # tag_of_id <task-id> — the title's prefix: the id uppercased in brackets,
@@ -144,8 +273,12 @@ while IFS="$TAB" read -r fstatus fname fpatch; do
   [ "$fstatus" = "added" ] || continue
   printf '%s' "$fname" | tr '[:upper:]' '[:lower:]' \
     | grep -qE '^work/tasks/task-[0-9]+(-[a-z0-9-]+)?\.md$' || continue
-  body=$(printf '%s' "$fpatch" | b64_decode | sed -n 's/^+//p')
-  tid=$(fm_field "$body" id)
+  patch=$(printf '%s' "$fpatch" | b64_decode)
+  # A task file only ever arrives added, so its patch is the whole file
+  # and the block opens on line 1 of it — no base file to bound with.
+  tfm=$(printf '%s\n' "$patch" | patch_fm "")
+  body=$(printf '%s\n' "$patch" | sed -n 's/^+//p')
+  tid=$(fm_field "$tfm" id)
   ttitle=$(first_heading "$body")
   if [ -z "$tid" ] || [ -z "$ttitle" ]; then
     echo "WARNING: Could not parse ${fname}; skipping."
@@ -157,9 +290,52 @@ while IFS="$TAB" read -r fstatus fname fpatch; do
   # runs after the merge, though, and a repository that does not gate on
   # the check can land one anyway. Read it as absent rather than trip
   # over it.
-  torigin=$(fm_field "$body" origin)
+  torigin=$(fm_field "$tfm" origin)
   [ -n "$torigin" ] || torigin="-"
-  TASKS="${TASKS}${tid}${TAB}${fname}${TAB}$(fm_field "$body" priority)${TAB}$(fm_field "$body" milestone)${TAB}${torigin}${TAB}${ttitle}"$'\n'
+  TASKS="${TASKS}${tid}${TAB}${fname}${TAB}$(fm_field "$tfm" priority)${TAB}$(fm_field "$tfm" milestone)${TAB}${torigin}${TAB}${ttitle}"$'\n'
+done <<EOF
+$FILES
+EOF
+
+# The reports the diff touches, one tab-separated record each: id,
+# filename, status, title.
+#
+# **Modified counts here, and only here.** A task's mirror is minted from
+# the files a pull request *adds*, because a task already on the
+# authority branch has a mirror the machinery keeps in step from forge
+# events. A report has no such events — its status is a judgement, so a
+# human or an agent writes it, at every stage — which means a triage that
+# lands as an edit to a file already on `main` is visible in the diff and
+# nowhere else.
+#
+# The id comes from the **filename**, not the front matter, for the same
+# reason: an edit that changes only the status line carries no `id:` in
+# its patch, and the row's path is the one field always there.
+#
+# The status is read from the patch's front-matter block and from nowhere
+# else (patch_fm). A status the patch does not carry reads as empty, and
+# an empty status is "this diff says nothing about where the report is" —
+# left alone rather than guessed at.
+REPORTS=""
+while IFS="$TAB" read -r fstatus fname fpatch; do
+  case "$fstatus" in added|modified) ;; *) continue ;; esac
+  lname=$(printf '%s' "$fname" | tr '[:upper:]' '[:lower:]')
+  printf '%s' "$lname" \
+    | grep -qE '^work/reports/report-[0-9]+(-[a-z0-9-]+)?\.md$' || continue
+  rid=$(printf '%s' "$lname" \
+    | sed -n 's|^work/reports/\(report-[0-9][0-9]*\).*|\1|p')
+  [ -n "$rid" ] || continue
+  rpatch=$(printf '%s' "$fpatch" | b64_decode)
+  rfm=$(printf '%s\n' "$rpatch" | patch_fm "$(base_file_of "$rid")")
+  rbody=$(printf '%s\n' "$rpatch" | sed -n 's/^+//p')
+  # Tab is IFS whitespace, so an empty middle field collapses on read and
+  # every field after it shifts one left — the title landing in the status
+  # the loop below branches on. The task loop above carries "-" for the
+  # same reason, and a report's status is empty far more often than a
+  # task's origin: every body-only edit produces one.
+  rstatus=$(fm_field "$rfm" status)
+  [ -n "$rstatus" ] || rstatus="-"
+  REPORTS="${REPORTS}${rid}${TAB}${fname}${TAB}${rstatus}${TAB}$(first_heading "$rbody")"$'\n'
 done <<EOF
 $FILES
 EOF
@@ -175,6 +351,15 @@ EOF
 # task with a file and no reachable mirror is the one state this
 # reconciliation may not leave behind).
 ISSUES=$(gh api "repos/${REPO}/issues?labels=writrun:task&state=all&per_page=100" \
+  --paginate \
+  --jq '.[] | [.number, .state, ((.labels // []) | map(.name) | join(",")), (.title | @base64), ((.body // "") | @base64)] | @tsv')
+
+# The report mirrors, fetched the same way and kept apart. Unconditional,
+# not lazy: the orphan sweep at the bottom needs the list even when this
+# pull request's diff carries no report at all — a report added in an
+# earlier push and removed in this one is exactly the mirror nobody else
+# would ever close.
+REPORT_ISSUES=$(gh api "repos/${REPO}/issues?labels=writrun:report&state=all&per_page=100" \
   --paginate \
   --jq '.[] | [.number, .state, ((.labels // []) | map(.name) | join(",")), (.title | @base64), ((.body // "") | @base64)] | @tsv')
 
@@ -196,6 +381,24 @@ issue_row_of() {   # issue_row_of <task-id> — "number<TAB>state<TAB>labels<TAB
     fi
   done <<EOF
 $ISSUES
+EOF
+  return 0
+}
+
+report_row_of() {   # report_row_of <report-id> — same row shape, report list
+  local num state labels tb bb t tn want
+  want=$(num_of_id "$1")
+  [ -n "$want" ] || return 0
+  while IFS="$TAB" read -r num state labels tb bb; do
+    [ -n "$num" ] || continue
+    t=$(printf '%s' "$tb" | b64_decode)
+    tn=$(num_of_id "$(id_of_title "$t" report)")
+    [ -n "$tn" ] || continue
+    if [ "$tn" -eq "$want" ] 2>/dev/null; then
+      printf '%s\t%s\t%s\t%s\n' "$num" "$state" "$labels" "$bb"; return 0
+    fi
+  done <<EOF
+$REPORT_ISSUES
 EOF
   return 0
 }
@@ -261,6 +464,28 @@ EOF
     gh api -X DELETE "repos/${REPO}/issues/${1}/labels" >/dev/null
     return 0
   fi
+  gh api -X PUT "repos/${REPO}/issues/${1}/labels" "${args[@]}" >/dev/null
+}
+
+# put_report_labels <issue> <labels-csv> <status-label> — the mirror's
+# place in the pipeline replaced, and everything else it wears kept.
+#
+# **Kept is the whole point.** A set-replacing PUT is the only call the
+# forge offers that can remove a label, and one written from the kind and
+# the new status alone deletes whatever a reviewer put there — on every
+# push of every open pull request, silently. clear_status keeps them on
+# the way out; a mirror still open has no weaker claim to them.
+put_report_labels() {
+  local kept l args
+  kept=$(printf '%s\n' "$2" | tr ',' '\n' \
+    | grep -v '^status:' | grep -v '^writrun:report$' | sed '/^$/d' || true)
+  args=(-f "labels[]=writrun:report" -f "labels[]=$3")
+  while IFS= read -r l; do
+    [ -n "$l" ] || continue
+    args+=(-f "labels[]=$l")
+  done <<EOF
+$kept
+EOF
   gh api -X PUT "repos/${REPO}/issues/${1}/labels" "${args[@]}" >/dev/null
 }
 
@@ -376,6 +601,15 @@ while IFS="$TAB" read -r tid fname priority milestone torigin ttitle; do
   [ "$torigin" = "-" ] && torigin=""
   LIVE_NUMS="${LIVE_NUMS} $(num_of_id "$tid")"
 
+  # Asked before the lookup, so it covers every write this loop makes and
+  # not only the creating one — a mirror that already exists is adopted
+  # and relabelled further down, and an unrecognized author may do neither
+  # (the report loop below carries the same gate, and the same reason).
+  if [ "$open" = "true" ] && [ "$authorized" != "true" ]; then
+    echo "${tid}: author lacks authority — mirror deferred to merge."
+    continue
+  fi
+
   row=$(issue_row_of "$tid")
 
   if [ -z "$row" ]; then
@@ -383,10 +617,6 @@ while IFS="$TAB" read -r tid fname priority milestone torigin ttitle; do
     # owed. Open or merged: create it — on merge this is the catch-up for
     # a task whose earlier events were missed, and it is born ready.
     if [ "$open" != "true" ] && [ "$merged" != "true" ]; then continue; fi
-    if [ "$open" = "true" ] && [ "$authorized" != "true" ]; then
-      echo "${tid}: author lacks authority — mirror deferred to merge."
-      continue
-    fi
     # An open pull request only *proposes* the task — it may still close
     # unmerged, and the mirror retires with it, so the queue does not
     # hold it yet, and no reader but this one can say so. A merged one
@@ -500,6 +730,211 @@ done <<EOF
 $TASKS
 EOF
 
+# ------------------------------------------------------------ the reports
+#
+# The same reconciliation, one kind over, and deliberately its own loop:
+# a report carries no `origin:` label, its two live labels are not a
+# task's, and the four ways triage ends it collapse into two closes that
+# no task status maps onto. Folding the two would have meant a branch per
+# difference inside one body that agreed with neither.
+
+# close_reason_of <report-status> — the reason triage's end implies, or
+# nothing while the report is still open. Three ends were acted on and
+# one was not, which is the whole distinction the close carries; the
+# file says which of the three, and a `route:` label saying it again
+# would be a fifth thing to keep true
+# (docs/product/stage-3-github-issues/labels.md#the-report-mirror).
+close_reason_of() {
+  case "$1" in
+    tracked|authored|fixed) printf 'completed' ;;
+    declined)               printf 'not_planned' ;;
+  esac
+}
+
+# ensure_report_status_label <label> — the label's colour and description
+# live here, once, rather than in a conditional at each of the three
+# places that create it. The two answers are the two states a live report
+# mirror can be in, and nothing else may be passed.
+ensure_report_status_label() {
+  case "$1" in
+    status:proposed)
+      ensure_label "status:proposed" "ededed" \
+        "A pull request proposes this report; it is not on the authority branch yet" ;;
+    status:open)
+      ensure_label "status:open" "0e8a16" "Recorded and awaiting triage" ;;
+  esac
+}
+
+LIVE_REPORT_NUMS=""
+MIRRORED_REPORTS=""
+note_report() {
+  case " $MIRRORED_REPORTS " in
+    *" $1 "*) ;;
+    *) MIRRORED_REPORTS="${MIRRORED_REPORTS:+$MIRRORED_REPORTS }$1" ;;
+  esac
+}
+
+if [ -n "$REPORTS" ] && [ "$open" = "true" ]; then
+  ensure_label "writrun:report" "5319e7" "Mirrors a work/reports/ entry"
+fi
+
+while IFS="$TAB" read -r rid fname rstatus rtitle; do
+  [ -n "$rid" ] || continue
+  LIVE_REPORT_NUMS="${LIVE_REPORT_NUMS} $(num_of_id "$rid")"
+
+  # What the diff says about where this report is. An edit that touched
+  # neither the status line nor the file's creation says nothing, and
+  # nothing is what this pass then does — the mirror already reflects
+  # whatever the last pass that could read it wrote.
+  case "$rstatus" in
+    open|tracked|authored|fixed|declined) ;;
+    *)
+      echo "${rid}: this diff says nothing about its status — leaving its mirror alone."
+      continue ;;
+  esac
+  want_close=$(close_reason_of "$rstatus")
+  # `status:proposed` while a pull request only offers the report;
+  # `status:open` once it is on the authority branch and really waiting
+  # for someone to triage it. The second is the state the mirror exists
+  # for — a report nobody is prompted to read is a report that rots.
+  want_label=""
+  if [ -z "$want_close" ]; then
+    if [ "$open" = "true" ]; then want_label="status:proposed"; else want_label="status:open"; fi
+  fi
+
+  # **Authority is asked before the mirror is looked up, not after.** The
+  # gate used to sit inside the create path, where it reads as "a drive-by
+  # pull request cannot spray Issues" — but the write it was guarding is
+  # not the only one this loop makes. A report already on the authority
+  # branch has a mirror, so an unauthorized patch claiming `status:
+  # declined` skipped the create path entirely and went on to adopt that
+  # mirror and close it: the project's own report, retired by someone the
+  # forge does not recognize. Deferred to merge, for every write, is what
+  # the rule always meant.
+  if [ "$open" = "true" ] && [ "$authorized" != "true" ]; then
+    echo "${rid}: author lacks authority — mirror deferred to merge."
+    continue
+  fi
+
+  row=$(report_row_of "$rid")
+
+  if [ -z "$row" ]; then
+    if [ "$open" != "true" ] && [ "$merged" != "true" ]; then continue; fi
+    if [ -z "$rtitle" ]; then
+      echo "WARNING: ${fname} carries no title in this diff; skipping."
+      continue
+    fi
+    [ "$open" = "true" ] || ensure_label "writrun:report" "5319e7" "Mirrors a work/reports/ entry"
+    body=$(printf '%s\n' \
+      "Mirrors [\`${fname}\`](${PR_HTML_URL}/files), which is the authority." \
+      "Edits made here are **not** written back to the file." \
+      "" \
+      "${OWN_LINE}" \
+      "" \
+      "A report records what was observed. It is never worked — it is" \
+      "triaged, and triage closes this Issue.")
+    label_args=()
+    if [ -n "$want_label" ]; then
+      ensure_report_status_label "$want_label"
+      label_args=(-f "labels[]=${want_label}")
+    fi
+    inum=$(gh api -X POST "repos/${REPO}/issues" \
+      -f "title=$(tag_of_id "$rid") ${rtitle}" \
+      -f "labels[]=writrun:report" \
+      ${label_args[@]+"${label_args[@]}"} \
+      -f "body=${body}" --jq '.number')
+    if [ -n "$want_close" ]; then
+      # **Born closed.** Recording rides any change, so a report may
+      # arrive already triaged — the ordinary case, not an edge. It is
+      # created carrying no `status:` label and closed in the same pass,
+      # so it never stands as an open item asking somebody to read it.
+      # Two calls because the forge has no third: creating an Issue takes
+      # no state.
+      gh api -X PATCH "repos/${REPO}/issues/${inum}" \
+        -f state=closed -f "state_reason=${want_close}" >/dev/null
+      echo "Created issue for ${rid}, closed ${want_close} — it arrived triaged"
+    else
+      echo "Created issue for ${rid} (${want_label})"
+    fi
+    note_report "$rid"
+    continue
+  fi
+
+  num=$(printf '%s' "$row" | cut -f1)
+  istate=$(printf '%s' "$row" | cut -f2)
+  ilabels=$(printf '%s' "$row" | cut -f3)
+  ibody=$(printf '%s' "$row" | cut -f4)
+
+  # Whose mirror this is — the same three answers a task's gets, and for
+  # the same reason: two live pull requests must never fight over one
+  # mirror, and refusing an unowned one leaves a report with none.
+  if ! is_mine "$ibody"; then
+    owner=$(owner_of "$ibody")
+    if [ -n "$owner" ] && pr_is_open "$owner"; then
+      echo "WARNING: ${rid} is mirrored by #${owner}, which is still open — not touching it."
+      continue
+    fi
+    adopt_mirror "$num" "$ibody"
+    if [ -n "$owner" ]; then
+      echo "${rid}: adopted stale mirror #${num} — #${owner} is no longer open."
+    else
+      echo "${rid}: adopted unowned mirror #${num} — no pull request introduced it."
+    fi
+  fi
+
+  # Closed without a merge: what this pull request's diff said about the
+  # report died with it, so nothing here is written from the diff. The
+  # reconciliation at the bottom answers these mirrors instead, from the
+  # base branch — which is the only reader left that can tell a report
+  # that never landed from one that was already there.
+  if [ "$open" != "true" ] && [ "$merged" != "true" ]; then continue; fi
+
+  if [ -n "$want_close" ]; then
+    if [ "$istate" = "open" ]; then
+      clear_status "$num" "$ilabels"
+      gh api -X PATCH "repos/${REPO}/issues/${num}" \
+        -f state=closed -f "state_reason=${want_close}" >/dev/null
+      echo "${rid} triaged — mirror #${num} closed as ${want_close}"
+    else
+      echo "${rid} is triaged and its mirror is already closed; nothing to do."
+    fi
+    note_report "$rid"
+    continue
+  fi
+
+  # Still open. **This is the path the "triaged while still proposed"
+  # case runs the other way through**, and the reason this loop updates
+  # an existing mirror rather than only creating missing ones: a report
+  # recorded `open` in one commit and triaged in a later one of the same
+  # pull request has a mirror already labelled, and no other reader can
+  # reach it — project_pr_tasks.sh learns its ids from the head branch
+  # name and the title's [TASK-NNNN] tags, and a report has neither by
+  # design.
+  # A mirror already open and already wearing the label this pass would
+  # write is a mirror this pass has nothing to say about — and saying it
+  # anyway costs a label create and a set-replacing PUT on every push of
+  # every open pull request that carries a report. The task loop above
+  # reaches the same conclusion the same way.
+  if [ "$istate" = "open" ]; then
+    case ",${ilabels}," in
+      *",${want_label},"*)
+        echo "${rid} already mirrored ${want_label}; nothing to do."
+        note_report "$rid"
+        continue ;;
+    esac
+  fi
+
+  ensure_report_status_label "$want_label"
+  if [ "$istate" = "closed" ]; then
+    gh api -X PATCH "repos/${REPO}/issues/${num}" -f state=open >/dev/null
+  fi
+  put_report_labels "$num" "$ilabels" "$want_label"
+  echo "${rid} → ${want_label}"
+  note_report "$rid"
+done <<EOF
+$REPORTS
+EOF
+
 # Orphans: a mirror this PR introduced whose task is no longer in the
 # diff (a rederivation dropped the file), and every mirror of a PR closed
 # without merging.
@@ -527,8 +962,85 @@ done <<EOF
 $ISSUES
 EOF
 
+# The report mirrors this pull request owns and the diff no longer
+# proposes, plus every one of them when the pull request closed unmerged.
+#
+# **The two halves ask different questions, and only the first is a
+# sweep.** While the pull request is live, a mirror it owns that has left
+# the diff is an orphan and retires; a mirror closed by triage is not an
+# orphan, it is finished, so `istate = open` filters those out.
+#
+# When the pull request closed unmerged there is no diff left to be in.
+# Everything it wrote about a report was provisional — a mirror closed
+# because *this branch* triaged the report, a mirror adopted from an
+# on-branch report, a mirror minted for a report that never landed — and
+# the only authority still standing is the base branch this workflow is
+# checked out at. So each owned mirror is reconciled against the file
+# there, closed ones included: filtering on `istate = open` was what left
+# a report living on `main` with a mirror closed by a branch nobody
+# merged, and no later event ever named that report again.
+while IFS="$TAB" read -r num istate labels tb bb; do
+  [ -n "$num" ] || continue
+  is_mine "$bb" || continue
+  oid=$(id_of_title "$(printf '%s' "$tb" | b64_decode)" report)
+  [ -n "$oid" ] || continue
+
+  if [ "$closed_unmerged" != "true" ]; then
+    [ "$istate" = "open" ] || continue
+    case " $LIVE_REPORT_NUMS " in *" $(num_of_id "$oid") "*) continue ;; esac
+    clear_status "$num" "$labels"
+    gh api -X PATCH "repos/${REPO}/issues/${num}" \
+      -f state=closed -f state_reason=not_planned >/dev/null
+    echo "${oid} closed — its report left the diff"
+    continue
+  fi
+
+  bstatus=""
+  bfile=$(base_file_of "$oid")
+  [ -n "$bfile" ] && bstatus=$(base_status_of "$bfile")
+
+  if [ -z "$bstatus" ]; then
+    # The branch does not carry the report, so nothing is owed a mirror.
+    # Written even to a mirror already closed: a report born triaged in a
+    # pull request nobody merged left one closed `completed`, which says
+    # the queue acted on something the queue never received.
+    clear_status "$num" "$labels"
+    gh api -X PATCH "repos/${REPO}/issues/${num}" \
+      -f state=closed -f state_reason=not_planned >/dev/null
+    echo "${oid} closed — #${PR} was not merged"
+    continue
+  fi
+
+  wreason=$(close_reason_of "$bstatus")
+  if [ -n "$wreason" ]; then
+    # Triaged on the branch, whatever this pull request thought.
+    if [ "$istate" = "open" ]; then
+      clear_status "$num" "$labels"
+      gh api -X PATCH "repos/${REPO}/issues/${num}" \
+        -f state=closed -f "state_reason=${wreason}" >/dev/null
+      echo "${oid} closed ${wreason} — the branch has it triaged"
+    fi
+    continue
+  fi
+
+  # Still recorded and still untriaged on the branch: the mirror is owed
+  # to it, open and asking to be read, however this pull request left it.
+  if [ "$istate" = "open" ]; then
+    case ",${labels}," in *",status:open,"*) continue ;; esac
+  fi
+  ensure_report_status_label "status:open"
+  if [ "$istate" = "closed" ]; then
+    gh api -X PATCH "repos/${REPO}/issues/${num}" -f state=open >/dev/null
+  fi
+  put_report_labels "$num" "$labels" "status:open"
+  echo "${oid} → status:open — #${PR} was not merged and the branch still holds it"
+done <<EOF
+$REPORT_ISSUES
+EOF
+
 if [ -n "${GITHUB_OUTPUT:-}" ]; then
   printf 'tasks=%s\n' "$MIRRORED" >> "$GITHUB_OUTPUT"
+  printf 'reports=%s\n' "$MIRRORED_REPORTS" >> "$GITHUB_OUTPUT"
 fi
 
 exit 0

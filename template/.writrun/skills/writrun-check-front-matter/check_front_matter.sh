@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
 # check_front_matter.sh — every queue file's front matter is canonical.
 #
-# Usage: check_front_matter.sh [task-dir] [spec-dir] [docs-dir]
-#   Defaults: work/tasks work/specs docs. Validates every task-*.md and
-#   spec-*.md in the working tree; READMEs are skipped. All three are
-#   relative to the working directory, and deliberately the same base: a
-#   cwd wrong enough to hide `docs/` has already hidden the queue, so the
-#   check finds nothing to complain about rather than complaining about
-#   everything.
+# Usage: check_front_matter.sh [task-dir] [spec-dir] [docs-dir] [report-dir]
+#   Defaults: work/tasks work/specs docs work/reports. Validates every
+#   task-*.md, spec-*.md and report-*.md in the working tree; READMEs are
+#   skipped. All four are relative to the working directory, and
+#   deliberately the same base: a cwd wrong enough to hide `docs/` has
+#   already hidden the queue, so the check finds nothing to complain
+#   about rather than complaining about everything.
+#
+#   The report directory comes last because it arrived last, and the
+#   three before it are an argument order other callers already pass.
 #
 # Every reader in this methodology is line-based on purpose — plain
 # bash/awk/sed, no YAML parser, no runtime dependency. YAML, though,
@@ -34,6 +37,14 @@
 #     it
 #   - `origin` is `rule` or `report`, always present on a task — how it
 #     came to exist is a fact, and there is no third answer
+#   - a report's `status` is the route triage took, not a lifecycle:
+#     `open` and the four ends, and `triaged` is set exactly when the
+#     status is one of the four. Null while `open` because nothing has
+#     been decided; set when something has, because a judgement with no
+#     date is a judgement nothing can be ordered against. The two ends
+#     this file can follow carry what names their outcome with them:
+#     `tracked` a non-empty `task_ref`, `authored` a `doc_ref`
+#     (docs/product/concepts/report.md#statuses--the-route-not-a-lifecycle)
 #   - `provenance` is the one field allowed to open a block list, and the
 #     only shape it may take is a dash-opened line per entry, each entry a
 #     YAML flow mapping written whole on that line. `provenance: []` is
@@ -55,6 +66,7 @@ set -euo pipefail
 TASK_DIR="${1:-work/tasks}"
 SPEC_DIR="${2:-work/specs}"
 DOCS_DIR="${3:-docs}"
+REPORT_DIR="${4:-work/reports}"
 
 status=0
 checked=0
@@ -265,6 +277,35 @@ check_date() {   # check_date <file> <block> <field> <null-ok>
   return 0
 }
 
+check_doc_ref() {   # check_doc_ref <file> <block>
+  # Relative to docs/ — a docs/ prefix would double when the machinery
+  # prefixes it back (queue impact, the delta check). One rule, one copy:
+  # a task and a report carry the same field under the same contract —
+  # "the doc this is answered by" — so a second implementation of it
+  # would be a second thing to keep true.
+  local ref target
+  ref=$(get "$2" doc_ref)
+  [ "$ref" != "null" ] || return 0
+  case "$ref" in
+    docs/*) fail "$1" "doc_ref starts with docs/ — paths are written relative to docs/" ;;
+    *.md|*.md#*)
+      # **The path, never the anchor.** Reverse traceability is only a
+      # grep if the file is really there, and a doc_ref pointing at
+      # nothing passed every check until now. The anchor is left
+      # unverified on purpose: a heading can be renamed without moving
+      # the file, and matching one means parsing markdown, which every
+      # reader in this methodology refuses to do. So this proves the
+      # file, not the section — a limit worth stating rather than a gap
+      # to close later.
+      target="${DOCS_DIR}/${ref%%#*}"
+      [ -f "$target" ] \
+        || fail "$1" "doc_ref '$ref' names no file — ${target} does not exist"
+      ;;
+    *) fail "$1" "doc_ref '$ref' is not null or a .md path (optionally with #anchor)" ;;
+  esac
+  return 0
+}
+
 check_id() {   # check_id <file> <block> — id agrees with the filename's id
   # A queue file is named <id> or <id>-<subject>: identity is the id, the
   # subject slug only makes a directory listing readable. Both shapes are
@@ -343,28 +384,7 @@ check_task() {   # check_task <file>
   check_list "$f" "$block" spec_ref spec
   check_list "$f" "$block" depends_on task
 
-  # Relative to docs/ — a docs/ prefix would double when the machinery
-  # prefixes it back (queue impact, the delta check).
-  ref=$(get "$block" doc_ref)
-  if [ "$ref" != "null" ]; then
-    case "$ref" in
-      docs/*) fail "$f" "doc_ref starts with docs/ — paths are written relative to docs/" ;;
-      *.md|*.md#*)
-        # **The path, never the anchor.** Reverse traceability is only a
-        # grep if the file is really there, and a doc_ref pointing at
-        # nothing passed every check until now. The anchor is left
-        # unverified on purpose: a heading can be renamed without moving
-        # the file, and matching one means parsing markdown, which every
-        # reader in this methodology refuses to do. So this proves the
-        # file, not the section — a limit worth stating rather than a gap
-        # to close later.
-        target="${DOCS_DIR}/${ref%%#*}"
-        [ -f "$target" ] \
-          || fail "$f" "doc_ref '$ref' names no file — ${target} does not exist"
-        ;;
-      *) fail "$f" "doc_ref '$ref' is not null or a .md path (optionally with #anchor)" ;;
-    esac
-  fi
+  check_doc_ref "$f" "$block"
 
   # Four dates, one shape. `created` is the only one a task always has;
   # the machinery's two and `completed` are null until the event each
@@ -412,6 +432,79 @@ check_spec() {   # check_spec <file>
   return 0
 }
 
+check_report() {   # check_report <file>
+  local block f st tri
+  f="$1"
+  if ! block=$(fm_block "$f"); then
+    fail "$f" "front matter must open at line 1 with --- and close with ---"
+    return 0
+  fi
+  # No ledger: a report records an observation, and nothing was spent
+  # producing it. A block list here is the fault it always was.
+  check_shape "$f" "$block"
+  for field in id status task_ref doc_ref created triaged; do
+    require_once "$f" "$block" "$field"
+  done
+  check_id "$f" "$block"
+
+  # The route triage took, not a lifecycle: one non-terminal value and
+  # the four ends. There is no `resolved` — whether the underlying work
+  # is done is the task's status, one hop away through task_ref, and a
+  # second copy of that fact would need a second writer to stay true
+  # (docs/product/concepts/report.md).
+  st=$(get "$block" status)
+  case "$st" in
+    open|tracked|authored|fixed|declined) ;;
+    *) fail "$f" "status '$st' is not a report status (open|tracked|authored|fixed|declined)" ;;
+  esac
+
+  # A list even with one element, because triage can split one finding
+  # into several tasks — and it is the only link between the two kinds.
+  check_list "$f" "$block" task_ref task
+
+  check_doc_ref "$f" "$block"
+
+  # `triaged` and a terminal status are the same fact written twice, so
+  # they are paired both ways — the shape blocked/blocked_reason has, for
+  # the same reason. A date on an `open` report says a judgement was made
+  # that the status denies; a terminal one with no date is a judgement
+  # nothing can be ordered against, and ordering these is what a
+  # line-based reader does with a timestamp.
+  check_date "$f" "$block" created strict
+  check_date "$f" "$block" triaged null-ok
+  tri=$(get "$block" triaged)
+  if [ "$st" = "open" ] && [ "$tri" != "null" ]; then
+    fail "$f" "status is open but triaged is '$tri' — a report carries the date only once triage has ended it"
+  fi
+  case "$st" in
+    tracked|authored|fixed|declined)
+      [ "$tri" != "null" ] \
+        || fail "$f" "status is '$st' but triaged is null — the date is when triage decided, and every end has one"
+      ;;
+  esac
+
+  # An end and the field that names its outcome are one judgement written
+  # twice, so they are paired the way `triaged` is. The table in
+  # concepts/report.md is the contract: `tracked` is named by `task_ref`,
+  # `authored` by the `doc_ref` the rule was written into. The other two
+  # ends name their outcome where this checker cannot follow — `fixed` in
+  # the git history, `declined` in the body — so they are not paired here,
+  # and that asymmetry is the concept's, not an omission.
+  #
+  # Unpaired, `status: tracked` with `task_ref: []` passed every gate: a
+  # report permanently claiming work that nothing carries, and a mirror
+  # closed `completed` on the strength of it.
+  case "$st" in
+    tracked)
+      [ "$(get "$block" task_ref)" != "[]" ] \
+        || fail "$f" "status is tracked but task_ref is empty — tracked means a task now carries the work, and task_ref is what names it" ;;
+    authored)
+      [ "$(get "$block" doc_ref)" != "null" ] \
+        || fail "$f" "status is authored but doc_ref is null — authored means a rule was written, and doc_ref is what names it" ;;
+  esac
+  return 0
+}
+
 for f in "$TASK_DIR"/*.md; do
   [ -f "$f" ] || continue
   case "$(basename "$f" | tr '[:upper:]' '[:lower:]')" in
@@ -431,6 +524,20 @@ for f in "$SPEC_DIR"/*.md; do
     *) continue ;;
   esac
   check_spec "$f"
+  checked=$((checked + 1))
+done
+
+# A directory that is not there is zero reports, never an error: an
+# adopter who has never recorded one has no work/reports/, and that is a
+# complete state rather than a broken checkout (spec-0043).
+for f in "$REPORT_DIR"/*.md; do
+  [ -f "$f" ] || continue
+  case "$(basename "$f" | tr '[:upper:]' '[:lower:]')" in
+    readme.md) continue ;;
+    report-*.md) ;;
+    *) continue ;;
+  esac
+  check_report "$f"
   checked=$((checked + 1))
 done
 

@@ -229,16 +229,22 @@ something a script or a reviewing agent can verify mechanically.
 
 ## Report schema
 
-```text
+```yaml
 ---
-id: report-0003
+id: report-0001
 status: open                       # open | tracked | authored | fixed | declined
 task_ref: []                       # the tasks triage produced; a list, always
 doc_ref: null                      # the doc violated, or the doc the rule was written into
-created: 2026-09-01T14:02:11Z
+created: 2026-09-01T20:23:51Z
 triaged: null                      # when triage decided; null while open
 ---
 ```
+
+The shape above is
+[`report-0001`](../../work/reports/report-0001-conventions-scope.md), the
+first one recorded here — the block is read against the same checker the
+real files pass through, so a schema this chapter shows and a schema the
+machinery accepts cannot part company.
 
 A report file is named `report-NNNN-<subject>.md`, the same shape as a
 task's and a spec's. Its id is minted by the same generator over the

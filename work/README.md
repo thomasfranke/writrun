@@ -19,11 +19,9 @@ skills.
 
 **Reports sit outside that pipeline on purpose.** Nothing selects one,
 nothing completes one, and recording one rides whatever change is
-already open rather than a branch of its own. The generator does not yet
-mint them either — that is
-[task-0031](tasks/task-0031-report-kind.md)'s job, and until it lands a
-report is written by hand against the
-[schema](../docs/technical/README.md#report-schema).
+already open rather than a branch of its own. The generator mints them
+like any other kind — `new.sh report` — and `new.sh task --from-report`
+closes the link when triage produces work.
 
 Statuses live in front-matter, never in folder position — nothing moves
 between directories as work progresses.

@@ -1,7 +1,7 @@
 ---
 id: spec-0043
 task_ref: task-0031
-status: approved
+status: implemented
 created: 2026-09-01T13:54:27Z
 ---
 
@@ -162,13 +162,13 @@ the report is added beside them, never folded into them.
 
 ## Definition of Done
 
-- [ ] `new.sh report` mints a canonical file; `--from-report` closes the
+- [x] `new.sh report` mints a canonical file; `--from-report` closes the
       link.
-- [ ] All four gates recognise the kind, and the schema block in
+- [x] All four gates recognise the kind, and the schema block in
       `technical/README.md` is ```yaml again, naming a real report.
-- [ ] The mirror projects reports as `writrun:report`, and triage closes
+- [x] The mirror projects reports as `writrun:report`, and triage closes
       them with the right reason.
-- [ ] No change to the task or spec schema, and the suite is green.
+- [x] No change to the task or spec schema, and the suite is green.
 
 ## Proposed product changes
 
@@ -185,4 +185,181 @@ the report is added beside them, never folded into them.
 
 ## Outcome
 
-_(fill after execution)_
+All ten steps shipped. The three parts really do ship together: the
+generator writes a shape the gates hold, and the mirror reads the same
+statuses the gates accept — each was checked against the other two rather
+than against this document alone.
+
+**What landed as written.** `new.sh report` with the shipped
+`.writrun/templates/report.md` and both refusals; `new.sh task
+--from-report`; the fourth directory and the report schema in
+`check_front_matter.sh`; the third prefix in `check_unique_ids.sh` and
+`check_doc_shapes.sh`; rule J in `check_state.sh`; the `writrun:report`
+projection in `mirror_issues.sh` and `rederive_labels.sh`; the third kind
+in `writrun-create-task-and-spec`'s SKILL.md. The schema block in
+`technical/README.md` is ```yaml again and names
+[`report-0001`](../reports/report-0001-conventions-scope.md), the first
+one really recorded here — a finding from opening #93: a change about
+`.writrun/conventions/` has no scope in the vocabulary that judges it,
+and that vocabulary lives inside the same folder. Left `open`; triaging
+it would be an authoring change, and this one is not.
+
+### Divergences
+
+- **`--from-report` writes three fields, not the two step 3 named.** A
+  report still `open` becomes `tracked` in the same run. This is not
+  scope added: step 6 requires `triaged` to be null while a report is
+  `open`, so stamping the date without moving the status would produce a
+  file this spec's own front-matter rule refuses. The two steps could
+  not both be implemented as written.
+
+- **`--from-report` states the origin, and refuses one that contradicts
+  it.** The spec left `--origin` untouched, which would have allowed
+  `--origin rule --from-report report-0001` — a task derived from a rule
+  and born from a report at once. The flag now supplies `origin: report`
+  and refuses any other value beside it. The required-flag rule is
+  otherwise unchanged: an origin nobody stated still refuses.
+
+- **`--from-report` refuses a report triage already ended.** Not named in
+  the spec, and forced by the rule the same spec adds: step 8 makes
+  terminal → terminal a `check_state.sh` failure, so a generator that
+  wrote one would mint a change CI then rejects. A report already
+  `tracked` still accepts a second task — that is the "several tasks from
+  one report" edge case, and only that one.
+
+- **`triaged` is paired with a terminal status both ways.** Step 6 named
+  one direction ("null while `open`"). The reverse — a terminal report
+  with no date — is refused too, following the shape
+  `blocked`/`blocked_reason` already has: a judgement with no date is a
+  judgement nothing can be ordered against, and ordering these strings is
+  what every line-based reader here does with a timestamp.
+
+- **The report directory is `check_front_matter.sh`'s fourth positional
+  argument, and `check_doc_shapes.sh` passes a scratch one.** Not
+  specified, and load-bearing: left to its default, the checker would
+  walk the repository's real `work/reports/` while judging a block a
+  chapter shows, and report a fault about a file that chapter has nothing
+  to do with. A case asserts it.
+
+- **The mirror reads `modified` report files, not only `added` ones.**
+  The spec's "triaged while still proposed" edge case reasoned about a
+  later commit on the same pull request — but the forge's file list is
+  the *cumulative* diff against the base, so that report still arrives as
+  `added`, carrying its final status. The case that genuinely needs
+  `modified` is the one the spec did not name: a report already on the
+  authority branch, triaged by a later pull request. Both are covered,
+  and the id is read from the **filename** rather than the front matter,
+  because an edit to a status line carries no `id:` in its patch. A patch
+  that says nothing about the status leaves the mirror alone rather than
+  guessing.
+
+- **Step 10 needed wiring the spec did not name.** `rederive_labels.sh`
+  projects a report, but nothing would have called it with one:
+  `mirror_issues.sh` now emits `reports=` alongside `tasks=`, and
+  `writrun-approve.yml` passes it. Without that the repair path existed
+  and was unreachable — and for a report it is the *only* repair path,
+  since no forge event corresponds to a triage.
+
+- **`id_of_title` and `num_of_id` were generalized, not duplicated**, in
+  both mirror scripts: the title is lowercased before the match instead
+  of matched with a character class per letter, which is the same answer
+  and legible. `check_front_matter.sh`'s `doc_ref` rule became one helper
+  read by both kinds, for the same reason — a task and a report carry
+  that field under the same contract.
+
+- **Two `work/` READMEs were corrected.** `work/README.md` and
+  `work/reports/README.md` both said the generator could not mint a
+  report and told the reader to write one by hand. Neither is a permanent
+  doc — `work/` is the ephemeral half, outside the delta check — but both
+  were false the moment step 1 landed.
+
+- **No `template/work/reports/`.** The kit ships no report directory, and
+  that is the "a project with no `work/reports/`" edge case seen from the
+  adopter's side: the generator creates it on the first run, and every
+  gate reads its absence as zero reports. A case asserts all four.
+
+### What the review changed
+
+A code review of the branch before merge found eight faults, all in the
+new report paths and seven of them of one shape: **a reader that could
+not tell a report's front matter from a report's body.** That is the
+kind's own hazard, and the spec did not see it coming — a report's
+evidence *is* quoted front matter ("the file says `status: open` and the
+mirror says otherwise"), so every reader and every writer this spec added
+had to know the difference, and none of them did.
+
+- **The mirror read `status:` from the whole patch.** A body-only edit
+  adding a fenced `status: declined` closed the mirror of a report still
+  open, and quoted evidence could reopen a triaged one. The block is
+  bounded now: for an added file the patch is the whole file and line 1
+  opens it; for a modified one the base-branch checkout — which this
+  workflow already runs in — says where the block ends, and a line
+  outside it is a line about something else. A patch that can prove
+  neither says nothing, which was already the safe branch.
+
+- **`new.sh`'s three `--from-report` rewrites matched every line of the
+  file**, so a report whose evidence quoted `status: open`, `triaged:
+  null` and `task_ref: []` had all three falsified by triage — and the
+  file stayed canonical, so nothing downstream noticed. All three are
+  anchored to the block now, and the anchoring is in one place: the
+  spec-append and the report-append were two copies of the same fifty
+  lines, which is why the fix had to be written twice before it was
+  written once. `append_list_field`, `set_fm_field` and
+  `append_body_link` are shared by both subcommands.
+
+- **Authority was asked after the mirror lookup, not before.** The gate
+  read as "a drive-by pull request cannot spray Issues", but it sat
+  inside the create path, which a report already on the authority branch
+  never reaches. An unrecognized fork author's patch claiming `status:
+  declined` therefore fell through to adoption and closed the project's
+  own report mirror — with `issues: write`, on `pull_request_target`.
+  Both loops now gate every write, not the creating one.
+
+- **A retired report's mirror could never be restored.** The sweep read
+  only open mirrors and the label projection only ever sees ids from a
+  merge, so a report living on `main` whose mirror an abandoned branch
+  closed was unreachable to every later pass. A pull request that closes
+  unmerged now reconciles each mirror it owns against the base branch
+  rather than against a diff that no longer means anything — which also
+  ends the mirror born `completed` for a report the queue never received.
+
+- **An empty status collapsed the tab-separated row** and the title
+  landed where the status belongs, so a report headed `# fixed` closed
+  its own mirror. The task loop's `-` placeholder was the defence, and
+  the report loop had dropped it.
+
+- **The relabelling PUT wrote the whole label set from the kind and the
+  new status**, deleting whatever a reviewer had added — on every push,
+  silently, while the close path two branches up was keeping them and a
+  case was pinning that it did. It keeps them now, and a mirror that
+  already says what this pass would write is left alone: two API calls
+  per live report per push, for nothing.
+
+- **`check_front_matter.sh` never paired an end with what names it.**
+  `status: tracked` with `task_ref: []` was canonical — a report
+  permanently claiming work nothing carries, and a mirror closed
+  `completed` on the strength of it. `tracked` now requires a task and
+  `authored` a doc, following the table in `concepts/report.md`; `fixed`
+  and `declined` name their outcome where this checker cannot follow, and
+  that asymmetry is the concept's.
+
+- **Two documents were wrong about their own commands.**
+  `work/reports/README.md` showed the generator invoked with `../../`,
+  implying its own directory as the working one — which mints a
+  duplicate id into a `work/reports/` nested under this one that no gate
+  ever reads. `writrun-check-front-matter`'s SKILL.md still documented
+  two arguments and two kinds, so an adopter with a non-default layout
+  would have had reports silently unchecked.
+
+Four cases were added for the mirror's four and two for the generator and
+the checker; `modified_report` in the fixture now writes the base-branch
+file with the patch, because a modified file is on the base branch by
+definition and the reader that bounds the block needs it there.
+
+### What this did not touch
+
+The task and spec schemas, exactly as scoped: no field was added to
+either, and `origin` still has its two values. `project_pr_tasks.sh` is
+unchanged — a report has neither a `task/NNNN` branch nor a
+`[TASK-NNNN]` tag, so it cannot reach one by design, and a case pins that
+rather than trusting it.

@@ -1,12 +1,19 @@
 #!/usr/bin/env bash
 # rederive_labels.sh — after a merge records an approval, label the tasks
-# it affected from the queue as it then stands.
+# and reports it affected from the queue as it then stands.
 #
-# Usage: rederive_labels.sh <owner/repo> <spec-file>...
+# Usage: rederive_labels.sh <owner/repo> <spec-file|task-id|report-id>...
 #   Run from a checkout of the authority branch, *after* the flip has been
 #   committed to it — the whole point is to read the queue's new state.
 #   `gh` must be on PATH and authenticated (GH_TOKEN in CI; a stub in the
-#   test suite). With no spec files, it does nothing and says so.
+#   test suite). With no arguments, it does nothing and says so.
+#
+#   A `report-NNNN` argument is the same projection one kind over: the
+#   file on disk says whether triage has ended it, and the mirror is made
+#   to agree. It is here so a report mirror that drifted is repaired by
+#   the same pass that repairs a task's — a report is never re-derived
+#   from a forge event, because none corresponds to a judgement, so this
+#   is the only reader that can heal one.
 #
 # Why this exists: `status:ready` was unreachable. The mirror derived it
 # from the spec statuses in the merged pull request's *diff*, where they
@@ -104,6 +111,28 @@ close_for() {
   esac
 }
 
+# report_label_for <report-file> — the label a report deserves from the
+# queue on disk, or nothing when it is triaged and the mirror should be
+# closed instead. `status:proposed` never appears here: it is the one
+# state no file can hold, because it means "a pull request offers this
+# and the authority branch does not have it yet".
+report_label_for() {
+  case "$(fm "$1" status)" in
+    open) printf 'status:open' ;;
+  esac
+}
+
+# report_close_for <report-file> — the close reason triage's end implies.
+# Three ends were acted on and one was not, which is the whole
+# distinction the close carries
+# (docs/product/stage-3-github-issues/labels.md#the-report-mirror).
+report_close_for() {
+  case "$(fm "$1" status)" in
+    tracked|authored|fixed) printf 'completed' ;;
+    declined)               printf 'not_planned' ;;
+  esac
+}
+
 if [ "$#" -eq 0 ]; then
   echo "No approval was recorded by this merge — no label to re-derive."
   exit 0
@@ -117,15 +146,102 @@ ISSUES=$(gh api "repos/${REPO}/issues?labels=writrun:task&state=all&per_page=100
   --paginate \
   --jq '.[] | [.number, .state, ((.labels // []) | map(.name) | join(",")), (.title | @base64), ((.body // "") | @base64)] | @tsv')
 
-id_of_title() {
-  printf '%s' "$1" | sed -n \
-    -e 's/^\[\([Tt][Aa][Ss][Kk]-[0-9][0-9]*\)\].*/\1/p' \
-    -e 's/^\([Tt][Aa][Ss][Kk]-[0-9][0-9]*\)[[:space:]].*/\1/p' \
-    | head -n1 | tr '[:upper:]' '[:lower:]'
+# The title is lowercased before the match rather than matched with a
+# character class per letter — the answer was already lowercased on the
+# way out, so the two are the same and one of them is legible.
+id_of_title() {   # id_of_title <title> [kind] — default task
+  local kind="${2:-task}"
+  printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | sed -n \
+    -e "s/^\[\(${kind}-[0-9][0-9]*\)\].*/\1/p" \
+    -e "s/^\(${kind}-[0-9][0-9]*\)[[:space:]].*/\1/p" \
+    | head -n1
 }
 num_of_id() {
-  printf '%s' "$1" | tr '[:upper:]' '[:lower:]' \
-    | sed -n 's/^task-0*\([0-9][0-9]*\)$/\1/p'
+  printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | sed -n \
+    -e 's/^task-0*\([0-9][0-9]*\)$/\1/p' \
+    -e 's/^report-0*\([0-9][0-9]*\)$/\1/p'
+}
+
+# The report mirrors, fetched once and only if a report is named. A
+# project that has never recorded one must not pay a forge call per merge
+# for a list that would always come back empty.
+REPORT_ISSUES=""
+REPORT_ISSUES_READ=""
+report_issues() {
+  [ -z "$REPORT_ISSUES_READ" ] || return 0
+  REPORT_ISSUES_READ=yes
+  REPORT_ISSUES=$(gh api "repos/${REPO}/issues?labels=writrun:report&state=all&per_page=100" \
+    --paginate \
+    --jq '.[] | [.number, .state, ((.labels // []) | map(.name) | join(",")), (.title | @base64), ((.body // "") | @base64)] | @tsv')
+}
+
+# project_report <report-id> — the whole answer for one report: find its
+# mirror, and make it agree with the file.
+project_report() {
+  local rid="$1" rnum rf want closing found n istate labels tb bb t tn kept args l
+  rnum=$(num_of_id "$rid")
+  [ -n "$rnum" ] || return 0
+  rf=$(queue_file work/reports report "$rid")
+  if [ -z "$rf" ]; then
+    echo "${rid}: no report file on this branch — nothing to derive from."
+    return 0
+  fi
+  want=$(report_label_for "$rf")
+  closing=$(report_close_for "$rf")
+  if [ -z "$want" ] && [ -z "$closing" ]; then
+    echo "${rid} is $(fm "$rf" status) — not a status this step can project."
+    return 0
+  fi
+
+  report_issues
+  found=""
+  while IFS="$TAB" read -r n istate labels tb bb; do
+    [ -n "$n" ] || continue
+    t=$(printf '%s' "$tb" | b64_decode)
+    tn=$(num_of_id "$(id_of_title "$t" report)")
+    [ -n "$tn" ] || continue
+    if [ "$tn" -eq "$rnum" ] 2>/dev/null; then
+      found="${n}${TAB}${istate}${TAB}${labels}"; break
+    fi
+  done <<EOF
+$REPORT_ISSUES
+EOF
+
+  if [ -z "$found" ]; then
+    echo "${rid}: no mirrored Issue."
+    return 0
+  fi
+  n=$(printf '%s' "$found" | cut -f1)
+  istate=$(printf '%s' "$found" | cut -f2)
+  labels=$(printf '%s' "$found" | cut -f3)
+
+  if [ -n "$closing" ]; then
+    if [ "$istate" != "open" ]; then
+      echo "${rid}: mirror #${n} is already closed."
+      return 0
+    fi
+    kept=$(printf '%s\n' "$labels" | tr ',' '\n' | grep -v '^status:' | sed '/^$/d' || true)
+    args=()
+    while IFS= read -r l; do
+      [ -n "$l" ] || continue
+      args+=(-f "labels[]=$l")
+    done <<EOF
+$kept
+EOF
+    gh api -X PUT "repos/${REPO}/issues/${n}/labels" ${args[@]+"${args[@]}"} >/dev/null
+    gh api -X PATCH "repos/${REPO}/issues/${n}" \
+      -f state=closed -f "state_reason=${closing}" >/dev/null
+    echo "${rid} → mirror #${n} closed as ${closing}"
+    return 0
+  fi
+
+  if [ "$istate" != "open" ]; then
+    echo "${rid}: mirror #${n} is closed — no label is written."
+    return 0
+  fi
+  ensure_label "status:open" "0e8a16" "Recorded and awaiting triage"
+  set_status "$n" "$labels" "status:open"
+  echo "${rid} → status:open (re-derived from the queue)"
 }
 
 set_status() {   # set_status <issue> <labels-csv> <status-label> [extra-label]
@@ -160,10 +276,20 @@ ensure_origin_label() {   # ensure_origin_label <label>
 }
 
 seen=""
+seen_reports=""
 for sf in "$@"; do
-  # A spec file names its task; a task file or bare task id names itself
-  # — the callers pass whichever the merge put in front of them.
+  # A spec file names its task; a task file or bare task id names itself;
+  # a report file or bare report id is the other kind entirely — the
+  # callers pass whichever the merge put in front of them.
   case "$(basename "$sf")" in
+    report-*)
+      rref=$(basename "$sf" .md | sed -E 's/^(report-[0-9]+).*/\1/')
+      rnum=$(num_of_id "$rref")
+      [ -n "$rnum" ] || continue
+      case " $seen_reports " in *" $rnum "*) continue ;; esac
+      seen_reports="$seen_reports $rnum"
+      project_report "$rref"
+      continue ;;
     task-*)
       tref=$(basename "$sf" .md | sed -E 's/^(task-[0-9]+).*/\1/') ;;
     *)

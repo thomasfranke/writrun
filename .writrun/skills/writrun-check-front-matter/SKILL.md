@@ -1,6 +1,6 @@
 ---
 name: writrun-check-front-matter
-description: Use this skill to verify that every task and spec file in a WritRun queue is in canonical front-matter form — when creating or hand-editing a queue file, before committing queue changes, or when a line-based reader is giving an answer that looks wrong. Runs on files alone: no git, no forge, no network.
+description: Use this skill to verify that every task, spec and report file in a WritRun queue is in canonical front-matter form — when creating or hand-editing a queue file, before committing queue changes, or when a line-based reader is giving an answer that looks wrong. Runs on files alone: no git, no forge, no network.
 ---
 
 # Check that the queue's front matter is canonical
@@ -15,12 +15,22 @@ So the canonical form is a checked contract rather than an assumption, and
 this is the check.
 
 ```bash
-bash .writrun/skills/writrun-check-front-matter/check_front_matter.sh [task-dir] [spec-dir]
+bash .writrun/skills/writrun-check-front-matter/check_front_matter.sh \
+  [task-dir] [spec-dir] [docs-dir] [report-dir]
 ```
 
-Defaults to `work/tasks` and `work/specs`. Exit 0 when every file is
-canonical, 1 when one is malformed — naming the file and what is wrong
-with it.
+Defaults to `work/tasks`, `work/specs`, `docs` and `work/reports`. Exit 0
+when every file is canonical, 1 when one is malformed — naming the file
+and what is wrong with it.
+
+**Pass all four or none.** A project with a queue anywhere but the
+defaults that passes only the first two gets a `work/reports` resolved
+against its own working directory, finds nothing there, and reports
+success over the reports it never read — and hand-edited reports are
+exactly what this check exists for, since three of triage's four ends are
+written by hand. A report directory that is not there is zero reports and
+still exit 0: an adopter who has never recorded one has a complete state,
+not a broken checkout.
 
 ## When to run it
 
@@ -44,6 +54,13 @@ trailing whitespace; every schema field present exactly once even when
 `null`; lists inline; `id` agreeing with the filename; statuses, priority
 and dates drawn only from their documented forms; `blocked` and
 `blocked_reason` paired both ways; `doc_ref` written relative to `docs/`.
+
+A report's `status` is the route triage took, and the fields that name
+its outcome are paired with it the same way: `triaged` set on each of the
+four ends and null while `open`, a non-empty `task_ref` on `tracked`, a
+`doc_ref` on `authored`. `fixed` and `declined` name their outcome in the
+git history and in the body, where this check cannot follow, so neither
+field is required of them.
 
 An unknown key in canonical shape is allowed — an adopter may extend the
 schema, not reshape it.

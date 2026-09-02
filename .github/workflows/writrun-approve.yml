@@ -262,6 +262,11 @@ jobs:
         # owes its mirror a label. And no condition on `changed`: a
         # recording that wrote nothing still leaves mirrors to label.
         #
+        # The reports the mint answered join them, for a reason of their
+        # own: no forge event corresponds to a triage, so this pass is
+        # the only reader that can repair a report mirror that drifted —
+        # nothing else ever comes back for one.
+        #
         # The mint's own set joins it, because the two are derived from
         # different sources and the pair must not drift: `scope` comes
         # from the commit range, the mints from the pull request's files.
@@ -275,4 +280,4 @@ jobs:
         run: |
           set -euo pipefail
           bash .writrun/scripts/stage-3-github-issues/rederive_labels.sh \
-            "${{ github.repository }}" ${{ steps.flip.outputs.specs }} ${{ steps.status.outputs.scope }} ${{ steps.mint.outputs.tasks }}
+            "${{ github.repository }}" ${{ steps.flip.outputs.specs }} ${{ steps.status.outputs.scope }} ${{ steps.mint.outputs.tasks }} ${{ steps.mint.outputs.reports }}

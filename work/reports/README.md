@@ -28,11 +28,24 @@ ride any change you already have open — you do not need a `report/`
 branch to note something down, and waiting for one is how the finding
 gets lost. That prefix is for a change that carries *only* reporting.
 
-**The generator does not mint reports yet** —
-[task-0031](../tasks/task-0031-report-kind.md) teaches it, along with
-the gates and the mirror. Until it lands, write the file by hand against
-the [schema](../../docs/technical/README.md#report-schema) and pick the
-next free id yourself; no check will catch a malformed one for you.
+Use the generator rather than the schema from memory, **from the
+repository root** — every path it reads and writes is relative to the
+working directory, so run from here and it mints an id the queue already
+holds into a `work/reports/` nested under this one, which no check and no
+mirror ever looks at:
+
+```bash
+bash .writrun/skills/writrun-create-task-and-spec/new.sh report "<title>" \
+  --slug <two-or-three-words> [--doc-ref path/to/doc.md#anchor]
+```
+
+It takes neither `--origin` nor `--priority` — a report has no origin of
+its own, and it commits to no work. Triage's `tracked` route has a
+generator too: `new.sh task --from-report report-NNNN` appends the new
+task's id here and stamps the date. The other three ends are written by
+hand, status and `triaged` together, and go through
+[`writrun-check-front-matter`](../../.writrun/skills/writrun-check-front-matter/SKILL.md)
+before the commit.
 
 Do not select work from this directory. Reports are not queued work; the
 [selection algorithm](../../docs/technical/README.md#task-selection-algorithm)

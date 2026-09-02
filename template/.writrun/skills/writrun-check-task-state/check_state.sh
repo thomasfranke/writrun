@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# check_state.sh — verifies the task/spec lifecycle transitions a diff makes.
+# check_state.sh — verifies the task/spec/report lifecycle transitions a
+# diff makes.
 #
 # Usage:
 #   check_state.sh [<diff-range>]      # default: main...HEAD
@@ -33,6 +34,15 @@
 #      branch may edit front matter": appending is a different act from
 #      editing, and every entry the base already held must still be
 #      there, unchanged and in order.
+#   J. A report that triage has ended never returns to `open`, and never
+#      changes from one end to another. Its status is the route triage
+#      took, not a lifecycle: the judgement was made, and a second
+#      sighting is a second observation with its own date and its own id
+#      — never the first one's file re-routed
+#      (docs/product/concepts/report.md). This is the one rule here with
+#      no stage condition. The status has a human or an agent writer at
+#      every stage, because no forge event corresponds to a judgement, so
+#      there is no version of this file the machinery owns instead.
 #
 # A transition is read from the front matter at the two ends of the range
 # — the file as the base knew it against the file as it is now — never
@@ -169,6 +179,36 @@ for f in $CHANGED; do
         echo "  A spec is authorized to be implemented only once approved." >&2
         status=1
       fi
+      ;;
+
+    work/reports/*.md)
+      [ -f "$f" ] || continue
+      new=$(fm_now "$f" status)
+      old=$(fm_base "$f" status)
+
+      # A report the diff creates is not judged: recording rides any
+      # change, and one that arrives already triaged is the ordinary
+      # case, not a skipped gate. Triage is not a human gate — the file
+      # stays, the body carries the reason, and the mirror shows it
+      # (docs/product/concepts/report.md).
+      case "$old" in
+        tracked|authored|fixed|declined)
+          if [ "$new" = "open" ]; then
+            echo "FORBIDDEN: ${f} returns ${old} -> open." >&2
+            echo "  Triage ended this report; nothing reopens one. The same" >&2
+            echo "  thing seen again is a second observation, so it is a" >&2
+            echo "  second report — ids are never reused, and a recurrence" >&2
+            echo "  sharing a file loses the date of the first sighting." >&2
+            status=1
+          elif [ -n "$new" ] && [ "$new" != "$old" ]; then
+            echo "FORBIDDEN: ${f} moves ${old} -> ${new} — one end to another." >&2
+            echo "  A report's status is the route triage took, and triage" >&2
+            echo "  ran once. Re-routing it rewrites a judgement instead of" >&2
+            echo "  recording a new one; record a second report." >&2
+            status=1
+          fi
+          ;;
+      esac
       ;;
 
     work/tasks/*.md)

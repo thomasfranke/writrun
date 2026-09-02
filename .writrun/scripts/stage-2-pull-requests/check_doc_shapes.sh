@@ -44,6 +44,12 @@
 # tag is the declaration of intent**, which is the only escape, so an
 # escape is always visible in the diff.
 #
+# The fence had briefly carried a third meaning it was never given: the
+# report schema was fenced ```text for the whole window in which this
+# script knew two prefixes and its id resolved to nothing. That is a
+# shape the checker could not read yet, which is neither of the two above
+# — and the fix was to teach the prefix, not to widen the escape.
+#
 # Exit codes: 0 every shape holds; 1 one does not, with each named; 3
 # usage error.
 #
@@ -83,7 +89,8 @@ fault() { echo "REJECTED: $*" >&2; faults=$((faults + 1)); }
 # read against this; the whole-front-matter half never needs it, because
 # the real checker knows its own fields.
 SCHEMA_FIELDS="id task_ref status blocked_reason taken_by spec_ref doc_ref \
-origin priority depends_on milestone created queued completed merged provenance"
+origin priority depends_on milestone created queued completed merged provenance \
+triaged"
 
 in_list() {   # in_list <needle> <haystack...>
   local n="$1"; shift
@@ -147,13 +154,14 @@ check_whole() {   # check_whole <file> <line> <block-file>
   local f="$1" ln="$2" body="$3" id dir ref target out
   id=$(sed -n 's/^id: *//p' "$body" | head -n1)
   case "$id" in
-    task-[0-9]*) dir=tasks ;;
-    spec-[0-9]*) dir=specs ;;
+    task-[0-9]*)   dir=tasks ;;
+    spec-[0-9]*)   dir=specs ;;
+    report-[0-9]*) dir=reports ;;
     *) fault "${f}:${ln}: the block opens as front matter but its id is '${id}' — a shown shape carries a real id, or it is fenced as \`\`\`text"; return 0 ;;
   esac
 
   local scratch; scratch=$(mktemp -d)
-  mkdir -p "$scratch/work/tasks" "$scratch/work/specs" "$scratch/docs"
+  mkdir -p "$scratch/work/tasks" "$scratch/work/specs" "$scratch/work/reports" "$scratch/docs"
   # The name carries the line, so two examples in one document never
   # collide; the checker holds a file's id against its name, and
   # `<id>-<subject>` is canonical, so `<id>-l56` is a legal subject.
@@ -173,7 +181,11 @@ check_whole() {   # check_whole <file> <line> <block-file>
       ;;
   esac
 
-  if ! out=$(bash "$CHECK_FM" "$scratch/work/tasks" "$scratch/work/specs" "$scratch/docs" 2>&1); then
+  # The report directory is named too, and it must be the scratch one:
+  # left to default, the checker would walk the repository's real
+  # work/reports/ while judging a block shown in a chapter, and report a
+  # fault about a file the chapter has nothing to do with.
+  if ! out=$(bash "$CHECK_FM" "$scratch/work/tasks" "$scratch/work/specs" "$scratch/docs" "$scratch/work/reports" 2>&1); then
     printf '%s\n' "$out" \
       | sed "s|MALFORMED: ${scratch}/work/${dir}/${id}-l${ln}.md: |REJECTED: ${f}:${ln}: the shown ${id} |" >&2
     faults=$((faults + 1))

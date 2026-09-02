@@ -310,6 +310,29 @@ _(fill after execution)_
 EOF
 }
 
+# report_file <id> <status> [task_ref] [triaged] [doc_ref]
+#
+# A report as the queue holds it. The directory is created here rather
+# than in setup(), because "an adopter who never recorded one has no
+# work/reports/" is a state every gate has to read as zero reports — and
+# a fixture that always made the directory would hide the day one stopped
+# doing so.
+report_file() {
+  mkdir -p work/reports
+  cat > "work/reports/$1.md" <<EOF
+---
+id: $1
+status: $2
+task_ref: [${3:-}]
+doc_ref: ${5:-null}
+created: 2026-08-22T00:00:00Z
+triaged: ${4:-null}
+---
+
+# Test report $1
+EOF
+}
+
 commit_all() { git add -A >/dev/null; git commit -qm "change"; }
 
 # commit_message <message> — one commit carrying exactly this message,

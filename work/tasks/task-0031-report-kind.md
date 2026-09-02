@@ -11,9 +11,10 @@ depends_on: []
 milestone: null
 created: 2026-09-01T13:51:01Z
 queued: 2026-09-01T14:36:27Z
-completed: null
+completed: 2026-09-01T20:34:41Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-opus-5, login: thomasfranke, input: 416, output: 164943, cache_read: 35998934, cache_write: 326385}
 ---
 
 # The machinery learns the report kind
