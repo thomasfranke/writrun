@@ -1,7 +1,7 @@
 ---
 id: spec-0051
 task_ref: task-0035
-status: approved
+status: implemented
 created: 2026-09-02T18:52:55Z
 ---
 
@@ -128,4 +128,28 @@ test.
 
 ## Outcome
 
-_(fill after execution)_
+`check_promise_paths.sh` ships, wired into `writrun-check.yml` **before**
+the companions step, and refuses a promise on the two conditions the
+spec named. Seven case files under
+`tests/integration/stage-2/promise_paths/`, eighteen assertions.
+
+`spec-0044`'s five real paths are refused one by one, each shown the
+`docs/…` reading that made it unkeepable — the fixture reproduces them
+verbatim from report-0005 and creates the four root entries they name,
+so the check is judged against a repository rather than a list.
+
+**One thing the spec left implicit and the implementation had to
+settle**: the first condition needs the path *as the spec wrote it*,
+while both sibling readers (`extract_paths`, `promised_paths`) return
+the `docs/`-prefixed form. This check parses its own — the same four
+lines of awk, without the prefix — and applies the prefix only to print
+the reading back. Coupling to either sibling would have meant recovering
+the written form by stripping a prefix that a promise beginning `docs/`
+makes ambiguous.
+
+**No divergence from Scope.** `new.sh`'s templates stay untouched
+(spec-0038's reasoning), and neither the completion gate nor the
+companions check learned anything new.
+
+Decision 0065 records why shape and never existence, and what is
+deliberately left to the completion gate.

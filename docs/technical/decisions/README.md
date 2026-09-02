@@ -84,3 +84,4 @@ appending a row.
 | [0062](tasks-and-specs/0062-a-shown-shape-is-a-checked-shape.md) | 2026-08-31 | `tasks-and-specs` | a shape a document shows is checked like a file it stores. |
 | [0063](pull-requests/0063-title-and-subject-are-two-texts.md) | 2026-09-01 | `pull-requests` | the pull request title and the commit subject are two texts — narrowing 0046 and 0052. |
 | [0064](tasks-and-specs/0064-a-report-is-an-artefact.md) | 2026-09-01 | `tasks-and-specs` | a report is an artefact, and its status is the route triage took. |
+| [0065](pull-requests/0065-a-promise-is-judged-by-shape.md) | 2026-09-02 | `pull-requests` | a promise is judged by its path's shape, never by whether the file exists. |
