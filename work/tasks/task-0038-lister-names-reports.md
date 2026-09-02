@@ -1,8 +1,8 @@
 ---
 id: task-0038
-status: ready
+status: in-progress
 blocked_reason: null
-taken_by: null
+taken_by: thomasfranke
 spec_ref: [spec-0054]
 doc_ref: product/concepts/report.md#the-mirror-shows-what-is-waiting
 origin: report
