@@ -1,15 +1,15 @@
 ---
 id: report-0009
-status: open
-task_ref: []
+status: tracked
+task_ref: [task-0038]
 doc_ref: technical/selection.md#task-selection-algorithm
 created: 2026-09-02T18:57:16Z
-triaged: null
+triaged: 2026-09-02T19:43:36Z
 ---
 
 # An empty task queue reads as no work while reports wait
 
-**References:** [technical/selection.md#task-selection-algorithm](../../docs/technical/selection.md#task-selection-algorithm)
+**References:** [technical/selection.md#task-selection-algorithm](../../docs/technical/selection.md#task-selection-algorithm) · [task-0038](../tasks/task-0038-lister-names-reports.md)
 
 `list_tasks.sh` printed `Nothing is available.` and exited 1 with every
 task `done` — while four reports sat `open`: 0001, 0006, 0007, 0008.
