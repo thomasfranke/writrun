@@ -90,7 +90,12 @@ would leave this concept worse than the conversation it replaced. Below
 Stage 3 the same job is a `grep` over `work/reports/`, and remembering
 to run it is the adopter's.
 
-## Recording rides any change
+What the open Issue asks for is the **evaluation**, never the fix: read
+the report, choose its route. Work enters the queue only when the
+`tracked` route's own pull request is merged — the section below draws
+the line.
+
+## Recording rides any change — routing to the queue does not
 
 A report may be added in **any** change — an implementing branch, an
 authoring branch, a branch that is mostly about something else. The
@@ -102,6 +107,24 @@ makes them findings. A note that costs its own branch, its own pull
 request and its own review is a note nobody writes, and the observation
 goes back to being lost in a conversation — which is the state this
 concept exists to end.
+
+**The exemption covers what creates no work.** Recording (`open`) rides,
+and so do the two ends that leave the queue untouched: `fixed`, whose
+whole outcome is the change it rides, and `declined`, which produces
+nothing and closes the mirror where a person can see the judgement and
+disagree with it.
+
+**The `tracked` route never rides.** It is the one route that puts work
+in the queue, and what enters the queue passes a gate: deriving a task
+from a report is a reporting change on its own `report/` branch, whose
+pull request presents the report, the task and the spec together — and
+the maintainer's squash-merge of *that* pull request is the assent that
+the finding deserves the work
+([authoring](../stage-1-tasks-and-specs/authoring.md#reporting--work-found-or-reported-mid-flight)).
+A `tracked` flip riding an unrelated pull request would mint a task that
+arrives `ready` at merge with nobody ever having weighed it: the mirror
+is born closed, the queue gains an item, and the evaluation the open
+Issue exists to invite has silently never happened.
 
 ## Example
 

@@ -52,7 +52,7 @@ the same lookup finds it and the two never meet in one filter.
 | Label | The report is |
 |---|---|
 | `status:proposed` | proposed by an open pull request — not on the authority branch yet. The same structural reason a task's mirror has one. |
-| `status:open` | recorded, awaiting triage. **This is the state the mirror exists for**: a report nobody is prompted to read is a report that rots, and rotting is the failure the concept exists to end. |
+| `status:open` | recorded, awaiting triage. **This is the state the mirror exists for**: a report nobody is prompted to read is a report that rots, and rotting is the failure the concept exists to end. What the open Issue asks for is the evaluation — choose the route — never the fix itself; work enters the queue only through the `tracked` route's own reporting pull request ([report](../concepts/report.md#recording-rides-any-change--routing-to-the-queue-does-not)). |
 | *(none — the mirror is closed)* | triaged, and out of the pipeline: closed **completed** for `tracked`, `authored` and `fixed`, closed **not planned** for `declined`. |
 
 The four ends collapse into two closes on purpose. A `route:` label
