@@ -74,6 +74,24 @@ section() {
       gsub(/[^a-z0-9_-]/, "", s)
       return s
     }
+    # A fenced block is content, not structure. A shell comment or a
+    # schema example at column 0 reads exactly like a heading, and a scan
+    # that believes one ends the section early — and silently, because
+    # what did print still looks like a whole answer. GitHub gives those
+    # lines no anchor either, so skipping them is also what keeps `seen[]`
+    # in step with the -1/-2 suffixes a real duplicate heading takes. The
+    # closing marker has to match the opening one, or a ~~~ inside a ```
+    # block would reopen what it never opened.
+    /^[ \t]*(```|~~~)/ {
+      mark = $0
+      sub(/^[ \t]*/, "", mark)
+      mark = substr(mark, 1, 3)
+      if (!fence) { fence = 1; opener = mark }
+      else if (mark == opener) fence = 0
+      if (printing) print
+      next
+    }
+    fence { if (printing) print; next }
     /^#+[ \t]/ {
       line = $0
       sub(/^#+[ \t]+/, "", line)

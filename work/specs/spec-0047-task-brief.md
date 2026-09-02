@@ -125,6 +125,15 @@ A spec-0045 stub is followed once, the divider showing both hops; a stub
 whose link resolves to nothing is a partial brief rather than a
 complete-looking one.
 
-Thirteen behaviours are covered by 11 cases in `tests/unit/brief/`. The
+Eleven cases in `tests/unit/brief/` cover the behaviours above. The
 contract is in `technical/selection.md`, and the select skill names the
-script as step 7's mechanical form. Divergences: none.
+script as step 7's mechanical form.
+
+Divergence, found in review: the section reader is fence-aware. The first
+cut treated any `#` at column 0 as a heading, and the reference's
+chapters are full of shell comments and schema examples that spell one —
+`schemas.md#spec-schema` was truncated at its own fenced example, losing
+a third of the section while still exiting 0 as a complete brief. Fenced
+lines are now content: they print, they never end a section, and they
+take no number from the duplicate-heading counter, which is also what
+GitHub does with them.
