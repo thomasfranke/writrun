@@ -8,6 +8,15 @@ request, or deciding whether a task needs a spec.
 
 ## Settings
 
+**The file's rendered view is
+[`session_card.sh`](distribution.md#session_cardsh--the-settings-rendered)** —
+every value below, with the documented defaults marked as defaults, on
+one card. Read the card for the values; read this chapter for why each
+key exists. `read_setting.sh` is the one reader
+([contract](#the-shape-is-a-checked-contract)); its `--origin` flag
+prints `declared` or `default` beside the value, which is what lets a
+renderer tell a project's choice from a default nobody made.
+
 `.writrun/settings.json` holds the choices
 [Adoption](../product/adoption.md#three-stages) leaves open — values only, no
 prose — read by both the machinery and the agents. It sits at the root of

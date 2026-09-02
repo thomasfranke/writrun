@@ -35,6 +35,7 @@ TAKE_TASK="$CI_SCRIPTS/stage-2-pull-requests/take_task.sh"
 # tasks do.
 RECORD_PROVENANCE="$CI_SCRIPTS/stage-1-tasks-and-specs/record_provenance.sh"
 PREFLIGHT="$CI_SCRIPTS/stage-1-tasks-and-specs/preflight.sh"
+SESSION_CARD="$CI_SCRIPTS/stage-1-tasks-and-specs/session_card.sh"
 READ_USAGE="$CI_SCRIPTS/stage-1-tasks-and-specs/read_usage.sh"
 PROVENANCE_ROLLUP="$CI_SCRIPTS/stage-1-tasks-and-specs/provenance_rollup.sh"
 

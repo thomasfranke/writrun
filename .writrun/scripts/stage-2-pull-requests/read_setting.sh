@@ -1,11 +1,21 @@
 #!/usr/bin/env bash
 # read_setting.sh — prints one value from .writrun/settings.json.
 #
-# Usage: read_setting.sh <address>
+# Usage: read_setting.sh <address> [--origin]
 #   Run from the repository root; the path is relative to it.
 #
 #   read_setting.sh stage                     a top-level key, bare
 #   read_setting.sh stage_2.pr_title_style    a key inside its section
+#   read_setting.sh stage --origin            the value, a tab, then
+#                                             `declared` or `default`
+#
+# **--origin is how a reader tells a choice from a documented default.**
+# Both print identically without it, which is right for a caller that
+# only wants the value to act on — and wrong for one that renders the
+# file for a person, where "this is what the project decided" and "this
+# is what nobody decided" are different sentences (session_card.sh).
+# A value carried over by one of the two rename bridges below is
+# `declared`: the adopter wrote it, under the name of the day.
 #
 # **The address, not the name, is a key's identity.** The file carries one
 # top-level `stage` and one object per stage holding the keys that stage's
@@ -38,8 +48,23 @@
 
 set -euo pipefail
 
-KEY="${1:-}"
-[ -n "$KEY" ] || { echo "usage: read_setting.sh <address>" >&2; exit 3; }
+KEY=""
+WITH_ORIGIN=""
+for arg in "$@"; do
+  case "$arg" in
+    --origin) WITH_ORIGIN=yes ;;
+    -*)       echo "usage: read_setting.sh <address> [--origin]" >&2; exit 3 ;;
+    *)        [ -z "$KEY" ] || { echo "usage: read_setting.sh <address> [--origin]" >&2; exit 3; }
+              KEY="$arg" ;;
+  esac
+done
+[ -n "$KEY" ] || { echo "usage: read_setting.sh <address> [--origin]" >&2; exit 3; }
+
+# emit <value> <declared|default> — the one place the output shape lives,
+# so the two forms can never drift apart.
+emit() {
+  if [ -n "$WITH_ORIGIN" ]; then printf '%s\t%s\n' "$1" "$2"; else printf '%s\n' "$1"; fi
+}
 
 SETTINGS=".writrun/settings.json"
 LEGACY=".writrun/conventions/settings.json"
@@ -81,7 +106,7 @@ if [ ! -f "$SETTINGS" ]; then
     FILE="$LEGACY"
     SECTION=""
   else
-    default_for "$KEY"; echo; exit 0
+    emit "$(default_for "$KEY")" default; exit 0
   fi
 fi
 
@@ -121,9 +146,9 @@ if [ -z "$raw" ] && [ "$KEY" = "stage" ]; then
   # until they make it.
   legacy=$(pair "" level | sed 's/[[:space:]]*$//; s/,$//; s/^"//; s/"$//')
   case "$legacy" in
-    tasks-and-specs) printf '1\n'; exit 0 ;;
-    pull-requests)   printf '2\n'; exit 0 ;;
-    github-issues)   printf '3\n'; exit 0 ;;
+    tasks-and-specs) emit 1 declared; exit 0 ;;
+    pull-requests)   emit 2 declared; exit 0 ;;
+    github-issues)   emit 3 declared; exit 0 ;;
   esac
 fi
 
@@ -140,7 +165,7 @@ if [ -z "$raw" ] && [ "$KEY" = "stage_2.agent_coauthor" ]; then
 fi
 
 if [ -z "$raw" ]; then
-  default_for "$KEY"; echo; exit 0
+  emit "$(default_for "$KEY")" default; exit 0
 fi
 
 # Trailing whitespace, then the separating comma, then the quotes.
@@ -151,4 +176,4 @@ case "$val" in
   \"*\") val=${val#\"}; val=${val%\"} ;;
 esac
 
-printf '%s\n' "$val"
+emit "$val" declared

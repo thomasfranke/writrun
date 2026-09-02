@@ -4,6 +4,17 @@ You are working on the repository of the methodology itself, and this repo
 follows its own structure. Read in this order, stopping as soon as you have
 what the task needs:
 
+0. The settings this session obeys — run the card rather than re-reading
+   the conventions for values:
+
+   ```bash
+   bash .writrun/scripts/stage-1-tasks-and-specs/session_card.sh
+   ```
+
+   It prints the stage, the conduct flags, the title style with an
+   example per pull-request kind, the two vocabularies and the
+   constants. Open a `.writrun/conventions/` file when the card leaves a
+   *why* question — never for the values themselves.
 1. [`docs/about.md`](docs/about.md) — what this project is. Always read.
 2. [`docs/product/README.md`](docs/product/README.md) — the prescriptive
    rules this repo's own structure is checked against. Read the chapter
