@@ -1,8 +1,8 @@
 ---
 id: task-0035
-status: ready
+status: in-progress
 blocked_reason: null
-taken_by: null
+taken_by: thomasfranke
 spec_ref: [spec-0051]
 doc_ref: product/concepts/spec.md#the-doc-delta-contract
 origin: report
