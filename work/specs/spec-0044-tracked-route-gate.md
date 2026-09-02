@@ -1,7 +1,7 @@
 ---
 id: spec-0044
 task_ref: task-0033
-status: approved
+status: implemented
 created: 2026-09-02T01:28:43Z
 ---
 
@@ -129,4 +129,43 @@ and Steps, and promises one `technical/README.md` anchor.
 
 ## Outcome
 
-_(fill after execution)_
+All five steps shipped as written. Rule K is one rule read at two
+places, because the two are separable: a report flipped to `tracked` in
+one change and its task added in another would pass a rule that watched
+only the status line, so the task's `origin: report` is judged on its
+own — in the tasks arm, where the born-task checks already are, rather
+than beside the report half in the script's text.
+
+**What landed.** Rule K in `check_state.sh` and in its header docblock;
+the head branch resolved once, before the file loop, from `HEAD_REF`
+then from `git rev-parse --abbrev-ref HEAD`, with `HEAD` (detached)
+read as no name; `HEAD_REF: ${{ github.head_ref }}` on
+`writrun-check.yml`'s lifecycle step, through `env:`; the two verdicts
+in `writrun-check-task-state`'s SKILL.md table, the branch-name input
+in its Steps, and one entry in its Never list; fourteen assertions in
+`tests/unit/check_state/the_tracked_route_never_rides_test.sh`;
+`template/` synced.
+
+The rule fires on the state reached rather than on the number of steps
+taken to it — `new = tracked` with `old ≠ tracked` covers the
+transition and the birth in one condition, since an added file's base
+read is empty. That is also what leaves the "already `tracked` on the
+base and untouched in the range" edge case alone without a special
+case for it.
+
+### Divergences
+
+- **None in behaviour.** Every acceptance criterion and every edge case
+  is asserted, and two assertions were added the spec did not name: a
+  task born `origin: rule` on a `task/` branch passes (the rule's other
+  half must not be a rule about added tasks), and a report already
+  `tracked` on the base and untouched in the range passes (the edge
+  case was named but not listed under Tests required).
+
+- **The environment variable name is a second one for a value the
+  repository already names.** `HEAD_REF` is what this spec specified and
+  what shipped; `writrun-progress.yml` and `writrun-approve.yml` pass
+  the same value as `PR_HEAD_REF`. Not changed here — the spec is
+  explicit, three times — and recorded instead as
+  [report-0007](../reports/report-0007-the-head-branch.md), which rides
+  this change the way recording is allowed to.
