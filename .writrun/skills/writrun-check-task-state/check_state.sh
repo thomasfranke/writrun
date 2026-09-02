@@ -198,8 +198,12 @@ fi
 rides_outside() {
   local n
   n=$(printf '%s\n' "$CARRIES_OUTSIDE" | sed '/^$/d' | wc -l | tr -d ' ')
-  printf '%s\n' "$CARRIES_OUTSIDE" | sed '/^$/d' | head -n 5 \
-    | sed 's/^/    /' >&2
+  # awk, never `head`: `head` closes the pipe at five and the writer
+  # upstream dies of SIGPIPE, which `pipefail` turns into an exit 141
+  # that swallows the count, the explanation and every rule after this
+  # one. awk reads to the end and prints five.
+  printf '%s\n' "$CARRIES_OUTSIDE" | sed '/^$/d' \
+    | awk 'NR <= 5 { print "    " $0 }' >&2
   [ "$n" -gt 5 ] && echo "    … and $((n - 5)) more" >&2
   return 0
 }

@@ -331,8 +331,10 @@ makes. One input differs, and it is rule K's — CI hands `check_state.sh`
 the head branch as `HEAD_REF`, preflight hands it nothing and leaves the
 script to read the checkout — so the two render the same judgement on the
 same branch whenever the checkout *is* that branch, and only then. Run
-from a detached HEAD, preflight skips rule K and still prints
-`PREFLIGHT OK` on a commit CI judges.
+from a detached HEAD, preflight skips rule K's **branch half** and can
+still print `PREFLIGHT OK` on a commit CI judges by that half — the diff
+half needs no name and runs there too, so a change carrying code outside
+`work/` is refused either way.
 
 ## `session_card.sh` — the settings, rendered
 

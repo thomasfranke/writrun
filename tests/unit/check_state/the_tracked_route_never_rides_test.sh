@@ -138,7 +138,7 @@ check "at stage 1 the route runs where the project works" 0 "OK" \
 
 # And stands down without a word: a stage the rule does not apply at is
 # not a rule that could not be run, so there is nothing to announce.
-refute "and says nothing about skipping" "Rule K skipped" \
+refute "and says nothing about skipping" "Rule K:" \
   -- bash "$CHECK_STATE" base0..HEAD
 
 # --- where the branch name comes from -----------------------------------
