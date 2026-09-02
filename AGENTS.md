@@ -158,17 +158,25 @@ This is this repo's concrete answer to the general rule in
 2. Update every permanent doc listed in the spec's **Proposed changes** — in
    the same change. Touch nothing permanent that isn't listed; if reality
    demands it, update the spec's proposal first.
-3. Run [`writrun-check-spec-deltas`](.writrun/skills/writrun-check-spec-deltas/SKILL.md). Do not
-   proceed on anything other than exit 0.
-4. Fill the spec's **Outcome** section, including divergences, set spec
+3. Fill the spec's **Outcome** section, including divergences, set spec
    `status: implemented`, and write the task's `completed` date — never
    its status; the merge flips it to `done` when it lands your date
    (also covered by `writrun-create-task-and-spec`).
-5. Run [`writrun-check-task-state`](.writrun/skills/writrun-check-task-state/SKILL.md), **after**
-   step 4 and not before. Every rule it has is about a transition, and the
-   transitions it exists to reject are the ones step 4 makes — run it
-   earlier and it passes without reading anything. Do not open the PR on
-   anything other than exit 0.
+4. Run preflight until exit 0:
+
+   ```bash
+   bash .writrun/scripts/stage-1-tasks-and-specs/preflight.sh
+   ```
+
+   It runs the three gates in the order they must run in — front matter,
+   then the promised deltas, then the state — stopping at the first
+   failure and exiting with that check's own code
+   ([contract](docs/technical/distribution.md#preflightsh--the-completion-gates-in-order)).
+   Run it **after** step 3: the transitions the state gate exists to
+   reject are the ones step 3 makes, and a run before them passes by
+   having nothing to read — which is why a task with no `completed` date
+   is named in preflight's summary rather than left to pass quietly. Do
+   not mark the PR ready for review on anything other than exit 0.
 
 ## Never
 
