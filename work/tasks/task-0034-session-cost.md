@@ -1,8 +1,8 @@
 ---
 id: task-0034
-status: ready
+status: in-progress
 blocked_reason: null
-taken_by: null
+taken_by: thomasfranke
 spec_ref: [spec-0045, spec-0046, spec-0047, spec-0048, spec-0049, spec-0050]
 doc_ref: about.md#personas
 origin: report
