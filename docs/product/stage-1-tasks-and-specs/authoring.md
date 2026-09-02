@@ -112,7 +112,11 @@ work, so the one-kind-per-change rule does not reach it.
 At Stage 2+ a change that is *only* recording — the report, plus the
 task and spec triage produced from it — touches no permanent doc and
 implements nothing. That is the third kind of change, next to authoring
-and implementing (`AGENTS.md`).
+and implementing (`AGENTS.md`) — and for the `tracked` route it is the
+**only** vehicle: a task derived from a report lands through a
+`report/` branch of its own, never riding a change that is about
+something else
+([report](../concepts/report.md#recording-rides-any-change--routing-to-the-queue-does-not)).
 
 **The trigger and the authorization are different things.** What makes
 the task exist *now* is the report — a person saying "the checkout
@@ -133,22 +137,35 @@ landed on — that is the whole record, and nothing else keeps it.
 
 | The report | The route | Report ends |
 |---|---|---|
-| A real defect — a broken screen, a 500, documented behaviour gone | A task, directly. The defect violates the doc of the feature itself; `doc_ref` names it — or stays `null` when the broken feature was never documented, with the evidence in the report body. | `tracked` |
+| A real defect — a broken screen, a 500, documented behaviour gone | A task, through a reporting pull request of its own: the `report/` branch presents the report, the task and the spec together, and the maintainer's merge is the assent that the finding deserves the work. The defect violates the doc of the feature itself; `doc_ref` names it — or stays `null` when the broken feature was never documented, with the evidence in the report body. | `tracked` |
 | A behavioural disagreement — "shouldn't it do X instead?" | **Authoring.** No doc states the rule, so fixing means deciding it — the agent stops and hands the pen back; the rule is written first and the task derives from it. | `authored` |
 | A trivial fix — a typo, an obvious one-liner | A commit, never a task (principle 6). | `fixed` |
 | Not a defect at all, or not worth acting on | Nothing. The body says why, which is the part worth keeping. | `declined` |
 
+Recording and routing are **two moments, deliberately apart**. The
+report rides whatever change is open and lands `open`; from there it
+waits where somebody will see it — at Stage 3 an open Issue wearing
+`status:open`, below that a `grep` over `work/reports/`. Triage happens
+when someone picks it up, and the one route that creates work — the
+defect row — travels through a reporting pull request of its own, where
+the human's merge is the judgement that the finding deserves the work.
+The other three routes end the report in place, and may ride exactly as
+the recording did.
+
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'background':'#0d1117','primaryColor':'#161b22','primaryTextColor':'#e6edf3','primaryBorderColor':'#8b949e','lineColor':'#ffffff','secondaryColor':'#161b22','tertiaryColor':'#161b22','fontSize':'14px'}}}%%
 flowchart LR
-    A["HUMAN or AGENT<br/>records the report<br/>work/reports/ · status: open"]
+    A["HUMAN or AGENT<br/>records the report<br/>rides any open change · status: open"]
+    W["The report waits, visibly<br/>Stage 3: an open Issue, status:open<br/>below: a grep over work/reports/"]
     B["AGENT triages<br/>defect · rule missing · trivial · not a defect"]
-    C["AGENT<br/>writrun-create-task-and-spec<br/>task: backlog · spec: draft<br/>report: tracked"]
+    C["AGENT, on a report/ branch of its own<br/>writrun-create-task-and-spec<br/>report: tracked · task: backlog · spec: draft"]
+    H["HUMAN squash-merges the reporting PR<br/>the assent that the finding deserves work"]
     D["The approval gate takes over<br/>spec assented · task ready"]
-    A --> B -->|"defect"| C --> D
+    A --> W --> B
+    B -->|"defect"| C --> H --> D
     B -->|"rule missing"| E["Flow 1 — authoring<br/>report: authored"]
-    B -->|"trivial"| F["A commit, no task<br/>report: fixed"]
-    B -->|"not a defect"| G["No work<br/>report: declined"]
+    B -->|"trivial"| F["A commit, no task<br/>report: fixed · rides"]
+    B -->|"not a defect"| G["No work<br/>report: declined · rides"]
 ```
 
 **A report is checked against the queue before it becomes a task.**
@@ -170,7 +187,9 @@ answers "capture must cost nothing", and nothing about it is worth a
 minute of an outage. The report follows immediately behind the patch and
 runs the normal triage over **what remains** — the proper fix behind the
 patch, the missing test, the doc gap. It ends `tracked` when something
-remains and `fixed` when the patch was the whole of it, and it is
+remains — through its own reporting pull request, as every `tracked`
+does; the urgency was the patch's, not the queue's — and `fixed` when
+the patch was the whole of it, and it is
 recorded either way: an outage nobody wrote down is the finding most
 worth keeping. The patch itself gets no retroactive task: the queue
 tracks what is pending, and git already records what happened.
