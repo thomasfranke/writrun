@@ -84,3 +84,14 @@ itself is the one step that is not mechanical — a client either asks
 an agent to make it or asks the person, and the contract stays the
 same either way.
 
+
+## The skill is the operational pointer
+
+[`writrun-create-task-and-spec`](../../.writrun/skills/writrun-create-task-and-spec/SKILL.md)
+is where the commands live — `new.sh report`, its two refused flags, and
+`new.sh task --from-report`, which closes the link triage opened. The
+statuses those commands write, and the rule that keeps the `tracked`
+route on a branch of its own, are
+[`concepts/report.md`](../product/concepts/report.md)'s; the skill links
+there rather than restating them, so the route has one statement and not
+three.

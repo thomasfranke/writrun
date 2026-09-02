@@ -1,7 +1,7 @@
 ---
 id: spec-0047
 task_ref: task-0034
-status: approved
+status: implemented
 created: 2026-09-02T06:02:28Z
 ---
 
@@ -108,4 +108,23 @@ duplicate heading's `-1` suffix, the stub follow.
 
 ## Outcome
 
-_(fill after execution)_
+`brief.sh` ships beside `list_tasks.sh`. One header line (id, status,
+priority, each spec's id and status), then the task file, each `spec_ref`
+entry in list order, and the `doc_ref` section, every part behind a
+`== <path> ==` divider. Ids resolve by number at any width. Sections run
+from the matching heading to the next of the same or higher level, with
+GitHub's own slug rule — underscores and hyphens kept, `-1`/`-2` on
+duplicate heading text — and `docs/<path>` as the base, never the
+repository root.
+
+Exit 1 for a task that resolves to nothing, 2 for a partial brief with
+every resolved part still printed and the missing ones named, 0 for an
+empty `spec_ref` or a null `doc_ref`, which the divider states as
+answers. A spec listed twice is printed once and the duplication noted.
+A spec-0045 stub is followed once, the divider showing both hops; a stub
+whose link resolves to nothing is a partial brief rather than a
+complete-looking one.
+
+Thirteen behaviours are covered by 11 cases in `tests/unit/brief/`. The
+contract is in `technical/selection.md`, and the select skill names the
+script as step 7's mechanical form. Divergences: none.

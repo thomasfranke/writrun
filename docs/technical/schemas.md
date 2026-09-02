@@ -255,6 +255,15 @@ line from Stage 2 has exactly one writer and it is the machinery — no
 forge event corresponds to a judgement
 ([0064](decisions/tasks-and-specs/0064-a-report-is-an-artefact.md)).
 
+## The skill is the operational pointer
+
+[`writrun-create-task-and-spec`](../../.writrun/skills/writrun-create-task-and-spec/SKILL.md)
+generates every shape above — `new.sh task|spec|report`, with the flags
+and refusals that make an id, a slug and an `origin` a fact rather than a
+memory. The skill carries the commands and how to fill what they leave
+blank; the schema is here, stated once, and
+`writrun-check-front-matter` is what holds a hand-written file to it.
+
 ## Front matter is canonical
 
 The front matter above is a fixed shape, not general YAML. Every reader

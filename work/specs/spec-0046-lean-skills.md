@@ -1,7 +1,7 @@
 ---
 id: spec-0046
 task_ref: task-0034
-status: approved
+status: implemented
 created: 2026-09-02T06:02:27Z
 ---
 
@@ -110,4 +110,32 @@ copies moved together.
 
 ## Outcome
 
-_(fill after execution)_
+The five skills went from 39.7KB to 18.5KB. Select 8.6 → 2.9KB, create
+18.4 → 8.0KB, check-front-matter 3.5 → 2.0KB, check-spec-deltas 4.0 →
+2.4KB, check-task-state 5.3 → 3.3KB. Each keeps its command, its flags,
+its exit codes and the judgements no script makes, and links the chapter
+for everything else.
+
+Four sentences existed nowhere but a skill and moved into the chapters in
+this same diff:
+
+- "WritRun has no claim mechanism", the forge as the only real-time
+  signal, and the offline caveat → `selection.md#nobody-claims-a-task`.
+- What step 0 cannot see — the recording window, a branch never pushed,
+  an amendment riding an open pull request →
+  `selection.md#where-step-0-can-see-and-where-it-cannot`.
+- The template resolution order (project template, shipped default,
+  built-in skeleton) → `schemas.md`, beside the extension-field rule it
+  belongs to.
+- "Pass all four directories or none" and "never check one spec at a time
+  against the same diff" → `distribution.md#running-the-checks`.
+
+Each chapter also gained the pointer line naming its skill as the
+operational half.
+
+Divergences: the create skill landed at 8.0KB against a ~6KB target. The
+remainder is command blocks, flags and fill-in instructions — the parts
+the spec says to keep — and cutting further would have deleted operational
+content rather than restated rules. The select skill landed at 2.9KB
+against ~2.5KB for the same reason: the lister prints four sections, not
+three, and each needs its line.

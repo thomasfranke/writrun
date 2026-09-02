@@ -1,7 +1,7 @@
 ---
 id: spec-0048
 task_ref: task-0034
-status: approved
+status: implemented
 created: 2026-09-02T06:02:30Z
 ---
 
@@ -131,4 +131,31 @@ push and PR only.
 
 ## Outcome
 
-_(fill after execution)_
+`take_task.sh` ships beside `queue_lib.sh` and reuses it for every
+front-matter read. It refuses a dirty tree, fetches `origin main`,
+re-applies selection steps 2–4 naming the filter that held, composes the
+branch (slug defaulting to the filename's subject), the title (tag
+prepended, summary read against the declared style with the vocabularies
+extracted from `check_observance.sh` itself) and the body (the template's
+implementing half, `Implements spec-…` filled from `spec_ref`), and then
+performs the act: forge verified, branch cut from `origin/main`, pushed,
+draft opened.
+
+Divergence, and it is the one worth reading: **the forge reads moved
+behind the conduct gate.** The spec's step 1 lists them with the
+eligibility, and its test list requires that a held run record zero `gh`
+calls — the two cannot both be true, so the gate order is: local
+eligibility, compose, flags, then the forge. A run the flags hold now
+asks the forge nothing, and the `--confirm` rerun makes both reads before
+it acts. Two additions the spec did not name: an unfetchable `origin`
+exits 3 with the repository untouched (the eligibility below it would
+otherwise be read against a stale base), and `--resume`'s carve-out is
+"no branch on the forge" rather than "no upstream", because
+`git switch -c <branch> origin/main` sets an upstream of its own and the
+narrower test would have refused every real leftover.
+
+Nine cases in `tests/unit/take_task/` cover the eligibility refusals,
+both forge gates, the title grammar, slug defaulting, flag gating with
+the forge untouched, the one-act ordering, and every exit-3 path. The
+contract is in `technical/distribution.md`; `AGENTS.md`'s taking
+paragraph names the script and keeps the by-hand form.
