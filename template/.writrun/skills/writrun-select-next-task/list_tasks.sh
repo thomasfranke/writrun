@@ -26,10 +26,14 @@
 # triage, and `work/reports/` never becomes a second queue
 # (docs/technical/selection.md#an-open-report-is-named-never-selected).
 #
-# The three directories are taken together or not at all, the same rule
-# `check_front_matter.sh` states: a caller naming the first two and not
-# the third would read tasks from the tree it named and reports from the
-# working directory, and report nothing waiting where plenty is.
+# The three directories are taken together or not at all — the caller
+# rule `technical/distribution.md#running-the-checks` states for
+# `check_front_matter.sh`, holding here for the same reason. A caller
+# naming the first two and not the third reads tasks from the tree it
+# named and reports from the working directory: it reports nothing
+# waiting where plenty is, or names reports that are not the named
+# tree's. Nothing enforces it — `${3:-work/reports}` cannot tell a
+# default from a mismatch.
 #
 # Exit codes: 0 something is available; 1 nothing is; 3 no work/tasks/.
 #

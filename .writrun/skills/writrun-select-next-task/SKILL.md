@@ -34,11 +34,12 @@ five sections, and each asks for a different move:
   and the specs it summarizes. Those are gates; being asked for one
   directly does not open it, and a MISMATCH is surfaced loudly, never
   resolved on your own.
-- **Open reports — waiting to be triaged** — a report nobody has routed
-  yet. **Triage it**: read it and give it an end. `fixed` and `declined`
-  are yours and ride any change; `authored` writes the rule the report
-  found missing; `tracked` is the only one that makes work, and it
-  travels as a reporting change of its own whose merge is the assent
+- **Open reports — waiting to be triaged, never selected** — a report
+  nobody has routed yet. **Triage it**: read it and give it an end.
+  `fixed` and `declined` are yours and ride any change; `authored`
+  writes the rule the report found missing; `tracked` is the only one
+  that makes work, and it travels as a reporting change of its own
+  whose merge is the assent
   ([report](https://github.com/thomasfranke/writrun/blob/main/docs/product/concepts/report.md)).
   Naming is not selecting — a report is never in the ordering and never
   moves the exit code.
