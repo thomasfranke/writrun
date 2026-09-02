@@ -108,8 +108,8 @@ what was observed — neither a rule nor work — so it may ride whatever
 change is already open, for the same reason a typo is a commit rather
 than a task. A finding that costs its own branch is a finding nobody
 writes down ([`concepts/report.md`](docs/product/concepts/report.md)).
-The exemption covers recording (`open`) and the two ends that create no
-work (`fixed`, `declined`). **The `tracked` route never rides**:
+The exemption covers recording (`open`) and the three ends that create
+no work (`authored`, `fixed`, `declined`). **The `tracked` route never rides**:
 deriving a task from a report is a reporting change on its own
 `report/` branch, and the squash-merge of that pull request is the
 merit assent — a `tracked` flip riding an unrelated change puts a task
