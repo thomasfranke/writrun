@@ -6,6 +6,9 @@
 # generator is the only place that knows both ids at once, and this edit
 # belongs there rather than in an agent's memory.
 setup
+# The tracked route travels on its own reporting change, and both
+# the generator and check_state read the branch name to hold it there.
+git branch -m report/something-seen
 bash "$NEW_SH" report "The mirror lags" --slug mirror-lag >/dev/null 2>&1
 bash "$NEW_SH" task "Read the merged ref" --slug merged-ref \
   --from-report report-0001 >/dev/null 2>&1
