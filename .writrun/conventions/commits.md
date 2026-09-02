@@ -15,7 +15,10 @@ does with the same two is [prs.md](prs.md)'s.
 - **Types**: `docs`, `feat`, `fix`, `refactor`, `chore`.
 - **Scopes** (optional — omit when a change genuinely spans the
   repository): `about`, `product`, `technical`, `tasks`, `specs`,
-  `skills`, `ci`, `tests`, `agents`, `readme`, `setup`, `queue`.
+  `skills`, `ci`, `tests`, `agents`, `readme`, `setup`, `queue`,
+  `conventions`. The last one is this folder: it is a subsystem a change
+  can be about, like `skills` beside it, and the vocabulary that decides
+  lives inside it.
 - Example: `docs(product): add the coverage-rule concept chapter`.
 
 **The two lists are lower case, and they are not interchangeable.** A

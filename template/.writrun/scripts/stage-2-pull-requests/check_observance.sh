@@ -93,7 +93,7 @@ TITLE="${PR_TITLE:-}"
 # statement, and the two are kept in step by hand — the file is prose an
 # agent reads, not a format a script can parse.
 TYPES="docs feat fix refactor chore"
-SCOPES="about product technical tasks specs skills ci tests agents readme setup queue"
+SCOPES="about product technical tasks specs skills ci tests agents readme setup queue conventions"
 
 # The `[TASK-NNNN]` tag is not the settable part: one bracket per task,
 # uppercase, no separator, leading the title. Stripping it leaves the

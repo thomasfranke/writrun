@@ -1,10 +1,10 @@
 ---
 id: report-0001
-status: open
+status: fixed
 task_ref: []
 doc_ref: null
 created: 2026-09-01T20:23:51Z
-triaged: null
+triaged: 2026-09-02T19:58:00Z
 ---
 
 # The conventions folder has no scope in the vocabulary
@@ -39,3 +39,19 @@ that the folder is deliberately scopeless, is triage's to decide and
 would be an authoring change either way: the two vocabularies in
 `commits.md` are what `check_observance.sh` accepts, and the file says
 outright that editing one means editing the other.
+
+**Triage:** the first of the three — `conventions` becomes a twelfth
+scope, added to `check_observance.sh`'s `SCOPES=` line and to the prose
+list in `commits.md` that restates it.
+
+The vocabulary is already granular down to a single file: `agents` is
+`AGENTS.md`, `readme` is one file. A folder holding seven files, its own
+README and a sentence in `AGENTS.md` naming it — sitting beside
+`.writrun/skills/`, which has a word — is a subsystem by the same
+measure. "Deliberately scopeless" was the alternative and it loses on
+that comparison; renaming an existing word was rejected because none of
+the eleven was wrong, only incomplete.
+
+`fixed` rather than `tracked`: the change is one word in two lists and a
+template sync. Trivial work is a commit, never a task (principle 6), so
+the git history names the outcome and the queue gains nothing.
