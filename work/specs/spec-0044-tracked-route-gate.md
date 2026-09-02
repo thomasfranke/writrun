@@ -1,7 +1,7 @@
 ---
 id: spec-0044
 task_ref: task-0033
-status: approved
+status: draft
 created: 2026-09-02T01:28:43Z
 ---
 
@@ -97,11 +97,35 @@ branch name, and the loud skip when neither exists.
 
 ## Proposed technical changes
 
-- `.writrun/skills/writrun-check-task-state/check_state.sh` — rule K
-- `.writrun/skills/writrun-check-task-state/SKILL.md` — document it
-- `.github/workflows/writrun-check.yml` — `HEAD_REF` via env
-- `tests/unit/check_state/` — the cases above
-- `template/` — the mirrored copies of the three files
+- none — nothing under `docs/` changes. The machinery this spec builds
+  is named in **Scope** and **Steps**, which is where it belongs: these
+  two sections promise permanent docs, and a path written here is read
+  relative to `docs/`.
+
+## Amendment — 2026-09-02
+
+Returned to `draft` before implementation. **No pull request is
+suspended** — task-0033 is `ready` and untaken, so this is the ordinary
+pre-implementation amendment, which costs nothing but the re-approval.
+
+The Proposed technical changes listed five repository-root paths —
+`check_state.sh`, its `SKILL.md`, the workflow, `tests/unit/check_state/`
+and `template/`. Both Proposed-changes sections are read relative to
+`docs/`, so `check_deltas` normalises each of those to
+`docs/.writrun/…`, `docs/.github/…`, `docs/tests/…`, `docs/template/` —
+paths no diff will ever touch. Every one would have reported `MISSING`
+and the completion gate would have refused the finished branch, in CI
+too through `check_promised_deltas.sh`
+([report-0005](../reports/report-0005-delta-doc-paths.md)).
+
+Nothing else moves: the goal, the scope, the steps, the criteria, the
+edge cases and the tests are as approved. The work this spec authorizes
+is unchanged — what changes is that the gate can now see the promise it
+makes, which is `none`.
+
+The precedent is [spec-0043](spec-0043-report-kind.md), implemented and
+merged: it carries a generator, three gates and the mirror in its Scope
+and Steps, and promises one `technical/README.md` anchor.
 
 ## Outcome
 
