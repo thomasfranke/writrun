@@ -1,15 +1,15 @@
 ---
 id: report-0008
-status: open
-task_ref: []
+status: tracked
+task_ref: [task-0037]
 doc_ref: product/concepts/report.md#recording-rides-any-change--routing-to-the-queue-does-not
 created: 2026-09-02T14:00:50Z
-triaged: null
+triaged: 2026-09-02T19:43:14Z
 ---
 
 # The report/ prefix is a name, not a property
 
-**References:** [product/concepts/report.md#recording-rides-any-change--routing-to-the-queue-does-not](../../docs/product/concepts/report.md#recording-rides-any-change--routing-to-the-queue-does-not)
+**References:** [product/concepts/report.md#recording-rides-any-change--routing-to-the-queue-does-not](../../docs/product/concepts/report.md#recording-rides-any-change--routing-to-the-queue-does-not) · [task-0037](../tasks/task-0037-rule-k-diff.md)
 
 Rule K — shipped by task-0033 — decides whether a change may route a
 report to `tracked` by prefix-matching the head branch against
