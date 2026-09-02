@@ -122,7 +122,8 @@ queue the rule creates while the feedback loop is still cheap. Open
 directly only when the declaration itself says so ("deriva e abre
 direto"). The default is the adopter's to change.
 
-Commit messages, branch names, PR titles, and task/spec style follow
+Commit messages, branch names, PR titles, task/spec style and how prose
+is written follow
 [`.writrun/conventions/`](.writrun/conventions/README.md) — read the relevant file before
 writing; it is this repository's own convention and every project you
 work in may have rewritten it.

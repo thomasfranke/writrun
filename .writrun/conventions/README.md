@@ -17,6 +17,7 @@ opener) validates against whatever they say.
 | [Pull requests](prs.md) | Title rule, template, merge policy |
 | [Tasks](tasks.md) | Title, body, priority and milestone taste |
 | [Specs](specs.md) | Title, criteria, scope and Outcome taste |
+| [Prose](prose.md) | How documentation, skills and comments are written |
 
 One rule spans them all in this repository: **English everywhere** —
 code, comments, commits, documentation.
@@ -44,5 +45,5 @@ not read WritRun's front-matter contract and JSON is the shape they
 already know. It no longer lives in this folder — the update exemption
 `conventions/` carries moved onto the file by name when it took the root
 address. See
-[`decisions/0052`](../../docs/technical/decisions/tasks-and-specs/0052-settings-carry-the-choice.md)
-and [`decisions/0053`](../../docs/technical/decisions/tasks-and-specs/0053-settings-at-the-root.md).
+[`decisions/0052`](https://github.com/thomasfranke/writrun/blob/main/docs/technical/decisions/tasks-and-specs/0052-settings-carry-the-choice.md)
+and [`decisions/0053`](https://github.com/thomasfranke/writrun/blob/main/docs/technical/decisions/tasks-and-specs/0053-settings-at-the-root.md).
