@@ -18,6 +18,13 @@ does with the same two is [prs.md](prs.md)'s.
   `skills`, `ci`, `tests`, `agents`, `readme`, `setup`, `queue`.
 - Example: `docs(product): add the coverage-rule concept chapter`.
 
+**The two lists are lower case, and they are not interchangeable.** A
+subject spells them exactly as above; a bracketed title carries the same
+words in whatever case it likes, and `writrun check` folds it. What
+neither may do is swap the slots — `tests` is a scope, so `[Tests]`
+leading a title is a type the vocabulary does not have, and the door
+says so.
+
 **The `[TASK-NNNN]` tags lead the title and stay out of the subject.**
 On the title they sit **outside** whichever grammar follows, so the one
 parser that exists never has to know both at once: from Stage 2,
@@ -56,11 +63,8 @@ seeded by the pull request title and typed in the merge box — so
 `writrun check` reads that title and nothing else. A subject on a branch
 is a courtesy to whoever reads the branch, and a gate that failed a pull
 request over text the merge discards would be enforcing where nothing is
-left behind. **So the constant above binds what reaches `main`** — the
-squash subject and the machinery's own two — and not what a branch
-carries on the way there: a branch subject that leads with `[TASK-NNNN]`
-and dresses itself in the declared style is reading its own audience
-right, and breaks nothing this file asks for.
+left behind. **What a branch loses is the door, never the rule**: kept by
+hand is still kept, and the shape it is kept in is the constant above.
 
 ## Who presses commit — `stage_2.auto_commit`
 
