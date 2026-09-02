@@ -39,7 +39,7 @@ body together, and pushes nothing before the word. Gating only the
 opening would put the branch on the forge first and ask afterwards,
 which is the wrong half of the moment: what a gate on this act exists
 to hold is work becoming visible to anyone but its author
-([the conduct flags](../../technical/README.md#the-conduct-flags)).
+([the conduct flags](../../technical/settings.md#the-conduct-flags)).
 
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'background':'#0d1117','primaryColor':'#161b22','primaryTextColor':'#e6edf3','primaryBorderColor':'#8b949e','lineColor':'#ffffff','secondaryColor':'#161b22','tertiaryColor':'#161b22','fontSize':'14px'}}}%%

@@ -22,7 +22,7 @@
 # to none: it says something was seen, and triage decides whether
 # anything follows (docs/product/concepts/report.md).
 #
-# Exists because the schema in docs/technical/README.md is precise about
+# Exists because the schema in docs/technical/schemas.md is precise about
 # details easy to get wrong from memory: spec_ref/depends_on are always
 # lists even with one element, doc_ref is a full path+anchor resolved
 # relative to docs/, and every field is present even when null. A

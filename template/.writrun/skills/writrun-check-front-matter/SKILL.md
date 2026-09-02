@@ -5,68 +5,37 @@ description: Use this skill to verify that every task, spec and report file in a
 
 # Check that the queue's front matter is canonical
 
-Every reader in this methodology is line-based on purpose — plain
-`bash`/`awk`/`sed`, no YAML parser, no runtime dependency. YAML permits
-the same meaning in shapes those readers cannot see: a block list under
-`spec_ref:` reads as an empty list, a quoted value never matches a path
-comparison, a folded scalar reads as nothing. **Silently, in every case.**
+Every reader in this methodology is line-based on purpose, and YAML
+permits the same meaning in shapes those readers silently misread. The
+canonical form is therefore a checked contract, not an assumption —
+the contract itself is
+[`technical/schemas.md#front-matter-is-canonical`](https://github.com/thomasfranke/writrun/blob/main/docs/technical/schemas.md#front-matter-is-canonical),
+and this script is where it is enforced.
 
-So the canonical form is a checked contract rather than an assumption, and
-this is the check.
+## Run it
 
 ```bash
 bash .writrun/skills/writrun-check-front-matter/check_front_matter.sh \
   [task-dir] [spec-dir] [docs-dir] [report-dir]
 ```
 
-Defaults to `work/tasks`, `work/specs`, `docs` and `work/reports`. Exit 0
-when every file is canonical, 1 when one is malformed — naming the file
-and what is wrong with it.
+Defaults to `work/tasks`, `work/specs`, `docs` and `work/reports`. **Pass
+all four or none** — the reason is
+[`technical/distribution.md#running-the-checks`](https://github.com/thomasfranke/writrun/blob/main/docs/technical/distribution.md#running-the-checks).
 
-**Pass all four or none.** A project with a queue anywhere but the
-defaults that passes only the first two gets a `work/reports` resolved
-against its own working directory, finds nothing there, and reports
-success over the reports it never read — and hand-edited reports are
-exactly what this check exists for, since three of triage's four ends are
-written by hand. A report directory that is not there is zero reports and
-still exit 0: an adopter who has never recorded one has a complete state,
-not a broken checkout.
+- **0** — every file is canonical.
+- **1** — one is not; the output names the file and what is wrong with
+  it. Fix the file, never the check.
 
 ## When to run it
 
 **Whenever a queue file was written by hand.** The generator
 (`writrun-create-task-and-spec`) only ever produces canonical form, so the
-happy path costs nothing; this check exists for the files that did not come
-from it.
+happy path costs nothing; this check exists for the files that did not
+come from it.
 
-It needs nothing but the files. No git repository, no remote, no `gh`, no
-network — which is what makes it the one check available at every adoption
-level, including a project that keeps its queue as markdown and nothing
-else.
-
-## What it enforces
-
-The full contract is in WritRun's
-[`technical/README.md`](https://github.com/thomasfranke/writrun/blob/main/docs/technical/README.md#front-matter-is-canonical).
-In short: front matter opens at line 1 and closes with `---`; one field per
-line as `key: value`; values bare — no quotes, no `>`/`|` block scalars, no
-trailing whitespace; every schema field present exactly once even when
-`null`; lists inline; `id` agreeing with the filename; statuses, priority
-and dates drawn only from their documented forms; `blocked` and
-`blocked_reason` paired both ways; `doc_ref` written relative to `docs/`.
-
-A report's `status` is the route triage took, and the fields that name
-its outcome are paired with it the same way: `triaged` set on each of the
-four ends and null while `open`, a non-empty `task_ref` on `tracked`, a
-`doc_ref` on `authored`. `fixed` and `declined` name their outcome in the
-git history and in the body, where this check cannot follow, so neither
-field is required of them.
-
-An unknown key in canonical shape is allowed — an adopter may extend the
-schema, not reshape it.
-
-## What it does not do
-
-It does not read git, so it says nothing about transitions — that is
+It needs nothing but the files — no git, no remote, no `gh`, no network —
+which is what makes it the one check available at every adoption stage.
+It says nothing about transitions: that is
 [`writrun-check-task-state`](../writrun-check-task-state/SKILL.md). It
 validates a `doc_ref`'s shape, not that the path exists.

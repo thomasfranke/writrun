@@ -54,7 +54,7 @@
 #     (docs/technical/README.md#task-schema).
 #
 # Unknown keys in canonical shape are allowed — an adopter may extend.
-# The schemas themselves: docs/technical/README.md.
+# The schemas themselves: docs/technical/schemas.md.
 #
 # Exit codes: 0 every file canonical (or nothing to validate); 1 a file
 # is malformed; 3 usage error.

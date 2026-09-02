@@ -8,8 +8,16 @@ what the task needs:
 2. [`docs/product/README.md`](docs/product/README.md) — the prescriptive
    rules this repo's own structure is checked against. Read the chapter
    relevant to what you're touching before proposing a behaviour change.
-3. [`docs/technical/README.md`](docs/technical/README.md) — schemas and the
-   selection algorithm. Read before touching `tasks/` or `specs/`.
+3. `docs/technical/` — the chapter your task needs, never the whole
+   reference: [`schemas.md`](docs/technical/schemas.md) before touching
+   `tasks/`, `specs/` or `reports/`;
+   [`selection.md`](docs/technical/selection.md) when picking work;
+   [`settings.md`](docs/technical/settings.md) before committing, pushing
+   or opening a pull request;
+   [`reporting.md`](docs/technical/reporting.md) when recording a finding;
+   [`distribution.md`](docs/technical/distribution.md) when working on the
+   machinery itself. [`README.md`](docs/technical/README.md) is the router
+   that names them.
 4. The specific task and its referenced specs/anchors — never code from the
    task title alone.
 
