@@ -1,15 +1,15 @@
 ---
 id: report-0006
-status: open
-task_ref: []
+status: tracked
+task_ref: [task-0035]
 doc_ref: technical/README.md#spec-schema
 created: 2026-09-02T07:13:08Z
-triaged: null
+triaged: 2026-09-02T18:52:17Z
 ---
 
 # A promise the delta check cannot resolve is caught only at the completion gate
 
-**References:** [technical/README.md#spec-schema](../../docs/technical/README.md#spec-schema)
+**References:** [technical/README.md#spec-schema](../../docs/technical/README.md#spec-schema) · [task-0035](../tasks/task-0035-promise-resolves.md)
 
 A path in either **Proposed changes** section is read relative to
 `docs/` — `check_deltas.sh` prefixes every bullet with `docs/`
