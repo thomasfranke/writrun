@@ -29,7 +29,9 @@ and state comparison in a diff is objective, so it is checked by
    `HEAD_REF` when set (CI passes the head branch that way) and the
    checkout's own branch otherwise. On a detached HEAD with no
    `HEAD_REF` it says on stdout that it skipped, rather than passing
-   quietly.
+   quietly. Below Stage 2 that rule stands down without a word: the
+   gate it holds the route to is a pull request's squash-merge, and a
+   branchless project has none to hold it to.
 2. Read the exit code:
    - **0 / "OK"** — no forbidden transition. Proceed.
    - **1** — a rule was violated; every violation prints with the fix.
@@ -66,5 +68,14 @@ and state comparison in a diff is objective, so it is checked by
   report to `fixed` instead. The two are different judgements: `fixed`
   says the change in hand ended it, and claiming that of a finding that
   still needs work loses the finding.
+- Never resolve either `tracked` verdict by **renaming the head branch**
+  to `report/…`. The check reads the branch name, so a rename does clear
+  it — and clears nothing else: the prefix is how a reporting change is
+  recognised, not what makes one, and a branch still carrying the
+  implementation is the ridden merge the rule exists to stop. Move the
+  report, the task and the spec to a change of their own. The rename also
+  costs the ride it was taken for: `apply_pr_event.sh` recognises
+  `task/NNNN-…`, so a task/ branch renamed away stops being recorded
+  `in-progress` and `in-review` at all.
 - Never skip the check because the change touched no code. A change that
   only edits front-matter is exactly what this check is for.

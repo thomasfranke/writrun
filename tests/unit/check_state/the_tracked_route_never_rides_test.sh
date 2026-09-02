@@ -87,6 +87,60 @@ for end in authored fixed declined; do
     -- bash "$CHECK_STATE" main...HEAD
 done
 
+# --- what the rule reads the base at ------------------------------------
+
+# A queue file is never renamed. If one is anyway, the rule must still be
+# about the transition and not about the path: reading the base at the
+# *current* name answers "it was not there", which is what a birth looks
+# like, and a report tracked long ago would be refused for moving.
+setup
+report_file report-0003 tracked task-0001 2026-08-23T00:00:00Z
+commit_all
+git checkout -q main; git merge -q feature; git checkout -q feature
+git mv work/reports/report-0003.md work/reports/report-0003-better-slug.md
+commit_all
+check "a rename is not a report reaching tracked" 0 "no forbidden lifecycle" \
+  -- bash "$CHECK_STATE" main...HEAD
+
+# --- the stage the rule belongs to --------------------------------------
+
+# The gate this rule holds the route to is a pull request's squash-merge.
+# Below Stage 2 there is none to hold it to: the project has no forge and
+# no branches, so the route runs on main, legally.
+setup
+settings_file <<'JSON'
+{
+  "stage": 1,
+  "stage_1": {
+    "spec_required": "when-warranted",
+    "decisions_style": "per-subsystem",
+    "product_layout": "by-concept"
+  },
+  "stage_2": {
+    "auto_commit": true,
+    "auto_pr": true,
+    "auto_push": true,
+    "agent_coauthor": true,
+    "pr_title_style": "conventional"
+  }
+}
+JSON
+commit_all
+git checkout -q main; git merge -q feature
+report_file report-0001 open
+commit_all
+git tag base0
+report_file report-0001 tracked task-0001 2026-08-23T00:00:00Z
+task_file task-0001 backlog "" null null report
+commit_all
+check "at stage 1 the route runs where the project works" 0 "OK" \
+  -- bash "$CHECK_STATE" base0..HEAD
+
+# And stands down without a word: a stage the rule does not apply at is
+# not a rule that could not be run, so there is nothing to announce.
+refute "and says nothing about skipping" "Rule K skipped" \
+  -- bash "$CHECK_STATE" base0..HEAD
+
 # --- where the branch name comes from -----------------------------------
 
 # CI knows the head branch and the checkout does not, so the environment
