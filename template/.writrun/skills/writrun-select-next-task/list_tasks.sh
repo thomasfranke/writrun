@@ -19,6 +19,18 @@
 # derived from this checkout and the open pull requests together, never
 # from a stored field (docs/product/stage-2-pull-requests/statuses.md#an-amendment-under-an-open-pull-request).
 #
+# **An open report is named, never selected.** It enters no ordering and
+# moves no exit code — 0 still means a task is available and 1 still
+# means none is, which is what every caller branching on the status
+# depends on. Naming is not selecting: what the section asks for is
+# triage, and `work/reports/` never becomes a second queue
+# (docs/technical/selection.md#an-open-report-is-named-never-selected).
+#
+# The three directories are taken together or not at all, the same rule
+# `check_front_matter.sh` states: a caller naming the first two and not
+# the third would read tasks from the tree it named and reports from the
+# working directory, and report nothing waiting where plenty is.
+#
 # Exit codes: 0 something is available; 1 nothing is; 3 no work/tasks/.
 #
 # Portable awk/sed only — no gawk extensions.
@@ -27,6 +39,7 @@ set -uo pipefail
 
 TASK_DIR="${1:-work/tasks}"
 SPEC_DIR="${2:-work/specs}"
+REPORT_DIR="${3:-work/reports}"
 
 [ -d "$TASK_DIR" ] || { echo "No such directory: $TASK_DIR" >&2; exit 3; }
 
@@ -313,6 +326,17 @@ available=""
 held=""
 resumable=""
 inflight=""
+open_reports=""
+
+for f in "$REPORT_DIR"/*.md; do
+  [ -f "$f" ] || continue
+  case "$(basename "$f")" in README.md|readme.md) continue ;; esac
+
+  id=$(field "$f" id)
+  [ -n "$id" ] || continue
+  [ "$(field "$f" status)" = "open" ] || continue
+  open_reports="${open_reports}${id}|$(title "$f")"$'\n'
+done
 
 for f in "$TASK_DIR"/*.md; do
   [ -f "$f" ] || continue
@@ -437,6 +461,14 @@ if [ -n "$held" ]; then
   echo "Held back:"
   printf '%s' "$held" | sed '/^$/d' | sort | while IFS='|' read -r id why; do
     printf '  %-10s %s\n' "$id" "$why"
+  done
+fi
+
+if [ -n "$open_reports" ]; then
+  echo
+  echo "Open reports — waiting to be triaged, never selected:"
+  printf '%s' "$open_reports" | sed '/^$/d' | sort | while IFS='|' read -r id tt; do
+    printf '  %-12s %s\n' "$id" "$tt"
   done
 fi
 

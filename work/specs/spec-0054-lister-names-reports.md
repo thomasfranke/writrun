@@ -1,7 +1,7 @@
 ---
 id: spec-0054
 task_ref: task-0038
-status: approved
+status: implemented
 created: 2026-09-02T19:43:45Z
 ---
 
@@ -148,4 +148,26 @@ section is additive and moves nothing they assert.
 
 ## Outcome
 
-_(fill after execution)_
+`list_tasks.sh` prints a fifth section, `Open reports — waiting to be
+triaged, never selected`, after `Held back` and before the completeness
+notes. It reads a third positional, `${3:-work/reports}`, guarded the way
+the task loop guards its own glob and skipping `README.md` by name.
+
+The two properties that hold the line are structural rather than
+asserted: the section is built from its own accumulator and never
+touches `available`, so it enters no ordering, and the final
+`[ -n "$available" ]` is byte-identical to today's, so it moves no exit
+code. Both have cases anyway — an open report beside an empty queue
+still exits 1, and beside real work still exits 0.
+
+Five case files, seventeen assertions, including the four triage ends
+named nowhere and a run given all three directories explicitly.
+
+The skill's section list says five and names the move: **triage it**,
+with which end produces work and which do not. `technical/selection.md`
+gains the rule and its reasoning; `product/concepts/report.md` no longer
+leaves the below-Stage-3 job to the adopter's `grep`.
+
+**No divergence.** The selection algorithm still reads `work/tasks/` and
+only that, `brief.sh` is untouched, and the Stage 3 mirror is unchanged —
+a second channel was added beside it, not a replacement.

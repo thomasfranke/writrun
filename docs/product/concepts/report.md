@@ -86,9 +86,15 @@ completed when it was acted on, not planned when it was `declined`.
 
 This is not decoration. `open` is the one state that asks something of a
 person, and a file nobody is prompted to open is a file that rots, which
-would leave this concept worse than the conversation it replaced. Below
-Stage 3 the same job is a `grep` over `work/reports/`, and remembering
-to run it is the adopter's.
+would leave this concept worse than the conversation it replaced.
+
+**The mirror is one channel and not the only one.** At every stage, the
+task lister names every report still `open` in a section of its own —
+so the ask reaches the session picking work, which is the reader most
+likely to act on it, without waiting for anyone to remember a `grep`.
+Naming is not selecting: an open report enters no ordering and moves no
+exit code, and what the section asks for is triage
+([selection](../../technical/selection.md#an-open-report-is-named-never-selected)).
 
 What the open Issue asks for is the **evaluation**, never the fix: read
 the report, choose its route. Work enters the queue only when the
