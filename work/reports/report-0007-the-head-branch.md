@@ -41,15 +41,18 @@ caller rules already there. That section exists for exactly this shape
 of hazard: a rule about how a gate is *called*, where a wrong call
 passes.
 
-One claim above is wrong and is corrected here rather than left
-standing. An unset `HEAD_REF` does not give "a rule that silently never
-fires". `check_state.sh` prints three lines naming the skip — "Rule K
-skipped — no branch name is readable" — and the comment above that case
-states the principle: a check that silently drops a rule it could not
-run is the failure mode worse than the rule not existing. The skip is
-announced. What survives of the concern is narrower and still worth the
-sentence: the announcement rides a check that still exits 0, so it is a
-log line on a green run.
+One claim above is half wrong and is corrected here rather than left
+standing. An unset `HEAD_REF` does not always give "a rule that silently
+never fires". `check_state.sh` falls back to the checkout's own branch
+name, and when even that is unreadable it prints three lines naming the
+skip — "Rule K skipped — no branch name is readable" — because a check
+that silently drops a rule it could not run is the failure mode worse
+than the rule not existing. Two things survive the correction, both
+narrower than the original claim. The announcement rides a check that
+still exits 0, so it is a log line on a green run. And it fires only on a
+detached HEAD: on an attached one the fallback hands rule K the branch
+the runner happens to sit on, which for a `main` or `pr-NNN` checkout is
+a name the rule judges silently, and wrongly.
 
 `authored` rather than `tracked`: nothing is broken, so there is no work
 to queue. The convention existed only in the heads of whoever last read

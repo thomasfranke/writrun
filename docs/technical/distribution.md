@@ -210,23 +210,29 @@ spec at a time against the same diff and every sibling's promised docs
 come back as undeclared for the other — a red result the change did not
 earn, and the fastest way to teach a reader to ignore the check.
 
-**A `PR_*` name carries pull-request event data, set by the workflow
-step that calls the script.** `PR_HEAD_REF`, `PR_TITLE`, `PR_AUTHOR`,
-`PR_DRAFT` and `PR_MERGED` reach `apply_pr_event.sh` and its siblings
-that way. A script an agent also runs locally reads the bare name:
-`check_state.sh` reads `HEAD_REF`, because outside CI there is no pull
-request for the prefix to be true about. Copying one workflow's `env:`
-block into another's step therefore sets a name the callee never reads.
-The callee announces the rule it could not run rather than passing
-quietly — but it announces it on a check that still goes green, so the
-log line is the whole signal.
-
 **Neither result is resolved by editing the promise to match the diff.**
 MISSING is either a forgotten doc update or a promise that was wrong, and
 UNDECLARED is either an incomplete Proposed-changes section or a change
 that touched what it should not have; both are surfaced and decided,
 never papered over. A spec is marked `implemented`, and a task's
 `completed` date written, on exit 0 and on nothing else.
+
+**A `PR_*` name carries pull-request event data, set by the workflow
+step that calls the script.** `PR_HEAD_REF`, `PR_TITLE`, `PR_AUTHOR`,
+`PR_DRAFT` and `PR_MERGED` reach `apply_pr_event.sh` and its siblings
+that way. A script an agent also runs locally reads the bare name:
+`check_state.sh` reads `HEAD_REF`, because outside CI there is no pull
+request for the prefix to be true about. Copying one workflow's `env:`
+block into another's step therefore sets a name the callee never reads,
+and neither direction is loud. `check_state.sh` falls back to the
+checkout's own branch name, so it announces the skip only when *that* is
+unreadable too — on an attached HEAD it judges rule K against whatever
+the runner happens to sit on, and a `main` or `pr-NNN` checkout renders a
+FORBIDDEN `tracked` flip as a pass. `apply_pr_event.sh` has no fallback
+to reach for: an unset `PR_HEAD_REF` exits 0 printing `head '' names no
+task branch — nothing to record`, the line every pull request that is not
+a task branch legitimately prints, so a miswired `writrun-progress.yml`
+stops recording the task lifecycle and looks ordinary doing it.
 
 ## `take_task.sh` — the taking act, in one command
 
@@ -317,8 +323,12 @@ so a caller retrying on preflight's word never mistakes a stage's 3 for
 preflight asking for different arguments.
 
 It adds no rule of its own: the same three calls CI's `writrun-check.yml`
-makes, so the local gate and CI render the same judgement on the same
-branch.
+makes. One input differs, and it is rule K's — CI hands `check_state.sh`
+the head branch as `HEAD_REF`, preflight hands it nothing and leaves the
+script to read the checkout — so the two render the same judgement on the
+same branch whenever the checkout *is* that branch, and only then. Run
+from a detached HEAD, preflight skips rule K and still prints
+`PREFLIGHT OK` on a commit CI judges.
 
 ## `session_card.sh` — the settings, rendered
 

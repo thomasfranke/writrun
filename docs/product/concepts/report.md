@@ -109,7 +109,8 @@ goes back to being lost in a conversation — which is the state this
 concept exists to end.
 
 **The exemption covers what creates no work.** Recording (`open`) rides,
-and so do the two ends that leave the queue untouched: `fixed`, whose
+and so do the three ends that leave the queue untouched: `authored`,
+whose outcome is the rule the change it rides writes, `fixed`, whose
 whole outcome is the change it rides, and `declined`, which produces
 nothing and closes the mirror where a person can see the judgement and
 disagree with it.
