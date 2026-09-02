@@ -6,7 +6,7 @@ taken_by: null
 spec_ref: [spec-0053]
 doc_ref: product/concepts/report.md#recording-rides-any-change--routing-to-the-queue-does-not
 origin: report
-priority: high
+priority: medium
 depends_on: []
 milestone: null
 created: 2026-09-02T19:43:14Z
