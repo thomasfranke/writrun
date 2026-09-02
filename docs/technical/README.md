@@ -71,18 +71,6 @@ Moved — see [`schemas.md#blocked-vs-depends_on`](schemas.md#blocked-vs-depends
 
 Moved — see [`schemas.md#spec-schema`](schemas.md#spec-schema).
 
-## Proposed product changes
-
-Moved — see [`schemas.md#proposed-product-changes`](schemas.md#proposed-product-changes).
-
-## Proposed technical changes
-
-Moved — see [`schemas.md#proposed-technical-changes`](schemas.md#proposed-technical-changes).
-
-## Outcome
-
-Moved — see [`schemas.md#outcome`](schemas.md#outcome).
-
 ## Report schema
 
 Moved — see [`schemas.md#report-schema`](schemas.md#report-schema).

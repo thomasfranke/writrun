@@ -335,6 +335,6 @@ Adoption's **core** list, and carry reasoning — that stays in
 
 **A setting controls; it never merely describes.** `stage: 1` means the
 workflows stop, not that a reader is told they were deleted. The alternative
-is the failure [`0041`](decisions/0041-the-issues-mirror-is.md) named when it
+is the failure [`0041`](decisions/github-issues/0041-the-issues-mirror-is.md) named when it
 rejected a flag: two ways to say one thing, free to disagree.
 

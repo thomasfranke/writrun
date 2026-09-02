@@ -177,3 +177,11 @@ the acceptance criteria name, and every hit resolves. The three
 anchorless script citations (`check_front_matter.sh`, `check_deltas.sh`,
 `new.sh`) now name `docs/technical/schemas.md`; the anchored ones were
 left, as the spec's edge case says, because a stub keeps them true.
+
+Review correction: three of the stubs — `#proposed-product-changes`,
+`#proposed-technical-changes`, `#outcome` — were dropped. They came from
+a heading scan that read the spec-schema example's own fenced headings as
+real ones, so they promised anchors that never existed in the old
+reference and do not exist in `schemas.md` either. The stubs exist so
+nothing written before the split stops resolving; a stub for an address
+nobody could have written is only a link that goes nowhere.
