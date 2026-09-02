@@ -52,10 +52,18 @@ usage: take_task.sh <task-id> --title "<summary>" [--slug words] [--resume] [--c
 USAGE
 }
 
+refuse() { echo "REFUSED: $*" >&2; exit 1; }
+
+# The count is checked before the shift, not after it: `shift 2` with one
+# word left shifts *nothing* and merely reports it, so a loop that shrugs
+# the report off reads the same word forever. A missing value has to be a
+# refusal — a take that hangs is worse than one that fails.
 while [ "$#" -gt 0 ]; do
   case "$1" in
-    --title)   TITLE="${2:-}"; shift 2 || true ;;
-    --slug)    SLUG="${2:-}"; shift 2 || true ;;
+    --title)   [ "$#" -ge 2 ] || refuse "--title needs a summary after it"
+               TITLE="$2"; shift 2 ;;
+    --slug)    [ "$#" -ge 2 ] || refuse "--slug needs words after it"
+               SLUG="$2"; shift 2 ;;
     --resume)  RESUME=yes; shift ;;
     --confirm) CONFIRM=yes; shift ;;
     -h|--help) usage; exit 1 ;;
@@ -64,8 +72,6 @@ while [ "$#" -gt 0 ]; do
                TASK_ARG="$1"; shift ;;
   esac
 done
-
-refuse() { echo "REFUSED: $*" >&2; exit 1; }
 
 [ -n "$TASK_ARG" ] || { usage; exit 1; }
 
@@ -261,6 +267,22 @@ show_composition() {
   printf '%s\n' "$BODY" | sed 's/^/  | /'
 }
 
+# resume_command — the rerun that finishes a half-done act, written in
+# one place so the two failure paths cannot print different acts.
+#
+# It carries every argument that decided the branch and the act, because
+# both are load-bearing: a hint without `--slug` names a *different*
+# branch than the one just cut, and --resume then refuses a branch that
+# "does not exist locally"; a hint without `--confirm`, on a run the
+# conduct flags only let through because --confirm was given, walks back
+# into the conduct gate and exits 2 having done nothing — leaving the
+# pushed branch without its pull request, the one state this act must
+# not leave behind.
+resume_command() {
+  printf '  bash %s %s --title "%s" --slug %s --resume%s\n' \
+    "$0" "$TASK_ARG" "$TITLE" "$SLUG" "${CONFIRM:+ --confirm}"
+}
+
 # --- the branch must not already exist -------------------------------
 
 branch_local=""
@@ -402,7 +424,7 @@ if ! PUSH_ERR=$(git push -u origin "$BRANCH" 2>&1); then
   echo "git push failed:" >&2
   printf '%s\n' "$PUSH_ERR" | head -n 3 >&2
   echo "${BRANCH} is kept local. Finish the act with:" >&2
-  echo "  bash $0 ${TASK_ARG} --title \"${TITLE}\" --resume" >&2
+  resume_command >&2
   exit 3
 fi
 
@@ -415,7 +437,7 @@ if ! PR_ERR=$(gh pr create --draft --base main --head "$BRANCH" \
   printf '%s\n' "$PR_ERR" | head -n 3 >&2
   echo "${BRANCH} is pushed but has no pull request, which is the one state this act must not leave behind." >&2
   echo "Finish it with:" >&2
-  echo "  bash $0 ${TASK_ARG} --title \"${TITLE}\" --resume" >&2
+  resume_command >&2
   exit 3
 fi
 rm -f "$BODY_FILE"

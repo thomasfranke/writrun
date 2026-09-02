@@ -154,7 +154,17 @@ otherwise be read against a stale base), and `--resume`'s carve-out is
 `git switch -c <branch> origin/main` sets an upstream of its own and the
 narrower test would have refused every real leftover.
 
-Nine cases in `tests/unit/take_task/` cover the eligibility refusals,
+Two more divergences, both found in review. A missing option value is
+now a refusal rather than a hang: `shift 2` with one word left shifts
+nothing and only reports it, so `--title` as the last argument had the
+loop reading the same word forever. And the `--resume` line the exit-3
+paths print carries `--slug` and, when the run needed one, `--confirm` —
+without the first it names a different branch than the one just cut, and
+without the second it walks back into the conduct gate and does nothing,
+leaving exactly the pushed-branch-without-a-pull-request this act exists
+to prevent. The suite runs the printed line rather than reading it.
+
+Eleven cases in `tests/unit/take_task/` cover the eligibility refusals,
 both forge gates, the title grammar, slug defaulting, flag gating with
 the forge untouched, the one-act ordering, and every exit-3 path. The
 contract is in `technical/distribution.md`; `AGENTS.md`'s taking
