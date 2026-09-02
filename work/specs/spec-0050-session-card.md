@@ -1,7 +1,7 @@
 ---
 id: spec-0050
 task_ref: task-0034
-status: approved
+status: implemented
 created: 2026-09-02T06:02:32Z
 ---
 
@@ -110,4 +110,26 @@ defaulted key, an absent file.
 
 ## Outcome
 
-_(fill after execution)_
+`session_card.sh` renders 30 lines: the stage with what it means, the
+four conduct flags with their operational meanings, `pr_title_style` with
+one example title per pull-request kind in the declared style, the commit
+subject constant with both vocabularies, the three branch prefixes with
+the tag shape, and the four `stage_1` declarations. Every value carries
+`(declared)` or `(default)`, which is what `read_setting.sh --origin`
+was added for — a tab-separated `value<TAB>origin`, with a value carried
+over by either rename bridge counting as declared, because the adopter
+wrote it under the name of the day.
+
+The vocabularies are extracted from `check_observance.sh`'s own `TYPES=`
+and `SCOPES=` lines; failing to find them is a loud exit 3 rather than a
+shorter card. A project with no settings file renders every documented
+default, marked, and exits 0.
+
+Five cases across `tests/unit/session_card/` and
+`tests/unit/read_setting/` cover both styles' examples, flags false,
+the absent file, the vocabulary extraction and its exit 3, the ~30-line
+bound, Stage 1's still-printed flags, and `--origin` over a declared key,
+a defaulted key, an absent file and a bridged value. The contract is in
+`technical/distribution.md`, and `technical/settings.md` names the card as
+the file's rendered view. `AGENTS.md` opens its reading order with it.
+Divergences: none.

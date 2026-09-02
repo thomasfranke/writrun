@@ -1,7 +1,7 @@
 ---
 id: spec-0049
 task_ref: task-0034
-status: approved
+status: implemented
 created: 2026-09-02T06:02:31Z
 ---
 
@@ -129,4 +129,35 @@ exit-4 own-failure code distinct from every stage's.
 
 ## Outcome
 
-_(fill after execution)_
+`preflight.sh` runs the three gates in order — the front-matter sweep,
+`check_promised_deltas.sh` on the range, `check_state.sh` on the range —
+stopping at the first failure, reprinting that check's output under a
+line naming the stage, and exiting with that check's own code.
+Preflight's own failures take 4. Task ids default to the branch's
+`task-NNNN` marker and none resolving is not an error; the range defaults
+to `origin/main...HEAD` after a fetch, and an unfetchable origin is named
+out loud before the run continues against the local ref.
+
+The vacuous-pass trap is encoded twice over: a task whose `completed` is
+still null is named in the summary — and on a failing run too — and the
+delta stage's "authoring change, deltas not applicable" line is that same
+fact seen mechanically.
+
+Five cases in `tests/unit/preflight/` cover the ordering, the inference,
+the comma list, the warning, the offline note, per-stage exit-code
+propagation and the exit-4 code. `AGENTS.md`'s completion sequence
+collapsed from five steps to four: today's 3 and 5 are now "run preflight
+until exit 0", and the completion edits stay in prose as step 3.
+
+Divergence: the "stages after it did not run" half of the stop line is
+printed only when a stage after it exists — the third stage's failure
+says the stage and the code, and claims nothing about stages there are
+none of.
+
+Two review corrections. A zero-padded id resolves: `0034` is how the
+queue spells an id everywhere, and stripping the padding only when a
+`task-` prefix carried it made the queue's own spelling name no file —
+the rule now lives in one step in `ql_task_num`, which every caller
+shares. And each stage streams as it runs instead of appearing whole
+when it ends; the capture stays, because the summary names the deltas
+stage 2 checked out of its own output.

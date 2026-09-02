@@ -5,73 +5,45 @@ description: Use this skill before merging or completing a task in a project tha
 
 # Check spec deltas
 
-Verifies a completed change against the merge contract a spec made when it
-was drafted: the **Proposed product changes** and **Proposed technical
-changes** sections list every permanent doc path the change should touch —
-this skill checks that mechanically, rather than asking anyone to
-self-attest.
+Checks a completed change against the merge contract its spec made when
+it was drafted — the **Proposed product changes** and **Proposed
+technical changes** sections. It is a script and not a prompt because
+"did I update everything I promised" is exactly the question an agent
+under time pressure answers generously; path presence in a diff is
+objective, so it is read by
+[`check_deltas.sh`](check_deltas.sh) rather than by the author of the diff.
 
-## Why this is a script, not a prompt
+## Run it
 
-This is the one WritRun check that must not be graded by the same agent that
-made the change: "did I update everything I promised" is exactly the
-question an agent under time pressure tends to answer generously. Path
-presence in a diff is objective — so it's checked by
-[`check_deltas.sh`](check_deltas.sh), a small deterministic script, not by
-asking an LLM to review its own diff.
+```bash
+bash .writrun/skills/writrun-check-spec-deltas/check_deltas.sh spec-0004 [diff-range]
+```
 
-## Steps
+The range defaults to the working tree vs. `HEAD`; a branch comparison is
+`main...HEAD`. A change completing several specs passes them
+comma-separated — `spec-0004,spec-0005` — and **never one at a time
+against the same diff**:
+[`technical/distribution.md#running-the-checks`](https://github.com/thomasfranke/writrun/blob/main/docs/technical/distribution.md#running-the-checks)
+says why, and what each verdict means for the promise.
 
-1. Identify the spec id for the change being completed (e.g. `spec-0004`).
-2. Run:
-   ```bash
-   bash .writrun/skills/writrun-check-spec-deltas/check_deltas.sh spec-0004
-   ```
-   Pass a specific diff range as a second argument if the default
-   (working tree vs. `HEAD`) isn't right — e.g. a branch comparison:
-   ```bash
-   bash .writrun/skills/writrun-check-spec-deltas/check_deltas.sh spec-0004 main...HEAD
-   ```
-   A change that implements **several specs at once** — completing a
-   multi-spec task in one change — passes them all in one call,
-   comma-separated:
-   ```bash
-   bash .writrun/skills/writrun-check-spec-deltas/check_deltas.sh spec-0004,spec-0005 main...HEAD
-   ```
-   MISSING is still judged per spec (each contract must be honoured in
-   full, and the report names which spec's promise went unmet); UNDECLARED
-   is judged against the union of their promises. Never run the specs one
-   at a time against the same diff — each sibling's promised docs would be
-   reported as undeclared for the other.
-3. Read the exit code and output:
-   - **0 / "OK"** — every promised path was touched, nothing undeclared in
-     `docs/product/` or `docs/technical/` was modified. Safe to mark the
-     spec `implemented` and write the task's `completed` date (see the
-     `writrun-create-task-and-spec` skill for how).
-   - **1 / "MISSING"** — a path listed in Proposed changes was not touched.
-     Either the doc update was forgotten, or the spec's promise was wrong
-     and should be corrected — don't silently mark the task complete either
-     way; ask the user which it is.
-   - **2 / "UNDECLARED"** — a permanent doc outside the promise list was
-     modified. Either the spec's Proposed changes section was incomplete
-     (add the missing entry and re-run) or the change touched something it
-     shouldn't have — surface this, don't paper over it.
-   - **3** — usage error, the spec file wasn't found, or `git diff` failed
-     (no git history yet, bad diff range); fix the invocation, or verify by
-     hand if the repository has no history to diff against.
+- **0 / OK** — every promised path was touched, nothing undeclared under
+  `docs/product/` or `docs/technical/` was. Only now may a spec become
+  `implemented` and a task's `completed` date be written.
+- **1 / MISSING** — a promised path went untouched. Ask which side was
+  wrong; do not complete the task either way.
+- **2 / UNDECLARED** — a permanent doc outside the promise list changed.
+  Surface it.
+- **3** — usage error, spec not found, or `git diff` failed.
 
-   MISSING and UNDECLARED can both occur in one run — every line prints, and
-   the exit code is 1 when both are present. Read the output, not only the
-   code.
+MISSING and UNDECLARED can both appear in one run — every line prints and
+the code is 1 when both are present, so read the output, not only the
+code.
 
 ## Never
 
-- Never mark a spec `implemented` or write a task's `completed` date on
-  an exit code other than 0.
-- Never treat a MISSING or UNDECLARED result as something to quietly fix by
-  editing the spec's Proposed changes to match whatever the diff happened to
-  do — that defeats the point of the contract. Surface the mismatch and let
-  the user decide which side was wrong.
-- Never skip running the script because "the change was small" — the check
-  costs one command; a doc that silently drifted from the code costs more
-  later.
+- Never mark a spec `implemented` or write a `completed` date on any code
+  but 0.
+- Never edit a spec's Proposed changes to match whatever the diff
+  happened to do — that is the contract being erased, not honoured.
+- Never skip it because the change was small; the check costs one
+  command, a silently drifted doc costs a quarter.

@@ -1,7 +1,7 @@
 ---
 id: spec-0045
 task_ref: task-0034
-status: approved
+status: implemented
 created: 2026-09-02T06:02:26Z
 ---
 
@@ -153,4 +153,35 @@ carry no edit and are deliberately not promised.
 
 ## Outcome
 
-_(fill after execution)_
+The reference became a router: five chapters beside it —
+`schemas.md` (17KB), `settings.md` (17KB), `selection.md`,
+`reporting.md`, `distribution.md` — and a `README.md` of 5.5KB carrying
+the intro, the folder layout, a routing table naming which chapter
+answers which kind of task, and one stub per moved heading. Sections
+moved verbatim; each chapter opens with a title and a one-paragraph lead
+naming what it answers and pointing back at the router, which is the
+only prose added.
+
+Every stub is the heading and one line: `Moved — see
+[chapter.md#slug](chapter.md#slug)`. That shape was chosen for a reader
+and turned out to be a contract: spec-0047's `brief.sh` recognises it and
+follows the link once, which is what keeps a `doc_ref` into the old
+address briefing content instead of a link.
+
+Divergences: none of substance. Three cross-chapter fragment links were
+rewritten as the spec's step 3 required (`#report-schema`,
+`#task-selection-algorithm`, `#front-matter-is-canonical`); the two
+`observance` fragments stayed bare because both ends live in
+`settings.md`. Anchor resolution was verified over all three spellings
+the acceptance criteria name, and every hit resolves. The three
+anchorless script citations (`check_front_matter.sh`, `check_deltas.sh`,
+`new.sh`) now name `docs/technical/schemas.md`; the anchored ones were
+left, as the spec's edge case says, because a stub keeps them true.
+
+Review correction: three of the stubs — `#proposed-product-changes`,
+`#proposed-technical-changes`, `#outcome` — were dropped. They came from
+a heading scan that read the spec-schema example's own fenced headings as
+real ones, so they promised anchors that never existed in the old
+reference and do not exist in `schemas.md` either. The stubs exist so
+nothing written before the split stops resolving; a stub for an address
+nobody could have written is only a link that goes nowhere.

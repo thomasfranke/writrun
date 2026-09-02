@@ -18,6 +18,7 @@ CHECK_STATE="$REPO_ROOT/.writrun/skills/writrun-check-task-state/check_state.sh"
 CHECK_DELTAS="$REPO_ROOT/.writrun/skills/writrun-check-spec-deltas/check_deltas.sh"
 LIST_TASKS="$REPO_ROOT/.writrun/skills/writrun-select-next-task/list_tasks.sh"
 NEW_SH="$REPO_ROOT/.writrun/skills/writrun-create-task-and-spec/new.sh"
+BRIEF="$REPO_ROOT/.writrun/skills/writrun-select-next-task/brief.sh"
 
 # The workflow step scripts — what the integration tier exercises, the same
 # way the unit tier exercises the skills.
@@ -26,12 +27,15 @@ READ_SETTING="$CI_SCRIPTS/stage-2-pull-requests/read_setting.sh"
 CHECK_SETTINGS="$CI_SCRIPTS/stage-2-pull-requests/check_settings.sh"
 STAGE_GATE="$CI_SCRIPTS/stage-2-pull-requests/stage_gate.sh"
 CHECK_OBSERVANCE="$CI_SCRIPTS/stage-2-pull-requests/check_observance.sh"
+TAKE_TASK="$CI_SCRIPTS/stage-2-pull-requests/take_task.sh"
 
 # The Stage 1 half: the ledger's writer, the helper that proposes an entry
 # from the agent platform's usage data, and the rollup. No forge is
 # involved in any of the three — the field they work on exists wherever
 # tasks do.
 RECORD_PROVENANCE="$CI_SCRIPTS/stage-1-tasks-and-specs/record_provenance.sh"
+PREFLIGHT="$CI_SCRIPTS/stage-1-tasks-and-specs/preflight.sh"
+SESSION_CARD="$CI_SCRIPTS/stage-1-tasks-and-specs/session_card.sh"
 READ_USAGE="$CI_SCRIPTS/stage-1-tasks-and-specs/read_usage.sh"
 PROVENANCE_ROLLUP="$CI_SCRIPTS/stage-1-tasks-and-specs/provenance_rollup.sh"
 
@@ -213,6 +217,45 @@ forge_untouched() {
   if [ -s "$FORGE_LOG" ]; then
     printf 'FAIL  %s\n      expected no gh call at all\n' "$1"
     sed 's/^/      | /' "$FORGE_LOG"
+    fail=$((fail + 1))
+  else
+    printf 'ok    %s\n' "$1"; pass=$((pass + 1))
+  fi
+}
+
+# take_setup — the repository a take runs in: main checked out, a bare
+# `origin` beside it holding the same commit, and the forge stubbed. The
+# real git is deliberately kept — a take's whole contract is what it does
+# to a repository and a remote, and a stub of both would only assert that
+# the script called the commands the stub was written for.
+take_setup() {
+  setup
+  git checkout -q main
+  # The remote, the forge stub and the stub bin all live inside the work
+  # directory, which is also the repository — so they are ignored before
+  # anything else, or every take would refuse on a dirty tree made
+  # entirely of test scaffolding.
+  printf 'origin.git/\nforge/\nstub-bin/\nout.txt\n' > .gitignore
+  git add .gitignore >/dev/null
+  git commit -qm "ignore the scaffolding"
+  git init -q --bare "$WORK/origin.git"
+  git remote add origin "$WORK/origin.git"
+  git push -q -u origin main 2>/dev/null
+  stub_forge
+}
+
+# publish_main — main as the forge holds it. A take cuts its branch from
+# `origin/main`, so a case that commits its queue on main has to publish
+# it or the cut branch would lack the very files the take just read.
+publish_main() { git push -q origin main 2>/dev/null; git fetch -q origin main 2>/dev/null; }
+
+# no_branch_cut <name> <branch> — neither the checkout nor the remote
+# grew the branch. What "nothing was done" means, asserted rather than
+# trusted.
+no_branch_cut() {
+  if git rev-parse --verify --quiet "refs/heads/$2" >/dev/null 2>&1 \
+     || git -C "$WORK/origin.git" rev-parse --verify --quiet "refs/heads/$2" >/dev/null 2>&1; then
+    printf 'FAIL  %s\n      %s exists after a run that should have created nothing\n' "$1" "$2"
     fail=$((fail + 1))
   else
     printf 'ok    %s\n' "$1"; pass=$((pass + 1))

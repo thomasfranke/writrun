@@ -4,12 +4,31 @@ You are working on the repository of the methodology itself, and this repo
 follows its own structure. Read in this order, stopping as soon as you have
 what the task needs:
 
+0. The settings this session obeys — run the card rather than re-reading
+   the conventions for values:
+
+   ```bash
+   bash .writrun/scripts/stage-1-tasks-and-specs/session_card.sh
+   ```
+
+   It prints the stage, the conduct flags, the title style with an
+   example per pull-request kind, the two vocabularies and the
+   constants. Open a `.writrun/conventions/` file when the card leaves a
+   *why* question — never for the values themselves.
 1. [`docs/about.md`](docs/about.md) — what this project is. Always read.
 2. [`docs/product/README.md`](docs/product/README.md) — the prescriptive
    rules this repo's own structure is checked against. Read the chapter
    relevant to what you're touching before proposing a behaviour change.
-3. [`docs/technical/README.md`](docs/technical/README.md) — schemas and the
-   selection algorithm. Read before touching `tasks/` or `specs/`.
+3. `docs/technical/` — the chapter your task needs, never the whole
+   reference: [`schemas.md`](docs/technical/schemas.md) before touching
+   `tasks/`, `specs/` or `reports/`;
+   [`selection.md`](docs/technical/selection.md) when picking work;
+   [`settings.md`](docs/technical/settings.md) before committing, pushing
+   or opening a pull request;
+   [`reporting.md`](docs/technical/reporting.md) when recording a finding;
+   [`distribution.md`](docs/technical/distribution.md) when working on the
+   machinery itself. [`README.md`](docs/technical/README.md) is the router
+   that names them.
 4. The specific task and its referenced specs/anchors — never code from the
    task title alone.
 
@@ -28,8 +47,21 @@ authorized work — if every task is held back that way, say so rather
 than reporting an empty queue.
 
 **Taking a task ends with its draft pull request open, not with the
-branch created.** Branch as `task/NNNN-short-name`, push, and open the
-PR as a draft *before* implementing — the branch is invisible until it
+branch created.** One command does the whole act, flags included:
+
+```bash
+bash .writrun/scripts/stage-2-pull-requests/take_task.sh 0034 \
+  --title "[Type][Scope] What this change does"
+```
+
+It re-checks the eligibility, composes the branch, the title and the
+body, and — with this repository's flags both `true` — cuts from a fresh
+`origin/main`, pushes and opens the draft. Exit 2 means a flag held it
+and the composition is waiting on the word; exit 3 names what the forge
+did and what it left behind
+([contract](docs/technical/distribution.md#take_tasksh--the-taking-act-in-one-command)).
+By hand it is the same act: branch as `task/NNNN-short-name`, push, and
+open the PR as a draft *before* implementing — the branch is invisible until it
 reaches the forge, and the draft is the event the machinery answers by
 writing `in-progress` and your login onto `main` and moving the mirror
 to `status:in-progress`. **The push and the opening are one act**: this
@@ -137,17 +169,25 @@ This is this repo's concrete answer to the general rule in
 2. Update every permanent doc listed in the spec's **Proposed changes** — in
    the same change. Touch nothing permanent that isn't listed; if reality
    demands it, update the spec's proposal first.
-3. Run [`writrun-check-spec-deltas`](.writrun/skills/writrun-check-spec-deltas/SKILL.md). Do not
-   proceed on anything other than exit 0.
-4. Fill the spec's **Outcome** section, including divergences, set spec
+3. Fill the spec's **Outcome** section, including divergences, set spec
    `status: implemented`, and write the task's `completed` date — never
    its status; the merge flips it to `done` when it lands your date
    (also covered by `writrun-create-task-and-spec`).
-5. Run [`writrun-check-task-state`](.writrun/skills/writrun-check-task-state/SKILL.md), **after**
-   step 4 and not before. Every rule it has is about a transition, and the
-   transitions it exists to reject are the ones step 4 makes — run it
-   earlier and it passes without reading anything. Do not open the PR on
-   anything other than exit 0.
+4. Run preflight until exit 0:
+
+   ```bash
+   bash .writrun/scripts/stage-1-tasks-and-specs/preflight.sh
+   ```
+
+   It runs the three gates in the order they must run in — front matter,
+   then the promised deltas, then the state — stopping at the first
+   failure and exiting with that check's own code
+   ([contract](docs/technical/distribution.md#preflightsh--the-completion-gates-in-order)).
+   Run it **after** step 3: the transitions the state gate exists to
+   reject are the ones step 3 makes, and a run before them passes by
+   having nothing to read — which is why a task with no `completed` date
+   is named in preflight's summary rather than left to pass quietly. Do
+   not mark the PR ready for review on anything other than exit 0.
 
 ## Never
 
