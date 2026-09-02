@@ -1,7 +1,7 @@
 ---
 id: spec-0052
 task_ref: task-0036
-status: approved
+status: implemented
 created: 2026-09-02T19:31:44Z
 ---
 
@@ -129,4 +129,52 @@ since queue files point into the sections this change edits.
 
 ## Outcome
 
-_(fill after execution)_
+**`AGENTS.md` is 5000 bytes, from 12419** — 60% off, against a target of
+5 KB. Every session pays that before every task, and none of what left is
+gone: each moved sentence landed in the same diff.
+
+What stays is what the "What stays, and why" section named: the reading
+order with the card command, the kind table, the gate table with its rows
+intact, the `Never` list, and a pointer per skill — the pointers now a
+table of When → Skill, since a session that does not know which moment it
+is at cannot follow a prose list of five.
+
+Where each moved rule landed:
+
+- The report-exemption paragraphs → deleted, the link kept.
+  `concepts/report.md` already carried them.
+- "Active owner" is this session, and `backlog` is not authorized work →
+  `technical/selection.md`, in a section of its own, generalised past
+  this repository: a project with several contributors reads the same
+  question with a different population.
+- The by-hand taking sequence and the two conduct flags →
+  `technical/distribution.md`, under `take_task.sh`'s contract.
+- The per-gate reasoning → `product/stage-1-tasks-and-specs/gates.md`,
+  as the three answers that recur — the maintainer-authored repository
+  with no review to give, settings that live outside any diff, and
+  derivation reviewed before it reaches the forge.
+- The completion steps → kept in the ordered list's shape, with the
+  `preflight.sh` command; the reasoning per step was already in
+  `writrun-create-task-and-spec`.
+
+**Two divergences, both smaller than the spec's Out list forbids.**
+
+The `doc_ref`-overlap paragraph and the derivation-review paragraph were
+not in "What moves, and where" and had to go somewhere. The first is
+already owned by `stage-1-tasks-and-specs/conflicts.md`, so it became a
+`Never` bullet linking there. The second is a gate this repository
+operates, so it became a gate-table row — a relocation inside the file,
+not a new rule.
+
+The two settings paragraphs (`settings.json` holds the values, the `.md`
+files explain them) collapsed into step 0, which is the same rule stated
+where the card is run. `technical/settings.md` already owns the long
+form.
+
+**The edge case about links costing more than prose did not fire.** Every
+paragraph removed had a chapter that already stated it, so no session
+follows a link to recover a rule it used to read in place — it follows a
+link to recover the *reasoning*, which is what the arithmetic was about.
+
+Suite green; `check_front_matter.sh` reads 99 queue files canonical, so
+no non-completed task's `doc_ref` resolves to a deleted anchor.

@@ -69,6 +69,26 @@ methodology leaves to the adopting project, stated explicitly in its
 `AGENTS.md`.
 
 
+## What "active owner" means, and what `backlog` is not
+
+Step 0 asks whether an `in-progress` task has an active owner, and the
+answer is a project's to state. **A project whose sessions are one
+agent's reads it as the session**: any `in-progress` task not started by
+this session is resumable, and resuming it comes before selecting new
+work. A project with several contributors reads it as the person the
+forge names, which is what `taken_by` carries — the rule is the same
+question with a different population.
+
+**A `backlog` task is not authorized work.** `ready` is written by the
+machinery from the fact that every spec in `spec_ref` is `approved`, and
+the algorithm cross-checks the two rather than trusting either alone. So
+a `backlog` task has not passed the approval gate, and taking it is
+taking work nobody assented to. When every task is held back that way the
+answer is to say so — an empty Available list with a full Held back list
+is a queue waiting on approvals, not a queue with nothing in it, and
+reporting it as the second sends a session looking for work that does not
+exist.
+
 ## Nobody claims a task
 
 WritRun has no claim mechanism — reserving work is a tracker's job, not
