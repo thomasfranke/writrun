@@ -36,8 +36,21 @@ authorized work — if every task is held back that way, say so rather
 than reporting an empty queue.
 
 **Taking a task ends with its draft pull request open, not with the
-branch created.** Branch as `task/NNNN-short-name`, push, and open the
-PR as a draft *before* implementing — the branch is invisible until it
+branch created.** One command does the whole act, flags included:
+
+```bash
+bash .writrun/scripts/stage-2-pull-requests/take_task.sh 0034 \
+  --title "[Type][Scope] What this change does"
+```
+
+It re-checks the eligibility, composes the branch, the title and the
+body, and — with this repository's flags both `true` — cuts from a fresh
+`origin/main`, pushes and opens the draft. Exit 2 means a flag held it
+and the composition is waiting on the word; exit 3 names what the forge
+did and what it left behind
+([contract](docs/technical/distribution.md#take_tasksh--the-taking-act-in-one-command)).
+By hand it is the same act: branch as `task/NNNN-short-name`, push, and
+open the PR as a draft *before* implementing — the branch is invisible until it
 reaches the forge, and the draft is the event the machinery answers by
 writing `in-progress` and your login onto `main` and moving the mirror
 to `status:in-progress`. **The push and the opening are one act**: this
