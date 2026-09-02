@@ -1,15 +1,15 @@
 ---
 id: report-0010
-status: open
+status: declined
 task_ref: []
 doc_ref: technical/distribution.md#take_tasksh--the-taking-act-in-one-command
 created: 2026-09-02T18:57:17Z
-triaged: null
+triaged: 2026-09-02T21:12:00Z
 ---
 
 # Routing a report to the queue has no single act
 
-**References:** [distribution.md](../../docs/distribution.md)
+**References:** [technical/distribution.md#take_tasksh--the-taking-act-in-one-command](../../docs/technical/distribution.md#take_tasksh--the-taking-act-in-one-command)
 
 Taking a task is one command — `take_task.sh` — and
 `distribution.md#take_tasksh--the-taking-act-in-one-command` explains
@@ -36,3 +36,30 @@ written deliberately.
 Observed while triaging report-0006. Not investigated: whether this is
 one script, an argument to `preflight.sh`, or documentation gathered in
 one place rather than three.
+
+**Triage:** declined. The central claim is false, and the measurement
+behind it was of a session that did not reach for the tool.
+
+`preflight.sh` is the entry point this report says does not exist. Run
+with no arguments on a `docs/` branch it prints all three stages, names
+the change ("No spec reached 'implemented' — authoring change, deltas
+not applicable"), and stops on the third — verified on the branch that
+carries this triage. It also derives what the report says is re-derived
+each time: it runs `git fetch origin main` itself and composes
+`origin/main...HEAD`, and it calls `check_state.sh` without `HEAD_REF`,
+because outside CI that script already reads the branch name from the
+checkout. The reporting route needs no arguments at all. The by-hand
+invocations that produced this report were avoidable by reading
+`distribution.md#preflightsh--the-completion-gates-in-order`.
+
+What survives is the smaller half: there is no single command that
+composes the branch, mints the pair and opens the pull request, the way
+`take_task.sh` does for taking. That is a convenience, not a defect. The
+two generator calls sit together in `writrun-create-task-and-spec`, the
+route runs rarely, and every gate after them is one command. A script
+earns its place when the by-hand path is error-prone; here it is
+three commands and a gate.
+
+Declining destroys nothing. The file stays, this reasoning is on it, and
+a second observation reopens the question if the route turns out to cost
+more than this says.

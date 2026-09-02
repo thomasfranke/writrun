@@ -186,7 +186,7 @@ adopter pins the tag it targets.
 
 ## Running the checks
 
-Three of the five skills are gates, and two rules about *how* they are
+Three of the five skills are gates, and three rules about *how* they are
 called belong to the caller rather than to any script — a wrong call
 passes, which is why they are stated here and not left to whoever
 remembers.
@@ -209,6 +209,17 @@ UNDECLARED is judged against the **union** of their promises. Run one
 spec at a time against the same diff and every sibling's promised docs
 come back as undeclared for the other — a red result the change did not
 earn, and the fastest way to teach a reader to ignore the check.
+
+**A `PR_*` name carries pull-request event data, set by the workflow
+step that calls the script.** `PR_HEAD_REF`, `PR_TITLE`, `PR_AUTHOR`,
+`PR_DRAFT` and `PR_MERGED` reach `apply_pr_event.sh` and its siblings
+that way. A script an agent also runs locally reads the bare name:
+`check_state.sh` reads `HEAD_REF`, because outside CI there is no pull
+request for the prefix to be true about. Copying one workflow's `env:`
+block into another's step therefore sets a name the callee never reads.
+The callee announces the rule it could not run rather than passing
+quietly — but it announces it on a check that still goes green, so the
+log line is the whole signal.
 
 **Neither result is resolved by editing the promise to match the diff.**
 MISSING is either a forgotten doc update or a promise that was wrong, and
