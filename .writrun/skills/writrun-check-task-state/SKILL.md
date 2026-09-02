@@ -52,9 +52,11 @@ the ordered form of that rule and the way to run all three gates.
 - Never turn a `tracked` verdict into `fixed` to clear it: `fixed` says
   the change in hand ended the finding, and claiming that of one that
   still needs work loses it.
-- Never clear a `tracked` verdict by **renaming the branch** to
-  `report/…`. The rename does clear the check and clears nothing else —
-  and it costs the ride it was taken for, since `apply_pr_event.sh`
+- Never try to clear a `tracked` verdict by **renaming the branch** to
+  `report/…`. It no longer clears the check — rule K reads what the
+  change carries as well as what it is called, and an implementing
+  change carries code whatever its branch is named. What the rename
+  still costs is the ride it was taken for: `apply_pr_event.sh`
   recognises `task/NNNN-…` and stops recording a renamed branch's task
   at all. Move the report, the task and the spec to a change of their
   own.

@@ -127,6 +127,15 @@ arrives `ready` at merge with nobody ever having weighed it: the mirror
 is born closed, the queue gains an item, and the evaluation the open
 Issue exists to invite has silently never happened.
 
+**The `report/` prefix is what such a change is named, never what makes
+it one.** What makes it one is what it carries: the report, and the task
+and spec the route mints — nothing else. The name is a contributor's to
+choose, so a check that reads only the name is a rule agents keep rather
+than a gate the door holds, and an implementing pull request refused by
+it clears the refusal by renaming its branch. Both are read, and the
+second is the one the rename cannot reach: an implementing change
+carries code whatever it is called.
+
 ## Example
 
 ```markdown

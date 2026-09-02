@@ -174,7 +174,133 @@ setup
 report_file report-0001 tracked task-0001 2026-08-23T00:00:00Z
 commit_all
 git checkout -q --detach
-check "no readable name skips the rule out loud" 0 "Rule K skipped" \
+check "no readable name skips the branch half out loud" 0 "the branch half skipped" \
+  -- bash "$CHECK_STATE" main...HEAD
+
+# --- (b): what the change carries ---------------------------------------
+#
+# The half the rename cannot clear. An implementing change carries code
+# whatever its branch is called, so the diff answers what the name only
+# claims — report-0003's failure was reached *through* the name check.
+
+setup
+report_file report-0001 open
+commit_all
+git checkout -q main; git merge -q feature; git checkout -q feature
+git branch -m report/something-seen
+report_file report-0001 tracked task-0001 2026-08-23T00:00:00Z
+printf 'implementation\n' >> docs/product/chapter.md
+commit_all
+check "a report/ branch carrying a permanent doc is still refused" 1 "carrying more than reporting" \
+  -- bash "$CHECK_STATE" main...HEAD
+check "and the refusal names what it carries" 1 "docs/product/chapter.md" \
+  -- bash "$CHECK_STATE" main...HEAD
+
+# The same flip with the implementation taken out. This is the pair that
+# shows the rule reads the diff and not the branch's history.
+setup
+report_file report-0001 open
+commit_all
+git checkout -q main; git merge -q feature; git checkout -q feature
+git branch -m report/something-seen
+report_file report-0001 tracked task-0001 2026-08-23T00:00:00Z
+commit_all
+check "the same diff carrying only work/ passes" 0 "no forbidden lifecycle" \
+  -- bash "$CHECK_STATE" main...HEAD
+
+# The route recording further reports on its own branch: all under work/,
+# and it must stay legal — the change that routed report-0006 also
+# recorded report-0009 and report-0010.
+setup
+report_file report-0001 open
+commit_all
+git checkout -q main; git merge -q feature; git checkout -q feature
+git branch -m report/something-seen
+report_file report-0001 tracked task-0001 2026-08-23T00:00:00Z
+report_file report-0002 open
+task_file task-0001 backlog "" null null report
+commit_all
+check "the report, the task and further reports travel together" 0 "no forbidden lifecycle" \
+  -- bash "$CHECK_STATE" main...HEAD
+
+# --- the exemption is unchanged by (b) ----------------------------------
+#
+# The rule fires on the tracked route and on nothing else, so a change
+# editing a permanent doc still carries the three ends that create no
+# work. A rule shaped "a report/ branch touches only work/" would refuse
+# report-0001's own `fixed`, whose whole outcome was a one-word change to
+# a script.
+
+for end in authored fixed declined; do
+  setup
+  report_file report-0001 open
+  commit_all
+  git checkout -q main; git merge -q feature; git checkout -q feature
+  git branch -m report/something-seen
+  report_file report-0001 "$end" "" 2026-08-23T00:00:00Z
+  printf 'the fix itself\n' >> docs/product/chapter.md
+  commit_all
+  check "${end} rides a change that edits a permanent doc" 0 "no forbidden lifecycle" \
+    -- bash "$CHECK_STATE" main...HEAD
+done
+
+# --- (b) on the skip path -----------------------------------------------
+#
+# The branch half needs a name and can be left without one; the diff half
+# needs only the diff. So a detached HEAD is not a pass — it is half a
+# stand-down, announced, with the other half still judging.
+
+setup
+report_file report-0001 open
+commit_all
+git checkout -q main; git merge -q feature; git checkout -q feature
+report_file report-0001 tracked task-0001 2026-08-23T00:00:00Z
+printf 'implementation\n' >> docs/product/chapter.md
+commit_all
+git checkout -q --detach
+check "a detached HEAD carrying code is still refused" 1 "carrying more than reporting" \
+  -- bash "$CHECK_STATE" main...HEAD
+check "and says which half stood down" 1 "the branch half skipped" \
+  -- bash "$CHECK_STATE" main...HEAD
+
+# --- the task half reads the diff too -----------------------------------
+#
+# Judged on the task rather than only on the report because the two are
+# separable: a report tracked in one change and its task added in the
+# next would pass a rule watching the status line alone. Every case below
+# adds the task without any report flip in the range, which is exactly
+# that shape.
+
+setup
+git branch -m report/something-seen
+task_file task-0001 backlog "" null null report
+printf 'implementation\n' >> docs/product/chapter.md
+commit_all
+check "a task born of a report beside code is refused on a report/ branch" 1 "carrying more than reporting" \
+  -- bash "$CHECK_STATE" main...HEAD
+check "and the refusal names what it carries" 1 "docs/product/chapter.md" \
+  -- bash "$CHECK_STATE" main...HEAD
+
+setup
+git branch -m report/something-seen
+task_file task-0001 backlog "" null null report
+commit_all
+check "the same task carrying only work/ passes" 0 "no forbidden lifecycle" \
+  -- bash "$CHECK_STATE" main...HEAD
+
+setup
+task_file task-0001 backlog "" null null report
+printf 'implementation\n' >> docs/product/chapter.md
+commit_all
+git checkout -q --detach
+check "a detached HEAD minting a task beside code is refused" 1 "carrying more than reporting" \
+  -- bash "$CHECK_STATE" main...HEAD
+
+setup
+task_file task-0001 backlog "" null null report
+commit_all
+git checkout -q --detach
+check "and a work/-only one passes with the branch half skipped" 0 "the branch half skipped" \
   -- bash "$CHECK_STATE" main...HEAD
 
 finish
