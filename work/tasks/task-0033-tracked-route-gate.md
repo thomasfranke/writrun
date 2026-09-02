@@ -13,7 +13,8 @@ created: 2026-09-02T01:28:37Z
 queued: 2026-09-02T05:35:07Z
 completed: 2026-09-02T13:15:00Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-opus-5, login: thomasfranke, input: 174, output: 51754, cache_read: 8706067, cache_write: 81896}
 ---
 
 # The tracked route is held to its own change
