@@ -537,6 +537,39 @@ case "$cmd" in
       *) echo "Invalid --origin '$origin' — expected rule or report" >&2; exit 3 ;;
     esac
 
+    # **The tracked route travels on a change of its own, and the cheapest
+    # place to say so is before anything is written.** A task with
+    # `origin: report` is what that route puts in the queue, and what
+    # enters the queue passes a gate: the reporting change's own pull
+    # request, whose squash-merge is the assent that the finding deserves
+    # the work (docs/product/concepts/report.md). `check_state.sh` refuses
+    # such a task on any other branch — so a run that minted it here would
+    # flip the report to `tracked`, stamp `triaged`, write the task and
+    # hand back a change CI cannot pass, whose undo is by hand across
+    # three files. The generator that drives the route is where the branch
+    # is still free to change.
+    #
+    # The stage condition is the rule's own: below Stage 2 there is no
+    # pull request to be the vehicle, so the route runs wherever the
+    # project works. A name that cannot be read (detached HEAD, no
+    # `HEAD_REF`) is not judged — CI's copy of the rule sees the branch
+    # this one could not.
+    if [[ "$origin" = "report" ]]; then
+      tracked_stage=$(bash "$(cd "$(dirname "$0")" && pwd)/../../scripts/stage-2-pull-requests/read_setting.sh" stage 2>/dev/null || printf '3')
+      case "$tracked_stage" in 1|2|3) ;; *) tracked_stage=3 ;; esac
+      tracked_branch="${HEAD_REF:-}"
+      if [[ -z "$tracked_branch" ]]; then
+        tracked_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)
+        if [[ "$tracked_branch" = "HEAD" ]]; then tracked_branch=""; fi
+      fi
+      if [[ "$tracked_stage" -ge 2 && -n "$tracked_branch" && "$tracked_branch" != report/* ]]; then
+        echo "'${tracked_branch}' is not a report/ branch — a task with 'origin: report' is the tracked route, and that route never rides" >&2
+        echo "Deriving a task from a report is a reporting change of its own: its pull request presents the report, the task and the spec together, and the maintainer's squash-merge is the assent that the finding deserves the work (docs/product/concepts/report.md#recording-rides-any-change--routing-to-the-queue-does-not)." >&2
+        echo "Open that change and run this again — 'git switch -c report/<short-name>'. Recording a report still rides anything; so do the fixed and declined ends." >&2
+        exit 3
+      fi
+    fi
+
     # Validate before the forge is consulted: a refusal must cost nothing
     # and touch nothing, and an id minted for a file never written is an
     # id the next run would mint again anyway.

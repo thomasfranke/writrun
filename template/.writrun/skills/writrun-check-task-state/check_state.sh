@@ -43,6 +43,21 @@
 #      no stage condition. The status has a human or an agent writer at
 #      every stage, because no forge event corresponds to a judgement, so
 #      there is no version of this file the machinery owns instead.
+#   K. (Stage 2+) The `tracked` route never rides. A report reaching
+#      `tracked`, and the task that route mints (`origin: report`, newly
+#      added), travel on a `report/` branch or not at all. It is the one
+#      route that puts work in the queue, and what enters the queue
+#      passes a gate: the reporting change's own pull request, whose
+#      squash-merge is the assent that the finding deserves the work.
+#      Riding an unrelated change mints a task that arrives `ready` at
+#      merge with nobody having weighed it — the mirror born closed, the
+#      evaluation the open Issue exists to invite silently never held
+#      (docs/product/concepts/report.md#recording-rides-any-change--routing-to-the-queue-does-not).
+#      The three routes that create no work — `authored`, `fixed`,
+#      `declined` — keep the exemption and ride anything. The stage
+#      condition is the rule's own premise: the gate is a pull request's
+#      squash-merge, and a branchless project has none to be held to — it
+#      takes the route on `main`, because that is the only place it has.
 #
 # A transition is read from the front matter at the two ends of the range
 # — the file as the base knew it against the file as it is now — never
@@ -113,6 +128,48 @@ case "$STAGE" in 1|2|3) ;; *) STAGE=3 ;; esac
 
 ADDED=$(git diff --name-only --diff-filter=A "$DIFF_RANGE" 2>/dev/null || true)
 
+# Renames, as "<path now><tab><path at the base>". A queue file is never
+# renamed — identity is never order (AGENTS.md) — but a check that reads
+# the base side at the *current* path answers "the file did not exist
+# there" for one that did, and every rule downstream then judges a
+# transition nobody made: a report long since `tracked`, moved to a better
+# slug, would read as one reaching `tracked` in this range. The base path
+# is the file's own, so it is where the base is read.
+RENAMED=$(git diff --name-status -M "$DIFF_RANGE" 2>/dev/null \
+  | awk -F'\t' '$1 ~ /^R/ { print $3 "\t" $2 }' || true)
+
+# Rule K's input: the name of the branch the change is on. CI knows it and
+# passes it as data — a fork controls the string and this script only ever
+# prefix-matches it — and a local run falls back to the checkout. An empty
+# HEAD_REF is an unset one: a push event hands the workflow exactly that.
+#
+# A name that cannot be read is not a pass. Detached HEAD with no
+# environment leaves the rule with nothing to judge, and a check that
+# silently drops a rule it could not run is the one failure mode worse
+# than the rule not existing — so the skip is announced.
+#
+# Below Stage 2 the rule has nothing to hold the route to: it exists to
+# make a pull request's squash-merge the assent, and a branchless project
+# has no pull request to be the vehicle. The route runs on `main` there,
+# legally, so the rule stands down — silently, because a stage the rule
+# does not apply at is not a rule that could not be run.
+HEAD_BRANCH=""
+REPORT_BRANCH=skip
+if [ "$STAGE" -ge 2 ]; then
+  HEAD_BRANCH="${HEAD_REF:-}"
+  if [ -z "$HEAD_BRANCH" ]; then
+    HEAD_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)
+    if [ "$HEAD_BRANCH" = "HEAD" ]; then HEAD_BRANCH=""; fi
+  fi
+  case "$HEAD_BRANCH" in
+    "")        echo "Rule K skipped — no branch name is readable: HEAD_REF is unset"
+               echo "and HEAD is detached, so whether this change is a reporting one"
+               echo "cannot be told. Set HEAD_REF to the head branch to have it checked." ;;
+    report/*)  REPORT_BRANCH=true ;;
+    *)         REPORT_BRANCH=false ;;
+  esac
+fi
+
 # is_added <file> — was the file created by this diff?
 is_added() { printf '%s\n' "$ADDED" | grep -qxF "$1"; }
 
@@ -130,7 +187,14 @@ fm_field() {
 # of the range (empty when the file did not exist there — a failing
 # `git show` is that case, not an error).
 fm_now()  { fm_field "$2" < "$1"; }
-fm_base() { git show "${BASE}:$1" 2>/dev/null | fm_field "$2" || true; }
+fm_base() { git show "${BASE}:$(base_path "$1")" 2>/dev/null | fm_field "$2" || true; }
+
+# base_path <file> — where this file lived at the base end of the range:
+# its own path, unless the range renamed it.
+base_path() {
+  printf '%s\n' "$RENAMED" \
+    | awk -F'\t' -v n="$1" '$1 == n { print $2; seen = 1; exit } END { if (!seen) print n }'
+}
 
 # fm_ledger — the provenance entries, one per line, in order, from the
 # front-matter block alone. The whole line is printed: rule I compares
@@ -146,7 +210,7 @@ fm_ledger() {
   '
 }
 ledger_now()  { fm_ledger < "$1"; }
-ledger_base() { git show "${BASE}:$1" 2>/dev/null | fm_ledger || true; }
+ledger_base() { git show "${BASE}:$(base_path "$1")" 2>/dev/null | fm_ledger || true; }
 
 for f in $CHANGED; do
   case "$f" in
@@ -209,6 +273,22 @@ for f in $CHANGED; do
           fi
           ;;
       esac
+
+      # K — the tracked route never rides. Recording rides any change and
+      # so do the ends that leave the queue untouched; this is the one
+      # route that adds to it, so it travels on its own reporting change
+      # and the maintainer's squash-merge of *that* pull request is the
+      # assent (docs/product/concepts/report.md).
+      if [ "$REPORT_BRANCH" = false ] \
+        && [ "$new" = "tracked" ] && [ "$old" != "tracked" ]; then
+        echo "FORBIDDEN: ${f} reaches 'tracked' on '${HEAD_BRANCH}'." >&2
+        echo "  The tracked route is the one that puts work in the queue, and" >&2
+        echo "  what enters the queue passes a gate: a reporting change of its" >&2
+        echo "  own, on a report/ branch, whose merge is the assent that the" >&2
+        echo "  finding deserves the work. Leave the report open here and route" >&2
+        echo "  it on its own branch; fixed and declined still ride." >&2
+        status=1
+      fi
       ;;
 
     work/tasks/*.md)
@@ -238,6 +318,22 @@ for f in $CHANGED; do
           echo "  Who has a task is the forge's record, machinery-written." >&2
           status=1
         fi
+      fi
+
+      # K, the other half — the task the tracked route mints travels with
+      # the report that justified it. Judged on the task rather than only
+      # on the report because the two are separable: a report tracked in
+      # one change and its task added in another would pass a rule that
+      # watched the status line alone.
+      if [ "$REPORT_BRANCH" = false ] && is_added "$f" \
+        && [ "$(fm_now "$f" origin)" = "report" ]; then
+        echo "FORBIDDEN: ${f} is born of a report on '${HEAD_BRANCH}'." >&2
+        echo "  A task derived from a report is a reporting change on its own" >&2
+        echo "  report/ branch — the pull request presents the report, the task" >&2
+        echo "  and the spec together, and its merge is the judgement that the" >&2
+        echo "  finding deserves the work. Derive it in a reporting change" >&2
+        echo "  of its own — renaming this branch is not what clears the gate." >&2
+        status=1
       fi
 
       # E — the five working states have one writer, and it is the

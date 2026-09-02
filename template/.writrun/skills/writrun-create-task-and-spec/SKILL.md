@@ -265,7 +265,8 @@ with something else, and a note that costs its own branch, its own pull
 request and its own review is a note nobody writes.
 
 The `report/` branch prefix is for a change that carries *only*
-reporting. Do not wait for one.
+reporting. **Recording** does not wait for one. The `tracked` route
+does, and the next section is where that is stated.
 
 ### Triage, and the statuses that record it
 
@@ -292,7 +293,25 @@ Stage 3 the mirror closes *not planned* where a person can disagree.
 Disagreeing records a second report; **nothing reopens one**, and a
 recurrence is a second observation with its own id and its own date.
 
-On the `tracked` route, let the generator close the link:
+**The `tracked` route never rides.** It is the one route that puts work
+in the queue, and what enters the queue passes a gate: deriving a task
+from a report is a reporting change of its own, on a `report/` branch,
+whose pull request presents the report, the task and the spec together —
+and the maintainer's squash-merge of *that* pull request is the assent
+that the finding deserves the work. So the branch comes first:
+
+```bash
+git switch -c report/<short-name>
+```
+
+Riding an unrelated change here is not a style point. `check_state.sh`
+refuses it, in CI too (`writrun-check-task-state`, rule K), and the
+generator below refuses it as well rather than leaving three files
+half-routed for you to undo by hand. From Stage 2 up, that is; a
+branchless project has no pull request to be the vehicle, and the route
+runs where it works.
+
+Then let the generator close the link:
 
 ```bash
 bash .writrun/skills/writrun-create-task-and-spec/new.sh task "<title>" \
@@ -361,3 +380,8 @@ report or the task that is the authority.
 - Never let a report carry scope, steps or a plan. That is a task, and
   the wrong front matter around it hides it from the only queue anyone
   selects from.
+- Never route a report to `tracked` on a branch that is about something
+  else — and never rename that branch to `report/…` to get past the
+  check. The prefix is how a reporting change is recognised, not what
+  makes one: a branch still carrying the implementation is exactly the
+  ridden merge the rule exists to stop.

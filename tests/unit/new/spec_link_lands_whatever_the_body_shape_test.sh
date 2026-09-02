@@ -26,6 +26,9 @@ fi
 # No heading anywhere — the link opens the body, straight after the
 # front matter, rather than going missing.
 setup
+# The tracked route travels on its own reporting change, and both
+# the generator and check_state read the branch name to hold it there.
+git branch -m report/something-seen
 mkdir -p .writrun/conventions/templates
 printf '{{references}}\n\nTODO, and no heading anywhere.\n' > .writrun/conventions/templates/task.md
 bash "$NEW_SH" task "Flat" --origin report --slug flat >/dev/null 2>&1

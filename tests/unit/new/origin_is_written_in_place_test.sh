@@ -6,6 +6,9 @@
 # character for character, so a reader of the file and a reader of the
 # schema see the same shape.
 setup
+# The tracked route travels on its own reporting change, and both
+# the generator and check_state read the branch name to hold it there.
+git branch -m report/something-seen
 bash "$NEW_SH" task "Reported gap" --origin report --slug reported >/dev/null 2>&1
 f=work/tasks/task-0001-reported.md
 if grep -q '^origin: report$' "$f" &&

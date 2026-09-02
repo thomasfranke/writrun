@@ -6,6 +6,9 @@
 # carries the same fact as a relative link that resolves from
 # work/tasks/ — on the forge and in any editor.
 setup
+# The tracked route travels on its own reporting change, and both
+# the generator and check_state read the branch name to hold it there.
+git branch -m report/something-seen
 bash "$NEW_SH" task "Linked" --origin rule --slug linked \
   --doc-ref product/chapter.md#scope >/dev/null 2>&1
 f=work/tasks/task-0001-linked.md

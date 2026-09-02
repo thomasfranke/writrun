@@ -5,6 +5,9 @@
 # in the same edit — front matter and body must never disagree about
 # which specs a task has.
 setup
+# The tracked route travels on its own reporting change, and both
+# the generator and check_state read the branch name to hold it there.
+git branch -m report/something-seen
 bash "$NEW_SH" task "Linked" --origin rule --slug linked \
   --doc-ref product/chapter.md#scope >/dev/null 2>&1
 bash "$NEW_SH" spec task-0001 "First" --slug first >/dev/null 2>&1

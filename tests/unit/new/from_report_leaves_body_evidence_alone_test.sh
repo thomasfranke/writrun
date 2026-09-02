@@ -9,6 +9,9 @@
 # no check downstream ever notices that the evidence now says something
 # nobody observed.
 setup
+# The tracked route travels on its own reporting change, and both
+# the generator and check_state read the branch name to hold it there.
+git branch -m report/something-seen
 bash "$NEW_SH" report "The mirror lags" --slug mirror-lag >/dev/null 2>&1
 r=work/reports/report-0001-mirror-lag.md
 cat >> "$r" <<'EVIDENCE'
