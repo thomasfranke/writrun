@@ -43,6 +43,18 @@
 #      no stage condition. The status has a human or an agent writer at
 #      every stage, because no forge event corresponds to a judgement, so
 #      there is no version of this file the machinery owns instead.
+#   K. The `tracked` route never rides. A report reaching `tracked`, and
+#      the task that route mints (`origin: report`, newly added), travel
+#      on a `report/` branch or not at all. It is the one route that puts
+#      work in the queue, and what enters the queue passes a gate: the
+#      reporting change's own pull request, whose squash-merge is the
+#      assent that the finding deserves the work. Riding an unrelated
+#      change mints a task that arrives `ready` at merge with nobody
+#      having weighed it — the mirror born closed, the evaluation the
+#      open Issue exists to invite silently never held
+#      (docs/product/concepts/report.md#recording-rides-any-change--routing-to-the-queue-does-not).
+#      The three routes that create no work — `authored`, `fixed`,
+#      `declined` — keep the exemption and ride anything.
 #
 # A transition is read from the front matter at the two ends of the range
 # — the file as the base knew it against the file as it is now — never
@@ -112,6 +124,29 @@ STAGE=$(bash "$READ_SETTING" stage 2>/dev/null || printf '3')
 case "$STAGE" in 1|2|3) ;; *) STAGE=3 ;; esac
 
 ADDED=$(git diff --name-only --diff-filter=A "$DIFF_RANGE" 2>/dev/null || true)
+
+# Rule K's input: the name of the branch the change is on. CI knows it and
+# passes it as data — a fork controls the string and this script only ever
+# prefix-matches it — and a local run falls back to the checkout. An empty
+# HEAD_REF is an unset one: a push event hands the workflow exactly that.
+#
+# A name that cannot be read is not a pass. Detached HEAD with no
+# environment leaves the rule with nothing to judge, and a check that
+# silently drops a rule it could not run is the one failure mode worse
+# than the rule not existing — so the skip is announced.
+HEAD_BRANCH="${HEAD_REF:-}"
+if [ -z "$HEAD_BRANCH" ]; then
+  HEAD_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || true)
+  if [ "$HEAD_BRANCH" = "HEAD" ]; then HEAD_BRANCH=""; fi
+fi
+case "$HEAD_BRANCH" in
+  "")        REPORT_BRANCH=skip
+             echo "Rule K skipped — no branch name is readable: HEAD_REF is unset"
+             echo "and HEAD is detached, so whether this change is a reporting one"
+             echo "cannot be told. Set HEAD_REF to the head branch to have it checked." ;;
+  report/*)  REPORT_BRANCH=true ;;
+  *)         REPORT_BRANCH=false ;;
+esac
 
 # is_added <file> — was the file created by this diff?
 is_added() { printf '%s\n' "$ADDED" | grep -qxF "$1"; }
@@ -209,6 +244,22 @@ for f in $CHANGED; do
           fi
           ;;
       esac
+
+      # K — the tracked route never rides. Recording rides any change and
+      # so do the ends that leave the queue untouched; this is the one
+      # route that adds to it, so it travels on its own reporting change
+      # and the maintainer's squash-merge of *that* pull request is the
+      # assent (docs/product/concepts/report.md).
+      if [ "$REPORT_BRANCH" = false ] \
+        && [ "$new" = "tracked" ] && [ "$old" != "tracked" ]; then
+        echo "FORBIDDEN: ${f} reaches 'tracked' on '${HEAD_BRANCH}'." >&2
+        echo "  The tracked route is the one that puts work in the queue, and" >&2
+        echo "  what enters the queue passes a gate: a reporting change of its" >&2
+        echo "  own, on a report/ branch, whose merge is the assent that the" >&2
+        echo "  finding deserves the work. Leave the report open here and route" >&2
+        echo "  it on its own branch; fixed and declined still ride." >&2
+        status=1
+      fi
       ;;
 
     work/tasks/*.md)
@@ -238,6 +289,21 @@ for f in $CHANGED; do
           echo "  Who has a task is the forge's record, machinery-written." >&2
           status=1
         fi
+      fi
+
+      # K, the other half — the task the tracked route mints travels with
+      # the report that justified it. Judged on the task rather than only
+      # on the report because the two are separable: a report tracked in
+      # one change and its task added in another would pass a rule that
+      # watched the status line alone.
+      if [ "$REPORT_BRANCH" = false ] && is_added "$f" \
+        && [ "$(fm_now "$f" origin)" = "report" ]; then
+        echo "FORBIDDEN: ${f} is born of a report on '${HEAD_BRANCH}'." >&2
+        echo "  A task derived from a report is a reporting change on its own" >&2
+        echo "  report/ branch — the pull request presents the report, the task" >&2
+        echo "  and the spec together, and its merge is the judgement that the" >&2
+        echo "  finding deserves the work. Move it to a report/ branch." >&2
+        status=1
       fi
 
       # E — the five working states have one writer, and it is the

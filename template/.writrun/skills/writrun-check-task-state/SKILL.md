@@ -24,7 +24,12 @@ and state comparison in a diff is objective, so it is checked by
    ```bash
    bash .writrun/skills/writrun-check-task-state/check_state.sh main...HEAD
    ```
-   With no argument it defaults to `main...HEAD`.
+   With no argument it defaults to `main...HEAD`. One rule — the
+   `tracked` route's — is about which branch the change is on: it reads
+   `HEAD_REF` when set (CI passes the head branch that way) and the
+   checkout's own branch otherwise. On a detached HEAD with no
+   `HEAD_REF` it says on stdout that it skipped, rather than passing
+   quietly.
 2. Read the exit code:
    - **0 / "OK"** — no forbidden transition. Proceed.
    - **1** — a rule was violated; every violation prints with the fix.
@@ -40,6 +45,8 @@ and state comparison in a diff is objective, so it is checked by
 | `FORBIDDEN: … edits taken_by` | Same single writer. Who has a task is the forge's record, never a branch's claim (Stage 2+). |
 | `FORBIDDEN: … -> blocked` / `blocked -> …` | `blocked` pairs with `backlog` and `ready` only — an in-flight task's blocker is visible on its pull request. |
 | `FORBIDDEN: … dropped -> …` | `dropped` is terminal. New work is a new task. |
+| `FORBIDDEN: … reaches 'tracked' on '…'` | The one route that puts work in the queue rode a change about something else. Route the report on its own `report/` branch; `fixed` and `declined` still ride anything. |
+| `FORBIDDEN: … is born of a report on '…'` | Same rule, seen on the task: a task with `origin: report` travels with the report that justified it, on the `report/` branch whose merge is the assent. |
 | `INCONSISTENT: … writes its completed date but … is 'X'` | The finishing declaration was written while a spec is not `implemented`. Fill that spec's Outcome in the same change. |
 | `INCONSISTENT: … implements … last spec but leaves its completed date null` | The date is what the merge turns into `done` — write it in the same change. |
 | `BROKEN: … resolves to no file` | A `spec_ref` entry points at a spec that does not exist. |
@@ -55,5 +62,9 @@ and state comparison in a diff is objective, so it is checked by
 - Never resolve a `FORBIDDEN` status move by hand-editing `main`
   afterwards. The machinery writes that line from forge events; if it
   reads wrong, the event is what is missing.
+- Never resolve a `FORBIDDEN: … reaches 'tracked'` result by moving the
+  report to `fixed` instead. The two are different judgements: `fixed`
+  says the change in hand ended it, and claiming that of a finding that
+  still needs work loses the finding.
 - Never skip the check because the change touched no code. A change that
   only edits front-matter is exactly what this check is for.

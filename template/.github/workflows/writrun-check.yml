@@ -62,6 +62,11 @@ jobs:
         run: bash .writrun/scripts/stage-2-pull-requests/check_doc_shapes.sh
 
       - name: Check lifecycle transitions
+        # The head branch name reaches rule K through the environment,
+        # never inline interpolation — a fork controls the string, and the
+        # script only ever prefix-matches it against `report/`.
+        env:
+          HEAD_REF: ${{ github.head_ref }}
         run: |
           bash .writrun/skills/writrun-check-task-state/check_state.sh \
             "origin/${{ github.base_ref }}...HEAD"
