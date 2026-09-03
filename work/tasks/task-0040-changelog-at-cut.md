@@ -13,7 +13,8 @@ created: 2026-09-03T03:34:27Z
 queued: 2026-09-03T03:45:30Z
 completed: null
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-opus-5, login: thomasfranke}
 ---
 
 # The release cut writes the changelog it publishes
