@@ -26,7 +26,11 @@ about it is triage's output, not the report's content.
 Record first, triage second. A report costs nothing to write and may
 ride any change you already have open — you do not need a `report/`
 branch to note something down, and waiting for one is how the finding
-gets lost. That prefix is for a change that carries *only* reporting.
+gets lost. That prefix belongs to the `tracked` route alone: routing a
+report to the queue is what needs a change of its own, because the
+merge of that pull request is the assent that the finding deserves the
+work. The three ends that create no work — `authored`, `fixed`,
+`declined` — ride like the recording does.
 
 Use the generator rather than the schema from memory, **from the
 repository root** — every path it reads and writes is relative to the
