@@ -95,8 +95,8 @@ Body shapes layer the same way — a template you drop in
 pull request body template lives in `.writrun/templates/`, which is
 where agents read it from.
 
-The five skills in `.writrun/skills/` are WritRun's: picking the next
-task, creating tasks and specs, and three checks — the promised docs, the
+The skills in `.writrun/skills/` are WritRun's: picking the next task,
+creating tasks and specs, and three checks — the promised docs, the
 lifecycle, and the file shapes. An agent runs them; you never have to.
 
 ## Adopting — you just copied `template/` here

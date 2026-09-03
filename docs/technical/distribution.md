@@ -225,7 +225,7 @@ and `writrun-check-spec-deltas` never asks about it.
 
 ## Running the checks
 
-Three of the five skills are gates, and three rules about *how* they are
+Three of the skills are gates, and three rules about *how* they are
 called belong to the caller rather than to any script — a wrong call
 passes, which is why they are stated here and not left to whoever
 remembers.
