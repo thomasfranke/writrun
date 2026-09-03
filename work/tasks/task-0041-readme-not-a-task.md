@@ -13,7 +13,8 @@ created: 2026-09-03T04:06:37Z
 queued: 2026-09-03T04:18:32Z
 completed: null
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-sonnet-5, login: thomasfranke}
 ---
 
 # The state check reads task files by id, never by directory
