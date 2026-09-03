@@ -29,7 +29,15 @@ into their own, never says the word.
 Close that: the kit ships `work/reports/` with its README, its `work/`
 map names the folder, its `AGENTS.md` carries the reporting flow — the
 four routes, that recording rides any change, that the `tracked` route
-never does — and `WRITRUN.md` stops describing the pre-report flow. The
+never does — and `WRITRUN.md` is rewritten end to end.
+
+The rewrite is part of this and not a task of its own. `WRITRUN.md` is
+the file that answers "what is this?" for somebody meeting the
+methodology inside somebody else's repository, and it currently answers
+in the vocabulary of somebody who already knows. It opens by saying the
+project uses WritRun as its flow, then says what that is, then how it
+works — and it is the same file the report's finding lands in, so
+patching it now and rewriting it later would be one edit thrown away. The
 mirrored `.writrun/README.md` gets its counts right in the same pass:
 five skills, and a `templates/` folder that also holds a report shape.
 
