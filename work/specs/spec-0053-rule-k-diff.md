@@ -1,7 +1,7 @@
 ---
 id: spec-0053
 task_ref: task-0037
-status: approved
+status: implemented
 created: 2026-09-02T19:43:20Z
 ---
 
@@ -174,4 +174,31 @@ touches is a script, not a technical chapter.
 
 ## Outcome
 
-_(fill after execution)_
+Condition (b) is on **both** halves of rule K, computed once as
+`CARRIES_OUTSIDE` — everything the range touches that is not under
+`work/` — and each half refuses with its own headline and the offending
+paths beneath it, at most five and a count for the rest.
+
+The skip is now half a stand-down and says so: `Rule K: the branch half
+skipped`, with the diff half still judging past it. Below Stage 2 the
+whole rule stands down silently, unchanged.
+
+Twenty-eight cases in
+`tests/unit/check_state/the_tracked_route_never_rides_test.sh`, fourteen
+of them new: both halves refused beside a permanent doc and passing
+without it; `authored`, `fixed` and `declined` riding a change that edits
+one; the route recording further reports on its own branch; and a
+detached HEAD refused on the diff half while announcing the branch half.
+Every pre-existing case holds with no change to any exit code or verdict
+it asserts — the single edit is the skip literal step 3 reworded, which
+the Definition of Done allows.
+
+**One divergence, and it is in the message rather than the rule.** The
+refusal headline was drafted across two lines, which no assertion can
+name as one string; it is one line, and the paths carry the detail.
+
+Both promised docs landed: `concepts/report.md` says the prefix is what
+a reporting change is *named* and never what makes it one, and
+`distribution.md#running-the-checks` now says a green run past the skip
+announcement means the diff half found nothing — not that rule K did not
+run.

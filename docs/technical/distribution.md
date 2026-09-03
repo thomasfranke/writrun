@@ -226,9 +226,13 @@ request for the prefix to be true about. Copying one workflow's `env:`
 block into another's step therefore sets a name the callee never reads,
 and neither direction is loud. `check_state.sh` falls back to the
 checkout's own branch name, so it announces the skip only when *that* is
-unreadable too — on an attached HEAD it judges rule K against whatever
-the runner happens to sit on, and a `main` or `pr-NNN` checkout renders a
-FORBIDDEN `tracked` flip as a pass. `apply_pr_event.sh` has no fallback
+unreadable too — and the announcement is of **half** a rule standing
+down, not the whole one: rule K's diff half needs no name and runs
+anyway, so a change carrying code is still refused past that line. What
+the skip costs is the name check, which on an attached HEAD is worse
+than absent — it judges rule K against whatever the runner happens to
+sit on, and a `main` or `pr-NNN` checkout reads a `work/`-only
+`tracked` flip as legitimate. `apply_pr_event.sh` has no fallback
 to reach for: an unset `PR_HEAD_REF` exits 0 printing `head '' names no
 task branch — nothing to record`, the line every pull request that is not
 a task branch legitimately prints, so a miswired `writrun-progress.yml`
@@ -351,8 +355,10 @@ makes. One input differs, and it is rule K's — CI hands `check_state.sh`
 the head branch as `HEAD_REF`, preflight hands it nothing and leaves the
 script to read the checkout — so the two render the same judgement on the
 same branch whenever the checkout *is* that branch, and only then. Run
-from a detached HEAD, preflight skips rule K and still prints
-`PREFLIGHT OK` on a commit CI judges.
+from a detached HEAD, preflight skips rule K's **branch half** and can
+still print `PREFLIGHT OK` on a commit CI judges by that half — the diff
+half needs no name and runs there too, so a change carrying code outside
+`work/` is refused either way.
 
 ## `session_card.sh` — the settings, rendered
 

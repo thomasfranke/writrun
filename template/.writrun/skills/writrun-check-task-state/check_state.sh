@@ -45,7 +45,12 @@
 #      there is no version of this file the machinery owns instead.
 #   K. (Stage 2+) The `tracked` route never rides. A report reaching
 #      `tracked`, and the task that route mints (`origin: report`, newly
-#      added), travel on a `report/` branch or not at all. It is the one
+#      added), travel on a `report/` branch **and** in a change carrying
+#      nothing outside `work/` — or not at all. Two conditions, because
+#      the name alone is a rule agents keep: a refused implementing
+#      branch renamed to `report/…` clears a check that reads only the
+#      name, which is report-0003's failure reached *through* the gate.
+#      What a reporting change touches is visible in its diff. It is the one
 #      route that puts work in the queue, and what enters the queue
 #      passes a gate: the reporting change's own pull request, whose
 #      squash-merge is the assent that the finding deserves the work.
@@ -153,8 +158,16 @@ RENAMED=$(git diff --name-status -M "$DIFF_RANGE" 2>/dev/null \
 # has no pull request to be the vehicle. The route runs on `main` there,
 # legally, so the rule stands down — silently, because a stage the rule
 # does not apply at is not a rule that could not be run.
+#
+# Rule K has two conditions and they fail differently. (a), the branch
+# name, needs a name to read and can be left with none. (b), what the
+# change carries, needs only the diff — which is always there — so it
+# runs wherever the rule itself applies, including where (a) stood down.
+# A change carrying code is not a reporting change whatever it is
+# called, and that is the half the rename cannot clear.
 HEAD_BRANCH=""
 REPORT_BRANCH=skip
+CARRIES_OUTSIDE=""
 if [ "$STAGE" -ge 2 ]; then
   HEAD_BRANCH="${HEAD_REF:-}"
   if [ -z "$HEAD_BRANCH" ]; then
@@ -162,13 +175,38 @@ if [ "$STAGE" -ge 2 ]; then
     if [ "$HEAD_BRANCH" = "HEAD" ]; then HEAD_BRANCH=""; fi
   fi
   case "$HEAD_BRANCH" in
-    "")        echo "Rule K skipped — no branch name is readable: HEAD_REF is unset"
-               echo "and HEAD is detached, so whether this change is a reporting one"
-               echo "cannot be told. Set HEAD_REF to the head branch to have it checked." ;;
+    "")        echo "Rule K: the branch half skipped — no branch name is readable:"
+               echo "HEAD_REF is unset and HEAD is detached. The diff half still runs,"
+               echo "so a change carrying code is still refused; set HEAD_REF to the"
+               echo "head branch to have the name checked too." ;;
     report/*)  REPORT_BRANCH=true ;;
     *)         REPORT_BRANCH=false ;;
   esac
+
+  # Everything the range touches that is not under `work/`. A reporting
+  # change is the report plus the pair the route mints and nothing else
+  # (docs/product/stage-1-tasks-and-specs/authoring.md), so a path
+  # outside `work/` is implementation riding along — visible in the diff
+  # without trusting anyone's choice of branch name.
+  CARRIES_OUTSIDE=$(printf '%s\n' "$CHANGED" | sed '/^$/d' | grep -v '^work/' || true)
 fi
+
+# rides_outside — the refusal's shared tail: what the change carries that
+# a reporting one may not, at most five paths and a count for the rest,
+# because a refusal nobody reads to the end is a refusal that taught
+# nothing.
+rides_outside() {
+  local n
+  n=$(printf '%s\n' "$CARRIES_OUTSIDE" | sed '/^$/d' | wc -l | tr -d ' ')
+  # awk, never `head`: `head` closes the pipe at five and the writer
+  # upstream dies of SIGPIPE, which `pipefail` turns into an exit 141
+  # that swallows the count, the explanation and every rule after this
+  # one. awk reads to the end and prints five.
+  printf '%s\n' "$CARRIES_OUTSIDE" | sed '/^$/d' \
+    | awk 'NR <= 5 { print "    " $0 }' >&2
+  [ "$n" -gt 5 ] && echo "    … and $((n - 5)) more" >&2
+  return 0
+}
 
 # is_added <file> — was the file created by this diff?
 is_added() { printf '%s\n' "$ADDED" | grep -qxF "$1"; }
@@ -279,15 +317,32 @@ for f in $CHANGED; do
       # route that adds to it, so it travels on its own reporting change
       # and the maintainer's squash-merge of *that* pull request is the
       # assent (docs/product/concepts/report.md).
-      if [ "$REPORT_BRANCH" = false ] \
-        && [ "$new" = "tracked" ] && [ "$old" != "tracked" ]; then
-        echo "FORBIDDEN: ${f} reaches 'tracked' on '${HEAD_BRANCH}'." >&2
-        echo "  The tracked route is the one that puts work in the queue, and" >&2
-        echo "  what enters the queue passes a gate: a reporting change of its" >&2
-        echo "  own, on a report/ branch, whose merge is the assent that the" >&2
-        echo "  finding deserves the work. Leave the report open here and route" >&2
-        echo "  it on its own branch; fixed and declined still ride." >&2
-        status=1
+      #
+      # Two conditions, and neither alone. (a) catches the honest case, a
+      # session flipping a report on the implementing branch it already
+      # stands on — and it is free. (b) is the one a rename cannot clear,
+      # because an implementing change carries code whatever its branch is
+      # called. (b) alone would pass a completion change whose spec
+      # promised no doc delta: `work/`-only, and a `tracked` flip riding
+      # *that* is still a ride.
+      if [ "$new" = "tracked" ] && [ "$old" != "tracked" ]; then
+        if [ "$REPORT_BRANCH" = false ]; then
+          echo "FORBIDDEN: ${f} reaches 'tracked' on '${HEAD_BRANCH}'." >&2
+          echo "  The tracked route is the one that puts work in the queue, and" >&2
+          echo "  what enters the queue passes a gate: a reporting change of its" >&2
+          echo "  own, on a report/ branch, whose merge is the assent that the" >&2
+          echo "  finding deserves the work. Leave the report open here and route" >&2
+          echo "  it on its own branch; fixed and declined still ride." >&2
+          status=1
+        elif [ -n "$CARRIES_OUTSIDE" ]; then
+          echo "FORBIDDEN: ${f} reaches 'tracked' in a change carrying more than reporting:" >&2
+          rides_outside
+          echo "  A reporting change is the report and the pair the route mints," >&2
+          echo "  and nothing else — the branch prefix is how such a change is" >&2
+          echo "  named, never what makes it one. Route the report on a change" >&2
+          echo "  that carries only work/; fixed and declined still ride." >&2
+          status=1
+        fi
       fi
       ;;
 
@@ -325,9 +380,14 @@ for f in $CHANGED; do
       # on the report because the two are separable: a report tracked in
       # one change and its task added in another would pass a rule that
       # watched the status line alone.
-      if [ "$REPORT_BRANCH" = false ] && is_added "$f" \
-        && [ "$(fm_now "$f" origin)" = "report" ]; then
-        echo "FORBIDDEN: ${f} is born of a report on '${HEAD_BRANCH}'." >&2
+      if is_added "$f" && [ "$(fm_now "$f" origin)" = "report" ] \
+        && { [ "$REPORT_BRANCH" = false ] || [ -n "$CARRIES_OUTSIDE" ]; }; then
+        if [ "$REPORT_BRANCH" = false ]; then
+          echo "FORBIDDEN: ${f} is born of a report on '${HEAD_BRANCH}'." >&2
+        else
+          echo "FORBIDDEN: ${f} is born of a report in a change carrying more than reporting:" >&2
+          rides_outside
+        fi
         echo "  A task derived from a report is a reporting change on its own" >&2
         echo "  report/ branch — the pull request presents the report, the task" >&2
         echo "  and the spec together, and its merge is the judgement that the" >&2

@@ -20,10 +20,14 @@ bash .writrun/skills/writrun-check-task-state/check_state.sh [diff-range]
 ```
 
 The range defaults to `main...HEAD`. One rule — the `tracked` route's —
-is about which branch the change is on: it reads `HEAD_REF` when set (CI
-passes the head branch that way) and the checkout's own branch otherwise,
-and on a detached HEAD with neither it says on stdout that it skipped
-rather than passing quietly.
+has two halves, and only one of them needs a branch name. The **branch
+half** reads `HEAD_REF` when set (CI passes the head branch that way)
+and the checkout's own branch otherwise; on a detached HEAD with neither
+it says on stdout that it stood down rather than passing quietly. The
+**diff half** reads what the change carries, which is always there, so
+it runs on a detached HEAD too — a change carrying code outside `work/`
+is refused whatever the branch is called, and where it has no name at
+all.
 
 - **0 / OK** — no forbidden transition.
 - **1** — every violation prints, each with the fix. The verdicts are
@@ -52,9 +56,11 @@ the ordered form of that rule and the way to run all three gates.
 - Never turn a `tracked` verdict into `fixed` to clear it: `fixed` says
   the change in hand ended the finding, and claiming that of one that
   still needs work loses it.
-- Never clear a `tracked` verdict by **renaming the branch** to
-  `report/…`. The rename does clear the check and clears nothing else —
-  and it costs the ride it was taken for, since `apply_pr_event.sh`
+- Never try to clear a `tracked` verdict by **renaming the branch** to
+  `report/…`. It no longer clears the check — rule K reads what the
+  change carries as well as what it is called, and an implementing
+  change carries code whatever its branch is named. What the rename
+  still costs is the ride it was taken for: `apply_pr_event.sh`
   recognises `task/NNNN-…` and stops recording a renamed branch's task
   at all. Move the report, the task and the spec to a change of their
   own.
