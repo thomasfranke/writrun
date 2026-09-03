@@ -1,7 +1,7 @@
 ---
 id: spec-0056
 task_ref: task-0040
-status: approved
+status: implemented
 created: 2026-09-03T03:35:00Z
 ---
 
@@ -120,4 +120,41 @@ and the tag.
 
 ## Outcome
 
-_(fill after execution)_
+`scripts/release.sh` composes the section for the tag it is cutting and
+prepends it to `CHANGELOG.md`, then stages the file beside the two
+version stamps so one commit carries the number and what earned it. The
+section is a `## <tag> — <date>` heading and one bullet per subject,
+grouped under `### <type>` in the order the vocabulary declares —
+`docs feat fix refactor chore` — with anything non-conventional under
+`### other` rather than dropped. A file that does not exist is created
+with a title and a line saying it is written by the cut and never edited
+by hand.
+
+Four case files under `tests/integration/release/`: the first cut
+creating the file grouped and losing nothing (the `(#NN)` suffix
+included), a later cut prepending above the older section and below the
+single title, an empty range named rather than left as a bare heading,
+and an aborted cut — both the drift guard and the red suite — leaving
+the file exactly as it found it.
+
+**Two divergences from the spec, both deliberate.**
+
+The spec's criterion said a failed suite aborts "with the changelog
+written". It is not: the write happens *after* `make tests`, so a red
+suite leaves only the stamp dirty — which is what
+`red_suite_aborts_before_commit_test.sh` has always asserted and what
+the script's own header promises. Writing before the suite would have
+made the abort messier and broken that case for nothing. The criterion
+was written from the guard's position, not the suite's.
+
+`unchanged_stamp_still_tags_head_test.sh` changed its claim. A re-cut
+whose stamp already held the number used to skip the commit; the
+changelog section is new at every cut, so the commit now always happens.
+The tag still lands on HEAD, which is what that case exists to hold, and
+its name and comment now say so. This is a behaviour change the spec did
+not name and the file records it here rather than leaving it to a reader
+of the diff.
+
+**Not done, on the spec's own instruction:** `v0.0.01` and `v0.0.02` are
+not back-filled. The first section the file will carry is the next tag
+cut.
