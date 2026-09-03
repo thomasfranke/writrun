@@ -13,20 +13,36 @@
 # folders.
 
 # unnamed <dir-of-directories> <file-that-should-name-them...>
-# Prints the basenames no listed file mentions.
+#
+# Prints the basenames no listed file mentions — and says so when the
+# parent itself is missing or empty, because a guard that reads nothing
+# reports nothing and a caller checking for empty output would call that
+# a pass. A renamed tree is the failure this test exists for, not a
+# reason for it to fall silent.
 unnamed() {
   local parent="$1"; shift
-  local dir name found f
+  local dir name esc found f count=0
+
+  [ -d "$parent" ] || { printf '!no-such-directory:%s ' "$parent"; return; }
+
   for dir in "$parent"/*/; do
     [ -d "$dir" ] || continue
+    count=$((count + 1))
     name=$(basename "$dir")
+    # Matched on a word boundary, not as a substring: `report/` must not
+    # be satisfied by prose that says `reports/`, and a skill must not be
+    # satisfied by prose naming a longer sibling.
+    esc=$(printf '%s' "$name" | sed 's/[].[*^$\\+?(){}|]/\\&/g')
     found=false
     for f in "$@"; do
       [ -f "$f" ] || continue
-      grep -q "$name" "$f" && { found=true; break; }
+      grep -qE "(^|[^A-Za-z0-9_-])${esc}([^A-Za-z0-9_-]|$)" "$f" \
+        && { found=true; break; }
     done
     [ "$found" = true ] || printf '%s ' "$name"
   done
+
+  [ "$count" -gt 0 ] || printf '!no-directories-under:%s ' "$parent"
 }
 
 out=$(unnamed "$REPO_ROOT/template/work" "$REPO_ROOT/template/work/README.md")
@@ -38,8 +54,10 @@ else
   fail=$((fail + 1))
 fi
 
+# Both sides of this comparison are the kit's: the skills it ships,
+# against the two files an adopter reads them in once the copy is theirs.
 out=$(unnamed "$REPO_ROOT/template/.writrun/skills" \
-      "$REPO_ROOT/.writrun/README.md" "$REPO_ROOT/template/AGENTS.md")
+      "$REPO_ROOT/template/.writrun/README.md" "$REPO_ROOT/template/AGENTS.md")
 if [ -z "$out" ]; then
   echo "ok    every skill the kit ships is named where an adopter reads"; pass=$((pass + 1))
 else
@@ -55,7 +73,6 @@ scratch=$(mktemp -d)
 mkdir -p "$scratch/work/shipped-and-unnamed" "$scratch/work/named"
 printf '# work\n\nHolds `named/` and nothing else worth saying.\n' > "$scratch/work/README.md"
 out=$(unnamed "$scratch/work" "$scratch/work/README.md")
-rm -rf "$scratch"
 if [ "$out" = "shipped-and-unnamed " ]; then
   echo "ok    a shipped folder the prose never names is reported by name"; pass=$((pass + 1))
 else
@@ -63,5 +80,42 @@ else
   echo "      got: '$out'"
   fail=$((fail + 1))
 fi
+
+# A near-miss is a miss: prose naming `reports/` does not account for a
+# folder called `report/`, and a substring match would have called it one.
+mkdir -p "$scratch/near/report"
+printf '# work\n\nThe `reports/` folder holds what was observed.\n' > "$scratch/near/README.md"
+out=$(unnamed "$scratch/near" "$scratch/near/README.md")
+if [ "$out" = "report " ]; then
+  echo "ok    prose naming a longer word does not account for the folder"; pass=$((pass + 1))
+else
+  echo "FAIL  prose naming a longer word does not account for the folder"
+  echo "      got: '$out'"
+  fail=$((fail + 1))
+fi
+
+# A tree that moved out from under the test is the drift the test exists
+# for, so it fails loudly rather than passing on having read nothing.
+out=$(unnamed "$scratch/renamed-away" "$scratch/work/README.md")
+case "$out" in
+  '!no-such-directory:'*)
+    echo "ok    a directory the test can no longer find is reported, not shrugged at"; pass=$((pass + 1)) ;;
+  *)
+    echo "FAIL  a directory the test can no longer find is reported, not shrugged at"
+    echo "      got: '$out'"
+    fail=$((fail + 1)) ;;
+esac
+
+mkdir -p "$scratch/hollow"
+out=$(unnamed "$scratch/hollow" "$scratch/work/README.md")
+rm -rf "$scratch"
+case "$out" in
+  '!no-directories-under:'*)
+    echo "ok    a parent that ships nothing is reported, not read as agreement"; pass=$((pass + 1)) ;;
+  *)
+    echo "FAIL  a parent that ships nothing is reported, not read as agreement"
+    echo "      got: '$out'"
+    fail=$((fail + 1)) ;;
+esac
 
 finish
