@@ -1,8 +1,8 @@
 ---
 id: task-0040
-status: ready
+status: in-progress
 blocked_reason: null
-taken_by: null
+taken_by: thomasfranke
 spec_ref: [spec-0056]
 doc_ref: technical/distribution.md#distribution
 origin: rule
