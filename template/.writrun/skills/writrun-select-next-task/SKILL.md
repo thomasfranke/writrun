@@ -18,7 +18,7 @@ bash .writrun/skills/writrun-select-next-task/list_tasks.sh
 ```
 
 Exit 0 means something is available, 1 means nothing is. It prints up to
-four sections, and each asks for a different move:
+five sections, and each asks for a different move:
 
 - **In progress — resume before selecting anything new** — an
   `in-progress` or `in-review` task the forge shows no open pull request
@@ -34,6 +34,15 @@ four sections, and each asks for a different move:
   and the specs it summarizes. Those are gates; being asked for one
   directly does not open it, and a MISMATCH is surfaced loudly, never
   resolved on your own.
+- **Open reports — waiting to be triaged, never selected** — a report
+  nobody has routed yet. **Triage it**: read it and give it an end.
+  `fixed` and `declined` are yours and ride any change; `authored`
+  writes the rule the report found missing; `tracked` is the only one
+  that makes work, and it travels as a reporting change of its own
+  whose merge is the assent
+  ([report](https://github.com/thomasfranke/writrun/blob/main/docs/product/concepts/report.md)).
+  Naming is not selecting — a report is never in the ordering and never
+  moves the exit code.
 
 Without network access the lister says so rather than reporting a task as
 free. Repeat that caveat when you report what you took.
