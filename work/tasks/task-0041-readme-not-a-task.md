@@ -1,8 +1,8 @@
 ---
 id: task-0041
-status: ready
+status: in-progress
 blocked_reason: null
-taken_by: null
+taken_by: thomasfranke
 spec_ref: [spec-0057]
 doc_ref: technical/schemas.md#front-matter-is-canonical
 origin: report
