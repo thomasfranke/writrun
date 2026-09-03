@@ -251,8 +251,15 @@ ledger_now()  { fm_ledger < "$1"; }
 ledger_base() { git show "${BASE}:$(base_path "$1")" 2>/dev/null | fm_ledger || true; }
 
 for f in $CHANGED; do
+  # Selection reads the filename's id, not the file's contents — the
+  # shape schemas.md#front-matter-is-canonical already fixes for a task
+  # (`task-NNNN-<subject>.md`) and a spec (the id agreeing with the
+  # filename). A directory glob alone would read the queue's own
+  # `README.md` as a task with no status and refuse it (report-0013);
+  # narrowing to the reserved prefix lets a non-task file sit beside the
+  # ones this check judges without being judged as one.
   case "$f" in
-    work/specs/*.md)
+    work/specs/spec-*.md)
       [ -f "$f" ] || continue
       new=$(fm_now "$f" status)
       old=$(fm_base "$f" status)
@@ -283,7 +290,7 @@ for f in $CHANGED; do
       fi
       ;;
 
-    work/reports/*.md)
+    work/reports/report-*.md)
       [ -f "$f" ] || continue
       new=$(fm_now "$f" status)
       old=$(fm_base "$f" status)
@@ -346,7 +353,7 @@ for f in $CHANGED; do
       fi
       ;;
 
-    work/tasks/*.md)
+    work/tasks/task-*.md)
       [ -f "$f" ] || continue
 
       new=$(fm_now "$f" status)
@@ -518,7 +525,7 @@ done
 # from the changed specs.
 checked_tasks=""
 for f in $CHANGED; do
-  case "$f" in work/specs/*.md) ;; *) continue ;; esac
+  case "$f" in work/specs/spec-*.md) ;; *) continue ;; esac
   [ -f "$f" ] || continue
   [ "$(fm_now "$f" status)" = "implemented" ] || continue
   [ "$(fm_base "$f" status)" != "implemented" ] || continue
