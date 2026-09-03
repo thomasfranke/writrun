@@ -49,6 +49,17 @@ contributors remember into something checked mechanically — see
 [`writrun-check-spec-deltas`](../../../.writrun/skills/writrun-check-spec-deltas/SKILL.md) — instead
 of trusted to whoever happens to be finishing the task.
 
+**A promise names a document or a folder.** The per-path form names one
+`.md` file, because what it points at is a rule under an anchor; the
+folder form ends in a slash, is honoured by any change under it, and
+declares everything under it. A file under `docs/` that is not a
+document — a diagram, an image — carries neither a rule nor an anchor,
+so naming it per path buys the loop nothing: it is declared by the
+folder that holds it. **Keep those files in a folder of their own.**
+Loose beside the chapters, the only folder that declares one is the
+chapter's own, and a promise reaching that far declares every rule
+beside it — the coarse form the per-path promise exists to avoid.
+
 **A promise includes its mandatory companions.** Some documents never
 change alone: a rule elsewhere makes touching one imply touching another,
 and a promise that names the first without the second is not a smaller

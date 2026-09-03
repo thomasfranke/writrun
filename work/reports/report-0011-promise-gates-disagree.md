@@ -1,15 +1,15 @@
 ---
 id: report-0011
-status: open
+status: authored
 task_ref: []
-doc_ref: technical/distribution.md#running-the-checks
+doc_ref: product/concepts/spec.md#the-doc-delta-contract
 created: 2026-09-03T00:13:17Z
-triaged: null
+triaged: 2026-09-03T01:39:42Z
 ---
 
 # The two promise gates disagree on what may be promised under docs/
 
-**References:** [technical/distribution.md#running-the-checks](../../docs/technical/distribution.md#running-the-checks)
+**References:** [product/concepts/spec.md#the-doc-delta-contract](../../docs/product/concepts/spec.md#the-doc-delta-contract)
 
 The two gates that read a spec's Proposed-changes sections do not agree
 on what a promise may name, and a file under `docs/` that is not
@@ -44,3 +44,34 @@ wants is exactly what this report does not answer.
 Not investigated: whether `check_deltas.sh`'s structural scope was ever
 meant to reach a non-Markdown file, or whether `docs/` holding one is
 itself the thing to rule out.
+
+**Triage:** the rule nobody wrote is what a promise may name, and it is
+now written — `product/concepts/spec.md#the-doc-delta-contract` gains
+it, beside the companions rule already there. `authored` rather than
+`tracked`: neither gate changes, so there is no work to queue.
+
+The reading is the narrow one both gates already hold, stated from the
+side the report found missing. A promise names a document or a folder,
+and the per-path form is precise because a document carries the rule and
+the anchor the promise points at. A diagram carries neither, so the
+folder that holds it is the precise form for it — which is why the rule
+also says where such a file goes: in a folder of its own, so the promise
+that declares it declares no rule beside it. `product/assets/` is then
+one good move, and the adopter's three bad ones are gone.
+
+Widening `check_promise_paths.sh` to accept `product/diagram.svg` was
+the alternative and it loses. Condition two is what catches
+`technical/README` — a promise no diff will honour — at spec entry; drop
+it and that promise passes the entry gate and fails at the completion
+gate instead, which is the late refusal `spec-0051` exists to move
+earlier.
+
+The report's doc_ref moved with the answer, from
+`technical/distribution.md#running-the-checks` to the contract itself.
+That section carries rules about how a gate is *called*; this is a rule
+about what a promise may say, so it belongs where the promise is
+defined.
+
+Nothing in this repository triggered either gate — `find docs -type f
+! -name '*.md'` still returns nothing — and the rule is written for the
+adopter who puts the first diagram there.
