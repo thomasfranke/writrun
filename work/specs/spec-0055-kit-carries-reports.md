@@ -1,7 +1,7 @@
 ---
 id: spec-0055
 task_ref: task-0039
-status: approved
+status: draft
 created: 2026-09-03T03:32:34Z
 ---
 
@@ -12,15 +12,26 @@ created: 2026-09-03T03:32:34Z
 - **Goal:** an adopter who copies `template/` is told, in the files they
   read, that reports exist — the folder, the four routes, and which of
   them may ride another change — so the cheapest entry the methodology
-  has stops being the one the kit hides.
+  has stops being the one the kit hides. `WRITRUN.md` is rewritten whole
+  in the same pass: it is the file that answers "what is this?", and a
+  reader who bounces off it never reaches the rest.
 
 ## Scope
 
 In: the kit's hand-maintained prose (`template/work/README.md`, a new
-`template/work/reports/README.md`, `template/AGENTS.md`,
-`template/WRITRUN.md`); the mirrored `.writrun/README.md` counts and the
-root `README.md` skills row; two structural tests; the two permanent
-docs the change closes the loop on.
+`template/work/reports/README.md`, `template/AGENTS.md`, and
+`template/WRITRUN.md` rewritten end to end); the mirrored
+`.writrun/README.md` counts and the root `README.md` skills row; two
+structural tests; the two permanent docs the change closes the loop on.
+
+**`WRITRUN.md` is rewritten, not patched.** Its first line states that
+the project runs on WritRun; then what WritRun is, then how it works.
+Short sentences, one idea each, no clause a reader has to hold. The
+audience is somebody meeting the methodology for the first time in
+somebody else's repository, and today's file assumes they already know
+what a doc-delta contract is. Patching the stale clause would leave that
+assumption in place — the reason to rewrite is the shape of the file, and
+the report is what made it visible.
 
 **The kit ships `work/reports/`.** That is the maintainer's call, taken
 at triage over the alternative of naming the folder as one the first
@@ -50,9 +61,15 @@ would have to reconstruct.
    the agent's; recording and the three ends that create no work ride
    any change; the `tracked` route takes a `report/` branch of its own
    and the merge of that pull request is the assent.
-3. `template/WRITRUN.md` — the mid-flight clause stops describing a
-   `report/` PR that adds "only task + spec"; the structure table names
-   `work/reports/`.
+3. `template/WRITRUN.md` — rewritten: the opening states that this
+   project uses WritRun as its flow; then what it is (docs are the
+   source, the permanent/ephemeral split, the loop closes itself, people
+   decide and machines record); then how it works (the five steps, the
+   report and the re-approval as the two things off that line); then
+   where things live, what the adopter decides, and the adoption
+   checklist that ends by telling them to delete it. Every fact today's
+   file carries survives — the pinned tag, the optional mirror pair, the
+   template layering, the forge-settings warning — in fewer words.
 4. `.writrun/README.md` — `skills/` says five, `templates/` names the
    report shape beside task and spec; root `README.md`'s skills row
    gains `writrun-check-front-matter`. `make template-sync` carries the
@@ -73,6 +90,13 @@ would have to reconstruct.
 - When an agent reads `template/AGENTS.md`, it shall find the four
   triage ends, the rule that recording rides any change, and the rule
   that the `tracked` route does not.
+- When a reader opens `template/WRITRUN.md`, its first sentence shall
+  state that the project uses WritRun as its flow, and the file shall
+  name reports among the ways work enters.
+- When `WRITRUN.md` is rewritten, it shall still carry the pinned-tag
+  pointer, the stage setting, the optional mirror pair, the two
+  collision points of adoption, and the instruction to delete the
+  adopting section.
 - When `template/work/` gains a directory that `template/work/README.md`
   does not name, the suite shall fail naming it.
 - When `template/.writrun/skills/` holds a skill `.writrun/README.md`
@@ -102,6 +126,11 @@ would have to reconstruct.
 - **The prose test reads names, not meaning.** A README naming
   `reports/` in a sentence that says nothing about it passes. The test
   guards the drift that has a signature; the review guards the rest.
+- **A rewrite is where a fact goes missing.** The old file is read
+  against the new one fact by fact before the old one is dropped; the
+  Definition of Done carries that as a check of its own, because a
+  shorter file that quietly lost the forge-settings warning is worse
+  than the long one.
 
 ## Tests required
 
@@ -115,6 +144,8 @@ sync. Suite green.
 - [ ] Every acceptance criterion holds, each with a test.
 - [ ] `template/work/reports/README.md` ships and is named by its parent.
 - [ ] `template/AGENTS.md` carries the reporting flow, markers intact.
+- [ ] `WRITRUN.md` rewritten, and every fact of the old file accounted
+      for — kept, or dropped on purpose and named in the Outcome.
 - [ ] Template synced; suite green; deltas exit 0.
 
 ## Proposed product changes
