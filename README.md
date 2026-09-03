@@ -240,7 +240,7 @@ Everything relevant lives in [`docs/`](docs):
 | [Decisions](docs/technical/decisions/README.md) | The dated why behind each piece of machinery, and what was rejected |
 | [Tasks](work/tasks/README.md) | This project's own queue — it dogfoods itself |
 | [Specs](work/specs/README.md) | The detail of each change made to this repo |
-| [Skills](.writrun/skills) | `writrun-select-next-task`, `writrun-create-task-and-spec`, `writrun-check-spec-deltas`, `writrun-check-task-state` — installed into an adopting project's own `.writrun/skills/` |
+| [Skills](.writrun/skills) | `writrun-select-next-task`, `writrun-create-task-and-spec`, `writrun-check-spec-deltas`, `writrun-check-task-state`, `writrun-check-front-matter` — installed into an adopting project's own `.writrun/skills/` |
 | [Contributing](CONTRIBUTING.md) | How work is defined in tasks and specs, and what a PR is checked against |
 | [Conventions](.writrun/conventions/README.md) | Commit, branch, PR, task, and spec conventions — shipped as defaults, the project's to edit |
 | [Template](template/WRITRUN.md) | The adoption kit, shaped like the destination root — its guide travels with the copy as `WRITRUN.md` |

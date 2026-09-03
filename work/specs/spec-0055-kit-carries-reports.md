@@ -1,7 +1,7 @@
 ---
 id: spec-0055
 task_ref: task-0039
-status: approved
+status: implemented
 created: 2026-09-03T03:32:34Z
 ---
 
@@ -162,4 +162,55 @@ sync. Suite green.
 
 ## Outcome
 
-_(fill after execution)_
+The kit ships `work/reports/` with a README of its own, `template/work/README.md`
+names it and says why reports sit outside the pipeline, `template/AGENTS.md`
+gained a "Recording what you noticed" section inside the markers — the
+generator call, the four ends, that `fixed` and `declined` are the
+agent's, that recording rides any change and the `tracked` route never
+does — and `.writrun/README.md` now says five skills and names the report
+shape beside task and spec. The root `README.md`'s skills row gained
+`writrun-check-front-matter`.
+
+`WRITRUN.md` is rewritten, 119 lines against the old 133, and the shape
+is the change: it opens by stating the project uses WritRun as its flow,
+then answers what WritRun is (docs are the source; permanent and
+ephemeral never mix; a change closes its own loop; people decide and
+machines record), then how it works as five numbered steps with the
+report and the re-approval as the two things off that line, then where
+things live, what the adopter decides, and the adoption checklist that
+ends by telling them to delete it.
+
+**The fact-by-fact read caught two omissions and they were restored**:
+the two remaining special flows (a blocked task naming its reason and
+needing a person to lift it; a pull request closed unmerged releasing
+everything, because nothing was ever reserved), and the template layering
+with the pull request body template's home. Both are one sentence each
+in the new file.
+
+**Two things were dropped on purpose.** The old skills table named all
+five skills with a line each; the new file says what the five do in one
+sentence and leaves the names to `AGENTS.md`, which an agent reads and a
+newcomer does not. The mirror-severing paragraph — which workflow a
+deletion severs cleanly and which carries Stage 2 work with it — is gone;
+what survives is that the two mirror workflows are optional and that the
+stage setting is what turns them off. That paragraph answers a question
+nobody has on first read, and WritRun's own `distribution.md` holds it.
+
+**Two structural tests**, in `tests/unit/template/prose_names_what_the_kit_ships_test.sh`:
+every directory the kit ships under `template/work/` is named in its
+README, and every skill directory is named where an adopter reads
+(`.writrun/README.md` or `template/AGENTS.md`). A third case proves the
+guard bites, against a scratch tree that ships a folder its README never
+names — a case that cannot fail is not a guard.
+
+**Divergence from Steps, in the second test's reading.** The spec said
+the skills test reads `.writrun/README.md`. It reads either that file or
+`template/AGENTS.md`, because both are where an adopter meets a skill by
+name, and holding only the first would fail a kit that named every skill
+in the file agents actually read. The stricter form was rejected for
+being arbitrary rather than true.
+
+The loop closed on both promised docs: `adoption.md` says the kit ships
+the folder while the minimum stays where it was, and `distribution.md`
+names `work/`'s three folders and records what the two tests hold — and
+why a check for absence was not the answer.

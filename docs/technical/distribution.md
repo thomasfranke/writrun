@@ -66,9 +66,10 @@ for how the two sets stay apart by path and by prefix:
 
 The whole adoption kit ships as [`template/`](../../template), one folder
 **shaped exactly like the destination root** — that is what a template
-is: `.writrun/`, the four `writrun-*.yml` workflows, `work/`, the
-skeletons for `AGENTS.md` and `docs/`, and the guide itself as
-`WRITRUN.md` — a name that collides with nothing and stays behind as a
+is: `.writrun/`, the four `writrun-*.yml` workflows, `work/` with its
+three folders (`tasks/`, `specs/` and `reports/`, each carrying its own
+README), the skeletons for `AGENTS.md` and `docs/`, and the guide itself
+as `WRITRUN.md` — a name that collides with nothing and stays behind as a
 provenance pointer after adoption. **Severing the mirror is the `stage`
 setting, not a deletion.** An adopter that wants no GitHub Issues lowers
 the top-level `stage` below `3`, and every mirror in the kit stands down
@@ -109,6 +110,17 @@ repository's on purpose. What they share is the vocabulary, so
 show, and the words they use. That is the structural reason the kit
 shipped a retired status long after the queue stopped having it, and the
 reason a second mirror was not the answer.
+
+**That guard reads what the prose says, never what it omits**, and the
+omission is the other drift: the kit shipped the report machinery while
+three of its files went on describing a queue of two folders and four
+skills. A check for absence is not available — a concept the prose never
+mentions uses no retired word and shows no wrong shape — so the guard is
+built from the side that has a signature. Two unit tests compare what
+the kit **ships** against what its prose **names**: every directory under
+`template/work/` is named in its README, and every skill directory is
+named where an adopter reads. Both bite the moment the kit gains
+something its guide has not learned about.
 
 **One file leaves the mirror on purpose: `.writrun/settings.json`.** The
 kit ships it cautious — `stage: 1`, every conduct flag `false` — because
