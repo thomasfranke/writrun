@@ -183,6 +183,24 @@ with notes generated from the conventional commits. While the methodology
 is alpha (0.x), the contract itself moves without notice; a client or an
 adopter pins the tag it targets.
 
+**The history lands in the repository, not only on the forge.** The cut
+writes the release's own notes to `CHANGELOG.md` at the root, newest
+first, and stages them with the two version stamps so one commit carries
+the number and what earned it. The reason is the pin: an adopter — and
+the future `writ update` — holds a copy of a tag, and asking what changed
+since the tag before it should not require leaving the checkout for the
+Releases page. The entries are the conventional subjects on `main`
+between the two tags, which is the material the forge's generated notes
+already read; what changes is where a reader finds them.
+
+**It is generated, and never edited by hand.** One writer — the release
+script — is what keeps the file from becoming a second history that
+agrees with the tags until the first time somebody forgets. An entry
+that is wrong is wrong in the subject that produced it, and that is
+where it is fixed, on the next tag. The file is not a permanent doc:
+nothing under `docs/` changes when it is written, no spec promises it,
+and `writrun-check-spec-deltas` never asks about it.
+
 
 ## Running the checks
 
