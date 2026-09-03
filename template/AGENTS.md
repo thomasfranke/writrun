@@ -54,6 +54,34 @@ the body, present them together, and put nothing on the forge before an
 explicit yes — the gate is about work becoming public, so it holds the
 whole moment rather than its second half.
 
+### Recording what you noticed
+
+Something observed mid-work that is not this task is a **report**: one
+file in `work/reports/`, one paragraph, no commitment. It says what was
+seen — what should be done about it is triage's output, never the
+report's content.
+
+```bash
+bash .writrun/skills/writrun-create-task-and-spec/new.sh report "<title>" \
+  --slug <two-or-three-words> [--doc-ref path/to/doc.md#anchor]
+```
+
+**Recording rides whatever change is already open.** A report is neither
+a rule nor work, so the one-kind-per-change rule does not reach it, and
+a finding that costs its own branch is a finding nobody writes down.
+
+Triage ends it, one of four ways: `tracked` when a task now carries the
+work, `authored` when no rule said what "correct" was and a rule was
+written, `fixed` when a trivial change handled it, `declined` when it is
+not a defect or not worth acting on — with the reason kept in the body.
+`fixed` and `declined` are yours to write; declining destroys nothing,
+and the file stays where a person can disagree with it.
+
+**The `tracked` route is the one that never rides.** It puts work in the
+queue, so it takes a `report/` branch of its own carrying the report,
+the task and the spec together — and the merge of that pull request is
+the assent that the finding deserves the work.
+
 ### Human gates
 
 <!-- yours: this table is the project's own answers; it survives updates. -->

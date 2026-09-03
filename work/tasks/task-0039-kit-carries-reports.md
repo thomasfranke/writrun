@@ -11,9 +11,10 @@ depends_on: []
 milestone: null
 created: 2026-09-03T03:31:19Z
 queued: 2026-09-03T03:45:19Z
-completed: null
+completed: 2026-09-03T04:03:22Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-opus-5, login: thomasfranke}
 ---
 
 # The adoption kit carries the report concept

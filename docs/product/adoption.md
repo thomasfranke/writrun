@@ -68,7 +68,10 @@ All of the following, or the project is *adopting*, not *adopted*:
   with no schema at all is not. A
   [report](concepts/report.md) folder is **not** part of this minimum: a
   project that never records one simply has no `work/reports/`, and its
-  absence is never read as a gap.
+  absence is never read as a gap. The kit ships the folder anyway, and
+  the two statements do not disagree — the minimum is what a project
+  must have to claim adoption, the kit is what a fresh copy starts with.
+  An adopter who deletes it is still an adopter.
 - **The four human gates**, named somewhere in the project's own
   `AGENTS.md`: who approves a doc change, who declares an authored rule
   finished, who approves a spec, and what an agent does when a task's
