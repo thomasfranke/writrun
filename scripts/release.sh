@@ -92,6 +92,12 @@ fi
 changelog_section() {   # changelog_section <tag> <range...>
   local tag="$1"; shift
   local subjects type matched other
+  # One vocabulary, spelled once — the loop reads it, and the "other"
+  # filter is built from it. Two copies drift. A type only one of them
+  # knows matches neither group, and its subjects leave the file
+  # entirely: the one thing this block promises never happens.
+  local types="docs feat fix refactor chore"
+  local known="${types// /|}"
   subjects=$(git log --format='%s' "$@")
 
   printf '## %s — %s\n\n' "$tag" "$(date -u +%Y-%m-%d)"
@@ -101,7 +107,7 @@ changelog_section() {   # changelog_section <tag> <range...>
     return 0
   fi
 
-  for type in docs feat fix refactor chore; do
+  for type in $types; do
     matched=$(printf '%s\n' "$subjects" | grep -E "^${type}(\([^)]*\))?: " || true)
     [ -n "$matched" ] || continue
     printf '### %s\n\n' "$type"
@@ -110,7 +116,7 @@ changelog_section() {   # changelog_section <tag> <range...>
   done
 
   other=$(printf '%s\n' "$subjects" \
-    | grep -Ev "^(docs|feat|fix|refactor|chore)(\([^)]*\))?: " || true)
+    | grep -Ev "^(${known})(\([^)]*\))?: " || true)
   if [ -n "$other" ]; then
     printf '### other\n\n'
     printf '%s\n' "$other" | sed 's/^/- /'
@@ -127,8 +133,13 @@ fi
 if [ -f CHANGELOG.md ]; then
   # The new section goes above the newest one and below whatever title
   # the file opens with, so the file reads newest-first and the title is
-  # written once.
-  first=$(grep -n '^## ' CHANGELOG.md | head -n 1 | cut -d: -f1)
+  # written once. A file carrying no section yet has nothing to go above,
+  # so the section is appended under whatever prose is there.
+  #
+  # `|| true` because that empty case is not a failure. grep exits 1 on no
+  # match, and under `set -e` the cut would abort without a word, after
+  # the suite has already run.
+  first=$(grep -n '^## ' CHANGELOG.md | head -n 1 | cut -d: -f1 || true)
   tmp=$(mktemp "${TMPDIR:-/tmp}/writrun-changelog.XXXXXX")
   if [ -n "$first" ]; then
     head -n "$((first - 1))" CHANGELOG.md > "$tmp"
@@ -138,7 +149,13 @@ if [ -f CHANGELOG.md ]; then
     cat CHANGELOG.md > "$tmp"
     printf '\n%s\n' "$section" >> "$tmp"
   fi
-  mv "$tmp" CHANGELOG.md
+  # Written back through the existing file, never moved over it: mktemp
+  # opens 0600 and an `mv` carries that mode onto the destination, so
+  # every cut after the first would leave a changelog nobody but its
+  # author can read. Git records only the exec bit, so the damage is
+  # invisible until somebody reads the working tree.
+  cat "$tmp" > CHANGELOG.md
+  rm -f "$tmp"
 else
   {
     printf '# Changelog\n\n'

@@ -3,7 +3,9 @@
 
 # A second cut goes above the first and below the title, so the file
 # reads newest-first and the title is written once. The older section is
-# left exactly as it was — history is appended to, never rewritten.
+# left exactly as it was — history is appended to, never rewritten. The
+# mode survives too. A changelog only the person who cut the tag can read
+# has stopped being published.
 release_setup
 cat > CHANGELOG.md <<'MD'
 # Changelog
@@ -22,6 +24,9 @@ git commit -qm "chore(release): v0.0.01"
 # previous release's own commit is behind the range, not inside it.
 git tag -a v0.0.01 -m v0.0.01
 git commit -q --allow-empty -m "fix(ci): the second thing"
+# 0640, not the mode a fresh file lands on, so the assertion below reads
+# the mode this file had and not one the cut got for free.
+chmod 0640 CHANGELOG.md
 out=$(bash "$RELEASE_SH" 2>&1); code=$?
 new_line=$(grep -n '^## v0.0.02 ' CHANGELOG.md | cut -d: -f1)
 old_line=$(grep -n '^## v0.0.01 — 2026-01-01$' CHANGELOG.md | cut -d: -f1)
@@ -31,11 +36,13 @@ if [ "$code" -eq 0 ] &&
    [ "$(grep -c '^# Changelog$' CHANGELOG.md)" = "1" ] &&
    grep -q '^- fix(ci): the second thing$' CHANGELOG.md &&
    grep -q '^- feat(ci): the first thing that ever shipped$' CHANGELOG.md &&
-   ! grep -q '^- chore(release): v0.0.01$' CHANGELOG.md; then
-  echo "ok    a later cut prepends its section and leaves the older one alone"; pass=$((pass + 1))
+   ! grep -q '^- chore(release): v0.0.01$' CHANGELOG.md &&
+   [ "$(ls -l CHANGELOG.md | cut -c1-10)" = "-rw-r-----" ]; then
+  echo "ok    a later cut prepends its section, leaving the older one and the mode alone"; pass=$((pass + 1))
 else
-  echo "FAIL  a later cut prepends its section and leaves the older one alone"
+  echo "FAIL  a later cut prepends its section, leaving the older one and the mode alone"
   printf '%s\n' "$out" | sed 's/^/      | /'
+  [ -f CHANGELOG.md ] && ls -l CHANGELOG.md | sed 's/^/      > /'
   [ -f CHANGELOG.md ] && sed 's/^/      > /' CHANGELOG.md
   fail=$((fail + 1))
 fi

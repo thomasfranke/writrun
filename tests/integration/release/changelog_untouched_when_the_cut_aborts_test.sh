@@ -10,14 +10,20 @@ release_setup
 printf '# Changelog\n\n## v0.0.01 — 2026-01-01\n\n### feat\n\n- feat(ci): shipped\n' > CHANGELOG.md
 git add CHANGELOG.md >/dev/null
 git commit -qm "chore: changelog"
+# Tagged, so the cut under test is a second one and the number it would
+# write is v0.0.02 — a string the seeded file cannot already hold.
+git tag -a v0.0.01 -m v0.0.01
 before=$(git log -1 --format=%H)
+# The whole file, hashed: the assertion is every byte, not one string a
+# rewrite could leave standing.
+before_file=$(git hash-object CHANGELOG.md)
 printf '#!/usr/bin/env bash\necho "make $*" >> "%s/calls.log"\ntouch "%s/repo/template/stray.md"\n' "$WORK" "$WORK" > "$WORK/stub-bin/make"
 chmod +x "$WORK/stub-bin/make"
 out=$(bash "$RELEASE_SH" 2>&1); code=$?
 drift_ok=false
 if [ "$code" -ne 0 ] &&
    printf '%s' "$out" | grep -q 'changed more than the version stamp' &&
-   ! grep -q 'v0.0.02' CHANGELOG.md &&
+   [ "$(git hash-object CHANGELOG.md)" = "$before_file" ] &&
    [ "$(git log -1 --format=%H)" = "$before" ]; then
   drift_ok=true
 fi
@@ -29,9 +35,9 @@ chmod +x "$WORK/stub-bin/make"
 out2=$(bash "$RELEASE_SH" 2>&1); code2=$?
 suite_ok=false
 if [ "$code2" -ne 0 ] &&
-   ! grep -q 'v0.0.02' CHANGELOG.md &&
+   [ "$(git hash-object CHANGELOG.md)" = "$before_file" ] &&
    [ "$(git log -1 --format=%H)" = "$before" ] &&
-   [ -z "$(git tag --list)" ]; then
+   [ "$(git tag --list)" = "v0.0.01" ]; then
   suite_ok=true
 fi
 
