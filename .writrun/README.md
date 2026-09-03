@@ -9,7 +9,7 @@ header that WritRun shipped it.
 
 | | Owned by | `writ update` |
 |---|---|---|
-| `skills/` | WritRun — the five `writrun-*` skills and their scripts | refreshes |
+| `skills/` | WritRun — the `writrun-*` skills and their scripts | refreshes |
 | `scripts/` | WritRun — the step logic, testable bash, one folder per adoption stage: from Stage 2 the workflows call it (`gh` wherever the forge must be asked), and the Stage 1 folder holds what a person or an agent runs directly | refreshes |
 | `templates/` | WritRun — shipped default body shapes for task, spec and report, and the PR body template (its only home: agents fill it when opening PRs; GitHub's pre-fill is deliberately forgone) | refreshes |
 | `VERSION` | WritRun — the tag this copy of the kit came from | rewrites |
