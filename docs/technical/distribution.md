@@ -282,6 +282,30 @@ composed and waiting on the word; **3** git or the forge failed. It
 writes no queue file — the status line has one writer, and it is the
 machinery answering the draft this opens.
 
+### By hand, and what the two flags change
+
+The script is the act in one command; by hand it is the same act, and the
+order is the whole of it. Branch as `task/NNNN-short-name`, push, and
+open the pull request **as a draft before implementing** — the branch is
+invisible until it reaches the forge, and the draft is the event the
+machinery answers by writing `in-progress` and the author's login onto
+`main` and moving the mirror to `status:in-progress`. Marking it ready
+for review is the end of the work, not the start; that is what moves the
+task to `in-review`.
+
+**The push and the opening are one act**
+([`conventions/prs.md`](../../.writrun/conventions/prs.md)). With
+`auto_push` and `auto_pr` both `true` an agent does both without asking.
+With either at `false` it composes the branch, the title and the body,
+presents them together, and puts nothing on the forge before the word —
+which is why one flag at `false` holds the whole act, and why
+`take_task.sh` exits 2 with the composition printed rather than doing
+half of it.
+
+**The task's status line has one writer, and it is not the agent**
+([statuses](../product/stage-2-pull-requests/statuses.md)). The taking
+act writes no queue file; the machinery answers the draft.
+
 ## `preflight.sh` — the completion gates, in order
 
 The three gates a change must pass before its pull request is marked

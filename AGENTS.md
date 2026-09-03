@@ -1,202 +1,107 @@
 # AGENTS.md — entry point for AI agents
 
-You are working on the repository of the methodology itself, and this repo
-follows its own structure. Read in this order, stopping as soon as you have
-what the task needs:
+This repository is the methodology itself, and follows it. Read in order,
+stopping as soon as you have what the task needs:
 
-0. The settings this session obeys — run the card rather than re-reading
-   the conventions for values:
+0. The settings this session obeys — run the card, never the conventions,
+   for a value:
 
    ```bash
    bash .writrun/scripts/stage-1-tasks-and-specs/session_card.sh
    ```
 
-   It prints the stage, the conduct flags, the title style with an
-   example per pull-request kind, the two vocabularies and the
-   constants. Open a `.writrun/conventions/` file when the card leaves a
-   *why* question — never for the values themselves.
+   Open a conventions file for a *why* the card leaves open, and for what
+   is no value at all:
+   [`prose.md`](.writrun/conventions/prose.md) is how this project writes
+   docs, skills and comments. Never for a value, and never against one.
 1. [`docs/about.md`](docs/about.md) — what this project is. Always read.
-2. [`docs/product/README.md`](docs/product/README.md) — the prescriptive
-   rules this repo's own structure is checked against. Read the chapter
-   relevant to what you're touching before proposing a behaviour change.
-3. `docs/technical/` — the chapter your task needs, never the whole
-   reference: [`schemas.md`](docs/technical/schemas.md) before touching
-   `tasks/`, `specs/` or `reports/`;
-   [`selection.md`](docs/technical/selection.md) when picking work;
-   [`settings.md`](docs/technical/settings.md) before committing, pushing
-   or opening a pull request;
-   [`reporting.md`](docs/technical/reporting.md) when recording a finding;
-   [`distribution.md`](docs/technical/distribution.md) when working on the
-   machinery itself. [`README.md`](docs/technical/README.md) is the router
-   that names them.
-4. The specific task and its referenced specs/anchors — never code from the
-   task title alone.
+2. [`docs/product/README.md`](docs/product/README.md) — the rules this
+   repo is checked against. Read the chapter you are touching before
+   proposing a behaviour change.
+3. [`docs/technical/README.md`](docs/technical/README.md) — the router to
+   the one chapter your task needs, never the whole reference.
+   `schemas.md` before touching anything under `work/`.
+4. The task itself, its specs and anchors — never code from a title.
 
-## Picking work
+## Which kind of change you have
 
-Use the [`writrun-select-next-task`](.writrun/skills/writrun-select-next-task/SKILL.md) skill. In
-this repo, "active owner" for its resume step means **this session**: any
-`in-progress` task not started by you in the current session is resumable,
-and you resume it before selecting new work.
+Never more than one kind in one change: closing the loop on one rule
+while introducing another is two changes
+([authoring](docs/product/stage-1-tasks-and-specs/authoring.md#two-ways-a-permanent-doc-changes)).
 
-A task is available only when it is `ready` — the machinery wrote that
-from the fact that every spec in its `spec_ref` is `approved`, and the
-selection algorithm cross-checks the two rather than trusting either
-alone. A `backlog` task has not passed the approval gate, so it is not
-authorized work — if every task is held back that way, say so rather
-than reporting an empty queue.
+| | Authoring | Reporting | Implementing |
+|---|---|---|---|
+| Is | a rule that isn't true yet | work an existing rule already authorizes | an approved spec |
+| Touches | `docs/` + the work it derives | `work/` only | code + the docs its spec promised |
+| Branch | `docs/short-name` | `report/short-name` | `task/NNNN-short-name` |
+| PR states | the tasks and specs it created | the report, the pair it adds, the rule they derive from | the spec(s) it implements, each task tagged `[TASK-NNNN]` |
+| Gates | task-state | task-state | task-state **and** spec-deltas |
 
-**Taking a task ends with its draft pull request open, not with the
-branch created.** One command does the whole act, flags included:
+Recording a report is the one exemption — neither rule nor work, it rides
+whatever is open. Except the `tracked` route, which never rides
+([report](docs/product/concepts/report.md#recording-rides-any-change--routing-to-the-queue-does-not)).
+
+## The skills
+
+Not auto-discovered. Load the one whose moment you are at.
+
+| When | Skill |
+|---|---|
+| Picking work; any session's start | [`writrun-select-next-task`](.writrun/skills/writrun-select-next-task/SKILL.md) |
+| Creating a task or spec; completing one | [`writrun-create-task-and-spec`](.writrun/skills/writrun-create-task-and-spec/SKILL.md) |
+| A queue file touched by hand | [`writrun-check-front-matter`](.writrun/skills/writrun-check-front-matter/SKILL.md) |
+| A lifecycle transition | [`writrun-check-task-state`](.writrun/skills/writrun-check-task-state/SKILL.md) |
+| A spec's promise at completion | [`writrun-check-spec-deltas`](.writrun/skills/writrun-check-spec-deltas/SKILL.md) |
+
+Taking ends with the **draft pull request open**, not the branch created
+— one command, the whole act
+([contract](docs/technical/distribution.md#take_tasksh--the-taking-act-in-one-command)):
 
 ```bash
 bash .writrun/scripts/stage-2-pull-requests/take_task.sh 0034 \
   --title "[Type][Scope] What this change does"
 ```
 
-It re-checks the eligibility, composes the branch, the title and the
-body, and — with this repository's flags both `true` — cuts from a fresh
-`origin/main`, pushes and opens the draft. Exit 2 means a flag held it
-and the composition is waiting on the word; exit 3 names what the forge
-did and what it left behind
-([contract](docs/technical/distribution.md#take_tasksh--the-taking-act-in-one-command)).
-By hand it is the same act: branch as `task/NNNN-short-name`, push, and
-open the PR as a draft *before* implementing — the branch is invisible until it
-reaches the forge, and the draft is the event the machinery answers by
-writing `in-progress` and your login onto `main` and moving the mirror
-to `status:in-progress`. **The push and the opening are one act**: this
-repository leaves `auto_push` and `auto_pr` at `true`, so you do both
-without asking — under either at `false` you would compose the branch,
-the title and the body, present them together, and put nothing on the
-forge before the word. **Touch the task's status line never**: it has
-one writer, and it is not you
-(docs/product/stage-2-pull-requests/statuses.md). Mark the PR ready
-for review when the work is done — that is what moves the task to
-`in-review`.
-
-## Creating tasks and specs
-
-Use the [`writrun-create-task-and-spec`](.writrun/skills/writrun-create-task-and-spec/SKILL.md)
-skill — it covers id assignment, front-matter, when a spec is warranted,
-and how to fill the Proposed changes sections.
-
-Any queue file touched by hand — a body edited, a status flipped,
-anything `new.sh` did not write — must pass
-[`writrun-check-front-matter`](.writrun/skills/writrun-check-front-matter/SKILL.md)
-before it is committed: the generator only ever produces canonical form,
-and the line-based readers silently misread anything else.
-
-## Which kind of change you have
-
-Two, and they are not handled the same way — see
-[`tasks-and-specs/authoring.md`](docs/product/stage-1-tasks-and-specs/authoring.md#two-ways-a-permanent-doc-changes).
-
-| | Authoring | Reporting | Implementing |
-|---|---|---|---|
-| Is | a rule that isn't true yet | work reported or discovered that an existing rule already authorizes | an approved spec |
-| Touches | `docs/` + the work it derives | `work/` only — no permanent doc | code + the docs its spec promised |
-| Branch | `docs/short-name` | `report/short-name` | `task/NNNN-short-name` |
-| PR states | the tasks and specs it created | the report, the tasks and specs it adds, and the rule they derive from | the spec(s) it implements, every carried task tagged `[TASK-NNNN]` leading the title |
-| `writrun-check-spec-deltas` | does not apply | does not apply | must exit 0 |
-| `writrun-check-task-state` | must exit 0 | must exit 0 | must exit 0 |
-
-Never more than one kind in one change. A change that closes the loop on
-one rule while introducing another is two changes.
-
-**Recording a report is the one exemption.** A report is a note about
-what was observed — neither a rule nor work — so it may ride whatever
-change is already open, for the same reason a typo is a commit rather
-than a task. A finding that costs its own branch is a finding nobody
-writes down ([`concepts/report.md`](docs/product/concepts/report.md)).
-The exemption covers recording (`open`) and the three ends that create
-no work (`authored`, `fixed`, `declined`). **The `tracked` route never rides**:
-deriving a task from a report is a reporting change on its own
-`report/` branch, and the squash-merge of that pull request is the
-merit assent — a `tracked` flip riding an unrelated change puts a task
-in the queue that nobody ever weighed
-([report](docs/product/concepts/report.md#recording-rides-any-change--routing-to-the-queue-does-not)).
-
-When derivation runs (authoring or reporting), **present the derived tasks
-and specs in the session before opening the PR** — the human reviews the
-queue the rule creates while the feedback loop is still cheap. Open
-directly only when the declaration itself says so ("deriva e abre
-direto"). The default is the adopter's to change.
-
-Commit messages, branch names, PR titles, task/spec style and how prose
-is written follow
-[`.writrun/conventions/`](.writrun/conventions/README.md) — read the relevant file before
-writing; it is this repository's own convention and every project you
-work in may have rewritten it.
-
-**The values live in
-[`settings.json`](.writrun/settings.json); the `.md` files
-explain them.** Read the settings before committing, opening a PR, or
-deciding whether a task needs a spec — the stage, the conduct flags,
-the title style and the project's three declarations (`spec_required`,
-`decisions_style`, `product_layout`) are settings, not constants, and a
-project you work in may hold different ones. The task tag, the branch
-prefixes and the label names are the methodology's constants — the
-conventions files state them. Where prose and settings ever disagree,
-the settings file is what the machinery obeys, so it is what you obey.
-
-When you edit anything under `docs/`, check `work/tasks/` for
-non-completed tasks whose `doc_ref` points into the files you are
-editing, and name them to the human while the edit is still in front of
-them — CI re-checks the same overlap (`writrun check`, queue impact), but
-at review time the warning is already one step late. A spec invalidated
-by the edit follows the special flow: amended, returned to `draft`,
-re-approved. Never edit an approved spec's body while it stays
-`approved`.
-
-## Human gates — explicit, per principle 7
-
-This is this repo's concrete answer to the general rule in
-[`docs/product/stage-1-tasks-and-specs/gates.md`](docs/product/stage-1-tasks-and-specs/gates.md)
-— every adopting project states its own version of this table.
-
-| Transition | Who |
-|---|---|
-| Writing or changing anything under `docs/` | Human writes or human reviews before merge. Agents may draft; permanent docs never merge on agent approval alone. |
-| An authored rule is finished, so derivation may start | **Human declares it.** No event marks the last edit of a rule, so the handoff is a signal, never an inference: invoking `writrun-create-task-and-spec`, or marking the authoring PR ready for review. An agent never derives from a doc edit nobody declared finished. A forgotten handoff is caught, not remembered: `writrun check` fails an authoring PR that neither adds tasks nor declares "Derived work: none". |
-| Spec `draft → approved` | **Human only.** The assenting act here is **the maintainer's squash-merge** — this repository's pull requests are authored by its maintainer, who cannot review them, so a review-based gate would never be satisfiable. CI records the flip on `main` after the merge. Never self-approve, and never write the field on verbal permission relayed through you: a merged PR is the record, and nothing else is. |
-| Task with empty `spec_ref` | If the task body + `doc_ref` is not a sufficient brief, **stop and ask for a spec** — do not improvise scope. |
-| Changing repository/forge settings (Actions permissions, rulesets, merge methods) | **Owner assents in session, per set of changes.** Settings live outside the repository — no diff, no review, no merge gate sees them — so present current → target values first and apply only on an explicit yes (docs/product/stage-2-pull-requests/setup.md). |
-| A report becomes a task (triage's `tracked` route) | **Agent derives, human assents.** The agent triages and builds the reporting change — report `tracked`, task, spec, on a `report/` branch — and the maintainer's squash-merge of that pull request is the judgement that the finding deserves the work. Never ridden into another change's PR (docs/product/concepts/report.md#recording-rides-any-change--routing-to-the-queue-does-not). |
-| Everything else (creating tasks, drafting specs, implementing approved specs, filling Outcome, triaging a report to `fixed` or `declined`) | Agent, autonomously. Triage included when it ends `declined`: the report is kept and its body says why, so the judgement stays visible rather than standing unassented (docs/product/concepts/report.md). |
-
 ## Completing a task
 
 1. Implement against the approved spec.
-2. Update every permanent doc listed in the spec's **Proposed changes** — in
-   the same change. Touch nothing permanent that isn't listed; if reality
-   demands it, update the spec's proposal first.
-3. Fill the spec's **Outcome** section, including divergences, set spec
-   `status: implemented`, and write the task's `completed` date — never
-   its status; the merge flips it to `done` when it lands your date
-   (also covered by `writrun-create-task-and-spec`).
-4. Run preflight until exit 0:
+2. Update every permanent doc its **Proposed changes** lists, in the same
+   change, and nothing permanent it does not.
+3. Fill the spec's **Outcome**, set it `implemented`, write the task's
+   `completed` date — never its status.
+4. Run preflight to exit 0; mark the PR ready on nothing else:
 
    ```bash
    bash .writrun/scripts/stage-1-tasks-and-specs/preflight.sh
    ```
 
-   It runs the three gates in the order they must run in — front matter,
-   then the promised deltas, then the state — stopping at the first
-   failure and exiting with that check's own code
-   ([contract](docs/technical/distribution.md#preflightsh--the-completion-gates-in-order)).
-   Run it **after** step 3: the transitions the state gate exists to
-   reject are the ones step 3 makes, and a run before them passes by
-   having nothing to read — which is why a task with no `completed` date
-   is named in preflight's summary rather than left to pass quietly. Do
-   not mark the PR ready for review on anything other than exit 0.
+## Human gates — per principle 7
+
+This repo's answer; every project states its own. Reasoning:
+[`gates.md`](docs/product/stage-1-tasks-and-specs/gates.md#what-a-projects-own-table-has-to-carry).
+
+| Transition | Who |
+|---|---|
+| Anything under `docs/` | Human writes, or reviews before merge; agents may draft. |
+| An authored rule declared finished | **Human declares it** — never inferred. |
+| Spec `draft → approved` | **Human only**; here the assent is the maintainer's merge. |
+| Task with empty `spec_ref` | Brief insufficient → **stop and ask for a spec**. |
+| Derived work, before the PR opens | **Present it in the session.** |
+| Repository/forge settings | **Owner assents in session**, per set. |
+| A report becomes a task (`tracked`) | **Agent derives, human assents** — that change's own merge. |
+| Everything else | Agent, autonomously — triage to `fixed`/`declined` included. |
 
 ## Never
 
-- Never create a spec without an existing task (`task_ref` is mandatory and
-  must resolve).
-- Never rename or move a task or spec file. Identity is never order.
+- Never create a spec without a task — `task_ref` must resolve.
+- Never rename or move a task or spec file. Identity is not order.
 - Never track trivial work. A typo is a commit.
-- Never leave a task in flight at the end of a session without either
-  finishing it or noting its state in the task body for the next session
-  to resume from.
-
+- Never write `status: approved` yourself, and never on permission
+  relayed through you. The merge is the record and nothing else is
+  ([gates](docs/product/stage-1-tasks-and-specs/gates.md)).
+- Never edit an approved spec's body while it stays `approved`, and never
+  edit under `docs/` without naming the non-completed tasks whose
+  `doc_ref` points into it, while the edit is still in front of the human
+  ([conflicts](docs/product/stage-1-tasks-and-specs/conflicts.md)).
+- Never leave a task in flight at a session's end without finishing it or
+  noting its state in the body for the next session.

@@ -52,6 +52,44 @@ to whoever disagrees with it
 An agent that had to escalate every "not worth acting on" would make the
 cheap bar expensive again at the far end.
 
+## What a project's own table has to carry
+
+The four gates above are the methodology's. An adopting project answers
+them in its own `AGENTS.md`, as a table of transitions and who operates
+each — and the table is a **naming**, not an argument: each cell names
+the who and links the why, because the reasoning belongs to a chapter
+every session does not read, while the table is read by every session
+before every task.
+
+Three answers recur, and the reasoning behind them lives here so a
+project's table can be a line each.
+
+**A repository whose maintainer authors its own pull requests has no
+review to give.** The `draft → approved` gate asks for a human decision,
+recorded — and where the only human is the author, a review-based
+recording is never satisfiable. The act that carries the assent is then
+**the merge**: the maintainer's squash-merge of the change that proposes
+the spec. Nothing about the gate is weakened by that; what changes is
+which act records it. Two things stay forbidden either way — an agent
+self-approving, and an agent writing the field on verbal permission
+relayed through it. A merged pull request is the record, and nothing else
+is.
+
+**Settings live outside the repository, so their gate is a conversation
+and not a diff.** Actions permissions, branch rulesets, merge methods: no
+diff, no review and no merge gate ever sees them, so the only available
+recording is the owner's assent in the session that makes the change,
+per set of changes rather than once for a project
+([setup](../stage-2-pull-requests/setup.md)). Present current → target
+values first, and apply on an explicit yes.
+
+**Derivation is reviewed before it reaches the forge.** When a change
+derives work — authoring, or triage's `tracked` route — the tasks and
+specs it created are presented in the session before the pull request
+opens, because the queue a rule creates is cheapest to argue with while
+it is still a proposal. A project may declare the opposite and have its
+agent derive and open directly; the default is the adopter's to change.
+
 ## Criteria
 
 - When a task's `spec_ref` is empty and its body plus `doc_ref` do not
