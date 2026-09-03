@@ -1,7 +1,7 @@
 ---
 id: spec-0057
 task_ref: task-0041
-status: approved
+status: implemented
 created: 2026-09-03T04:06:56Z
 ---
 
@@ -105,4 +105,20 @@ passing. The existing state cases keep covering every rule.
 
 ## Outcome
 
-_(fill after execution)_
+Built exactly as scoped. The three `case` selectors in `check_state.sh`'s
+main loop narrowed to `work/tasks/task-*.md`, `work/specs/spec-*.md` and
+`work/reports/report-*.md`; the second loop's filter (rule C's other
+half, keyed on the changed specs) narrowed to `work/specs/spec-*.md`. No
+rule text changed — only which files reach the `case` that dispatches to
+them.
+
+Added `tests/unit/check_state/readmes_are_not_tasks_test.sh`: the three
+queue READMEs added together (a first adoption's own diff) and singly
+each pass; a real task born `in-progress` is still refused; a real task
+born `backlog` still passes — the four required cases, plus the existing
+suite as the regression net for the rules untouched by this change.
+
+`make template-sync` run; `.writrun/skills/writrun-check-task-state/check_state.sh`
+and its `template/` mirror are byte-identical.
+
+No divergence from the spec.
