@@ -119,8 +119,17 @@ mentions uses no retired word and shows no wrong shape — so the guard is
 built from the side that has a signature. Two unit tests compare what
 the kit **ships** against what its prose **names**: every directory under
 `template/work/` is named in its README, and every skill directory is
-named where an adopter reads. Both bite the moment the kit gains
-something its guide has not learned about.
+named where an adopter reads — matched on a word boundary, so `reports/`
+never accounts for a `report/`, and reported by name when the tree the
+test reads has moved rather than passing on having read nothing.
+
+**What they hold is names, and only names.** A sentence that *counts* —
+"the five `writrun-*` skills" — is still held by hand, and it is half of
+what report-0012 found: three files said four. The pair is what the kit
+ships against what it names; a number in prose has no shipped
+counterpart to compare against, and inferring one from a word like
+"five" would be reading meaning, which is the review's job and not a
+test's.
 
 **One file leaves the mirror on purpose: `.writrun/settings.json`.** The
 kit ships it cautious — `stage: 1`, every conduct flag `false` — because

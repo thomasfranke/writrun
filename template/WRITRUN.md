@@ -53,13 +53,15 @@ The loop, five steps:
 5. **Merge.** The merge is the assent. The machinery writes the statuses
    the merge earned.
 
-Two things that happen off this line:
+Three things happen off this line:
 
 - **A finding.** Something is noticed mid-work and it is not this task.
   Write a report — one file, one paragraph, no commitment. Later someone
   triages it: it becomes a task, becomes a rule, gets fixed on the spot,
   or is declined with the reason kept. Recording one is cheap on purpose,
-  and it rides whatever change you already had open.
+  and it rides whatever change you already had open. Only the route that
+  turns it into a task is different: that one takes a `report/` branch of
+  its own, and from Stage 2 the generator refuses it anywhere else.
 - **A spec that must change after approval.** It goes back to draft and
   is approved again. The doc always wins over a stale plan.
 - **Work that stops.** A task blocked from outside says so and names the
@@ -73,7 +75,7 @@ Two things that happen off this line:
 | `docs/` | What is true. Product rules for people, technical detail for builders. |
 | `work/tasks/`, `work/specs/` | The queue and its plans. Statuses live in the file, never in the folder. |
 | `work/reports/` | What was noticed. Commits to nothing. |
-| `.writrun/` | The machinery: skills, scripts, conventions, settings. |
+| `.writrun/` | The machinery: skills, scripts, conventions, settings. Its [README](.writrun/README.md) says which of them are WritRun's and which are yours. |
 | `.github/workflows/writrun-*.yml` | The checks and the recording. The two mirror workflows are optional. |
 | `AGENTS.md` | Where an agent starts. The WritRun part sits between markers; the rest is yours. |
 
@@ -102,9 +104,13 @@ lifecycle, and the file shapes. An agent runs them; you never have to.
 1. `.writrun/` and the workflows work as copied. Make the conventions
    yours.
 2. **`AGENTS.md`** — no previous one? Fill the TODOs. Already had one?
-   Graft the marked section into it; never overwrite.
+   Graft the marked section into it; never overwrite. The four human
+   gates must end up named there: naming an agent as a gate's operator
+   is an answer, leaving a gate unnamed is not.
 3. **`docs/`** — read `docs/writrun-instructions.md`. Keep the docs you
-   already have. Any shape counts.
+   already have. Any shape counts. Three documents are required of you:
+   an About file, a product doc and a technical doc — real ones, not a
+   table of chapters you plan to write.
 4. **`work/`** starts empty. It fills through the flow.
 5. **Stage 2 and up** need the forge configured — Actions permissions,
    squash merges, the ruleset. WritRun's

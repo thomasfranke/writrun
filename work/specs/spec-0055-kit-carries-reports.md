@@ -171,8 +171,9 @@ does — and `.writrun/README.md` now says five skills and names the report
 shape beside task and spec. The root `README.md`'s skills row gained
 `writrun-check-front-matter`.
 
-`WRITRUN.md` is rewritten, 119 lines against the old 133, and the shape
-is the change: it opens by stating the project uses WritRun as its flow,
+`WRITRUN.md` is rewritten — 125 lines against the old 101, and longer in
+words too, so the promise of "fewer words" in Steps did not hold. The
+shape is what changed instead: it opens by stating the project uses WritRun as its flow,
 then answers what WritRun is (docs are the source; permanent and
 ephemeral never mix; a change closes its own loop; people decide and
 machines record), then how it works as five numbered steps with the
@@ -180,7 +181,8 @@ report and the re-approval as the two things off that line, then where
 things live, what the adopter decides, and the adoption checklist that
 ends by telling them to delete it.
 
-**The fact-by-fact read caught two omissions and they were restored**:
+**The fact-by-fact read caught two omissions and they were restored**
+— and review caught three more, below:
 the two remaining special flows (a blocked task naming its reason and
 needing a person to lift it; a pull request closed unmerged releasing
 everything, because nothing was ever reserved), and the template layering
@@ -199,18 +201,57 @@ nobody has on first read, and WritRun's own `distribution.md` holds it.
 **Two structural tests**, in `tests/unit/template/prose_names_what_the_kit_ships_test.sh`:
 every directory the kit ships under `template/work/` is named in its
 README, and every skill directory is named where an adopter reads
-(`.writrun/README.md` or `template/AGENTS.md`). A third case proves the
-guard bites, against a scratch tree that ships a folder its README never
-names — a case that cannot fail is not a guard.
+(`template/.writrun/README.md` or `template/AGENTS.md`). Four further
+cases prove the guard bites — a scratch tree shipping a folder its README
+never names, a `report/` that prose saying `reports/` does not account
+for, a tree that has moved out from under the test, and a parent that
+ships nothing — because a case that cannot fail is not a guard, and a
+comparison that reads nothing reports nothing.
 
-**Divergence from Steps, in the second test's reading.** The spec said
-the skills test reads `.writrun/README.md`. It reads either that file or
-`template/AGENTS.md`, because both are where an adopter meets a skill by
-name, and holding only the first would fail a kit that named every skill
-in the file agents actually read. The stricter form was rejected for
-being arbitrary rather than true.
+**Divergence from Steps and from one criterion, in the second test's
+reading.** The spec said the skills test reads `.writrun/README.md`, and
+a criterion below repeats it. It reads `template/.writrun/README.md` or
+`template/AGENTS.md` instead: both sides of the comparison are then the
+kit's, which is what the test claims to hold, and both files are where an
+adopter meets a skill by name. Today only `AGENTS.md` carries the names —
+the README speaks of "the five skills" without listing them — so that
+file is what the assertion currently rests on. The stricter form was
+rejected for being arbitrary rather than true, and the criterion is
+recorded here as unmet in its letter rather than quietly reread.
 
 The loop closed on both promised docs: `adoption.md` says the kit ships
 the folder while the minimum stays where it was, and `distribution.md`
 names `work/`'s three folders and records what the two tests hold — and
 why a check for absence was not the answer.
+
+**What review changed.** The first pass shipped a rewrite that lost three
+facts without naming them, a lead-in that miscounted its own list, a
+guard that could pass on reading nothing, and a paragraph in
+`distribution.md` claiming more than the guard holds. All four were
+fixed here:
+
+- `WRITRUN.md`'s "Two things that happen off this line" led a list of
+  three; restoring the blocked-task and closed-pull-request facts had
+  added the bullet and left the number behind. It says three, and the
+  finding bullet now also carries that the `tracked` route takes a
+  `report/` branch — the generator refuses it anywhere else from Stage 2,
+  and a person triaging from this file alone would have met the refusal
+  cold.
+- The adoption checklist had dropped two of Stage 1's own minimum bar:
+  that an About file is required, and that the four gates must end up
+  named in the adopter's `AGENTS.md`. Both are back, and the `.writrun/`
+  row points at the README that says which of it is WritRun's.
+- The test's `unnamed()` returned empty output for a directory that did
+  not exist, which its caller read as a pass — a renamed `template/work/`
+  would have turned both assertions permanently green. It now names a
+  missing or empty parent, matches on a word boundary rather than as a
+  substring, and reads the kit's own copy of `.writrun/README.md` rather
+  than the root's. Three cases were added to prove each.
+- `distribution.md` said the tests "bite the moment the kit gains
+  something its guide has not learned about". They hold names, not
+  counts, and the counting sentences — "the five skills" — are the other
+  half of what report-0012 found. The paragraph now says which half it
+  holds and why the other has no shipped counterpart to compare against.
+
+The Outcome's own line count was wrong too: the old file was 101 lines,
+not 133.
