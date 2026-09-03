@@ -1,10 +1,10 @@
 ---
 id: report-0016
-status: open
+status: authored
 task_ref: []
 doc_ref: technical/distribution.md#distribution
 created: 2026-09-03T13:13:38Z
-triaged: null
+triaged: 2026-09-03T20:18:25Z
 ---
 
 # The changelog's stated reader is the one copy that never gets it
@@ -35,3 +35,11 @@ worth stating; the second is one sentence.
 Observed while reviewing task-0040, which implements the cut faithfully.
 Nothing in `spec-0056` is wrong — it promises no doc change, and the
 sentence it implements was authored one change earlier.
+
+**Triage:** the second way out is the rule, and it is now authored —
+`technical/distribution.md#distribution` names the WritRun clone the file
+reaches, and states that the kit does not carry it. The first was
+weighed and rejected: shipping `CHANGELOG.md` into an adopter's checkout
+hands them a second history at their own root, a real cost, for a
+benefit the mirrored `.writrun/VERSION` stamp already partly covers. If
+a future `writ update` needs the file, that is the change that earns it.
