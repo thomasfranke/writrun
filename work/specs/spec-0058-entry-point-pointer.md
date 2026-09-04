@@ -1,7 +1,7 @@
 ---
 id: spec-0058
 task_ref: task-0042
-status: approved
+status: draft
 created: 2026-09-03T23:37:15Z
 ---
 
@@ -20,7 +20,7 @@ created: 2026-09-03T23:37:15Z
 
 The kit (`template/`), the mirrored `.writrun/` at this repository's
 root, this repository's own entry point where the new files would
-otherwise duplicate it, `docs/technical/distribution.md`, and the
+otherwise duplicate it, `docs/technical/distribution/kit.md`, and the
 template guards.
 
 Out of scope by name: a `writ update` command — none exists; this change
@@ -129,7 +129,7 @@ they are documented, not shipped.
       marker survives anywhere in the kit.
 - [ ] This repository's gates live in `.writrun/gates.md` and the root
       `AGENTS.md` names that address.
-- [ ] `distribution.md`, `WRITRUN.md` and `.writrun/README.md` describe
+- [ ] `distribution/kit.md`, `WRITRUN.md` and `.writrun/README.md` describe
       the shipped shape.
 - [ ] The three template guards pass; `preflight.sh` exits 0.
 
@@ -141,7 +141,7 @@ they are documented, not shipped.
 
 ## Proposed technical changes
 
-- `technical/distribution.md` — the graft paragraph becomes the
+- `technical/distribution/kit.md` — the graft paragraph becomes the
   pointer-and-ownership description; the collision list grows to three
   (`AGENTS.md` grafted, docs kept, `CLAUDE.md` kept); the kit inventory
   names the two new files and the exception `gates.md` shares with
