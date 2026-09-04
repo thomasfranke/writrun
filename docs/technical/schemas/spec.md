@@ -18,8 +18,9 @@ task's — four-digit id plus an extremely short subject slug, fixed at
 creation.
 
 The `draft → approved` transition is a gate, and **who operates it is an
-adopter decision, declared in `AGENTS.md`** — this methodology's own
-`AGENTS.md` requires a human. An agent never self-approves a spec unless the
+adopter decision, declared at the address the entry point carries or
+links** — this methodology's own answer, in `.writrun/gates.md`, requires
+a human. An agent never self-approves a spec unless the
 adopting project has explicitly written that policy down. `approved →
 implemented` is mechanical: it happens when the task completes and the
 Outcome section is filled.

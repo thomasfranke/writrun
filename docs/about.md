@@ -154,7 +154,8 @@ everything under `docs/` is the input tasks are created from.
    forcing everything through it cheapens what it's for.
 7. **Human gates are explicit, not implied.** The pipeline is automated by
    default, but every point where a human must approve — and there is at
-   least one — is named in `AGENTS.md`, never assumed.
+   least one — is named at the address the entry point carries or links,
+   never assumed.
 
 ## Personas
 
