@@ -15,6 +15,8 @@ check "a trailing --title is refused, not looped on" 1 "--title needs a summary"
   -- bounded 10 bash "$TAKE_TASK" task-001 --title
 check "a trailing --slug too" 1 "--slug needs words" \
   -- bounded 10 bash "$TAKE_TASK" task-001 --slug
+check "and a trailing --coauthor, which parses the same way" 1 "--coauthor needs a name" \
+  -- bounded 10 bash "$TAKE_TASK" task-001 --title "feat(ci): take it" --coauthor
 check "and the flags after it are not lost" 1 "--slug needs words" \
   -- bounded 10 bash "$TAKE_TASK" task-001 --title "feat(ci): take it" --slug
 no_branch_cut "no branch came out of any of them" "task/0001-mirror-lag"

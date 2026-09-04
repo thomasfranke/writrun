@@ -2,6 +2,9 @@
 # The summary is the agent's to write and the style is the adopter's to
 # declare. Refusing here costs a rerun; refusing at the door costs a pull
 # request already open under a title the project said it would not have.
+# What is refused is the summary alone — the tag is the script's — and
+# the refusal has to say so, or the example it prints reads as a verdict
+# on a tag the caller was never asked for.
 . "$(dirname "$0")/../../pipeline_lib.sh"
 
 take_setup
@@ -19,6 +22,14 @@ check "a type outside the vocabulary is refused" 1 "outside the vocabulary" \
   -- bash "$TAKE_TASK" task-001 --title "wip(ci): take it"
 check "a scope outside the vocabulary is refused" 1 "outside the vocabulary" \
   -- bash "$TAKE_TASK" task-001 --title "feat(banana): take it"
+# The summary is judged before the tag is prepended, and the example the
+# refusal prints carries no tag — so a title that already has one is
+# refused by an example that reads as "your tag is wrong" unless the
+# message says whose the tag is.
+check "a title already carrying the tag is refused" 1 "does not read as the declared" \
+  -- bash "$TAKE_TASK" task-001 --title "[TASK-0001] feat(ci): take it"
+check "and the refusal names the tag as the script's own" 1 "tag is this script's to prepend" \
+  -- bash "$TAKE_TASK" task-001 --title "[TASK-0001] feat(ci): take it"
 no_branch_cut "and none of them cut a branch" "task/0001-test-task-task"
 
 take_setup
