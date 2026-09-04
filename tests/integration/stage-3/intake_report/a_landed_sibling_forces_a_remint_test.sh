@@ -13,7 +13,10 @@ setup_intake
 
 # What the checkout cannot see: report-0001 lands on origin after the
 # clone, exactly as a report/ branch squash-merge would put it there.
-git clone -q "$WORK/origin.git" "$WORK/racer" 2>/dev/null
+# `-b main` because the bare origin's HEAD still names the machine's
+# default branch — a clone left to guess lands somewhere else and the
+# racer's push dies silently, and with it the race under test.
+git clone -q -b main "$WORK/origin.git" "$WORK/racer" 2>/dev/null
 (
   cd "$WORK/racer" || exit 1
   git config user.email r@example.com
@@ -35,6 +38,12 @@ EOF
   git commit -qm "queue: report-0001"
   git push -q origin main 2>/dev/null
 )
+
+# Loud when the fixture's own push failed — without this the race never
+# happens and every assertion below blames the wrong actor.
+check "the sibling really landed on origin first" 0 \
+  "report-0001-landed-first.md" \
+  -- authority ls-tree --name-only main:work/reports
 
 export ISSUE_TITLE="Raced and reminted"
 check "the intake yields the id and mints the next one" 0 \
