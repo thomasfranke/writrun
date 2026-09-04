@@ -124,6 +124,9 @@ never trusted to prose discipline.
 - When a queue field records what a forge event did — a merge, a pull
   request opening, closing, or changing draftness — the machinery shall
   write it after that event, and a person shall not write it by hand.
+- When a pull request carries more than one task, the machinery shall
+  apply each event's write to every task carried, in one commit — never
+  to the one its branch is named after alone.
 - When the recording commit of the merge that creates a task approves
   its every spec — or finds it references none — the machinery shall
   move the task `backlog → ready` in that same commit.

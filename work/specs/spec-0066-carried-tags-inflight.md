@@ -1,7 +1,7 @@
 ---
 id: spec-0066
 task_ref: task-0047
-status: approved
+status: implemented
 created: 2026-09-04T16:20:20Z
 ---
 
@@ -134,4 +134,56 @@ question actually being asked.
 
 ## Outcome
 
-_(fill after execution)_
+Built as planned, steps 1–6. `apply_pr_event.sh` sources `queue_lib.sh`
+and reads its carried set from `ql_carried_from_env`; the branch regex
+is gone. Every event's write runs once per carried task through a
+`flip_all` helper, and the close-without-merge arm loops the survivor
+query itself, one `gh pr list` per task. The `record` job of
+`writrun-progress.yml` now passes `PR_TITLE` beside `PR_HEAD_REF`, and
+`make template-sync` mirrored both files. `statuses.md`'s criteria gain
+the set. The sequence report-0022 saw half-recorded is the first case
+of the new `every_carried_task_moves_test.sh`.
+
+**The empty-carried message changed wording, and one existing case
+changed with it.** Step 2 asked for the no-op "phrased for the new
+question", so the guard now prints `head '...' and title '...' carry no
+task — nothing to record`. `a_foreign_branch_is_no_task_test.sh`
+asserted the old string and was updated. The spec's "existing
+single-task cases must pass unchanged" holds where it was aimed — no
+write for one task changed — and that case asserts the guard's wording,
+not a write.
+
+**A permanent doc now quotes a line the script no longer prints, and
+was deliberately left alone.**
+`docs/technical/distribution/checks.md` quotes the old message verbatim
+to make its point about a miswired workflow looking ordinary. The point
+survives the rewording exactly; the quote does not. Proposed technical
+changes says "none", and `check_deltas.sh` reports any `docs/` path
+outside the promise list as UNDECLARED, so honouring the promise and
+fixing the quote in this change are mutually exclusive. The promise
+won. The stale quote sits in that chapter's paragraph on the `PR_*`
+names, and it is a line of loop closure for a later change rather than
+a rule that is now wrong.
+
+**One shipped sentence went stale where a gate did allow the fix.**
+`writrun-check-task-state`'s SKILL.md warned that renaming a branch to
+`report/…` "stops recording a renamed branch's task at all" — true of
+the branch reader, false of this one. A skill is not a permanent doc in
+this vocabulary and no check reads it as one, so it was corrected to
+name both routes rather than left to mislead every session that loads
+it.
+
+**The survivor query still matches on head branch names only.** A pull
+request that carries a task by title tag alone is invisible to
+`--jq ... test("^task/0*N-")`, so it would not be found as a survivor
+for that task. Step 4 asked for the question to be asked per task, not
+for its reach to change, and widening it is a different question about
+a different reader — left where the spec left it.
+
+Two details the spec left to the build. Each flip is wrapped so a
+non-zero exit is reported and the tasks after it still move — the edge
+cases asked for that guarantee, and the flip's own exit-0 answers for
+an unresolvable id and a stale replay are a contract, not a reason to
+skip the guard. And `tests/pipeline_lib.sh` gained `task_field`: a
+multi-task run writes several files, and only the files say what each
+task became.

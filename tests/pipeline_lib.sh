@@ -310,6 +310,22 @@ ${7:-provenance: []}
 EOF
 }
 
+# task_field <name> <task-id> <field> <value> — one front-matter field of
+# one task, as the queue now holds it.
+#
+# The multi-task cases assert files rather than output: one run writes
+# several tasks, and only the file says what each of them became.
+task_field() {
+  local got
+  got=$(sed -n "s/^$3: *//p" "work/tasks/$2.md" | head -n1)
+  if [ "$got" = "$4" ]; then
+    printf 'ok    %s\n' "$1"; pass=$((pass + 1))
+  else
+    printf 'FAIL  %s\n      %s: %s is "%s", expected "%s"\n' "$1" "$2" "$3" "$got" "$4"
+    fail=$((fail + 1))
+  fi
+}
+
 # spec_file <id> <task> <status> [promised-path...]
 #
 # Every promised path lands in the section the schema puts it in — a
