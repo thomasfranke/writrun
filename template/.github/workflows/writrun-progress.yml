@@ -82,6 +82,9 @@ jobs:
           PR_AUTHOR: ${{ github.event.pull_request.user.login }}
           PR_DRAFT: ${{ github.event.pull_request.draft }}
           PR_MERGED: ${{ github.event.pull_request.merged }}
+          # The survivor query drops this pull request's own row from
+          # the open listing — a listing that lags may still show it.
+          PR_NUMBER: ${{ github.event.pull_request.number }}
           # pull_request_review carries its verdict here; every
           # pull_request_target event leaves it empty.
           REVIEW_STATE: ${{ github.event.review.state }}
