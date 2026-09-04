@@ -13,6 +13,7 @@ leaving a gate unnamed is not.
 | Task with empty `spec_ref` and insufficient brief | <!-- TODO — default: stop and ask for a spec --> |
 | Derived work, before the PR opens | <!-- TODO — default: present it in the session --> |
 | Changing repository/forge settings (Actions permissions, rulesets, merge methods) | <!-- TODO — default: the owner assents in session, per set of changes --> |
+| A report becomes a task (`tracked`) | <!-- TODO — default: the agent derives, the human assents through that change's own merge --> |
 | Everything else | Agent, autonomously. |
 
 **The forge row is not optional the way its answer is.** Repository

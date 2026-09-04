@@ -1,7 +1,12 @@
 # AGENTS.md — entry point for AI agents
 
-This repository is the methodology itself, and follows it. Read in order,
-stopping as soon as you have what the task needs:
+This repository is the methodology itself, and follows it. This file
+governs work here. [`.writrun/AGENTS.md`](.writrun/AGENTS.md) is the flow
+the kit ships to adopting projects, held byte-identical to `template/` by
+the mirror — read it as the artifact this repository maintains, never as
+instructions for this repository.
+
+Read in order, stopping as soon as you have what the task needs:
 
 0. The settings this session obeys — run the card, never the conventions,
    for a value:

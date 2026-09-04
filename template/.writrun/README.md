@@ -4,9 +4,9 @@ Everything WritRun ships that is WritRun's own to place lives here, so
 provenance is never in doubt. What the platform dictates stays where the
 platform demands — the four `writrun-*.yml` workflows in
 `.github/workflows/` (GitHub runs them nowhere else), the four-line
-pointer in the root `AGENTS.md` (agents look for it there, and it is
-all WritRun claims of that file) — and each of those declares in its
-own header that WritRun shipped it.
+pointer WritRun grafts into the adopting project's root `AGENTS.md`
+(agents look for it there, and it is all WritRun claims of that file) —
+and each of those declares in its own header that WritRun shipped it.
 
 | | Owned by | `writ update` |
 |---|---|---|

@@ -3,7 +3,8 @@
 This file is WritRun's: `writ update` replaces it whole, and hand edits
 here do not survive a refresh. The project's own answers — who approves
 what — live in [`gates.md`](gates.md), which no update touches. Humans:
-read `WRITRUN.md` at the repository root instead.
+this file is written for agents; the guide written for you travels with
+the kit as `WRITRUN.md`.
 
 ## Picking work
 
@@ -31,6 +32,14 @@ reaches the forge, and the draft is the event the machinery answers by
 writing `in-progress` and your login onto the queue. Never write the
 task's status line yourself; it has one writer, and it is not you. Mark
 the pull request ready for review when the work is done.
+
+From Stage 2 that whole act is one command — the eligibility re-checked,
+the branch cut from a fresh `origin/main`, pushed, and the draft opened:
+
+```bash
+bash .writrun/scripts/stage-2-pull-requests/take_task.sh NNNN \
+  --title "<summary>"
+```
 
 **The push and the opening are one act.** Under `stage_2.auto_push` or
 `stage_2.auto_pr` set to `false`, compose the branch name, the title and
@@ -83,12 +92,19 @@ is [`gates.md`](gates.md)'s to say.
 
 ## Completing a task
 
-1. Implement against the approved spec.
+1. Implement against the approved spec — never from the task's title.
+   The title names the act; the spec and the anchors it references are
+   the brief.
 2. Update every permanent doc listed in the spec's **Proposed changes** —
    in the same change; touch nothing permanent that isn't listed.
-3. Run `writrun-check-spec-deltas` (exit 0), fill the spec's **Outcome**,
-   set the spec to `implemented`, run `writrun-check-task-state` (exit 0),
-   and mark the pull request ready for review.
+3. Fill the spec's **Outcome**, set the spec to `implemented`, then run
+   preflight — `writrun-check-front-matter`, `writrun-check-spec-deltas`
+   and `writrun-check-task-state`, in the one order they must run, which
+   is CI's own — and mark the pull request ready on nothing else:
+
+   ```bash
+   bash .writrun/scripts/stage-1-tasks-and-specs/preflight.sh
+   ```
 
 **The task's status line is not yours to write.** From Stage 2 the
 machinery owns it: the draft pull request makes the task `in-progress`,
