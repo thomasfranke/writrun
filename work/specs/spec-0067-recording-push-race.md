@@ -28,13 +28,14 @@ the push both recording workflows make once their commit is composed.
 - The shared piece becomes one script. The `record` job's own header
   states the rule — every step's logic lives in `.writrun/scripts/`,
   where the integration tier executes it, and YAML wires events onto
-  scripts — and a budget, a wait and an abort are logic. Two workflows
+  scripts — and a budget, a retry test and an abort are logic. Two workflows
   carrying the same loop are two loops that agree until one is edited.
 
 Out: `intake_report.sh`, which already loops and is already bounded at
-three. Its retry re-mints the id before it pushes again, so attempt two
-carries different content from attempt one; a helper that only pushes
-again would take away the thing that makes that loop correct.
+three. Its retry is not a replay: each attempt re-checks whether the
+commit that won the race claimed the id it minted, and re-mints when it
+did — the content may change between attempts, and a helper that only
+pushes a fixed commit again has no place for that check.
 
 Out: `.github/scripts/readiness_heal.sh`, which pushes to `main` with the
 same pattern. It is this repository's own CI, never shipped, and its loss
@@ -83,24 +84,29 @@ answers were weighed:
   unchanged; what it gains is a second reading of a branch that does not
   stop changing while three runs are writing to it.
 
-**The budget is three attempts, and it is not a new number.**
-`intake_report.sh` bounds the same race at three and
-`reporting/intake.md` states the bound; a second number here would be a
-second answer to one question. Three is also what the incident asks for:
-three runs contending means at most two commits can land ahead of any one
-of them, so three attempts survive that burst even when every sibling
-wins its turn. The budget belongs to the run rather than to each
-obstacle — one fetch and one push per attempt, three of each at worst.
+**The budget is five attempts, sized by the largest burst practice has
+produced.** The incident was three runs; the biggest batch this
+repository has assembled is five — the five drafts a five-task batch
+opens seconds apart, the pile #184 routed at once. The worst-placed of
+five runs can lose four races before its turn, so five attempts survive
+that burst even when every sibling wins its turn. `intake_report.sh`
+keeps its own bound of three, and the two numbers are not a fork of one
+answer: an attempt here is spent only on proof a sibling landed, where
+intake's attempts are unconditional. The budget belongs to the run
+rather than to each obstacle — one fetch and one push per attempt, five
+of each at worst.
 
-**The retry waits, where intake's does not, and the difference is the
-content.** Intake's second attempt mints a new id, so it cannot collide
-in the same way twice. This one replays the same commit, so it must not
-re-enter the window it just lost: two runs that both lost to a third
-would otherwise rebase and push in lockstep and one would lose the
-identical collision again, spending an attempt on nothing. The wait sits
-before a retry and never before the first push, so the common path — the
-overwhelming majority of recordings, which contend with nobody — pays
-none of it.
+**The retry neither waits nor reads stderr.** A retry is earned by the
+branch having moved: the fetch that opens the next attempt shows whether
+the tip left the commit the refused push was rebased onto, and an
+unmoved tip means the refusal was never a race. That is the one
+version-proof fact — git and the forge word a protected branch, a
+revoked token and a required check differently across versions, and
+parsing the words misreads one of them eventually. And no attempt
+sleeps: every retry spent is a sibling's recording landing, so the loop
+only loses while the queue advances, and a wait knob here would be a
+second wait grammar beside `WRITRUN_MIRROR_REFRESH_WAIT` with no
+measurement to size it.
 
 ## Steps
 
@@ -108,25 +114,28 @@ none of it.
    <branch>`: it takes a repository already carrying the recording commit
    and lands it. The caller composes and commits; this script only makes
    the commit reach the branch. Refuse a dirty working tree and refuse a
-   `HEAD` with nothing ahead of the fetched remote branch — a caller that
-   has not committed must hear so, not watch a no-op report success. A
+   `HEAD` with nothing ahead of the remote-tracking ref the checkout
+   already carries — a caller that has not committed must hear so, not
+   watch a no-op report success, and the guard fetches nothing: the
+   loop's own first pull is the one fetch an attempt pays. A
    range git cannot answer is a refusal too, the posture `take_task.sh`
    already takes.
-2. The loop: three attempts. Each opens with
+2. The loop: five attempts. Each opens with
    `git pull --rebase origin "$BRANCH"`, so every attempt is rebased onto
    the branch as it then stands, and closes with
    `git push origin "HEAD:${BRANCH}"`. No `--force` and no
    `--force-with-lease`, on any attempt.
-3. A conflicting rebase aborts back to the recording commit and fails at
+3. A retry is earned, never assumed: a refused push buys the next attempt
+   only when that attempt's fetch shows the branch moved past the commit
+   the refusal was rebased onto. Unmoved, the run fails at once naming
+   the branch as unmoved, spending none of the remaining attempts — the
+   refusal was no race, and no stderr is read to say so.
+4. A conflicting rebase aborts back to the recording commit and fails at
    once, spending none of the remaining attempts: the same commit meets
    the same conflict, and the tree must not be left carrying markers in
    the queue files the projection reads from disk.
    `writrun-approve.yml` carries this abort inline today and
    `writrun-progress.yml` carries none — the helper gives both.
-4. Wait before each retry, and wait longer before the second retry than
-   before the first — one second, then two. Read the base from
-   `WRITRUN_PUSH_RETRY_WAIT` so the suite spends no seconds, the name and
-   the reason `WRITRUN_MIRROR_REFRESH_WAIT` already established.
 5. Exhaust the budget and exit non-zero, naming the branch, the attempts
    spent, and the recovery: re-running the job re-derives the same write
    from the same event against `main` as it then stands.
@@ -142,11 +151,12 @@ none of it.
 
 - When the recording's push is refused because the authority branch
   moved, the system shall rebase onto that branch as it then stands and
-  push again, to a bound of three attempts in one run.
-- When an attempt is refused, the system shall wait before the next one,
-  and shall wait longer before the third attempt than before the second.
-- When the first attempt succeeds, the system shall have pushed once and
-  waited not at all.
+  push again, to a bound of five attempts in one run.
+- When a push is refused and the branch has not moved past the commit
+  the refusal was rebased onto, the system shall fail at once naming the
+  branch as unmoved, and shall spend none of the remaining attempts.
+- When the first attempt succeeds, the system shall have fetched once
+  and pushed once.
 - When a rebase leaves conflicts, the system shall abort back to the
   recording commit, exit non-zero, and spend none of the remaining
   attempts.
@@ -163,18 +173,26 @@ none of it.
 ## Edge cases
 
 - **A push refused for a reason that is not a race** — a protected
-  branch, a revoked token, a required check on `main`. The budget is
-  spent on a refusal that could never succeed, at a cost of three seconds
-  and three round trips. Telling the two apart means reading git's stderr
-  text, which differs by version and by forge; misreading a race as
-  permanent loses a recording, and misreading a permanent refusal as a
-  race costs seconds. The retry is unconditional, and the message says
-  how many attempts it spent so the log distinguishes them by eye.
+  branch, a revoked token, a required check on `main`. None of these
+  moves the branch, so the next attempt's fetch finds the tip where the
+  refusal left it and the run fails after one push and one extra fetch.
+  A permanent refusal that happens to overlap a sibling's landing spends
+  the budget and ends in the exhausted-budget message instead — either
+  way the log separates the two by eye, unmoved against attempts spent.
 - **A rebase that conflicts.** Two events touching one task's status line
   — an `opened` and a `ready_for_review` seconds apart. The step fails,
   loudly, over a clean tree and an unaltered recording commit. That is
   strictly better than today and it is not resolved here: resolving it is
-  re-deriving the write, which Scope puts out.
+  re-deriving the write, which Scope puts out — and which nothing yet
+  tracks. Report-0023's only task is this spec's own, so the class "a
+  queue left wrong until a person reads a red run" stays open past this
+  spec, named here rather than implied closed; closing it needs a report
+  of its own.
+- **Two runs that both lost to a third retry in lockstep.** One wins;
+  the other loses again — to the winner, whose landing is the branch
+  moving, which earns the next attempt. Lockstep spends attempts one
+  landed sibling at a time, and the budget is sized to the siblings a
+  batch can produce, so no wait is needed to break it.
 - **The `reflect` job runs after a failed recording.** It is gated on
   `!cancelled()`, so the projection still runs and reads the file the
   recording could not change. The mirror stays faithful to the queue,
@@ -189,29 +207,30 @@ none of it.
 - **A re-run of a job whose recording did land.** The write is
   re-derived, committed, and dropped by the rebase as already applied.
   Exit 0, and `main` carries it once.
-- **`WRITRUN_PUSH_RETRY_WAIT` set to something that is not a number.**
-  Held to digits before it reaches `sleep`; an unreadable value must not
-  become an unbounded wait inside a workflow, and failing closed on it is
-  the same posture as the unanswerable range in step 1.
 
 ## Tests required
 
 - An integration fixture beside the intake's — a bare `origin`, a clone
   shaped like the workflow's checkout, and a racer clone that lands
-  commits on `origin`. `tests/intake_lib.sh` already builds all three;
-  the pieces are worth sharing rather than copying.
+  commits on `origin`. `tests/intake_lib.sh` already builds the first
+  two; the racer clone lives inline in
+  `a_landed_sibling_forces_a_remint_test.sh` today, and it is hoisted
+  into the lib rather than copied out of a test a second time.
 - The window is made deterministic by a `pre-push` hook in the clone,
   never by timing: the hook lands the racer's commit on `origin` and lets
   the push proceed, so the push meets a branch that moved *after* the
   rebase — the refusal report-0023 recorded, reproduced without a sleep
   and without a flake.
-- A case with no hook: one push, the recording on `origin/main`, and no
-  wait spent.
+- A case with no hook: one push, one fetch, the recording on
+  `origin/main`.
 - A case whose hook fires once: two pushes, the recording on
   `origin/main`, and the racer's commit still there — the rebase added,
   it did not replace.
-- A case whose hook fires every time: exactly three pushes, exit
-  non-zero, and the message naming the branch.
+- A case whose hook fires every time: exactly five pushes, exit
+  non-zero, and the message naming the branch and the attempts spent.
+- A case whose `origin` refuses the push with the branch unmoved — a
+  `pre-receive` hook that exits non-zero and lands nothing: one push,
+  immediate non-zero exit, and the message naming the branch as unmoved.
 - A case where the racer writes the same lines: exit non-zero, one push
   at most, `git status --porcelain` empty and `HEAD` still the recording
   commit.
@@ -241,7 +260,7 @@ and confirmed afterwards by the same last line.
       `push_recording.sh`, and neither carries a rebase or a push of its
       own.
 - [ ] A push refused because the branch moved is rebased and retried, to
-      a bound of three.
+      a bound of five; one refused with the branch unmoved fails at once.
 - [ ] A conflicting rebase aborts, fails, and leaves a clean tree.
 - [ ] An exhausted budget exits non-zero and names the branch and the
       attempts spent.
@@ -273,7 +292,7 @@ and confirmed afterwards by the same last line.
   describes how a queue recording reaches the authority branch; the
   pattern is documented where it runs, in the script headers and the
   workflow comments, and `push_recording.sh`'s header is where this
-  one's budget, wait and abort belong. `technical/reporting/intake.md`
+  one's budget, retry test and abort belong. `technical/reporting/intake.md`
   and `technical/distribution/kit.md` each name "the rebase-not-force
   pattern the queue recording uses", and both stay true — the pattern is
   unchanged, only the number of times it is attempted.
