@@ -64,8 +64,13 @@ Taking ends with the **draft pull request open**, not the branch created
 
 ```bash
 bash .writrun/scripts/stage-2-pull-requests/take_task.sh 0034 \
-  --title "[Type][Scope] What this change does"
+  --title "[Type][Scope] What this change does" \
+  --coauthor "Model Name <address>"
 ```
+
+`--coauthor` names the model, and an agent owes it: the act's first
+commit sits in the pull request's range like any other, and
+`agent_coauthor` is `true` here. A take without it is a take by a person.
 
 ## Completing a task
 

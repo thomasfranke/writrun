@@ -34,18 +34,27 @@ task's status line yourself; it has one writer, and it is not you. Mark
 the pull request ready for review when the work is done.
 
 From Stage 2 that whole act is one command — the eligibility re-checked,
-the branch cut from a fresh `origin/main`, pushed, and the draft opened:
+the branch cut from a fresh `origin/main`, given its first commit,
+pushed, and the draft opened:
 
 ```bash
 bash .writrun/scripts/stage-2-pull-requests/take_task.sh NNNN \
-  --title "<summary>"
+  --title "<summary>" \
+  --coauthor "Model Name <address>"
 ```
 
-**The push and the opening are one act.** Under `stage_2.auto_push` or
-`stage_2.auto_pr` set to `false`, compose the branch name, the title and
-the body, present them together, and put nothing on the forge before an
-explicit yes — the gate is about work becoming public, so it holds the
-whole moment rather than its second half.
+`--coauthor` writes the `Co-Authored-By:` trailer onto that first commit.
+Where `stage_2.agent_coauthor` is `true` an agent owes it — the commit
+sits in the pull request's range like any other — and where it is
+`false` the flag is refused. Who is running the script is the one thing
+the script cannot read, so the name is given rather than guessed at.
+
+**The commit, the push and the opening are one act.** Under
+`stage_2.auto_commit`, `stage_2.auto_push` or `stage_2.auto_pr` set to
+`false`, compose the branch name, the first commit's message, the title
+and the body, present them together, and put nothing on the forge and
+nothing in the repository before an explicit yes — the gate is about work
+becoming public, so it holds the whole moment rather than its last half.
 
 ## Recording what you noticed
 
