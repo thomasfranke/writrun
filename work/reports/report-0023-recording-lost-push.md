@@ -1,13 +1,15 @@
 ---
 id: report-0023
-status: open
-task_ref: []
+status: tracked
+task_ref: [task-0048]
 doc_ref: null
 created: 2026-09-04T17:08:58Z
-triaged: null
+triaged: 2026-09-04T18:30:49Z
 ---
 
 # The recording commit is pushed once, and a concurrent recording loses it
+
+**References:** [task-0048](../tasks/task-0048-recording-push-race.md)
 
 Three draft pull requests were opened seconds apart — #173, #174, #175,
 for task-0045, task-0046 and task-0047. Two tasks moved to

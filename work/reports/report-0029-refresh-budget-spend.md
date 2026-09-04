@@ -1,15 +1,15 @@
 ---
 id: report-0029
-status: open
-task_ref: []
+status: tracked
+task_ref: [task-0051]
 doc_ref: product/stage-3-github-issues/labels.md#criteria
 created: 2026-09-04T17:59:56Z
-triaged: null
+triaged: 2026-09-04T18:30:54Z
 ---
 
 # The re-read budget is spent on ids whose absence is already the answer
 
-**References:** [product/stage-3-github-issues/labels.md#criteria](../../docs/product/stage-3-github-issues/labels.md#criteria)
+**References:** [product/stage-3-github-issues/labels.md#criteria](../../docs/product/stage-3-github-issues/labels.md#criteria) · [task-0051](../tasks/task-0051-refresh-budget-spend.md)
 
 task-0046 makes `rederive_labels.sh` re-read the mirror list when a
 lookup misses, on the reasoning that a miss is not a conclusion: the
