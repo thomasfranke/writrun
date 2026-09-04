@@ -1,13 +1,15 @@
 ---
 id: report-0021
-status: open
-task_ref: []
+status: tracked
+task_ref: [task-0046]
 doc_ref: null
 created: 2026-09-04T14:47:24Z
-triaged: null
+triaged: 2026-09-04T15:22:24Z
 ---
 
 # rederive_labels.sh misses mirrors minted seconds earlier in the same job
+
+**References:** [task-0046](../tasks/task-0046-rederive-snapshot.md)
 
 Issue #161, opened by @thomasfranke.
 
