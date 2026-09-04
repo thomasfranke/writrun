@@ -1,7 +1,7 @@
 ---
 id: spec-0064
 task_ref: task-0045
-status: approved
+status: implemented
 created: 2026-09-04T15:18:28Z
 ---
 
@@ -136,4 +136,50 @@ Three candidates were weighed:
 
 ## Outcome
 
-_(fill after execution)_
+Built as planned, steps 1–6. `take_task.sh` commits between the switch
+and the push — `git commit --allow-empty`, subject
+`chore(tasks): take task-NNNN` — guarded on
+`git rev-list --count origin/main..HEAD` being zero, so a resumed take
+that already committed is pushed as it stands. The `--title` refusal
+gained a line naming the leading `[TASK-NNNN]` tag as the script's to
+prepend, above the example it already printed. `template/` is synced and
+`take-task.md` carries a new subsection, *The first commit, and why it
+is empty*, holding what it is, that the squash-merge discards it, why it
+writes neither the status line nor a ledger entry, and that it is made
+once.
+
+**Step 3 needed an interface the spec did not name, and got one.** The
+trailer has to name the model, and the model is the one thing the script
+cannot read: an agent commits under the same name and address as the
+person who ran it, and no environment variable carries the model. So the
+name is given — `--coauthor "Name <address>"` — rather than inferred.
+Where `stage_2.agent_coauthor` is `false` the flag is refused, which is
+the other direction `check_observance.sh` reads. Where it is `true` and
+no `--coauthor` is given, the commit carries no trailer and the run says
+so in two lines, because a person taking a task owes none and a silent
+omission is what an agent would ship. `resume_command()` carries the flag
+too, on the same reasoning that already put `--slug` and `--confirm`
+there: the printed rerun performs the act that was interrupted.
+
+**One consequence not closed here.** Neither `AGENTS.md` take example
+passes `--coauthor` — this repository's, nor the kit's in
+`.writrun/AGENTS.md` — so an agent following either gets an untrailered
+first commit, and the printed reminder rather than silence. Correcting
+them is a permanent-doc edit this spec's Proposed changes does not list,
+so it is left to a change that declares it.
+
+Two smaller divergences. `--resume` on a branch cut but never committed
+now commits, which is step 2's guard read literally and a slight widening
+of what the resume does; the case is covered. And
+`the_act_is_one_motion_test.sh`'s "cut from `origin/main`" assertion had
+to move from `HEAD` to `HEAD^`, since the tip is now the first commit.
+
+Tests: the Tests required list's fourth item asks the `gh`-stubbed
+integration tier to reach `gh pr create`. That tier is
+`tests/unit/take_task/`, which stubs only `gh` and runs real git against
+a real bare remote — there is no take_task directory under
+`tests/integration/` — so the end-to-end assertion sits in the new
+`the_first_commit_opens_the_draft_test.sh` beside it, together with the
+fresh-path, credit and resume cases. The refusal-text case went into the
+existing `the_title_is_held_to_the_style_test.sh`, which already owns
+that refusal.

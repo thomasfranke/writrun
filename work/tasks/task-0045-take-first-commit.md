@@ -11,9 +11,10 @@ depends_on: []
 milestone: null
 created: 2026-09-04T15:18:22Z
 queued: 2026-09-04T16:30:05Z
-completed: null
+completed: 2026-09-04T16:51:55Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-opus-5, login: thomasfranke}
 ---
 
 # Give the take its first commit, so the draft pull request can open
