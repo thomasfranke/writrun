@@ -1,15 +1,15 @@
 ---
 id: report-0024
-status: open
+status: fixed
 task_ref: []
-doc_ref: technical/distribution/checks.md
+doc_ref: technical/distribution/checks.md#running-the-checks
 created: 2026-09-04T17:09:01Z
-triaged: null
+triaged: 2026-09-04T18:40:00Z
 ---
 
 # checks.md quotes a no-op line apply_pr_event.sh no longer prints
 
-**References:** [technical/distribution/checks.md](../../docs/technical/distribution/checks.md)
+**References:** [technical/distribution/checks.md#running-the-checks](../../docs/technical/distribution/checks.md#running-the-checks)
 
 `distribution/checks.md` quotes a line `apply_pr_event.sh` prints, to
 make a point about a miswired workflow being indistinguishable from an
@@ -30,3 +30,8 @@ Noticed while implementing task-0047, and left alone deliberately:
 spec-0066 promises no technical delta, and `check_deltas.sh` refuses any
 unpromised path under `docs/`, so the promise and the fix could not both
 be honoured in that change. The promise won.
+
+Fixed once task-0047 had merged, in a change of its own. The quote is
+the current line, and the paragraph gains the consequence of the wider
+guard: two names rather than one is a wider way to be miswired, since
+the step goes quiet if either is copied wrong.

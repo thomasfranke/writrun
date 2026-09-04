@@ -51,8 +51,11 @@ the skip costs is the name check, which on an attached HEAD is worse
 than absent — it judges rule K against whatever the runner happens to
 sit on, and a `main` or `pr-NNN` checkout reads a `work/`-only
 `tracked` flip as legitimate. `apply_pr_event.sh` has no fallback
-to reach for: an unset `PR_HEAD_REF` exits 0 printing `head '' names no
-task branch — nothing to record`, the line every pull request that is not
-a task branch legitimately prints, so a miswired `writrun-progress.yml`
-stops recording the task lifecycle and looks ordinary doing it.
+to reach for: with neither `PR_HEAD_REF` nor `PR_TITLE` set it exits 0
+printing `head '' and title '' carry no task — nothing to record`, the
+line every pull request carrying no task legitimately prints, so a
+miswired `writrun-progress.yml` stops recording the task lifecycle and
+looks ordinary doing it. Two names rather than one is a wider way to be
+miswired, not a narrower one: the step goes quiet if *either* is copied
+wrong, and says the same ordinary thing.
 
