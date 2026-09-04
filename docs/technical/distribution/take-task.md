@@ -9,7 +9,8 @@ and the draft pull request opening — and a script is what keeps them one:
 
 ```bash
 bash .writrun/scripts/stage-2-pull-requests/take_task.sh <task-id> \
-  --title "<summary>" [--slug words] [--resume] [--confirm]
+  --title "<summary>" [--slug words] [--coauthor "Name <address>"] \
+  [--resume] [--confirm]
 ```
 
 It refuses a dirty tree, fetches `origin main`, and re-applies selection
@@ -19,7 +20,9 @@ nothing: the branch `task/NNNN-<slug>`, defaulting to the slug the
 filename already carries; the title, its `[TASK-NNNN]` tag prepended and
 the given summary read against `stage_2.pr_title_style` and the two
 vocabularies with the same grammar `check_observance.sh` applies — an
-invalid summary refuses here, before anything exists; and the body from
+invalid summary refuses here, before anything exists, and the refusal
+names the tag as the script's to prepend, because what it judged was the
+summary alone; and the body from
 `.writrun/templates/pull_request_template.md`, implementing half kept,
 `Implements spec-…` filled from `spec_ref`.
 
@@ -38,9 +41,10 @@ untouched (**3**). Then the same two reads `list_tasks.sh` makes: an open
 pull request carrying this task refuses the take (resuming is not
 taking), and an open pull request carrying **no** task id that touches one
 of the task's specs suspends it, named. Only then is the branch cut from
-`origin/main`, pushed, and the draft opened. A forge failure *after* the
-cut also exits 3, naming the branch kept local and `--resume`, which
-finishes the act — push and pull request only, never a second branch.
+`origin/main`, given its first commit, pushed, and the draft opened. A
+forge failure *after* the cut also exits 3, naming the branch kept local
+and `--resume`, which finishes the act — push and pull request only,
+never a second branch and never a second commit.
 That carve-out is narrow on purpose: a local branch that never reached
 the forge is the leftover of an interrupted take; a branch that exists
 anywhere else is a refusal.
@@ -49,6 +53,40 @@ Exit codes: **0** taken; **1** a refusal, with nothing created; **2**
 composed and waiting on the word; **3** git or the forge failed. It
 writes no queue file — the status line has one writer, and it is the
 machinery answering the draft this opens.
+
+### The first commit, and why it is empty
+
+A branch identical to `origin/main` has no commits between the two, and
+the forge refuses a pull request over nothing. So the push has to carry
+something, and the take makes it: one commit on the new branch, before
+the push, under the subject `chore(tasks): take task-NNNN`.
+
+**It is empty, and that is the record.** The take produced no content,
+and a commit with no diff is the honest account of that. The squash-merge
+discards it, so nothing of it reaches `main`.
+
+What it does *not* carry is a queue write. The status line has one
+writer, and it is the machinery answering this draft
+([statuses](../../product/stage-2-pull-requests/statuses.md)); a take
+that stamped the task file would be the second writer on that line. Nor
+does it open a provenance entry: the ledger is the one machine field a
+branch writes, and only by appending, so an entry opened before any work
+exists could never be filled in
+([provenance](../../product/concepts/provenance.md)).
+
+`--coauthor "Name <address>"` is what puts a `Co-Authored-By:` trailer on
+it. Who ran the script is the one thing the script cannot read — an agent
+commits under the same name and address as the person who ran it — so the
+name is given rather than guessed at, and a take with no `--coauthor` is
+a take by a person. Where `stage_2.agent_coauthor` is `false` the flag is
+refused outright: this commit sits in the pull request's range like any
+other, and the flag is read in both directions
+([`settings/conduct.md`](../settings/conduct.md#agent_coauthor)).
+
+**It is made once.** The guard is the range and not the `--resume` flag:
+a branch already carrying a commit over `origin/main` is pushed as it
+stands, and one interrupted before it committed is given the commit it
+never got. What makes a second one wrong is that one is already there.
 
 ### By hand, and what the two flags change
 
