@@ -3,7 +3,7 @@ id: task-0051
 status: ready
 blocked_reason: null
 taken_by: null
-spec_ref: []
+spec_ref: [spec-0070]
 doc_ref: product/stage-3-github-issues/labels.md#criteria
 origin: report
 priority: medium
@@ -18,7 +18,7 @@ provenance: []
 
 # Spend the re-read budget only where a miss can be staleness
 
-**References:** [product/stage-3-github-issues/labels.md#criteria](../../docs/product/stage-3-github-issues/labels.md#criteria)
+**References:** [product/stage-3-github-issues/labels.md#criteria](../../docs/product/stage-3-github-issues/labels.md#criteria) · [spec-0070](../specs/spec-0070-refresh-budget-spend.md)
 
 `rederive_labels.sh` re-reads the mirror list when a lookup misses,
 because the job that reads the list may have minted the mirror after
