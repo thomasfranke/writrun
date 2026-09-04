@@ -11,9 +11,10 @@ depends_on: []
 milestone: null
 created: 2026-09-04T16:20:11Z
 queued: 2026-09-04T16:38:34Z
-completed: null
+completed: 2026-09-04T16:51:36Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-opus-5, login: thomasfranke}
 ---
 
 # Move every task the pull request carries, not only the branch's

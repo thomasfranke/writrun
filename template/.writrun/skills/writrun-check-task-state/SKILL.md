@@ -60,9 +60,9 @@ the ordered form of that rule and the way to run all three gates.
   `report/…`. It no longer clears the check — rule K reads what the
   change carries as well as what it is called, and an implementing
   change carries code whatever its branch is named. What the rename
-  still costs is the ride it was taken for: `apply_pr_event.sh`
-  recognises `task/NNNN-…` and stops recording a renamed branch's task
-  at all. Move the report, the task and the spec to a change of their
-  own.
+  still costs is the ride it was taken for: `apply_pr_event.sh` records
+  every task the branch or the title names, so a rename that also drops
+  the `[TASK-NNNN]` tag stops recording the task at all. Move the
+  report, the task and the spec to a change of their own.
 - Never skip it because the change touched no code. A change that only
   edits front matter is exactly what it is for.
