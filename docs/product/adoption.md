@@ -183,10 +183,12 @@ in **WritRun's own home**,
 `.writrun/skills/`, never mixed into the project's skill folder. A project
 that keeps its own repo-maintenance skills (swoop's `swoop-git-workflow`
 and `swoop-pr-writer` are the real example, in its `.ai/skills/`) keeps
-them exactly where they are: the two sets never share a directory, both
-are activated only through the project's own `AGENTS.md` trigger table,
-and every WritRun skill carries the `writrun-` prefix besides — provenance
-is unmissable at the path *and* at the name.
+them exactly where they are: the two sets never share a directory,
+neither set is auto-discovered — the project's own trigger table
+activates its skills, and `.writrun/AGENTS.md` names WritRun's, which is
+what the entry point's pointer reaches — and every WritRun skill carries
+the `writrun-` prefix besides — provenance is unmissable at the path
+*and* at the name.
 
 ## Criteria
 

@@ -84,11 +84,13 @@ curation stays human. Understanding the codebase stops being the price of
 helping.
 
 **And the footprint is deliberately small.** Adoption adds one
-provenanced home (`.writrun/` — skills, scripts, templates, your
-conventions), the queue (`work/`), four workflows where GitHub demands
-them, and one fenced section grafted into your `AGENTS.md`. Nothing of
-yours is touched: your docs keep their shape, your skills folder stays
-yours, your PR template is never overwritten.
+provenanced home (`.writrun/` — the agent flow, skills, scripts,
+templates, your conventions and your gates), the queue (`work/`), four
+workflows where GitHub demands them, a four-line pointer in your
+`AGENTS.md`, and a one-line `CLAUDE.md` for Claude Code if you have none.
+Nothing of yours is touched: your docs keep their shape, your skills
+folder stays yours, your PR template is never overwritten, and an
+`AGENTS.md` you already have keeps everything it said.
 
 WritRun makes one split structural and non-negotiable — **nature**:
 permanent state lives in `docs/`, work in progress lives in `work/`, so
@@ -224,7 +226,8 @@ Local tooling — the scripts' only dependencies:
    not left to whoever remembers.
 6. **Trivial work stays out of the system.** A typo is a commit, not a task.
 7. **Human gates are explicit, not implied.** Every point where a human must
-   approve is named in `AGENTS.md`, never assumed.
+   approve is named at the address your entry point carries or links —
+   `.writrun/gates.md` in the kit — never assumed.
 
 Full pitch, personas, and non-goals in [`docs/about.md`](docs/about.md).
 

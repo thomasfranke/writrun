@@ -14,7 +14,8 @@ a shortcut.
 - **draft** — written, typically by an agent, for an existing task. Nothing
   in draft status may be treated as authorized to implement yet.
 - **approved** — the gate. Who operates it is an adopter decision, stated
-  explicitly in that project's `AGENTS.md`; this methodology's own default
+  explicitly at the address that project's entry point carries or links
+  (the kit's is `.writrun/gates.md`); this methodology's own default
   is that only a human moves a spec from draft to approved. An agent never
   self-approves, even when it also wrote the draft. **Content under an
   approval never changes silently**: when an approved spec must change —

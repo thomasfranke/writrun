@@ -1,9 +1,12 @@
 # Human gates
 
-Four checkpoints are named, not implied. An adopting project states, in
-its own `AGENTS.md`, who operates each one — but every adopting project
-must name all four somewhere, even if the answer for one of them is "an
-agent, autonomously":
+Four checkpoints are named, not implied. An adopting project states who
+operates each one at the address its entry point carries or links ([the
+entry point is the project's](../adoption.md#the-entry-point-is-the-projects))
+— the kit's address is `.writrun/gates.md`, and a project that names them
+in its own `AGENTS.md` instead satisfies this the same way. Every
+adopting project must name all four somewhere, even if the answer for one
+of them is "an agent, autonomously":
 
 - **Changing a permanent doc** — About, any product chapter, any technical
   section, authored or closing the loop. A human writes it or reviews it
@@ -55,8 +58,11 @@ cheap bar expensive again at the far end.
 ## What a project's own table has to carry
 
 The four gates above are the methodology's. An adopting project answers
-them in its own `AGENTS.md`, as a table of transitions and who operates
-each — and the table is a **naming**, not an argument: each cell names
+them at its stated address — `.writrun/gates.md` in the kit — as a table
+of transitions and who operates each. The address is the adopter's file
+either way: an update never touches it, because the answers are the
+project's and nothing WritRun ships can hold them. The table is a
+**naming**, not an argument: each cell names
 the who and links the why, because the reasoning belongs to a chapter
 every session does not read, while the table is read by every session
 before every task.
@@ -99,7 +105,8 @@ agent derive and open directly; the default is the adopter's to change.
   assented to that transition, whether or not a person writes the field.
 - When a project names the act that carries a maintainer's assent, it
   shall name one its forge makes available to the people who hold the
-  gate, and shall state it in its `AGENTS.md`.
+  gate, and shall state it at the address its entry point carries or
+  links.
 - When a permanent doc (About, a product chapter, a technical section) is
   changed, the change shall not be treated as final until a human has
   written or reviewed it.
