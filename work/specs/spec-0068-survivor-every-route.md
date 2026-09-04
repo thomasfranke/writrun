@@ -24,9 +24,23 @@ not a question the helper cannot answer.
 
 Out: whether a `[TASK-NNNN]` tag that does not lead the title should
 count. The helper reads leading tags only, both readers agree on that
-today, and `titles.md#pr_title_style` is where that contract lives.
-Moving it by way of a bug fix would change the rule while claiming to
-keep it.
+today, and the contract lives in
+[decision 0046](../../docs/technical/decisions/pull-requests/0046-the-task-tag-leads.md)
+and in `ql_carried_of`'s own comment —
+`titles.md#pr_title_style` states what the tag is for, not where it may
+sit. Moving the rule by way of a bug fix would change it while claiming
+to keep it.
+
+Out: the two sibling readers of this same listing.
+`take_task.sh` and `check_amendment_reference.sh` each list the open
+pull requests with an interpolated `\t` and read rows positionally, so
+the hazard fixed here — a title's own characters read as fields —
+stands in both after this ships: a title carrying a literal tab or a
+newline still shifts their rows. One shared listing reader in
+`queue_lib.sh` is the shape that ends the class for all three, and it
+is a change to two working scripts this defect does not touch — it
+needs a report of its own rather than a ride on this fix, and this
+paragraph is that report's anchor.
 
 Out: `flip_task_status.sh`'s edge table, and the missing `ready →
 in-review` edge that makes this defect outlive the event that caused
@@ -92,7 +106,14 @@ must still cost the forge one call and the helper one pass.
 2. Build the survivor index once, before the loop over carried tasks:
    one line per open pull request holding its number, author login,
    draftness, and the carried set `ql_carried_of "$head" "$title"`
-   answers for it.
+   answers for it. Two rows never reach the helper. The closing pull
+   request's own, wherever the listing's lag still shows it — the event
+   is better evidence than the cache, and a closed pull request must
+   answer for nothing (see Edge cases). And any row that cannot carry a
+   task — a head branch not under `task/` and a title not opening with
+   `[` — dropped by one cheap test first: `ql_carried_of` forks
+   subshells, and a 200-row listing would otherwise buy every unmerged
+   close several hundred forks for rows that answer nothing.
 3. Replace the head-branch regex with membership in that set —
    field-wise equality, never a substring of the row. The loop's own
    `sed 's/^task-0*//'` goes with it: both sides are already normalized
@@ -121,6 +142,8 @@ must still cost the forge one call and the helper one pass.
   highest-numbered of them.
 - When no open pull request carries a task by either route, the system
   shall land it and clear `taken_by`, as it does today.
+- When the listing still shows the closing pull request itself, the
+  system shall not count it the survivor of any task, by any route.
 - When a pull request carries several tasks, the system shall ask the
   forge exactly once for the run, with `--limit` above the forge's
   default page.
@@ -151,10 +174,16 @@ must still cost the forge one call and the helper one pass.
   carried, by this reader and by the reader upstream alike. The reach is
   exactly the reader's, and no wider.
 - **The closing pull request in its own `open` listing**, on a race
-  against the forge's own state. It would name itself its own survivor
-  and re-record the task from its own author. Unchanged here: it already
-  matched by its own head branch, and it is one pull request whichever
-  route finds it.
+  against the forge's own state. Left alone, this fix would widen an
+  existing strand: today the closing pull request can name itself
+  survivor of the one task its head branch spells, and membership over
+  branch and title would let it claim every tag-carried task too — each
+  re-recorded in-flight from a closed pull request's own author, with
+  no later event from that pull request to heal it. So the row is
+  skipped by number in step 2, which closes the branch-route strand the
+  script's header already names along with the one this would have
+  opened: the event in hand proves that pull request closed, whatever
+  the listing's lag says.
 - **More than 200 open pull requests.** The limit and its cut are
   untouched; the index is built over whatever the listing returned.
 - **`gh` absent, or `GH_TOKEN` empty.** The listing is skipped, the
@@ -163,11 +192,13 @@ must still cost the forge one call and the helper one pass.
 ## Tests required
 
 - `a_survivor_answers_for_one_task_test.sh` is re-aimed, and this is a
-  deliberate change to an accepted behaviour rather than a test caught
-  drifting. Today it asserts *"the carried task nobody survives lands"*
-  for task-0022 — a task the survivor's own title carries — which is
-  report-0027's defect written down as the expected result. Three
-  things change together:
+  deliberate change of scenario rather than a test caught wrong. Said
+  precisely: the stub's one listing row carries no title field at all
+  today, so in the fixture as it stands task-0022 has no survivor by
+  any route and the landing the test asserts is correct. What the
+  re-aim does is give the fixture the shape report-0027's defect needs
+  — a title on the survivor's row — and then assert the fix over it.
+  Three things change together:
   - The stub's rows become `@tsv`-shaped and gain the title, since the
     script now asks for that field.
   - The survivor's title carries `[TASK-0022]`, and task-0022 must be
@@ -186,6 +217,9 @@ must still cost the forge one call and the helper one pass.
   put first.
 - A case where the listing includes a pull request carrying no task:
   every carried task's answer is unaffected by that row.
+- A case where the listing still includes the closing pull request's own
+  row, title tags and all: no task is re-recorded from it, and its
+  tasks land wherever no other row carries them.
 - A case where a survivor's title carries its tags ahead of a
   `[Feat][Ci]` suffix and a summary with spaces: the row is read as
   fields, and the survivor is found.
@@ -197,6 +231,7 @@ must still cost the forge one call and the helper one pass.
 - [ ] The listing asks for `title`, and its rows are read as fields.
 - [ ] The survivor filter is membership in `ql_carried_of`'s answer, and
       no branch-name pattern remains in `apply_pr_event.sh`.
+- [ ] The closing pull request's own row answers for nothing.
 - [ ] One `gh pr list` per run, `--limit` still given.
 - [ ] `a_survivor_answers_for_one_task_test.sh` asserts the tag-carried
       survivor, and its landing half sits on a task nobody carries.
