@@ -1,13 +1,15 @@
 ---
 id: report-0019
-status: open
-task_ref: []
+status: tracked
+task_ref: [task-0045]
 doc_ref: null
 created: 2026-09-04T05:30:14Z
-triaged: null
+triaged: 2026-09-04T15:18:22Z
 ---
 
 # A fresh take opens no pull request — the branch has no commits
+
+**References:** [task-0045](../tasks/task-0045-take-first-commit.md)
 
 Taking task-0042, `take_task.sh` cut the branch from `origin/main`,
 pushed it, and failed to open the draft: GitHub refuses a pull request
