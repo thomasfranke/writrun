@@ -3,10 +3,17 @@
 # and reports it affected from the queue as it then stands.
 #
 # Usage: rederive_labels.sh <owner/repo> <spec-file|task-id|report-id>...
+#          [--minted <task-id|report-id>...]
 #   Run from a checkout of the authority branch, *after* the flip has been
 #   committed to it — the whole point is to read the queue's new state.
 #   `gh` must be on PATH and authenticated (GH_TOKEN in CI; a stub in the
-#   test suite). With no arguments, it does nothing and says so.
+#   test suite). Named no id, it does nothing and says so.
+#
+#   Every id after `--minted` is one the same job already answered for —
+#   mirror_issues.sh's `tasks=`/`reports=` output, minted now or found to
+#   be its own. Its Issue exists, so not finding one is this pass's own
+#   defect and exits non-zero. The same miss on any other id is a task
+#   that was never mirrored, which is a finding and stays a notice.
 #
 #   A `report-NNNN` argument is the same projection one kind over: the
 #   file on disk says whether triage has ended it, and the mirror is made
@@ -31,7 +38,8 @@
 # question, different input, which is why it is a script of its own rather
 # than a branch inside either caller.
 #
-# Exit codes: 0 done (including nothing to do); 3 usage error.
+# Exit codes: 0 done (including nothing to do); 1 a mirror this job
+# answered for was never found; 3 usage error.
 #
 # Portable bash 3.2, POSIX awk/sed — no gawk extensions, no associative
 # arrays. See the standing rule in docs/technical/decisions/.
@@ -133,18 +141,35 @@ report_close_for() {
   esac
 }
 
-if [ "$#" -eq 0 ]; then
+# The flag is not work. A merge that recorded nothing is still passed
+# `--minted` with the mint's two empty outputs behind it, and it must
+# still pay no round trip to the forge.
+have_work=""
+for sf in "$@"; do
+  case "$sf" in --minted) ;; *) have_work=yes; break ;; esac
+done
+if [ -z "$have_work" ]; then
   echo "No approval was recorded by this merge — no label to re-derive."
   exit 0
 fi
 
-# The mirrors, fetched once. Identity is the tag in the title, the same
-# way every other lookup here resolves it. The row shape is the one every
-# reader of this list requests — body included and unused here — because
-# one shape across all three readers is worth more than one saved field.
-ISSUES=$(gh api "repos/${REPO}/issues?labels=writrun:task&state=all&per_page=100" \
-  --paginate \
-  --jq '.[] | [.number, .state, ((.labels // []) | map(.name) | join(",")), (.title | @base64), ((.body // "") | @base64)] | @tsv')
+# fetch_mirrors <label> — one kind's mirror list. Identity is the tag in
+# the title, the same way every other lookup here resolves it. The row
+# shape is the one every reader of this list requests — body included and
+# unused here — because one shape across all three readers is worth more
+# than one saved field.
+fetch_mirrors() {
+  gh api "repos/${REPO}/issues?labels=${1}&state=all&per_page=100" \
+    --paginate \
+    --jq '.[] | [.number, .state, ((.labels // []) | map(.name) | join(",")), (.title | @base64), ((.body // "") | @base64)] | @tsv'
+}
+
+# The task mirrors, read once up front — and read again when an id
+# misses. One read for the whole run is the right shape and its timing
+# was the fault: the same job mints mirrors seconds before this step, so
+# the list can be older than the mirror it is asked about
+# (work/reports/report-0021-rederive-labels-sh.md).
+ISSUES=$(fetch_mirrors 'writrun:task')
 
 # The title is lowercased before the match rather than matched with a
 # character class per letter — the answer was already lowercased on the
@@ -162,6 +187,74 @@ num_of_id() {
     -e 's/^report-0*\([0-9][0-9]*\)$/\1/p'
 }
 
+# One re-read answers every id still unresolved, so the budget is the
+# run's and not each id's: staleness seen once is paid for once, and a
+# run that sees none pays nothing. Two re-reads, spaced — the observed
+# gap between a create and a read that could not see it was about four
+# seconds. The wait is overridable because the suite must not spend it.
+REFRESH_BUDGET=2
+REFRESH_WAIT="${WRITRUN_MIRROR_REFRESH_WAIT:-3}"
+task_refreshes=0
+report_refreshes=0
+
+# refresh_mirrors <kind> — spend one of the run's re-reads on one list,
+# or say there is none left to spend. A read that fails is spent all the
+# same: the list in hand stands, the id stays unresolved, and that is an
+# answer every caller here already has.
+refresh_mirrors() {
+  local out
+  case "$1" in
+    report)
+      [ "$report_refreshes" -lt "$REFRESH_BUDGET" ] || return 1
+      report_refreshes=$((report_refreshes + 1))
+      sleep "$REFRESH_WAIT"
+      if out=$(fetch_mirrors 'writrun:report'); then REPORT_ISSUES="$out"; fi ;;
+    *)
+      [ "$task_refreshes" -lt "$REFRESH_BUDGET" ] || return 1
+      task_refreshes=$((task_refreshes + 1))
+      sleep "$REFRESH_WAIT"
+      if out=$(fetch_mirrors 'writrun:task'); then ISSUES="$out"; fi ;;
+  esac
+}
+
+# find_mirror <kind> <id-number> — the mirror row for one id in the list
+# already in hand, or nothing.
+find_mirror() {
+  local kind="$1" want="$2" rows n istate labels tb bb t tn
+  case "$kind" in
+    report) rows="$REPORT_ISSUES" ;;
+    *)      rows="$ISSUES" ;;
+  esac
+  while IFS="$TAB" read -r n istate labels tb bb; do
+    [ -n "$n" ] || continue
+    t=$(printf '%s' "$tb" | b64_decode)
+    tn=$(num_of_id "$(id_of_title "$t" "$kind")")
+    [ -n "$tn" ] || continue
+    if [ "$tn" -eq "$want" ] 2>/dev/null; then
+      printf '%s' "${n}${TAB}${istate}${TAB}${labels}"
+      return 0
+    fi
+  done <<EOF
+$rows
+EOF
+}
+
+# resolve_mirror <kind> <id-number> — the same lookup, retried against a
+# re-read list when it misses, with the answer left in FOUND.
+#
+# A miss is not a conclusion. The list was read before this id was looked
+# up, and the mirror can have been minted in between — by the very job
+# running this. The re-read is what keeps the rule the pass exists for:
+# every task the merge touched wears the label its file names
+# (docs/product/stage-3-github-issues/labels.md).
+FOUND=""
+resolve_mirror() {
+  FOUND=$(find_mirror "$1" "$2")
+  while [ -z "$FOUND" ] && refresh_mirrors "$1"; do
+    FOUND=$(find_mirror "$1" "$2")
+  done
+}
+
 # The report mirrors, fetched once and only if a report is named. A
 # project that has never recorded one must not pay a forge call per merge
 # for a list that would always come back empty.
@@ -170,15 +263,13 @@ REPORT_ISSUES_READ=""
 report_issues() {
   [ -z "$REPORT_ISSUES_READ" ] || return 0
   REPORT_ISSUES_READ=yes
-  REPORT_ISSUES=$(gh api "repos/${REPO}/issues?labels=writrun:report&state=all&per_page=100" \
-    --paginate \
-    --jq '.[] | [.number, .state, ((.labels // []) | map(.name) | join(",")), (.title | @base64), ((.body // "") | @base64)] | @tsv')
+  REPORT_ISSUES=$(fetch_mirrors 'writrun:report')
 }
 
 # project_report <report-id> — the whole answer for one report: find its
 # mirror, and make it agree with the file.
 project_report() {
-  local rid="$1" rnum rf want closing found n istate labels tb bb t tn kept args l
+  local rid="$1" rnum rf want closing found n istate labels kept args l
   rnum=$(num_of_id "$rid")
   [ -n "$rnum" ] || return 0
   rf=$(queue_file work/reports report "$rid")
@@ -194,21 +285,11 @@ project_report() {
   fi
 
   report_issues
-  found=""
-  while IFS="$TAB" read -r n istate labels tb bb; do
-    [ -n "$n" ] || continue
-    t=$(printf '%s' "$tb" | b64_decode)
-    tn=$(num_of_id "$(id_of_title "$t" report)")
-    [ -n "$tn" ] || continue
-    if [ "$tn" -eq "$rnum" ] 2>/dev/null; then
-      found="${n}${TAB}${istate}${TAB}${labels}"; break
-    fi
-  done <<EOF
-$REPORT_ISSUES
-EOF
+  resolve_mirror report "$rnum"
+  found="$FOUND"
 
   if [ -z "$found" ]; then
-    echo "${rid}: no mirrored Issue."
+    unresolved report "$rid"
     return 0
   fi
   n=$(printf '%s' "$found" | cut -f1)
@@ -275,9 +356,59 @@ ensure_origin_label() {   # ensure_origin_label <label>
   esac
 }
 
+# The ids this job already answered for, collected before anything is
+# projected. The same id can arrive twice — once from the commit range,
+# once from the mint — so reading the flag as the loop walks past it
+# would let the earlier arrival settle a question the later one answers.
+MINTED_TASKS=""
+MINTED_REPORTS=""
+minting=""
+for sf in "$@"; do
+  if [ "$sf" = "--minted" ]; then minting=yes; continue; fi
+  [ -n "$minting" ] || continue
+  mid=$(num_of_id "$(basename "$sf" .md | sed -E 's/^((task|report)-[0-9]+).*/\1/')")
+  [ -n "$mid" ] || continue
+  case "$(basename "$sf")" in
+    report-*) MINTED_REPORTS="$MINTED_REPORTS $mid" ;;
+    task-*)   MINTED_TASKS="$MINTED_TASKS $mid" ;;
+  esac
+done
+
+# minted <kind> <id> — did this job's mint step answer for this id.
+minted() {
+  local n
+  n=$(num_of_id "$2")
+  [ -n "$n" ] || return 1
+  case "$1" in
+    report) case " $MINTED_REPORTS " in *" $n "*) return 0 ;; esac ;;
+    *)      case " $MINTED_TASKS " in *" $n "*) return 0 ;; esac ;;
+  esac
+  return 1
+}
+
+# unresolved <kind> <id> — what a lookup that found nothing means, which
+# is decided by who named the id. A mirror the mint answered for exists,
+# so not finding it is this pass's own defect and the step must fail:
+# minted and never labelled is the one outcome no later event corrects.
+# Any other id may simply never have been mirrored, and that is a finding
+# to report rather than a fault to raise.
+FAILED=""
+unresolved() {
+  local tag
+  if minted "$1" "$2"; then
+    tag=$(printf '%s' "$2" | tr '[:lower:]' '[:upper:]')
+    echo "${2}: no mirrored Issue, and this job's mint answered for one." >&2
+    echo "  Its [${tag}] mirror exists and this pass left it unlabelled." >&2
+    FAILED=yes
+  else
+    echo "${2}: no mirrored Issue."
+  fi
+}
+
 seen=""
 seen_reports=""
 for sf in "$@"; do
+  [ "$sf" = "--minted" ] && continue
   # A spec file names its task; a task file or bare task id names itself;
   # a report file or bare report id is the other kind entirely — the
   # callers pass whichever the merge put in front of them.
@@ -316,21 +447,11 @@ for sf in "$@"; do
     continue
   fi
 
-  found=""
-  while IFS="$TAB" read -r n istate labels tb bb; do
-    [ -n "$n" ] || continue
-    t=$(printf '%s' "$tb" | b64_decode)
-    tn=$(num_of_id "$(id_of_title "$t")")
-    [ -n "$tn" ] || continue
-    if [ "$tn" -eq "$tnum" ] 2>/dev/null; then
-      found="${n}${TAB}${istate}${TAB}${labels}"; break
-    fi
-  done <<EOF
-$ISSUES
-EOF
+  resolve_mirror task "$tnum"
+  found="$FOUND"
 
   if [ -z "$found" ]; then
-    echo "${tref}: no mirrored Issue."
+    unresolved task "$tref"
     continue
   fi
 
@@ -394,3 +515,9 @@ EOF
   set_status "$num" "$labels" "$want" "$olbl"
   echo "${tref} → ${want} (re-derived from the queue)"
 done
+
+# Failing here rather than at the miss: one mirror this pass cannot find
+# is no reason to leave the rest of the run unlabelled, and the step
+# still must not report success.
+[ -z "$FAILED" ] || exit 1
+exit 0

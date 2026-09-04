@@ -43,6 +43,23 @@ setup_forge() {
 printf '%s\n' "$*" >> "$FAKE_GH_LOG"
 [ "$1" = "api" ] || { echo "{}"; exit 0; }
 shift
+# forge_list <base> — one list as of this read. Reads are counted, and a
+# case that declared a later generation of the list is answered from it
+# from that read on: the forge gaining a mirror between two reads of the
+# same list, which is the whole subject of the re-read cases.
+forge_list() {
+  local n f
+  n=$(cat "$FAKE_GH_DIR/$1_reads" 2>/dev/null || echo 0)
+  n=$((n + 1))
+  echo "$n" > "$FAKE_GH_DIR/$1_reads"
+  f="$FAKE_GH_DIR/$1"
+  while [ "$n" -gt 1 ]; do
+    if [ -e "$FAKE_GH_DIR/$1.$n" ]; then f="$FAKE_GH_DIR/$1.$n"; break; fi
+    n=$((n - 1))
+  done
+  cat "$f" 2>/dev/null
+}
+
 path=""
 method=GET
 jq=""
@@ -70,9 +87,8 @@ case "$method $path" in
   # Two lists, told apart by the label filter exactly as the forge tells
   # them apart. A kind with no canned file answers empty, which is what a
   # repository that has never used it really answers.
-  "GET repos/"*"/issues?labels=writrun:report"*)
-    cat "$FAKE_GH_DIR/report_issues" 2>/dev/null ;;
-  "GET repos/"*"/issues?"*)        cat "$FAKE_GH_DIR/issues" 2>/dev/null ;;
+  "GET repos/"*"/issues?labels=writrun:report"*) forge_list report_issues ;;
+  "GET repos/"*"/issues?"*)                      forge_list issues ;;
   "POST repos/"*"/issues")
     # `--jq .number` is how the caller asks for the new Issue's number,
     # and a create it cannot read the number back from is a create it
@@ -92,6 +108,13 @@ exit 0
 GH
   chmod +x "$WORK/stub-bin/gh"
   export PATH="$WORK/stub-bin:$PATH"
+
+  # The list generation rows are declared into: 1 until a case asks the
+  # forge to relist. And the re-read's wait, zeroed — the seconds the
+  # real thing spaces its retries with are not seconds a suite may spend.
+  FORGE_GEN=1
+  FORGE_REPORT_GEN=1
+  export WRITRUN_MIRROR_REFRESH_WAIT=0
 
   export PR_STATE=open PR_DRAFT=false PR_MERGED=false
   export PR_AUTHOR_ASSOCIATION=OWNER
@@ -263,6 +286,31 @@ forge_pr_state() {
   printf '%s\n' "$2" > "$FAKE_GH_DIR/pr_${1}_state"
 }
 
+# forge_list_file <base> <generation> — where rows of one generation are
+# declared. The first is the plain file every case has always written,
+# so a case that never relists is untouched by any of this.
+forge_list_file() {
+  if [ "$2" -le 1 ]; then printf '%s/%s' "$FAKE_GH_DIR" "$1"
+  else printf '%s/%s.%s' "$FAKE_GH_DIR" "$1" "$2"; fi
+}
+
+# forge_relists [report] — everything declared so far stays, and every row
+# declared after this call is visible only from the forge's *next* read of
+# that list onward. The stale snapshot, reproduced: a mirror minted after
+# the list was read, and there at the re-read.
+forge_relists() {
+  local base=issues gen cur next
+  [ "${1:-}" = report ] && base=report_issues
+  if [ "$base" = report_issues ]; then
+    gen=$FORGE_REPORT_GEN; FORGE_REPORT_GEN=$((gen + 1))
+  else
+    gen=$FORGE_GEN; FORGE_GEN=$((gen + 1))
+  fi
+  cur=$(forge_list_file "$base" "$gen")
+  next=$(forge_list_file "$base" "$((gen + 1))")
+  if [ -e "$cur" ]; then cp "$cur" "$next"; else : > "$next"; fi
+}
+
 # forge_report_issue <number> <state> <labels-csv> <title> [introduced-by-pr]
 # — one row of the forge's writrun:report issue list, same shape and same
 # ownership line as a task mirror's.
@@ -279,7 +327,7 @@ forge_report_issue() {
     "$1" "$2" "$3" \
     "$(printf '%s' "$4" | b64)" \
     "$(printf '%s' "$body" | b64)" \
-    >> "$FAKE_GH_DIR/report_issues"
+    >> "$(forge_list_file report_issues "$FORGE_REPORT_GEN")"
 }
 
 # forge_issue <number> <state> <labels-csv> <title> [introduced-by-pr] —
@@ -300,7 +348,7 @@ forge_issue() {
     "$1" "$2" "$3" \
     "$(printf '%s' "$4" | b64)" \
     "$(printf '%s' "$body" | b64)" \
-    >> "$FAKE_GH_DIR/issues"
+    >> "$(forge_list_file issues "$FORGE_GEN")"
 }
 
 # The log assertions (forge_told, forge_not_told) are harness.sh's —
