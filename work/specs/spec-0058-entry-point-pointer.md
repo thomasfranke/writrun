@@ -141,7 +141,7 @@ they are documented, not shipped.
 
 ## Proposed technical changes
 
-- `docs/technical/distribution.md` — the graft paragraph becomes the
+- `technical/distribution.md` — the graft paragraph becomes the
   pointer-and-ownership description; the collision list grows to three
   (`AGENTS.md` grafted, docs kept, `CLAUDE.md` kept); the kit inventory
   names the two new files and the exception `gates.md` shares with
