@@ -33,9 +33,10 @@
 #   1  a refusal — an ineligible task, a title the declared style refuses,
 #      a branch that already exists, or an unusable argument. Nothing was
 #      created.
-#   2  composed and waiting: `auto_push` or `auto_pr` is false, so the
-#      branch, the title and the body are printed and nothing was done.
-#      Rerun with --confirm to perform exactly the printed act.
+#   2  composed and waiting: `auto_commit`, `auto_push` or `auto_pr` is
+#      false, so the branch, the first commit's message, the title and
+#      the body are printed and nothing was done. Rerun with --confirm
+#      to perform exactly the printed act.
 #   3  the forge or git failed. Before the branch was cut the repository
 #      is untouched; after it, the branch is named and --resume finishes
 #      the act.
@@ -95,6 +96,7 @@ TOP=$(git rev-parse --show-toplevel 2>/dev/null) || {
 cd "$TOP" || exit 1
 
 STYLE=$(bash "$READ_SETTING" stage_2.pr_title_style)
+AUTO_COMMIT=$(bash "$READ_SETTING" stage_2.auto_commit)
 AUTO_PUSH=$(bash "$READ_SETTING" stage_2.auto_push)
 AUTO_PR=$(bash "$READ_SETTING" stage_2.auto_pr)
 CREDIT=$(bash "$READ_SETTING" stage_2.agent_coauthor)
@@ -109,16 +111,44 @@ if [ -n "$COAUTHOR" ] && [ "$CREDIT" = false ]; then
   refuse "--coauthor was given while stage_2.agent_coauthor is false — this project's commits carry no credit trailer"
 fi
 
-# The two vocabularies come from check_observance.sh's own assignment
+# The three vocabularies come from check_observance.sh's own assignment
 # lines — the machine half of conventions/commits.md, and a single
 # source. A title this script accepted and the door then refused would
-# be worse than no validation at all.
+# be worse than no validation at all, and the same holds for the name
+# this script writes into a trailer.
 TYPES=$(sed -n 's/^TYPES="\(.*\)"$/\1/p' "$OBSERVANCE" | head -n1)
 SCOPES=$(sed -n 's/^SCOPES="\(.*\)"$/\1/p' "$OBSERVANCE" | head -n1)
-if [ -z "$TYPES" ] || [ -z "$SCOPES" ]; then
-  echo "Could not read TYPES/SCOPES from ${OBSERVANCE} — a title checked" >&2
-  echo "against a vocabulary this script had to guess at is not checked." >&2
+# CATEGORIES is written over two lines with a continuation, so it is read
+# as the span from its assignment to the line that closes the quote.
+CATEGORIES=$(awk '/^CATEGORIES="/ { c = 1 }
+                  c { print }
+                  c && /"[[:space:]]*$/ { exit }' "$OBSERVANCE" \
+  | sed 's/^CATEGORIES="//; s/"[[:space:]]*$//; s/\\$//' \
+  | tr '\n' ' ' | tr -s ' ')
+if [ -z "$TYPES" ] || [ -z "$SCOPES" ] || [ -z "$CATEGORIES" ]; then
+  echo "Could not read TYPES/SCOPES/CATEGORIES from ${OBSERVANCE} — a title" >&2
+  echo "or a trailer checked against a vocabulary this script had to guess" >&2
+  echo "at is not checked." >&2
   exit 3
+fi
+
+# The trailer is written onto the commit verbatim, so its shape is
+# judged here rather than left to the gate that reads it hours later.
+# One line, a name and an address — a value carrying a newline would
+# write arbitrary lines into the commit body — and a name the door
+# refuses is refused at the door that offers the flag.
+if [ -n "$COAUTHOR" ]; then
+  if [ "$(printf '%s' "$COAUTHOR" | wc -l | tr -d '[:space:]')" != 0 ] \
+     || ! printf '%s' "$COAUTHOR" | grep -q '^[^<>]\{1,\}<[^<>]\{1,\}>$'; then
+    refuse "--coauthor takes one line of the form \"Name <address>\" — for example --coauthor \"Claude Opus 5 <noreply@anthropic.com>\""
+  fi
+  CA_NAME=$(printf '%s' "$COAUTHOR" \
+    | sed -e 's/[[:space:]]*<.*$//' -e 's/[[:space:]]*$//' \
+    | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+  case " $CATEGORIES " in
+    *" $CA_NAME "*)
+      refuse "--coauthor names '${CA_NAME}', a category rather than a model — the record has to survive the next model's arrival, so name it: --coauthor \"Claude Opus 5 <...>\"" ;;
+  esac
 fi
 
 in_list() {
@@ -289,9 +319,21 @@ ${implements}
 ## Notes"
 fi
 
+# The first commit's message is composed here, beside the branch, the
+# title and the body — `auto_commit: false` gates the action and never
+# the work, so what it holds has to be presentable in full before the
+# word is given, and the message that gets presented is the one the
+# commit is later written with.
+FIRST_MSG=$(printf 'chore(tasks): take task-%04d' "$NUM")
+[ -n "$COAUTHOR" ] && FIRST_MSG="${FIRST_MSG}
+
+Co-Authored-By: ${COAUTHOR}"
+
 show_composition() {
   printf 'branch: %s\n' "$BRANCH"
   printf 'title:  %s\n' "$PR_TITLE"
+  printf 'first commit (empty):\n'
+  printf '%s\n' "$FIRST_MSG" | sed 's/^/  | /'
   printf 'body:\n'
   printf '%s\n' "$BODY" | sed 's/^/  | /'
 }
@@ -307,11 +349,13 @@ show_composition() {
 # into the conduct gate and exits 2 having done nothing — leaving the
 # pushed branch without its pull request, the one state this act must
 # not leave behind.
-resume_command() {
-  printf '  bash %s %s --title "%s" --slug %s%s --resume%s\n' \
+rerun_command() {
+  printf '  bash %s %s --title "%s" --slug %s%s %s\n' \
     "$0" "$TASK_ARG" "$TITLE" "$SLUG" \
-    "${COAUTHOR:+ --coauthor \"${COAUTHOR}\"}" "${CONFIRM:+ --confirm}"
+    "${COAUTHOR:+ --coauthor \"${COAUTHOR}\"}" "$1"
 }
+resume_command()  { rerun_command "--resume${CONFIRM:+ --confirm}"; }
+confirm_command() { rerun_command "--confirm"; }
 
 # --- the branch must not already exist -------------------------------
 
@@ -336,17 +380,25 @@ fi
 
 # --- the conduct flags ------------------------------------------------
 
-if [ "$AUTO_PUSH" != true ] || [ "$AUTO_PR" != true ]; then
+if [ "$AUTO_COMMIT" != true ] || [ "$AUTO_PUSH" != true ] || [ "$AUTO_PR" != true ]; then
   if [ -z "$CONFIRM" ]; then
-    which=""
-    [ "$AUTO_PUSH" != true ] && which="auto_push"
-    [ "$AUTO_PR" != true ] && which="${which:+${which} and }auto_pr"
-    echo "Composed, and waiting: ${which} is false, so nothing was pushed and no pull request was opened."
+    # The arg list is empty by here — every argument was shifted off —
+    # so it is free to hold the flags that held, in declaration order.
+    set --
+    [ "$AUTO_COMMIT" != true ] && set -- "$@" auto_commit
+    [ "$AUTO_PUSH" != true ] && set -- "$@" auto_push
+    [ "$AUTO_PR" != true ] && set -- "$@" auto_pr
+    case "$#" in
+      1) which="$1" ;;
+      2) which="$1 and $2" ;;
+      *) which="$1, $2 and $3" ;;
+    esac
+    echo "Composed, and waiting: ${which} is false, so nothing was committed, nothing was pushed and no pull request was opened."
     echo
     show_composition
     echo
     echo "Rerun with --confirm once the word is given, and this exact act is performed:"
-    echo "  bash $0 ${TASK_ARG} --title \"${TITLE}\"${SLUG:+ --slug ${SLUG}} --confirm"
+    confirm_command
     exit 2
   fi
 fi
@@ -456,16 +508,23 @@ fi
 # second commit wrong is that one is already there: an interrupted take
 # that got as far as committing is finished, not given a second marker,
 # and one interrupted before it is completed here.
-AHEAD=$(git rev-list --count origin/main..HEAD 2>/dev/null) || AHEAD=""
-if [ "${AHEAD:-0}" = 0 ]; then
+# A range git could not answer is not a range of nothing. Defaulting an
+# unreadable count to zero would put the failure on the branch that
+# *commits*, which is the second marker this guard exists to prevent —
+# so it fails closed, the same posture the TYPES/SCOPES read takes.
+if ! AHEAD=$(git rev-list --count origin/main..HEAD 2>&1); then
+  echo "git rev-list --count origin/main..HEAD failed:" >&2
+  printf '%s\n' "$AHEAD" | head -n 3 >&2
+  echo "Whether ${BRANCH} already carries its first commit is the one thing" >&2
+  echo "this step must not guess at. ${BRANCH} is kept local. Finish the act with:" >&2
+  resume_command >&2
+  exit 3
+fi
+if [ "$AHEAD" = 0 ]; then
   if [ "$CREDIT" = true ] && [ -z "$COAUTHOR" ]; then
     echo "No --coauthor given, so the first commit carries no trailer."
     echo "An agent taking this owes one: --coauthor \"Model Name <address>\"."
   fi
-  FIRST_MSG=$(printf 'chore(tasks): take task-%04d' "$NUM")
-  [ -n "$COAUTHOR" ] && FIRST_MSG="${FIRST_MSG}
-
-Co-Authored-By: ${COAUTHOR}"
   if ! COMMIT_ERR=$(git commit --allow-empty -q -m "$FIRST_MSG" 2>&1); then
     echo "git commit --allow-empty failed:" >&2
     printf '%s\n' "$COMMIT_ERR" | head -n 3 >&2

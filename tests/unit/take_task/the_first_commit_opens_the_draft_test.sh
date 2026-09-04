@@ -150,4 +150,53 @@ check "--resume commits where the take never got that far" 0 "Took task-001" \
   -- bash "$TAKE_TASK" task-001 --title "feat(ci): take it" --slug mirror-lag --resume
 ahead "so the branch it pushes carries one" 1
 
+# The guard reads a range, so a range git cannot answer has to fail
+# closed. Defaulting an unreadable count to zero would put the failure on
+# the branch that *commits*, producing the second marker this guard is
+# the whole of — and the branch here is a resumed one that already has
+# its commit, which is exactly the case that must not be doubled.
+take_setup
+task_file task-001 ready ""
+commit_all
+publish_main
+git switch -q -c task/0001-mirror-lag origin/main
+git commit -q --allow-empty -m "chore(tasks): take task-0001"
+git switch -q main
+git config remote.origin.fetch '+refs/heads/nothing:refs/remotes/origin/nothing'
+git update-ref -d refs/remotes/origin/main
+check "a range git cannot answer stops the act" 3 "must not guess at" \
+  -- bash "$TAKE_TASK" task-001 --title "feat(ci): take it" --slug mirror-lag --resume
+if [ "$(git rev-list --count task/0001-mirror-lag)" = "$(git rev-list --count main)" ]; then
+  echo "FAIL  rather than committing a second time"; fail=$((fail + 1))
+else
+  if [ "$(git log -1 --format=%s task/0001-mirror-lag)" = "chore(tasks): take task-0001" ] \
+     && [ "$(git log -2 --format=%s task/0001-mirror-lag | tail -1)" != "chore(tasks): take task-0001" ]; then
+    echo "ok    rather than committing a second time"; pass=$((pass + 1))
+  else
+    echo "FAIL  rather than committing a second time"
+    git log -2 --format=%s task/0001-mirror-lag | sed 's/^/      | /'; fail=$((fail + 1))
+  fi
+fi
+
+# --- the trailer's own shape ------------------------------------------
+#
+# The value is written onto the commit verbatim, so it is judged at the
+# door that offers the flag rather than at the gate that reads the commit
+# hours later. The vocabulary is check_observance.sh's own.
+
+take_setup
+task_file task-001 ready ""
+commit_all
+publish_main
+check "a --coauthor with no address is refused" 1 "one line of the form" \
+  -- bash "$TAKE_TASK" task-001 --title "feat(ci): take it" --slug mirror-lag \
+     --coauthor "Claude Opus 5"
+check "a --coauthor naming a category is refused" 1 "a category rather than a model" \
+  -- bash "$TAKE_TASK" task-001 --title "feat(ci): take it" --slug mirror-lag \
+     --coauthor "AI <noreply@anthropic.com>"
+check "a --coauthor carrying a second line is refused" 1 "one line of the form" \
+  -- bash "$TAKE_TASK" task-001 --title "feat(ci): take it" --slug mirror-lag \
+     --coauthor "$(printf 'Claude Opus 5 <noreply@anthropic.com>\nSigned-off-by: nobody <x@y.z>')"
+no_branch_cut "and none of them cut a branch" "task/0001-mirror-lag"
+
 finish
