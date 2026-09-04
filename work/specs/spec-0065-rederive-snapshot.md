@@ -196,3 +196,57 @@ there, plus the report list taking the same path, and plus the report's
 own sequence replayed: fourteen mirrors minted, eight of them in the
 first read, all fourteen labelled and one re-read between the six
 latecomers.
+
+**What review changed, after the build.**
+
+*The exit-code table was wrong in both directions, and this change made
+1 carry weight.* A run naming no repository exited 1 through `${1:?…}`
+while the header promised 3; and `ensure_label` already exited 1 for any
+unexpected forge refusal, which "a minted mirror this pass left
+unlabelled" now joins. Three conditions under one code, one of them
+documented as another — and 1 is what a red `writrun approve` shows a
+maintainer. Usage exits 3 now, with the usage line on stderr; a forge
+refusal exits 2; 1 is the pass's own defect alone.
+
+*A second `--minted` was silently ignored.* The flag's position is the
+whole of what it says — everything after it is the mint's, and a miss
+there fails the step rather than reporting a finding — so a line built
+wrong turns every id behind the misplaced flag into a red run, quietly.
+A repeated flag is refused now, and refused beside the `have_work` check
+so a wrong line costs the forge nothing, the same rule that check
+already holds.
+
+*And the call site stopped being interpolated.* The label step built its
+command line from four `${{ steps.* }}` expressions, unquoted, in a
+`pull_request_target` workflow holding `contents: write`. `specs` is
+built from a merged pull request's own file *paths*, so an interpolated
+one is a path this shell would parse. The four values pass through `env:`
+now and are expanded as shell variables — the word splitting is still the
+deliberate kind, and the flag's fixed position in the line is what keeps
+the order a contract. The exposure was there before this change; the line
+was being rewritten anyway, and leaving it as found while widening what
+the step decides was not defensible.
+
+*The fixture's `forge_told_times` counted lines, not calls.* The fake
+`gh` logged `"$*"` raw, and an Issue body arrives through `-f body=…`
+with newlines in it — so one call could log as several. Nothing in the
+suite matched such a call today; the first count over `POST …/issues`
+would have been wrong for a reason no one would look for. The fixtures
+fold a call to one line before logging it, and the helper's comment says
+what it depends on.
+
+**And what review found that is recorded, not fixed: report-0029.** The
+re-read is spent on every miss, whatever named the id, so a task whose
+mirror was never minted costs two extra list reads and six seconds on
+every pull-request event through `project_pr_tasks.sh` — which passes no
+`--minted` at all, and mints nothing. Worse in the other direction: on
+the approve path a miss from `specs` or `scope` burns both re-reads in
+the first six seconds, and a genuinely minted id looked up later has no
+read of its own left to force — a red step produced by this change's own
+budget policy. The cheap guard is to skip the retry where `minted` is
+false, and it is not folded in here because two of this spec's own
+acceptance cases exercise the re-read with no `--minted` at all: the
+guard is a change to what this spec accepted, not a defect in what it
+built. The backoff's flatness belongs to the same decision and is left
+where the spec set it for the same reason — widening it alone would only
+make the wasted budget more expensive.
