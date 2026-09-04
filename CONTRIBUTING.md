@@ -260,7 +260,7 @@ queue only really gains the task when the PR merges.
   `writrun-check-spec-deltas` checks mechanically.
 - **Front matter stays canonical** — one field per line, `key: value`,
   bare values, inline lists; see
-  [Front matter is canonical](docs/technical/schemas.md#front-matter-is-canonical).
+  [Front matter is canonical](docs/technical/schemas/front-matter.md#front-matter-is-canonical).
   `writrun check` rejects any other YAML form; the generator only ever
   writes this one.
 - **No new gawk-only or otherwise non-portable shell.** The script-backed

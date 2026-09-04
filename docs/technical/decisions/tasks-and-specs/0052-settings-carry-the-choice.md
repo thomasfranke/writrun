@@ -42,11 +42,11 @@ values `true`/`false`/quoted string — ordinary JSON that any editor reads,
 unambiguous to `sed`. Requiring `jq` would have been this project's first
 runtime dependency, against the non-goal
 [0005](0005-script-backed-skills-target.md) and
-[0010](0010-ci-splits-into-a.md) both invoke. Strictness is scoped: keys a
+[0010](../pull-requests/0010-ci-splits-into-a.md) both invoke. Strictness is scoped: keys a
 workflow parses are shape-checked, keys only an agent reads are checked for
 value alone — an agent reads JSON the way it reads prose.
 
-**This reverses [0041](0041-the-issues-mirror-is.md)**, deliberately. That
+**This reverses [0041](../github-issues/0041-the-issues-mirror-is.md)**, deliberately. That
 entry rejected "a config flag the workflows read at runtime" because "two
 files an adopter deletes need no switch, and a switch would be a second way
 to say what absence already says." Correct for the world it judged, where
@@ -57,7 +57,7 @@ stops being the mechanism — one way to say it, not two.
 The second key, `pr_title_style`, chooses between `conventional` and
 `bracketed` for every title a project writes, authoring ones included. It is
 read by agents only, since nothing parses the summary after the tag
-([0046](0046-the-task-tag-leads.md)). The `[TASK-NNNN]` tag itself is in both
+([0046](../pull-requests/0046-the-task-tag-leads.md)). The `[TASK-NNNN]` tag itself is in both
 styles and is **not** settable: it is how `reflect_progress.sh` and
 `list_tasks.sh` learn which tasks a pull request carries, and a branch name
 holds one id — a title without it would reduce a multi-task pull request to

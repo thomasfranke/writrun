@@ -32,7 +32,7 @@ one that looks easiest." The algorithm — resume any unfinished
 in-flight task first, then filter to `ready`, exclude anything whose
 `depends_on` isn't fully `done`, sort by priority then by `created`
 then by `id` — is specified in full in
-[`technical/selection.md`](../../technical/selection.md#task-selection-algorithm),
+[`technical/selection/algorithm.md`](../../technical/selection/algorithm.md#task-selection-algorithm),
 not restated here.
 
 ## `blocked` vs. `depends_on`
