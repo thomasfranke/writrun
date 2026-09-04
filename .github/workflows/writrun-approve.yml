@@ -267,17 +267,40 @@ jobs:
         # the only reader that can repair a report mirror that drifted —
         # nothing else ever comes back for one.
         #
-        # The mint's own set joins it, because the two are derived from
-        # different sources and the pair must not drift: `scope` comes
-        # from the commit range, the mints from the pull request's files.
-        # A rebase merge is where they part — `merge_commit_sha` is only
-        # the last rebased commit, so a task file added in an earlier one
-        # is minted and never appears in the range. Minted and never
-        # labelled is the one outcome with no second event to correct it,
-        # so what was minted is named here by the pass that minted it.
+        # The mint's own set joins it, behind `--minted`, for two
+        # reasons. It must be *named*, because the two sets are derived
+        # from different sources and the pair must not drift: `scope`
+        # comes from the commit range, the mints from the pull request's
+        # files. A rebase merge is where they part — `merge_commit_sha`
+        # is only the last rebased commit, so a task file added in an
+        # earlier one is minted and never appears in the range.
+        #
+        # And it must be *marked*, because the mirror list the pass reads
+        # is read once and these mirrors were created seconds before it:
+        # an id minted here has an Issue by construction, so failing to
+        # find one is the pass's own defect and exits the step non-zero
+        # (work/reports/report-0021-rederive-labels-sh.md). Minted and
+        # never labelled is the one outcome with no second event to
+        # correct it, and it has these two paths to it.
         env:
           GH_TOKEN: ${{ github.token }}
+          # Through env, never ${{ }} into the command line. `specs` is
+          # built from file *paths* (a merged pull request's own), so an
+          # interpolated one is a path the shell would parse — and this
+          # workflow holds contents: write on pull_request_target. As
+          # shell variables they are values, and the word splitting below
+          # is the deliberate kind.
+          SPECS: ${{ steps.flip.outputs.specs }}
+          SCOPE: ${{ steps.status.outputs.scope }}
+          MINTED_TASKS: ${{ steps.mint.outputs.tasks }}
+          MINTED_REPORTS: ${{ steps.mint.outputs.reports }}
         run: |
           set -euo pipefail
+          # The order is the contract: everything after --minted is the
+          # mint's, and a miss there fails the step. Passing the flag
+          # from a fixed position in this line rather than from inside
+          # any of the values is what keeps that true.
+          # shellcheck disable=SC2086
           bash .writrun/scripts/stage-3-github-issues/rederive_labels.sh \
-            "${{ github.repository }}" ${{ steps.flip.outputs.specs }} ${{ steps.status.outputs.scope }} ${{ steps.mint.outputs.tasks }} ${{ steps.mint.outputs.reports }}
+            "$GITHUB_REPOSITORY" $SPECS $SCOPE \
+            --minted $MINTED_TASKS $MINTED_REPORTS

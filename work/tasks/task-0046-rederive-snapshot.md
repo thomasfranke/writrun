@@ -11,9 +11,10 @@ depends_on: []
 milestone: null
 created: 2026-09-04T15:22:24Z
 queued: 2026-09-04T16:30:18Z
-completed: null
+completed: 2026-09-04T16:53:40Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-opus-5, login: thomasfranke}
 ---
 
 # Make the label pass see the mirrors its own job just minted

@@ -1,7 +1,7 @@
 ---
 id: spec-0065
 task_ref: task-0046
-status: approved
+status: implemented
 created: 2026-09-04T15:22:26Z
 ---
 
@@ -144,4 +144,109 @@ weighed:
 
 ## Outcome
 
-_(fill after execution)_
+Built as planned, all six steps. `rederive_labels.sh` reads its list
+through one `fetch_mirrors <label>` helper — the two reads differed only
+in the label, so splitting the fetch out of the assignment split it out
+of both — and a miss now goes through `resolve_mirror`, which re-reads
+and retries before it concludes. `--minted` marks the ids the mint
+answered for; an unresolved one prints to stderr, naming the id and the
+`[TASK-NNNN]` mirror it should have had, and exits 1. An unresolved id
+nobody minted prints the notice it always did. `writrun-approve.yml`
+passes the mint's two outputs behind the flag, and its comment now names
+both paths to minted-and-never-labelled: the rebase divergence it always
+guarded, and the read that lands before the writes it must see.
+
+Five decisions the spec left to the build.
+
+The retry budget is the run's, not each id's: two re-reads per list, each
+preceded by a wait. The Scope's reasoning — one re-fetch serves every id
+still unresolved — is only true if the budget is shared, and a run whose
+six latecomers each spent their own would pay six re-reads and thirty-six
+seconds for one moment of staleness.
+
+The wait is three seconds and `WRITRUN_MIRROR_REFRESH_WAIT` overrides it.
+The suite must not spend the seconds the real thing spaces its retries
+with, and `read_usage.sh` and `take_task.sh` already reach into a run
+this way.
+
+The non-zero exit is deferred to the end of the run rather than taken at
+the miss. One mirror this pass cannot find is no reason to leave the rest
+of the ids unlabelled, and the step fails either way.
+
+The argument that means "nothing to do" had to be re-read. The flag is
+always passed now, so a merge that recorded nothing arrives with
+`--minted` and two empty outputs behind it — an argument count of one,
+where the old check saw zero and returned before touching the forge.
+The check counts ids and not arguments, and the case that says most
+merges pay nothing says it again with the flag present.
+
+The minted set is collected in a pre-pass over the arguments rather than
+read as the loop walks past the flag. The same id arrives twice — once
+from the commit range, once from the mint — and the loop labels it on the
+first arrival, so a scope-first ordering would have made every real miss
+a notice and the flag would have marked nothing.
+
+The fixture grew two pieces to test any of it: `forge_relists` in
+`tests/mirror_lib.sh`, which makes the fake forge answer a later read
+with rows the earlier one could not see, and `forge_told_times` in
+`tests/harness.sh`, for the cases whose subject is how many reads a run
+costs. Both sit beside their neighbours and neither is mirrored — `tests/`
+is not in `tests/template_mirrors.txt`. The four cases the spec named are
+there, plus the report list taking the same path, and plus the report's
+own sequence replayed: fourteen mirrors minted, eight of them in the
+first read, all fourteen labelled and one re-read between the six
+latecomers.
+
+**What review changed, after the build.**
+
+*The exit-code table was wrong in both directions, and this change made
+1 carry weight.* A run naming no repository exited 1 through `${1:?…}`
+while the header promised 3; and `ensure_label` already exited 1 for any
+unexpected forge refusal, which "a minted mirror this pass left
+unlabelled" now joins. Three conditions under one code, one of them
+documented as another — and 1 is what a red `writrun approve` shows a
+maintainer. Usage exits 3 now, with the usage line on stderr; a forge
+refusal exits 2; 1 is the pass's own defect alone.
+
+*A second `--minted` was silently ignored.* The flag's position is the
+whole of what it says — everything after it is the mint's, and a miss
+there fails the step rather than reporting a finding — so a line built
+wrong turns every id behind the misplaced flag into a red run, quietly.
+A repeated flag is refused now, and refused beside the `have_work` check
+so a wrong line costs the forge nothing, the same rule that check
+already holds.
+
+*And the call site stopped being interpolated.* The label step built its
+command line from four `${{ steps.* }}` expressions, unquoted, in a
+`pull_request_target` workflow holding `contents: write`. `specs` is
+built from a merged pull request's own file *paths*, so an interpolated
+one is a path this shell would parse. The four values pass through `env:`
+now and are expanded as shell variables — the word splitting is still the
+deliberate kind, and the flag's fixed position in the line is what keeps
+the order a contract. The exposure was there before this change; the line
+was being rewritten anyway, and leaving it as found while widening what
+the step decides was not defensible.
+
+*The fixture's `forge_told_times` counted lines, not calls.* The fake
+`gh` logged `"$*"` raw, and an Issue body arrives through `-f body=…`
+with newlines in it — so one call could log as several. Nothing in the
+suite matched such a call today; the first count over `POST …/issues`
+would have been wrong for a reason no one would look for. The fixtures
+fold a call to one line before logging it, and the helper's comment says
+what it depends on.
+
+**And what review found that is recorded, not fixed: report-0029.** The
+re-read is spent on every miss, whatever named the id, so a task whose
+mirror was never minted costs two extra list reads and six seconds on
+every pull-request event through `project_pr_tasks.sh` — which passes no
+`--minted` at all, and mints nothing. Worse in the other direction: on
+the approve path a miss from `specs` or `scope` burns both re-reads in
+the first six seconds, and a genuinely minted id looked up later has no
+read of its own left to force — a red step produced by this change's own
+budget policy. The cheap guard is to skip the retry where `minted` is
+false, and it is not folded in here because two of this spec's own
+acceptance cases exercise the re-read with no `--minted` at all: the
+guard is a change to what this spec accepted, not a defect in what it
+built. The backoff's flatness belongs to the same decision and is left
+where the spec set it for the same reason — widening it alone would only
+make the wasted budget more expensive.
