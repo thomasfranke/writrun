@@ -131,7 +131,7 @@ bash .writrun/skills/writrun-create-task-and-spec/new.sh task "<title>" \
 
 `--from-report` states the origin (so `--origin rule` beside it is
 refused), appends the new task's id to the report's `task_ref`, stamps
-`triaged`, and moves an `open` report to `tracked`. The other three ends
+`triaged`, and moves an `open` report to `tracked`. The other four ends
 are written by hand — the status and the `triaged` timestamp together, in
 the change that took the route. A ridden `tracked` is refused by the
 generator and by `check_state.sh` alike.

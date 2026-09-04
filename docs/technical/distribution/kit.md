@@ -6,7 +6,9 @@
 
 The whole adoption kit ships as [`template/`](../../../template), one folder
 **shaped exactly like the destination root** — that is what a template
-is: `.writrun/`, the four `writrun-*.yml` workflows, `work/` with its
+is: `.writrun/`, the five `writrun-*.yml` workflows, the report form
+(`.github/ISSUE_TEMPLATE/writrun-report.yml` — shape only, never the
+gate: [intake](../reporting/intake.md)), `work/` with its
 three folders (`tasks/`, `specs/` and `reports/`, each carrying its own
 README), the skeletons for `AGENTS.md` and `docs/`, the one-line
 `CLAUDE.md` shim (`@AGENTS.md` — Claude Code reads that file, not
@@ -23,7 +25,8 @@ and `conventions/`. No file is part both, which is what lets an update
 run without merging anyone's prose — no markers, no preserved lines. **Severing the mirror is the `stage`
 setting, not a deletion.** An adopter that wants no GitHub Issues lowers
 the top-level `stage` below `3`, and every mirror in the kit stands down
-at once: `writrun-issues.yml` is wholly Stage 3, so is
+at once: `writrun-issues.yml` and `writrun-intake.yml` are wholly
+Stage 3, so is
 `writrun-progress.yml`'s `reflect` job, and so are the two mirror steps
 `approve` carries. Those steps are what changed the instruction — a
 merged close has exactly one owner, and it has to be the workflow that
@@ -32,7 +35,8 @@ after the recording commit is derived from a state the merge already
 changed. Delete the two mirror workflows and leave `stage` at its
 default of `3`, and `approve` goes on minting and labelling mirrors at
 every merge; lower the stage, and deleting them is tidying rather than
-severing. `writrun-issues.yml` is the only one a deletion severs
+severing. `writrun-issues.yml` and `writrun-intake.yml` are the only
+ones a deletion severs
 cleanly: `writrun-progress.yml` also carries Stage 2's in-flight status
 recording, and `check` and `approve` stand alone. The guide names the
 kit's three collision

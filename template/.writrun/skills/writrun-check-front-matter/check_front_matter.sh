@@ -38,12 +38,14 @@
 #   - `origin` is `rule` or `report`, always present on a task — how it
 #     came to exist is a fact, and there is no third answer
 #   - a report's `status` is the route triage took, not a lifecycle:
-#     `open` and the four ends, and `triaged` is set exactly when the
-#     status is one of the four. Null while `open` because nothing has
+#     `open` and the five ends, and `triaged` is set exactly when the
+#     status is one of the five. Null while `open` because nothing has
 #     been decided; set when something has, because a judgement with no
 #     date is a judgement nothing can be ordered against. The two ends
 #     this file can follow carry what names their outcome with them:
-#     `tracked` a non-empty `task_ref`, `authored` a `doc_ref`
+#     `tracked` a non-empty `task_ref`, `authored` a `doc_ref` — while
+#     `routed` sent the work upstream, so a `task_ref` here would claim
+#     work this queue does not own
 #     (docs/product/concepts/report.md#statuses--the-route-not-a-lifecycle)
 #   - `provenance` is the one field allowed to open a block list, and the
 #     only shape it may take is a dash-opened line per entry, each entry a
@@ -448,14 +450,14 @@ check_report() {   # check_report <file>
   check_id "$f" "$block"
 
   # The route triage took, not a lifecycle: one non-terminal value and
-  # the four ends. There is no `resolved` — whether the underlying work
+  # the five ends. There is no `resolved` — whether the underlying work
   # is done is the task's status, one hop away through task_ref, and a
   # second copy of that fact would need a second writer to stay true
   # (docs/product/concepts/report.md).
   st=$(get "$block" status)
   case "$st" in
-    open|tracked|authored|fixed|declined) ;;
-    *) fail "$f" "status '$st' is not a report status (open|tracked|authored|fixed|declined)" ;;
+    open|tracked|authored|fixed|declined|routed) ;;
+    *) fail "$f" "status '$st' is not a report status (open|tracked|authored|fixed|declined|routed)" ;;
   esac
 
   # A list even with one element, because triage can split one finding
@@ -477,7 +479,7 @@ check_report() {   # check_report <file>
     fail "$f" "status is open but triaged is '$tri' — a report carries the date only once triage has ended it"
   fi
   case "$st" in
-    tracked|authored|fixed|declined)
+    tracked|authored|fixed|declined|routed)
       [ "$tri" != "null" ] \
         || fail "$f" "status is '$st' but triaged is null — the date is when triage decided, and every end has one"
       ;;
@@ -486,10 +488,14 @@ check_report() {   # check_report <file>
   # An end and the field that names its outcome are one judgement written
   # twice, so they are paired the way `triaged` is. The table in
   # concepts/report.md is the contract: `tracked` is named by `task_ref`,
-  # `authored` by the `doc_ref` the rule was written into. The other two
+  # `authored` by the `doc_ref` the rule was written into. The other
   # ends name their outcome where this checker cannot follow — `fixed` in
-  # the git history, `declined` in the body — so they are not paired here,
-  # and that asymmetry is the concept's, not an omission.
+  # the git history, `declined` and `routed` in the body (the reason, the
+  # upstream issue) — so they are not paired here, and that asymmetry is
+  # the concept's, not an omission. `routed` is bounded from the other
+  # side instead: it sent the work to the repository that owns the
+  # defect, so a task named here would claim work this queue never
+  # gained.
   #
   # Unpaired, `status: tracked` with `task_ref: []` passed every gate: a
   # report permanently claiming work that nothing carries, and a mirror
@@ -501,6 +507,9 @@ check_report() {   # check_report <file>
     authored)
       [ "$(get "$block" doc_ref)" != "null" ] \
         || fail "$f" "status is authored but doc_ref is null — authored means a rule was written, and doc_ref is what names it" ;;
+    routed)
+      [ "$(get "$block" task_ref)" = "[]" ] \
+        || fail "$f" "status is routed but task_ref names a task — routed sent the work upstream, and the body names the issue it became" ;;
   esac
   return 0
 }

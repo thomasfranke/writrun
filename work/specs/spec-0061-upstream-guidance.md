@@ -1,7 +1,7 @@
 ---
 id: spec-0061
 task_ref: task-0043
-status: approved
+status: implemented
 created: 2026-09-04T06:26:08Z
 ---
 
@@ -95,4 +95,21 @@ which is why the task depends on it.
 
 ## Outcome
 
-_(fill after execution)_
+Built as planned, steps 1–4, with one address made precise: the kit's
+agent flow is authored at `.writrun/AGENTS.md` — the mirror's source —
+and shipped to `template/` by the sync, so that is where the section
+landed. "When the defect is WritRun's" states the whole route: record
+locally as for any observation; ask the user per report, never from
+the conduct flags; on yes, open the issue on the repository the kit
+came from — named outright, with the `WRITRUN.md` provenance pointer
+as its witness — title the observation, body the evidence and the
+`.writrun/VERSION` tag; end the report `routed`, body naming the
+issue; a refused or unanswerable ask leaves it `open`. The triage
+sentence says five ends and which three are the agent's to write, the
+kit's reports README carries the table row and the one-paragraph
+upstream pointer, and `WRITRUN.md`'s finding bullet and report section
+name the channel and the intake that receives it. The
+doubt-about-whose-defect edge landed as the evidence rule the spec
+gave: reproduced against a clean kit copy it is upstream's.
+`check_doc_shapes.sh` exits 0 over the edited prose; the ships-vs-names
+guards stay green.

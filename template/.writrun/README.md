@@ -2,7 +2,7 @@
 
 Everything WritRun ships that is WritRun's own to place lives here, so
 provenance is never in doubt. What the platform dictates stays where the
-platform demands — the four `writrun-*.yml` workflows in
+platform demands — the five `writrun-*.yml` workflows in
 `.github/workflows/` (GitHub runs them nowhere else), the four-line
 pointer WritRun grafts into the adopting project's root `AGENTS.md`
 (agents look for it there, and it is all WritRun claims of that file) —

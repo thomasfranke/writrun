@@ -11,9 +11,10 @@ depends_on: [task-0042]
 milestone: null
 created: 2026-09-04T06:25:47Z
 queued: 2026-09-04T06:43:14Z
-completed: null
+completed: 2026-09-04T13:33:00Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-fable-5, login: thomasfranke, input: 410, output: 153702, cache_read: 31044300, cache_write: 319736}
 ---
 
 # Ship the cross-repository report channel

@@ -20,7 +20,7 @@ moves between directories as work progresses.
 
 **Reports sit outside that pipeline on purpose.** Nothing selects one,
 nothing schedules one, and a report commits to no work at all: it
-records what was seen, and triage decides which of four ends it comes
+records what was seen, and triage decides which of five ends it comes
 to. Recording one rides whatever change is already open — that is what
 keeps the cost of writing one at nearly zero, which is the whole reason
 the concept works.

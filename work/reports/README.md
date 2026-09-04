@@ -29,8 +29,11 @@ branch to note something down, and waiting for one is how the finding
 gets lost. That prefix belongs to the `tracked` route alone: routing a
 report to the queue is what needs a change of its own, because the
 merge of that pull request is the assent that the finding deserves the
-work. The three ends that create no work — `authored`, `fixed`,
-`declined` — ride like the recording does.
+work. The four ends that create no work — `authored`, `fixed`,
+`declined`, `routed` — ride like the recording does; `routed` sent the
+work to the repository that owns the defect, and the body names the
+issue it became
+([routing upstream](../../docs/product/concepts/report.md#routing-upstream)).
 
 Use the generator rather than the schema from memory, **from the
 repository root** — every path it reads and writes is relative to the
@@ -46,7 +49,7 @@ bash .writrun/skills/writrun-create-task-and-spec/new.sh report "<title>" \
 It takes neither `--origin` nor `--priority` — a report has no origin of
 its own, and it commits to no work. Triage's `tracked` route has a
 generator too: `new.sh task --from-report report-NNNN` appends the new
-task's id here and stamps the date. The other three ends are written by
+task's id here and stamps the date. The other four ends are written by
 hand, status and `triaged` together, and go through
 [`writrun-check-front-matter`](../../.writrun/skills/writrun-check-front-matter/SKILL.md)
 before the commit.

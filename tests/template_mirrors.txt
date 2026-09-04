@@ -1,5 +1,7 @@
 .writrun
 .github/workflows/writrun-approve.yml
 .github/workflows/writrun-check.yml
+.github/workflows/writrun-intake.yml
 .github/workflows/writrun-issues.yml
 .github/workflows/writrun-progress.yml
+.github/ISSUE_TEMPLATE/writrun-report.yml

@@ -20,7 +20,7 @@ needs an observation worth remembering.
 State what was observed, with whatever evidence is at hand. What should
 be done about it is triage's output, not this file's content.
 
-## Triage — one of four ends
+## Triage — one of five ends
 
 | Status | Means |
 |---|---|
@@ -29,6 +29,7 @@ be done about it is triage's output, not this file's content.
 | `authored` | no rule said what "correct" was; a rule was written |
 | `fixed` | a trivial change handled it |
 | `declined` | not a defect, or not worth acting on — the body says why |
+| `routed` | another repository's to act on — the body names the issue it became |
 
 There is no `resolved`: whether the underlying problem is fixed is the
 task's status, one hop away. A report is never reopened — the same thing
@@ -51,10 +52,16 @@ bash .writrun/skills/writrun-create-task-and-spec/new.sh report "<title>" \
 
 Triage's `tracked` route has a generator too —
 `new.sh task --from-report report-NNNN` appends the task's id here and
-stamps the date. The other three ends are written by hand, status and
+stamps the date. The other four ends are written by hand, status and
 `triaged` together, and go through
 [`writrun-check-front-matter`](../../.writrun/skills/writrun-check-front-matter/SKILL.md)
 before the commit.
+
+A defect in WritRun itself — the kit, its scripts, its rules — is not
+this queue's to act on: it goes upstream, on the user's explicit
+authorization, and the local report ends `routed`. The route, the ask
+and both outcomes are in the recording section of
+[`.writrun/AGENTS.md`](../../.writrun/AGENTS.md).
 
 Do not select work from this directory. Reports are not queued work; the
 selection algorithm reads `work/tasks/` and nothing here.

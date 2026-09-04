@@ -49,16 +49,17 @@ is a type the door refuses.
 
 - Trivial work is a commit, never a task (principle 6).
 
-**Two workflows commit, and their subjects are the constant above.**
+**Three workflows commit, and their subjects are the constant above.**
 `writrun approve` records what a merge decided — the specs it approved,
-and the `queued`/`merged` dates it earned — and `writrun progress`
-records what a pull request event moved. Both take their subject from
+and the `queued`/`merged` dates it earned — `writrun progress` records
+what a pull request event moved, and `writrun intake` records the
+report a maintainer's label let in. All three take their subject from
 [`commit_subject.sh`](../scripts/stage-2-pull-requests/commit_subject.sh),
 one literal per event under the scope `queue`; the text lives there and
-not in either workflow, because two callers writing it separately are two
-places to edit, and nothing squashes these — a subject that drifted would
-sit on `main` for good. Each is one commit because each records one
-event.
+not in any workflow, because three callers writing it separately are
+three places to edit, and nothing squashes these — a subject that
+drifted would sit on `main` for good. Each is one commit because each
+records one event.
 
 **A branch's own subjects are a convention kept by hand.** Squash-only
 discards every one of them — what reaches `main` is a single subject,

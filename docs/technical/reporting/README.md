@@ -7,6 +7,7 @@ technical router is [`../README.md`](../README.md).
 | Chapter | Holds |
 |---|---|
 | [`entry-point.md`](entry-point.md) | the operation's contract, deterministic end to end |
+| [`intake.md`](intake.md) | how a labelled issue becomes a report — the workflow, the script's contract, the id race, the body-is-data handling |
 
 ## The skill is the operational pointer
 

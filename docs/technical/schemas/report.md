@@ -7,7 +7,7 @@
 ```yaml
 ---
 id: report-0001
-status: open                       # open | tracked | authored | fixed | declined
+status: open                       # open | tracked | authored | fixed | declined | routed
 task_ref: []                       # the tasks triage produced; a list, always
 doc_ref: null                      # the doc violated, or the doc the rule was written into
 created: 2026-09-01T20:23:51Z
@@ -27,12 +27,22 @@ same three views — the directory, the git history, and every open pull
 request — and is never reused.
 
 `status` is the **route triage took**, not a lifecycle. `open` is the
-only non-terminal value; the four others are the ways a report ends, and
+only non-terminal value; the five others are the ways a report ends, and
 they are the triage table's outcomes
 ([report](../../product/concepts/report.md#statuses--the-route-not-a-lifecycle)).
 There is no `resolved`: whether the underlying work is done is the
 task's status, reachable through `task_ref`, and a second copy of that
 fact would need a second writer to stay true.
+
+`routed` pairs with `triaged` exactly as the other four ends do — the
+date is when the judgement was made — and what names its outcome is the
+**upstream issue, in the body**: the report was sent to the repository
+that owns the defect, so no field here can point at it, the way
+`declined` keeps its reason in prose. `task_ref` stays empty on a
+`routed` report — a task named here would claim work this queue never
+gained — and the checker refuses one that is not. `doc_ref` is allowed
+and rare: the doc that states the consumed thing's behaviour, when one
+exists ([routing upstream](../../product/concepts/report.md#routing-upstream)).
 
 `task_ref` is a list even with one element, like `spec_ref` — and it is
 the **only** link between the two kinds. The task schema is unchanged:

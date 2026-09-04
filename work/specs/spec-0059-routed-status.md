@@ -1,7 +1,7 @@
 ---
 id: spec-0059
 task_ref: task-0043
-status: approved
+status: implemented
 created: 2026-09-04T06:26:04Z
 ---
 
@@ -103,4 +103,21 @@ only, and `routed` is terminal.
 
 ## Outcome
 
-_(fill after execution)_
+Built as planned, steps 1–5: `routed` joined the vocabulary in
+`check_front_matter.sh` (terminal, paired with a stamped `triaged`,
+`doc_ref` free to stay null), `check_state.sh` reads it as the other
+ends everywhere — rule J's no-re-route and rule K's rides-anything
+exemption — both mirror writers close it **completed** beside the three
+acted-on ends, the two `work/reports/README.md`s carry it, and the sync
+shipped the script changes to the kit. The schema chapter records the
+enum and what names the outcome; the entry point's triage step names
+the fifth route and the authorization it waits on.
+
+Two readings the spec left open, settled here. "Keeps `task_ref`
+empty" is enforced, not merely described: a `routed` report naming a
+task is refused, because the work went to the repository that owns the
+defect and a task here would claim work this queue never gained —
+covered in `report_ends_name_their_outcome_test.sh`. And the root
+`work/reports/README.md` has no status table to gain a row (only the
+kit's copy does); the root gained the end in its "For agents" prose,
+with the upstream-routing pointer, in the same pass as promised.
