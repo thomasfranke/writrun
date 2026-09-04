@@ -161,18 +161,64 @@ omission is what an agent would ship. `resume_command()` carries the flag
 too, on the same reasoning that already put `--slug` and `--confirm`
 there: the printed rerun performs the act that was interrupted.
 
-**One consequence not closed here.** Neither `AGENTS.md` take example
-passes `--coauthor` — this repository's, nor the kit's in
-`.writrun/AGENTS.md` — so an agent following either gets an untrailered
-first commit, and the printed reminder rather than silence. Correcting
-them is a permanent-doc edit this spec's Proposed changes does not list,
-so it is left to a change that declares it.
+**The consequence that was left open is closed here.** Neither
+`AGENTS.md` take example passed `--coauthor` — this repository's, nor the
+kit's in `.writrun/AGENTS.md` — so an agent following either got an
+untrailered first commit and, hours later, a completion gate faulting it.
+Recording it and leaving it (`report-0025`) was reconsidered under review:
+the defect is one this change introduces, it breaks the documented entry
+point from the merge onward, and neither file sits under `docs/`, so the
+deltas gate does not reach them. Both examples now pass the flag, and
+`report-0025` is `fixed` rather than `open`.
+
+**`auto_commit` was not read, and the act now commits.** The conduct gate
+asked `auto_push` and `auto_pr` only, so an adopter at
+`auto_commit: false` got a commit written without being asked — the one
+flag whose act this change introduced was the one flag nobody consulted.
+It joins the gate, and holds the whole act like its two siblings, per
+`settings/conduct.md`: the commit, the push and the opening are one
+moment before a pull request exists. `false` gates the action and never
+the work, so the first commit's message is composed beside the branch,
+the title and the body and printed with them — what is held is presented
+in full, trailer included. This is the spec's Edge cases list read
+literally rather than as written: it enumerated `auto_push` and
+`auto_pr`, and the omission was the same one the script made.
+
+**Three defects found by review, fixed here.** The conduct gate's own
+rerun hint was written inline rather than through `resume_command()`, so
+it dropped `--coauthor` — a hint labelled "this exact act is performed"
+that, run verbatim, produced the untrailered commit above; the two paths
+now print through one `rerun_command()`. The range guard read
+`|| AHEAD=""` and then `${AHEAD:-0}`, so a range git could not answer was
+indistinguishable from an empty one and fell through to the branch that
+*commits*; it fails closed now, the posture the TYPES/SCOPES read already
+took. And `--coauthor` was accepted unvalidated while the same script
+reads `check_observance.sh`'s own vocabularies rather than let a title
+through that the door would refuse — the value is now held to one line,
+`Name <address>`, and a name outside that script's `CATEGORIES`, read
+from its assignment line like `TYPES` and `SCOPES` are.
+
+**And one defect recorded rather than fixed.** When the push succeeds and
+`gh pr create` fails, the printed `--resume` is refused by `--resume`'s
+own guard — the push created `refs/remotes/origin/<branch>`, which is
+what that guard reads. This spec's Scope puts the guard out by name, on
+the reasoning that widening it while the cause was still present would
+paper over the cause. The cause is gone now, and what is left is a hint
+and a doc sentence describing an act the script refuses: `report-0026`.
 
 Two smaller divergences. `--resume` on a branch cut but never committed
 now commits, which is step 2's guard read literally and a slight widening
 of what the resume does; the case is covered. And
 `the_act_is_one_motion_test.sh`'s "cut from `origin/main`" assertion had
 to move from `HEAD` to `HEAD^`, since the tip is now the first commit.
+
+Step 6's doc gained more than the subsection: the conduct paragraph names
+all three flags, the by-hand recipe gained the commit step it was missing
+— it still read "branch, push, and open", which is `report-0019`'s
+failure written as instructions — and the subsection says what holds the
+commit and what the trailer's value is held to. The "two flags" heading
+is left as it is: renaming it would move an anchor `technical/distribution.md`
+links to, and that file is not on this spec's promised list.
 
 Tests: the Tests required list's fourth item asks the `gh`-stubbed
 integration tier to reach `gh pr create`. That tier is

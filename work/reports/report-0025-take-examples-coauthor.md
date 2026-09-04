@@ -1,15 +1,15 @@
 ---
 id: report-0025
-status: open
+status: fixed
 task_ref: []
-doc_ref: product/stage-2-pull-requests/statuses.md
+doc_ref: technical/settings/conduct.md#agent_coauthor
 created: 2026-09-04T17:11:36Z
-triaged: null
+triaged: 2026-09-04T18:02:11Z
 ---
 
 # The take examples omit the flag the first commit's trailer needs
 
-**References:** [product/stage-2-pull-requests/statuses.md](../../docs/product/stage-2-pull-requests/statuses.md)
+**References:** [technical/settings/conduct.md#agent_coauthor](../../docs/technical/settings/conduct.md#agent_coauthor)
 
 task-0045 gives the taking act a first commit, and `--coauthor` is what
 writes the `Co-Authored-By:` trailer on it. Neither take example passes
@@ -39,5 +39,10 @@ So the failure does not land where the flag was omitted. It lands at
 the completion gate of a pull request whose first commit was made
 hours earlier, by a command the entry point told the agent to run.
 
-Recorded rather than fixed in task-0045's change: both files are
-permanent docs, and spec-0064's Proposed changes lists neither.
+Fixed in task-0045's change, after review. Both examples now pass
+`--coauthor`, with the sentence that says who owes it. The route was
+reconsidered because the omission does not merely inconvenience: from the
+merge of that change onward, every agent take that follows the documented
+entry point produces a pull request its own completion gate rejects, and
+neither file sits under `docs/`, so the deltas gate that refuses
+unpromised permanent-doc edits does not reach them.
