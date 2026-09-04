@@ -33,6 +33,9 @@ check "the merge recording is conventional under the bracketed style" 0 \
 check "and so is the forge recording" 0 \
   "chore(queue): record what the forge just did" \
   -- bash "$SUBJECT" forge
+check "and so is the intake's" 0 \
+  "chore(queue): record what the label let in" \
+  -- bash "$SUBJECT" intake
 refute "the style the titles take does not dress the subject" \
   "\[Chore\]\[Queue\]" \
   -- bash "$SUBJECT" merge
