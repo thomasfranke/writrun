@@ -77,19 +77,9 @@ bash .writrun/scripts/stage-2-pull-requests/take_task.sh 0034 \
 
 ## Human gates — per principle 7
 
-This repo's answer; every project states its own. Reasoning:
-[`gates.md`](docs/product/stage-1-tasks-and-specs/gates.md#what-a-projects-own-table-has-to-carry).
-
-| Transition | Who |
-|---|---|
-| Anything under `docs/` | Human writes, or reviews before merge; agents may draft. |
-| An authored rule declared finished | **Human declares it** — never inferred. |
-| Spec `draft → approved` | **Human only**; here the assent is the maintainer's merge. |
-| Task with empty `spec_ref` | Brief insufficient → **stop and ask for a spec**. |
-| Derived work, before the PR opens | **Present it in the session.** |
-| Repository/forge settings | **Owner assents in session**, per set. |
-| A report becomes a task (`tracked`) | **Agent derives, human assents** — that change's own merge. |
-| Everything else | Agent, autonomously — triage to `fixed`/`declined` included. |
+This repo's answers live in [`.writrun/gates.md`](.writrun/gates.md) —
+the adopter-owned file every project fills with its own. Read it before
+any transition it names.
 
 ## Never
 

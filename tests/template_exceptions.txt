@@ -1,1 +1,2 @@
 .writrun/settings.json
+.writrun/gates.md

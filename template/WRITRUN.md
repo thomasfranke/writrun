@@ -77,7 +77,8 @@ Three things happen off this line:
 | `work/reports/` | What was noticed. Commits to nothing. |
 | `.writrun/` | The machinery: skills, scripts, conventions, settings. Its [README](.writrun/README.md) says which of them are WritRun's and which are yours. |
 | `.github/workflows/writrun-*.yml` | The checks and the recording. The two mirror workflows are optional. |
-| `AGENTS.md` | Where an agent starts. The WritRun part sits between markers; the rest is yours. |
+| `AGENTS.md` | Where an agent starts. WritRun claims four lines of it — a pointer to `.writrun/AGENTS.md`, where the whole flow lives; the rest is yours. |
+| `CLAUDE.md` | One line, `@AGENTS.md` — Claude Code reads this file, not `AGENTS.md`, so the shim points it at the shared entry. |
 
 ## What you decide
 
@@ -103,10 +104,20 @@ lifecycle, and the file shapes. An agent runs them; you never have to.
 
 1. `.writrun/` and the workflows work as copied. Make the conventions
    yours.
-2. **`AGENTS.md`** — no previous one? Fill the TODOs. Already had one?
-   Graft the marked section into it; never overwrite. The four human
-   gates must end up named there: naming an agent as a gate's operator
-   is an answer, leaving a gate unnamed is not.
+2. **`AGENTS.md`** — no previous one? Fill the TODO. Already had one?
+   Add the four-line WritRun pointer section to it; never overwrite,
+   and add nothing else — the flow lives in `.writrun/AGENTS.md`, which
+   is WritRun's and gets replaced whole on update. Keep the pointer a
+   link, never an `@` reference: Claude Code imports recursively, and an
+   `@` would load the whole flow into every session. Fill
+   **`.writrun/gates.md`** with the project's answers — it is yours,
+   like `settings.json`, and no update touches it; naming an agent as a
+   gate's operator is an answer, leaving a gate unnamed is not.
+   Vendors: Codex and Antigravity read `AGENTS.md` at the root natively
+   (Antigravity caps a rules file at 12,000 characters — one more
+   reason the entry point stays short). Claude Code reads `CLAUDE.md`;
+   the kit's one-line shim answers that. Already had a `CLAUDE.md`?
+   Keep yours and add the `@AGENTS.md` line to it.
 3. **`docs/`** — read `docs/writrun-instructions.md`. Keep the docs you
    already have. Any shape counts. Three documents are required of you:
    an About file, a product doc and a technical doc — real ones, not a
