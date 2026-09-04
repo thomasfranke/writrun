@@ -7,7 +7,7 @@
 setup
 stub_forge
 forge_unavailable
-check "no forge mints from the checkout, and says so" 0 "this checkout only" \
+check "no forge mints from the checkout, and says so" 0 "this checkout and its history only" \
   -- bash "$NEW_SH" task "First" --origin rule
 if [ -f work/tasks/task-0001-first.md ]; then
   echo "ok    the local tree and history still answer"; pass=$((pass + 1))
