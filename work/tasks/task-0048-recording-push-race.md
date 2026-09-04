@@ -3,7 +3,7 @@ id: task-0048
 status: ready
 blocked_reason: null
 taken_by: null
-spec_ref: []
+spec_ref: [spec-0067]
 doc_ref: product/stage-2-pull-requests/statuses.md#criteria
 origin: report
 priority: high
@@ -18,7 +18,7 @@ provenance: []
 
 # Hold the recording push against a concurrent one
 
-**References:** [product/stage-2-pull-requests/statuses.md#criteria](../../docs/product/stage-2-pull-requests/statuses.md#criteria)
+**References:** [product/stage-2-pull-requests/statuses.md#criteria](../../docs/product/stage-2-pull-requests/statuses.md#criteria) · [spec-0067](../specs/spec-0067-recording-push-race.md)
 
 The recording step composes its write, rebases onto `main`, and pushes —
 once. A second recording landing in the gap between the rebase and the
