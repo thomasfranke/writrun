@@ -1,7 +1,7 @@
 ---
 id: spec-0063
 task_ref: task-0044
-status: approved
+status: implemented
 created: 2026-09-04T14:51:10Z
 ---
 
@@ -91,4 +91,24 @@ would be satisfied by the word "none" a forgotten section already earns.
 
 ## Outcome
 
-_(fill after execution)_
+Built as planned, steps 1–5. `## How to test` ships directly under
+`## How to verify`, inside the writrun-owned region, each with the
+instruction comment that says which question it answers — the
+methodology's result and anything to re-read by hand, against what the
+reviewer runs and what to expect back. Both comments say that a change
+with nothing runnable states that in a line, because a deleted section
+and a forgotten one look the same. `take_task.sh`'s no-template fallback
+carries the same sections in the same order. `conventions/prs.md` names
+the two questions and links `body.md`. The completion flow's own
+instruction is untouched: filling the section is the author's, at the
+moment they mark the pull request ready.
+
+Step 2's bullet lands beside
+[spec-0062](spec-0062-body-references.md)'s in the same file and the
+same change, as two bullets rather than one — that spec's Outcome
+records the same detail from its side.
+
+Tests: `the_body_answers_both_questions_test.sh` asserts the composed
+section list, in order, for the template path and for the fallback with
+the template removed, and that the implementing take drops
+`## Derived work` and `## Report`. The template mirror case is unchanged.

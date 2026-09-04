@@ -23,8 +23,30 @@ vocabularies with the same grammar `check_observance.sh` applies — an
 invalid summary refuses here, before anything exists, and the refusal
 names the tag as the script's to prepend, because what it judged was the
 summary alone; and the body from
-`.writrun/templates/pull_request_template.md`, implementing half kept,
-`Implements spec-…` filled from `spec_ref`.
+`.writrun/templates/pull_request_template.md`, the implementing section
+kept and the authoring and reporting ones dropped, with `## Spec`
+composed rather than left as a placeholder: one bullet per `spec_ref`
+entry, in that order, carrying the id, the spec's own title with the
+`spec-NNNN — ` prefix stripped, and an absolute URL to that file on
+`main` ([body](../../product/stage-2-pull-requests/body.md)).
+
+**A body composed without a usable remote carries ids and titles without
+links.** The blob URL is derived from `git remote get-url origin`, in
+both the `git@github.com:owner/repo.git` and
+`https://github.com/owner/repo` forms; a remote that is missing,
+unreadable or not on `github.com` yields no URL, because this path shape
+is GitHub's and one composed for another forge would be a dead link that
+reads as live. Every part degrades to the one above it — no URL leaves
+id and title, no spec file leaves the bare id, no `spec_ref` at all
+leaves the sentence that says so — because the act is the branch
+reaching the forge with a draft on it, and a take that refused over a
+heading it could not parse would trade the act for a bullet.
+
+**Both questions have a section, and the fallback carries them too.**
+`## How to verify` is the methodology's answer and `## How to test` is
+the reviewer's. Where the template is missing the script composes the
+same sections in the same order, so a project without one is not handed
+a different contract.
 
 **The conduct flags are honoured by the script, not by prose re-read per
 session.** The act commits, pushes and opens, so all three flags are read:
