@@ -33,8 +33,9 @@ else
 fi
 
 # The branch is cut from the fetched authority branch, never from
-# whatever the session happened to have checked out.
-if [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" ]; then
+# whatever the session happened to have checked out. Its first commit is
+# what the tip now is, so the parent is what the cut is read from.
+if [ "$(git rev-parse HEAD^)" = "$(git rev-parse origin/main)" ]; then
   echo "ok    the branch is cut from origin/main"; pass=$((pass + 1))
 else
   echo "FAIL  the branch is cut from origin/main"; fail=$((fail + 1))
