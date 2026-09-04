@@ -1,8 +1,8 @@
 ---
 id: task-0053
-status: ready
+status: in-progress
 blocked_reason: null
-taken_by: null
+taken_by: thomasfranke
 spec_ref: []
 doc_ref: product/stage-1-tasks-and-specs/authoring.md
 origin: report
