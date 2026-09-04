@@ -160,9 +160,10 @@ with it.
 **The `tracked` route never rides.** It is the one route that puts work
 in the queue, and what enters the queue passes a gate: deriving a task
 from a report is a reporting change on its own `report/` branch, whose
-pull request presents the report, the task and the spec together — and
-the maintainer's squash-merge of *that* pull request is the assent that
-the finding deserves the work
+pull request presents the report, the task and the spec together — or,
+when the spec lands later, the pair alone — and the maintainer's
+squash-merge of *that* pull request is the assent that the finding
+deserves the work
 ([authoring](../stage-1-tasks-and-specs/authoring.md#reporting--work-found-or-reported-mid-flight)).
 A `tracked` flip riding an unrelated pull request would mint a task that
 arrives `ready` at merge with nobody ever having weighed it: the mirror

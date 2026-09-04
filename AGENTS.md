@@ -46,6 +46,11 @@ Recording a report is the one exemption — neither rule nor work, it rides
 whatever is open. Except the `tracked` route, which never rides
 ([report](docs/product/concepts/report.md#recording-rides-any-change--routing-to-the-queue-does-not)).
 
+A spec drafted after its task was tracked is reporting's late form: a
+`report/` branch of its own, a PR stating the spec it drafts and the
+task that asked for it, gated on task-state alone
+([authoring](docs/product/stage-1-tasks-and-specs/authoring.md#reporting--work-found-or-reported-mid-flight)).
+
 ## The skills
 
 Not auto-discovered. Load the one whose moment you are at.

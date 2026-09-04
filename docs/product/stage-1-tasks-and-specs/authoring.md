@@ -137,11 +137,20 @@ landed on — that is the whole record, and nothing else keeps it.
 
 | The report | The route | Report ends |
 |---|---|---|
-| A real defect — a broken screen, a 500, documented behaviour gone | A task, through a reporting pull request of its own: the `report/` branch presents the report, the task and the spec together, and the maintainer's merge is the assent that the finding deserves the work. The defect violates the doc of the feature itself; `doc_ref` names it — or stays `null` when the broken feature was never documented, with the evidence in the report body. | `tracked` |
+| A real defect — a broken screen, a 500, documented behaviour gone | A task, through a reporting pull request of its own: the `report/` branch presents the report, the task and the spec together by default (below), and the maintainer's merge is the assent that the finding deserves the work. The defect violates the doc of the feature itself; `doc_ref` names it — or stays `null` when the broken feature was never documented, with the evidence in the report body. | `tracked` |
 | A behavioural disagreement — "shouldn't it do X instead?" | **Authoring.** No doc states the rule, so fixing means deciding it — the agent stops and hands the pen back; the rule is written first and the task derives from it. | `authored` |
 | A trivial fix — a typo, an obvious one-liner | A commit, never a task (principle 6). | `fixed` |
 | A defect of something this project consumes — the methodology, its kit | **Upstream.** On the user's explicit authorization, an issue on the upstream repository carries the observation ([report](../concepts/report.md#routing-upstream)); the local queue gains nothing. A refused ask leaves the report `open`. | `routed` |
 | Not a defect at all, or not worth acting on | Nothing. The body says why, which is the part worth keeping. | `declined` |
+
+**The spec may land after its task.** Together is the default: one
+merge assents to the finding, the work and its shape at once. When the
+specs riding along would make that single assent too large to review as
+one decision, the task is tracked with `spec_ref: []` and the pair
+rides without its spec. The spec is then drafted in a pull request of
+its own, on a `report/` branch, stating the spec it drafts and the task
+that asked for it. The merge of that pull request is the assent the
+spec's `draft → approved` transition requires ([gates](gates.md)).
 
 Recording and routing are **two moments, deliberately apart**. The
 report rides whatever change is open and lands `open`; from there it
@@ -252,3 +261,7 @@ put back exactly the cost the exemption exists to remove.
   report shall follow immediately, triaging what remains; the report
   shall still be recorded, and the shipped patch itself shall not
   receive a retroactive task.
+- When a tracked task's spec is drafted after the task entered the
+  queue, the spec shall land through a `report/` pull request of its
+  own, and that pull request's merge shall carry the assent the spec's
+  `draft → approved` transition requires.
