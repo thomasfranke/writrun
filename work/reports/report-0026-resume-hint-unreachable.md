@@ -1,15 +1,15 @@
 ---
 id: report-0026
-status: open
-task_ref: []
+status: tracked
+task_ref: [task-0052]
 doc_ref: technical/distribution/take-task.md#take_tasksh--the-taking-act-in-one-command
 created: 2026-09-04T17:37:18Z
-triaged: null
+triaged: 2026-09-04T18:30:55Z
 ---
 
 # The resume hint names an act --resume refuses, when the forge fails after the push
 
-**References:** [technical/distribution/take-task.md#take_tasksh--the-taking-act-in-one-command](../../docs/technical/distribution/take-task.md#take_tasksh--the-taking-act-in-one-command)
+**References:** [technical/distribution/take-task.md#take_tasksh--the-taking-act-in-one-command](../../docs/technical/distribution/take-task.md#take_tasksh--the-taking-act-in-one-command) · [task-0052](../tasks/task-0052-resume-after-push.md)
 
 `take_task.sh` pushes the branch and then opens the draft. When the push
 succeeds and `gh pr create` fails — a rate limit, a dropped connection,

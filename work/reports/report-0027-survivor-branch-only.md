@@ -1,15 +1,15 @@
 ---
 id: report-0027
-status: open
-task_ref: []
+status: tracked
+task_ref: [task-0049]
 doc_ref: product/stage-2-pull-requests/statuses.md#criteria
 created: 2026-09-04T17:51:19Z
-triaged: null
+triaged: 2026-09-04T18:30:51Z
 ---
 
 # The close-without-merge survivor query still asks by head branch alone
 
-**References:** [product/stage-2-pull-requests/statuses.md#criteria](../../docs/product/stage-2-pull-requests/statuses.md#criteria)
+**References:** [product/stage-2-pull-requests/statuses.md#criteria](../../docs/product/stage-2-pull-requests/statuses.md#criteria) · [task-0049](../tasks/task-0049-survivor-every-route.md)
 
 task-0047 makes a pull request carry every task its title tags, and the
 in-flight half now asks the survivor question once per carried task. The

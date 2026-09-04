@@ -1,15 +1,15 @@
 ---
 id: report-0028
-status: open
-task_ref: []
+status: tracked
+task_ref: [task-0050]
 doc_ref: technical/settings/titles.md#pr_title_style
 created: 2026-09-04T17:51:21Z
-triaged: null
+triaged: 2026-09-04T18:30:52Z
 ---
 
 # A fork pull request can claim every task its title lists
 
-**References:** [technical/settings/titles.md#pr_title_style](../../docs/technical/settings/titles.md#pr_title_style)
+**References:** [technical/settings/titles.md#pr_title_style](../../docs/technical/settings/titles.md#pr_title_style) · [task-0050](../tasks/task-0050-bound-carried-claims.md)
 
 `writrun-progress.yml` runs on `pull_request_target`, and its `gate` job
 admits every `pull_request_target` event — a fork's included, by design,
