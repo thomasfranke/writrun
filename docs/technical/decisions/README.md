@@ -86,3 +86,4 @@ appending a row.
 | [0064](tasks-and-specs/0064-a-report-is-an-artefact.md) | 2026-09-01 | `tasks-and-specs` | a report is an artefact, and its status is the route triage took. |
 | [0065](pull-requests/0065-a-promise-is-judged-by-shape.md) | 2026-09-02 | `pull-requests` | a promise is judged by its path's shape, never by whether the file exists. |
 | [0066](tasks-and-specs/0066-ownership-replaces-the-markers.md) | 2026-09-04 | `tasks-and-specs` | the CLI's update contract is ownership, not markers (supersedes [0020](tasks-and-specs/0020-a-cli-is-welcome.md)'s graft intents). |
+| [0067](pull-requests/0067-a-body-link-points-at.md) | 2026-09-04 | `pull-requests` | a pull request body's links are absolute, and point at `main`. |

@@ -20,3 +20,4 @@ person at Stage 1 does deliberately.
 | [`finishing.md`](finishing.md) | flow 4 — the two checks and their order |
 | [`approval.md`](approval.md) | flow 2 — the assenting act, and what records it |
 | [`review.md`](review.md) | flow 5 — review and merge, and the pull request that dies |
+| [`body.md`](body.md) | the pull request body — the three declarations, their links, and how to test |
