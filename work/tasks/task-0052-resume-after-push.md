@@ -1,8 +1,8 @@
 ---
 id: task-0052
-status: ready
+status: in-progress
 blocked_reason: null
-taken_by: null
+taken_by: thomasfranke
 spec_ref: [spec-0071]
 doc_ref: technical/distribution/take-task.md#take_tasksh--the-taking-act-in-one-command
 origin: report
