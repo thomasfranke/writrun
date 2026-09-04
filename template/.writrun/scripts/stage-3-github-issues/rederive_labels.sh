@@ -123,13 +123,13 @@ report_label_for() {
 }
 
 # report_close_for <report-file> — the close reason triage's end implies.
-# Three ends were acted on and one was not, which is the whole
+# Four ends were acted on and one was not, which is the whole
 # distinction the close carries
 # (docs/product/stage-3-github-issues/labels.md#the-report-mirror).
 report_close_for() {
   case "$(fm "$1" status)" in
-    tracked|authored|fixed) printf 'completed' ;;
-    declined)               printf 'not_planned' ;;
+    tracked|authored|fixed|routed) printf 'completed' ;;
+    declined)                      printf 'not_planned' ;;
   esac
 }
 

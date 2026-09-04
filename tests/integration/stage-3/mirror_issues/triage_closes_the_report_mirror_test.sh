@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 . "$(dirname "$0")/../../../mirror_lib.sh"
 
-# The four ends collapse into two closes: acted on, or not. A `route:`
-# label would carry the remaining distinction and is not worth a fifth
+# The five ends collapse into two closes: acted on, or not. A `route:`
+# label would carry the remaining distinction and is not worth another
 # thing for the machinery to keep true — the file says which route was
 # taken (docs/product/stage-3-github-issues/labels.md#the-report-mirror).
 
@@ -17,6 +17,18 @@ for st in tracked authored fixed; do
     "PATCH repos/o/r/issues/12 -f state=closed -f state_reason=completed"
   forge_not_told "and leaves no status label on it ('${st}')" "labels[]=status:"
 done
+
+# The fifth acted-on end names no task — the work went to the
+# repository that owns the defect — and it closes the same way: sent
+# upstream is acted on, not declined.
+setup_forge
+export PR_STATE=closed PR_MERGED=true
+added_report report-0003 "Sent upstream" routed "" 2026-08-23T01:00:00Z
+forge_report_issue 12 open "writrun:report,status:open" "[REPORT-0003] Sent upstream"
+check "'routed' closes the mirror completed" 0 "closed as completed" \
+  -- bash "$MIRROR_ISSUES" o/r 7
+forge_told "'routed' really tells the forge completed" \
+  "PATCH repos/o/r/issues/12 -f state=closed -f state_reason=completed"
 
 setup_forge
 export PR_STATE=closed PR_MERGED=true

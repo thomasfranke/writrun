@@ -21,6 +21,16 @@ check "a triaged report closes, from the file" 0 "closed as not_planned" \
 forge_told "no status label survives the close, and a person's does" \
   "PUT repos/o/r/issues/31/labels -f labels[]=writrun:report -f labels[]=needs-discussion"
 
+# The fifth end is acted on — the work went upstream — so the repair
+# lands on the same close the live mirror pass writes for it.
+setup_forge
+base_report report-0003 routed "" 2026-08-23T01:00:00Z
+forge_report_issue 31 open "writrun:report,status:open" "[REPORT-0003] Sent upstream"
+check "a routed report closes completed, from the file" 0 "closed as completed" \
+  -- bash "$REDERIVE_LABELS" o/r report-0003
+forge_told "and really tells the forge completed" \
+  "PATCH repos/o/r/issues/31 -f state=closed -f state_reason=completed"
+
 # A project that never recorded a report must not pay a forge call per
 # merge for a list that would always come back empty.
 setup_forge

@@ -734,20 +734,20 @@ EOF
 #
 # The same reconciliation, one kind over, and deliberately its own loop:
 # a report carries no `origin:` label, its two live labels are not a
-# task's, and the four ways triage ends it collapse into two closes that
+# task's, and the five ways triage ends it collapse into two closes that
 # no task status maps onto. Folding the two would have meant a branch per
 # difference inside one body that agreed with neither.
 
 # close_reason_of <report-status> — the reason triage's end implies, or
-# nothing while the report is still open. Three ends were acted on and
+# nothing while the report is still open. Four ends were acted on and
 # one was not, which is the whole distinction the close carries; the
-# file says which of the three, and a `route:` label saying it again
-# would be a fifth thing to keep true
+# file says which of the four, and a `route:` label saying it again
+# would be one more thing to keep true
 # (docs/product/stage-3-github-issues/labels.md#the-report-mirror).
 close_reason_of() {
   case "$1" in
-    tracked|authored|fixed) printf 'completed' ;;
-    declined)               printf 'not_planned' ;;
+    tracked|authored|fixed|routed) printf 'completed' ;;
+    declined)                      printf 'not_planned' ;;
   esac
 }
 
@@ -787,7 +787,7 @@ while IFS="$TAB" read -r rid fname rstatus rtitle; do
   # nothing is what this pass then does — the mirror already reflects
   # whatever the last pass that could read it wrote.
   case "$rstatus" in
-    open|tracked|authored|fixed|declined) ;;
+    open|tracked|authored|fixed|declined|routed) ;;
     *)
       echo "${rid}: this diff says nothing about its status — leaving its mirror alone."
       continue ;;
