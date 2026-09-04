@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # check_observance.sh — the settings an agent is told to obey, checked
 # where disobedience leaves a trace
-# (docs/technical/README.md#observance-is-checked-where-it-leaves-a-trace).
+# (docs/technical/settings/observance.md#observance-is-checked-where-it-leaves-a-trace).
 #
 # Usage: check_observance.sh <diff-range>
 #   The PR title and body arrive via $PR_TITLE and $PR_BODY — through the
@@ -359,7 +359,7 @@ if [ "$faults" -ne 0 ]; then
   echo "" >&2
   echo "These are settings the project declared and an agent was told to" >&2
   echo "obey. What leaves a trace is checked rather than trusted" >&2
-  echo "(docs/technical/README.md#observance-is-checked-where-it-leaves-a-trace)." >&2
+  echo "(docs/technical/settings/observance.md#observance-is-checked-where-it-leaves-a-trace)." >&2
   exit 1
 fi
 

@@ -22,7 +22,7 @@
 # to none: it says something was seen, and triage decides whether
 # anything follows (docs/product/concepts/report.md).
 #
-# Exists because the schema in docs/technical/schemas.md is precise about
+# Exists because the schema in docs/technical/schemas/README.md is precise about
 # details easy to get wrong from memory: spec_ref/depends_on are always
 # lists even with one element, doc_ref is a full path+anchor resolved
 # relative to docs/, and every field is present even when null. A
@@ -43,7 +43,7 @@
 #
 # The next id is minted above the queue, the history, *and* every open pull
 # request — an id is unique across all three
-# (docs/technical/README.md#task-schema). Consulting the forge is
+# (docs/technical/schemas/task.md#task-schema). Consulting the forge is
 # best-effort by design: no `gh`, no network, or no auth mints from this
 # checkout alone, exactly as before, and says so. A narrower view is not
 # wrong, it is narrower — and a silently narrower scan is how two branches
@@ -57,7 +57,7 @@
 # substituted.
 #
 # **References are navigable, not just resolvable**
-# (docs/technical/README.md#task-schema). The front matter keeps its
+# (docs/technical/schemas/task.md#task-schema). The front matter keeps its
 # references as plain strings — it is the machine contract, and every
 # reader here is line-based — while the generated *body* carries the same
 # references as relative markdown links: a task's body links its
@@ -411,7 +411,7 @@ case "$cmd" in
     # to exist, written once and never rewritten — and a default would
     # record one of the two silently, for whichever kind of change happened
     # not to say. A wrong fact nobody typed is the failure the field exists
-    # to prevent, so an unstated origin refuses (docs/technical/README.md#task-schema).
+    # to prevent, so an unstated origin refuses (docs/technical/schemas/task.md#task-schema).
     case "$origin" in
       rule|report) ;;
       "") echo "--origin is required — 'rule' for a task derived from an authored rule, 'report' for one born from a report (or --from-report, which states it)" >&2; exit 3 ;;

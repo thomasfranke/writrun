@@ -6,7 +6,7 @@ description: Use this skill when picking what to work on next in a project that 
 # Select next task
 
 The algorithm is
-[`technical/selection.md`](https://github.com/thomasfranke/writrun/blob/main/docs/technical/selection.md#task-selection-algorithm)
+[`technical/selection/algorithm.md`](https://github.com/thomasfranke/writrun/blob/main/docs/technical/selection/algorithm.md#task-selection-algorithm)
 — steps 0–6, what step 0 can and cannot see, and why nobody claims a
 task. `list_tasks.sh` implements it, so the answer is the same for every
 session instead of re-derived per session.

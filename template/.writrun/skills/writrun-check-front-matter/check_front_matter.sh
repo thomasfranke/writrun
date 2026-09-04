@@ -53,10 +53,10 @@
 #     the other legal spelling. An entry opened as a block mapping — its
 #     keys on lines of their own — is refused, because that is precisely
 #     the shape the line-based readers cannot see
-#     (docs/technical/README.md#task-schema).
+#     (docs/technical/schemas/task.md#task-schema).
 #
 # Unknown keys in canonical shape are allowed — an adopter may extend.
-# The schemas themselves: docs/technical/schemas.md.
+# The schemas themselves: docs/technical/schemas/README.md.
 #
 # Exit codes: 0 every file canonical (or nothing to validate); 1 a file
 # is malformed; 3 usage error.
@@ -107,7 +107,7 @@ require_once() {   # require_once <file> <block> <field>
 # carries — who did the work and who answers for it; `model` belongs to an
 # agent's entry alone, and the four counts are the platform's own numbers,
 # kept as counts because a stored currency figure becomes a lie about the
-# past the next time a price changes (docs/technical/README.md#task-schema).
+# past the next time a price changes (docs/technical/schemas/task.md#task-schema).
 LEDGER_KEYS="by model login input output cache_read cache_write"
 LEDGER_COUNTS="input output cache_read cache_write"
 
@@ -376,7 +376,7 @@ check_task() {   # check_task <file>
   # from an authored rule, or born from a report of work an existing rule
   # already authorizes. Written once at creation and never rewritten, so
   # the only thing left to hold is that it is there and says one of the
-  # two (docs/technical/README.md#task-schema).
+  # two (docs/technical/schemas/task.md#task-schema).
   org=$(get "$block" origin)
   case "$org" in
     rule|report) ;;

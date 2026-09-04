@@ -6,7 +6,7 @@ description: Use this skill when creating a new task, spec or report in a projec
 # Create a task, its spec when warranted, or a report
 
 `new.sh` writes the front matter, so the schema —
-[`technical/schemas.md`](https://github.com/thomasfranke/writrun/blob/main/docs/technical/schemas.md)
+[`technical/schemas/README.md`](https://github.com/thomasfranke/writrun/blob/main/docs/technical/schemas/README.md)
 — is never re-derived from memory; a file written by hand goes through
 `writrun-check-front-matter` before it is committed. Read the target
 project's own `docs/technical/` where it exists: it may state adopter
