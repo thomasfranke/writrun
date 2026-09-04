@@ -42,7 +42,7 @@ compromise, and a spec that dressed it as one would be arguing for a
 defence nobody can size.
 
 It is still worth bounding. The queue is what this project's people read
-to decide what to work on, and a hundred false `in-progress` lines make
+to decide what to work on, and a few dozen false `in-progress` lines make
 that read worthless while they stand. The harm is to the queue's
 usefulness, and the queue's usefulness is the whole product.
 
@@ -102,7 +102,10 @@ were weighed:
   The lost recording heals in one click: closing and reopening fires
   `reopened`, which is `take`, and `take` is legal from `ready`. That
   heal path is part of what this spec ships — it goes in the refusal's
-  own message, not only in this paragraph.
+  own message, not only in this paragraph. One path bends the exit,
+  never the refusal: the merge, whose event cannot re-fire and whose
+  commit sits behind a success-gated step — the caller inventory below
+  says how and why.
 
 **The ceiling lives in the helper, so the question has one answer.**
 `ql_carried_of` has five callers today: the in-flight half
@@ -114,16 +117,34 @@ does this pull request carry" a question with two answers, which is the
 divergence [spec-0066](spec-0066-carried-tags-inflight.md) existed to
 end. The last two ask the question about *another*, stranger pull
 request, and they get the ceiling too — an unbounded title there is not
-harmless either: a hundred-tag open pull request makes `take_task.sh`
-refuse a hundred takes with "already in flight on pull request #N".
+harmless either: one over-ceiling open pull request makes `take_task.sh`
+refuse a take for every task it names, up to the twenty-three the
+forge's 256-character title cap admits, each with "already in flight on
+pull request #N". And a sixth asker is already in flight beside this
+spec: [spec-0068](spec-0068-survivor-every-route.md) has
+`apply_pr_event.sh`'s close arm put the question to every row of the
+open listing while building its survivor index. That site asks about
+other pull requests, so it takes the reader posture below — skip the
+row, notice, never die — whichever of the two specs lands second wires
+it.
 
-**Refusal is not the same act in all five, and that is deliberate.**
-The three writers refuse and go red — the claim is the pull request's
-own and the pull request's author is the person who can fix it. The two
-readers treat an over-ceiling stranger as carrying nothing identifiable
-and print a notice naming its number: failing a person's own take
-because of somebody else's title would let one hostile title stop all
-work, which is a denial the ceiling is supposed to prevent, not cause.
+**Refusal is not the same act in every caller, and that is deliberate.**
+The in-flight and projection writers refuse and go red — the claim is
+the pull request's own and the pull request's author is the person who
+can fix it. The merge writer refuses the claim but not the event: it
+still records what the diff range proves and exits 0 with the refusal
+printed, because a merged close fires no second event and the approve
+workflow commits behind a `Commit` step whose `if:` carries the
+implicit `success()` — a red merge writer would skip that commit and
+turn one refused claim into a queue and a spec left permanently
+unrecorded, trading two front-matter lines of vandalism for the loss
+this machinery exists to prevent. The green run's silence is paid for
+with the printed refusal, and the ceiling still meets its author red on
+the in-flight path, at the moment the title was typed. The readers skip the
+over-ceiling row and print a notice naming its number: failing a
+person's own take because of somebody else's title would let one
+hostile title stop all work, which is a denial the ceiling is supposed
+to prevent, not cause.
 
 **It is a constant, not a setting, and the schema decides that.**
 `schema.md` requires every key's documented default to be the behaviour
@@ -152,34 +173,55 @@ change of adoption posture — many projects take every contribution
 through forks, and cutting them out of the recording is a rule an adopter
 must choose, not a bug fix. Two kinds of change in one change is what
 `AGENTS.md` forbids. The ceiling is the half that is true regardless of
-origin, so it is the half that ships first; the origin question belongs
-to its own report and its own task.
+origin, so it is the half that ships first — and the origin half has no
+report and no task yet. Said without softening: completing this spec
+closes report-0028 while the exposure that report measured — a fork
+author writing `taken_by` to `main` through the `record` job's
+`contents: write`, now bounded at eight per pull request instead of a
+hundred — stays open with nothing tracking it, until the origin
+question is routed through a report of its own.
 
 ## Steps
 
 1. Give `ql_carried_of` the ceiling: `QL_CARRIED_MAX=8`, a constant
    beside the helper, with the comment stating what it bounds and why it
    is not a setting. Count the deduplicated set, not the tags.
-2. On overflow, print nothing on stdout and return a distinct non-zero
-   code, so a caller can tell "claims too much" from "carries nothing".
-   The two are opposite conditions and today they would look identical.
-3. Document the code in `queue_lib.sh`'s header beside the helper, and
-   note that every caller assigning under `set -e` must capture it
-   (`carried=$(ql_carried_of …) || rc=$?`) — the bare assignment would
-   kill the caller with no message at all.
-4. `apply_pr_event.sh`: on overflow write nothing and exit non-zero,
-   with a message naming the count, the ceiling, and the heal — close and
-   reopen. Its header's exit-code contract gains that code.
-5. `record_task_status.sh`: on overflow drop the **carried** ids and keep
-   the range-derived scope, printing the refusal. The diff is the
-   repository's own evidence and the title is the author's claim; a merge
-   still records everything its own files say.
-6. `project_pr_tasks.sh`: on overflow project nothing and exit non-zero,
-   with the same message shape. A relabelling pass over a hundred mirrors
-   is the same claim wearing Stage 3's clothes.
-7. `check_amendment_reference.sh` and `take_task.sh`: on overflow treat
-   that pull request as carrying nothing identifiable, print a notice
-   naming its number, and carry on with the rest of the listing.
+2. On overflow, print the sentinel `over-ceiling:<count>` alone on
+   stdout and exit 0 — a token no task id can be, in the stream every
+   caller already reads. A distinct non-zero code was weighed and
+   rejected: every existing call site assigns the helper's output bare
+   under `set -euo pipefail`, through `ql_carried_from_env`, and a
+   non-zero substitution kills such a caller with no message at all — a
+   contract whose default failure is a silent death, defended only by a
+   header comment, designs the hazard in rather than away. A sentinel a
+   forgetful caller misses is a non-id token visible in its output that
+   matches no task file, never a vanished run.
+3. Document the sentinel in `queue_lib.sh`'s header beside the helper:
+   a caller tests for it with one `case` before touching the ids, and
+   `ql_carried_from_env` passes it through untouched.
+4. `apply_pr_event.sh`: meeting the sentinel, write nothing and exit
+   non-zero, with a message naming the count, the ceiling, and the heal
+   — close and reopen. Its header's exit-code contract gains that exit.
+5. `record_task_status.sh`: meeting the sentinel, drop the **carried**
+   ids and keep the range-derived scope, printing the refusal — and
+   exit 0 once the range is recorded. The diff is the repository's own
+   evidence and the title is the author's claim; a merge still records
+   everything its own files say, and it must, because the `Commit` step
+   behind it is gated on success and a merged close fires no second
+   event — a red exit here would lose the range's writes with the
+   claim's.
+6. `project_pr_tasks.sh`: meeting the sentinel, project nothing and exit
+   non-zero, with the same message shape. A relabelling pass over
+   dozens of mirrors is the same claim wearing Stage 3's clothes.
+7. `check_amendment_reference.sh` and `take_task.sh`: meeting the
+   sentinel on another pull request's row, skip that row — dropped from
+   the listing everywhere it feeds, never passed on as an empty carried
+   set — print a notice naming its number, and carry on with the rest.
+   Skipped, not emptied: an empty set is what routes an open pull
+   request into `take_task.sh`'s amendment-candidate list and its
+   files probe, so "carrying nothing" would hand a hostile title a
+   paginated files read and a suspended take — the denial the ceiling
+   exists to prevent.
 8. `make template-sync` — `queue_lib.sh` and all four scripts are
    mirrored into `template/`.
 9. Close the loop on the docs: the criterion in `statuses.md`, the tag
@@ -189,24 +231,29 @@ to its own report and its own task.
 ## Acceptance criteria (EARS)
 
 - When a pull request's head branch and title together name more than
-  eight distinct tasks, the system shall treat the carried set as
-  refused and shall write no status line for any of them.
+  eight distinct tasks, the system shall refuse the carried set and
+  shall write no status line on that set's authority — a write the
+  merge's own diff range earns is the range's, not the set's, and is
+  made per the merge criterion below.
 - When the carried set is refused, the system shall report the number
-  claimed and the ceiling, and shall exit non-zero from the reader that
-  would have written.
+  claimed and the ceiling; the in-flight and projection writers shall
+  exit non-zero, and the merge writer shall exit 0 once the range is
+  recorded, the refusal printed in its output.
 - When the carried set is refused on an in-flight event, the system shall
   name in that message the act that re-fires the event — closing and
   reopening the pull request.
 - When a pull request names eight or fewer distinct tasks, the system
-  shall behave exactly as it does today, in all five readers.
+  shall behave exactly as it does today, in every caller.
 - When a title repeats one task's tag more times than the ceiling, the
   system shall carry that one task and shall not refuse the set.
 - When a merge's carried set is refused, the system shall still record
-  every task its own diff range puts in scope.
-- When a reader asks the carried set of another, still-open pull request
-  whose claim exceeds the ceiling, the system shall treat that pull
-  request as naming no task, shall say which pull request it was, and
-  shall not fail the act it was asked to serve.
+  every task its own diff range puts in scope, the branch's own task
+  among them where the range touches it.
+- When a reader meets the sentinel on another, still-open pull request's
+  row, the system shall skip that row, shall say which pull request it
+  was, shall not fail the act it was asked to serve, and shall not
+  route the skipped pull request into any list an empty carried set
+  feeds.
 
 ## Edge cases
 
@@ -224,10 +271,9 @@ to its own report and its own task.
   on tag count is needed, and adding one would be a rule with no
   reachable case.
 - **The refused pull request is the one holding a task in flight.** The
-  take's reader sees it as carrying nothing, so that task reads as free
-  and a second worker may take it. Accepted: the set is over a ceiling no
-  real title has approached, and that pull request is already red on its
-  own check.
+  take's reader skips its row, so that task reads as free and a second
+  worker may take it. Accepted: the set is over a ceiling no real title
+  has approached, and that pull request is already red on its own check.
 - **`PR_TITLE` absent or empty.** The branch's id alone is one task, well
   under the ceiling; the degraded path is untouched.
 - **An adopter mid-migration**, on a copy of these scripts from before
@@ -238,34 +284,43 @@ to its own report and its own task.
 ## Tests required
 
 - A `queue_lib` unit case per side of the boundary: eight distinct tasks
-  carried and printed; nine refused with the distinct code and no stdout.
+  carried and printed; nine answered with the sentinel alone on stdout
+  and exit 0.
 - A unit case where one tag repeats twenty times: one task carried,
   exit 0.
 - An `apply_pr_event` integration case with a nine-task title: nothing
   written to any task file, non-zero exit, and the message naming the
   count, the ceiling and the reopen.
 - A `record_task_status` integration case with a nine-task title over a
-  range that touches one task file: the touched task is recorded, the
-  nine claimed are not.
+  range that touches the file of one of the nine: that task is recorded
+  on the range's evidence, the other eight are not, the refusal is
+  printed, and the exit is 0 — the overlap of claim and range is the
+  common case, and this is where its answer is pinned.
 - A `project_pr_tasks` integration case with a nine-task title: no forge
   call is made.
 - A `take_task` unit case where an unrelated open pull request claims
-  nine tasks: the take proceeds, and the notice names that pull request.
-- Every existing case in the five readers must pass unchanged. This adds
+  nine tasks and touches a spec file: the take proceeds, the notice
+  names that pull request, and no files probe is made for it — the
+  skipped row reaches neither the in-flight refusal nor the
+  amendment-candidate list.
+- Every existing case in the five callers must pass unchanged. This adds
   a refusal above eight; it changes nothing at or below it.
 
 ## Definition of Done
 
-- [ ] `ql_carried_of` counts the set and refuses above eight, with a
-      distinct code the header documents.
-- [ ] The three writers refuse loudly; the two readers notice and carry
-      on.
+- [ ] `ql_carried_of` counts the set and answers above eight with the
+      sentinel the header documents.
+- [ ] The in-flight and projection writers refuse loudly; the merge
+      writer records the range and prints the refusal; the readers skip
+      the row, notice, and carry on.
 - [ ] `make template-sync` run; `template/` matches byte for byte.
 - [ ] `statuses.md`'s criteria carry the bound, `titles.md` states it is
       not settable, and the decision is dated and indexed.
 - [ ] The sequence in
-      [report-0028](../reports/report-0028-fork-title-claims.md) — a
-      title tagging a hundred tasks — moves nothing, and says why.
+      [report-0028](../reports/report-0028-fork-title-claims.md),
+      replayed at the largest size the forge's 256-character title cap
+      accepts — a title tagging every task it has room to name — moves
+      nothing, and says why.
 
 ## Proposed product changes
 
