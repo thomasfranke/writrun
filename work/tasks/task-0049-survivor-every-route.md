@@ -3,7 +3,7 @@ id: task-0049
 status: ready
 blocked_reason: null
 taken_by: null
-spec_ref: []
+spec_ref: [spec-0068]
 doc_ref: product/stage-2-pull-requests/statuses.md#criteria
 origin: report
 priority: high
@@ -18,7 +18,7 @@ provenance: []
 
 # Ask the survivor question by every route a pull request carries a task
 
-**References:** [product/stage-2-pull-requests/statuses.md#criteria](../../docs/product/stage-2-pull-requests/statuses.md#criteria)
+**References:** [product/stage-2-pull-requests/statuses.md#criteria](../../docs/product/stage-2-pull-requests/statuses.md#criteria) · [spec-0068](../specs/spec-0068-survivor-every-route.md)
 
 `apply_pr_event.sh` reads every task a pull request carries — the head
 branch's and every `[TASK-NNNN]` tag in the title. The
