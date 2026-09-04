@@ -285,23 +285,115 @@ BRANCH=$(printf 'task/%04d-%s' "$NUM" "$SLUG")
 PR_TITLE=$(printf '[TASK-%04d] %s' "$NUM" "$TITLE")
 
 TEMPLATE=".writrun/templates/pull_request_template.md"
-implements="Implements $(printf '%s' "$SPECS" | tr ' ' '\n' | sed '/^$/d' | paste -sd, - | sed 's/,/, /g')."
-[ -n "$SPECS" ] || implements="No spec — the task body and its doc_ref are the brief."
+
+# repo_blob_url — `https://github.com/<owner>/<repo>/blob/main/`, or the
+# empty string. A body is a page and not a file in the tree, so its links
+# are absolute and on the authority branch
+# (product/stage-2-pull-requests/body.md).
+#
+# The empty string is a real answer, not a failure: this blob path shape
+# is GitHub's, and composing one for a remote somewhere else would write
+# a dead link that reads as live until it is clicked. An unlinked bullet
+# still carries the id and the title; a wrong link carries less than
+# nothing. Under-linking is the safe direction.
+#
+# The remote is read through an overridable name for one reason: the act
+# fetches `origin main` long before it composes anything, so a suite
+# wanting to present a github.com remote would have to make that fetch
+# reach github.com. `url.<base>.insteadOf` cannot help — `git remote
+# get-url` applies the rewrite too, so the case under test disappears.
+# The override is the suite's seam and nothing else sets it, the same
+# shape as WRITRUN_MIRROR_REFRESH_WAIT in rederive_labels.sh.
+repo_blob_url() {
+  local url owner_repo
+  url="${WRITRUN_ORIGIN_URL:-}"
+  [ -n "$url" ] || url=$(git remote get-url origin 2>/dev/null) || return 0
+  case "$url" in
+    git@github.com:*)       owner_repo=${url#git@github.com:} ;;
+    ssh://git@github.com/*) owner_repo=${url#ssh://git@github.com/} ;;
+    https://github.com/*)   owner_repo=${url#https://github.com/} ;;
+    http://github.com/*)    owner_repo=${url#http://github.com/} ;;
+    *) return 0 ;;
+  esac
+  # A remote may carry a trailing slash, a .git suffix, or both.
+  owner_repo=${owner_repo%/}
+  owner_repo=${owner_repo%.git}
+  owner_repo=${owner_repo%/}
+  case "$owner_repo" in
+    */*/*) return 0 ;;
+    */*)   ;;
+    *)     return 0 ;;
+  esac
+  printf 'https://github.com/%s/blob/main/' "$owner_repo"
+}
+
+# spec_title <spec-file> — the spec's own first heading, without the
+# `spec-NNNN — ` the file repeats there. A heading that is only the id
+# yields nothing rather than a title that restates the id beside it.
+spec_title() {
+  local h
+  h=$(sed -n 's/^# *//p' "$1" | head -n1)
+  case "$h" in
+    spec-[0-9]*" — "*) h=${h#*" — "} ;;
+    spec-[0-9]*)       h="" ;;
+  esac
+  printf '%s' "$h"
+}
+
+# spec_bullets — one bullet per spec_ref entry, in that order: the id,
+# the spec's title, and a link that opens the file on main.
+#
+# **Composition never fails a take.** Every part degrades to the one
+# above it — no URL leaves id and title, no file leaves the bare id —
+# because a body is what the act produces and the act is the branch
+# reaching the forge with a draft on it. A take that refused over a
+# heading it could not parse would trade the whole act for a bullet.
+spec_bullets() {
+  local s sf t line out=""
+  for s in $SPECS; do
+    [ -n "$s" ] || continue
+    sf=$(ql_spec_file "$s")
+    t=""
+    [ -n "$sf" ] && t=$(spec_title "$sf")
+    if [ -n "$BLOB" ] && [ -n "$sf" ]; then
+      line="- [${s}](${BLOB}${sf})"
+    else
+      line="- ${s}"
+    fi
+    [ -n "$t" ] && line="${line} — ${t}"
+    out="${out}${line}
+"
+  done
+  printf '%s' "$out"
+}
+
+BLOB=$(repo_blob_url)
+SPEC_BULLETS=$(spec_bullets)
+[ -n "$SPEC_BULLETS" ] || SPEC_BULLETS="No spec — the task body and its doc_ref are the brief."
 
 if [ -f "$TEMPLATE" ]; then
-  BODY=$(awk -v impl="$implements" '
-    # The kit ships one template for both kinds of pull request and says
-    # to keep the half that applies. This is an implementing one, so the
-    # authoring half goes — heading, marker comment and all.
+  # The kit ships one template for all three kinds of pull request and
+  # says to keep the section that applies. This is an implementing one,
+  # so the authoring and reporting sections go — headings, marker
+  # comments and all.
+  #
+  # The bullets arrive through the environment rather than -v: they are
+  # several lines and may carry a backslash, which -v would read as an
+  # escape.
+  BODY=$(SPEC_BULLETS="$SPEC_BULLETS" awk '
     /^<!--$/ && NR == 1 { skip = 1 }
     skip { if ($0 ~ /-->/) skip = 0; next }
-    /^## Derived work$/ { drop = 1 }
-    /^## Spec$/ { drop = 0 }
+    /^## Derived work$/  { drop = 1 }
+    /^## Report$/        { drop = 1 }
+    /^## Spec$/          { drop = 0 }
+    /^## How to verify$/ { drop = 0 }
     drop { next }
-    /^Implements spec-NNNN\.$/ { print impl; next }
+    /^- \[spec-NNNN\]/ { print ENVIRON["SPEC_BULLETS"]; next }
     { print }
   ' "$TEMPLATE")
 else
+  # The same sections in the same order, so a project whose template is
+  # missing is not handed a different contract.
   BODY="## What
 
 ## Why
@@ -310,9 +402,11 @@ else
 
 ## Spec
 
-${implements}
+${SPEC_BULLETS}
 
 ## How to verify
+
+## How to test
 
 <!-- writrun:end -->
 

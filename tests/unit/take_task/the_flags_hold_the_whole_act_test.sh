@@ -39,7 +39,7 @@ check "and prints the branch it would cut" 2 "branch: task/0001-mirror-lag" \
   -- bash "$TAKE_TASK" task-001 --title "feat(ci): take it" --slug mirror-lag
 check "and the title it would open under" 2 "title:  \[TASK-0001\] feat(ci): take it" \
   -- bash "$TAKE_TASK" task-001 --title "feat(ci): take it" --slug mirror-lag
-check "and the body, spec named" 2 "Implements spec-001." \
+check "and the body, spec named as a bullet" 2 "| - spec-001 — test" \
   -- bash "$TAKE_TASK" task-001 --title "feat(ci): take it" --slug mirror-lag
 check "and names the rerun that performs it" 2 "confirm" \
   -- bash "$TAKE_TASK" task-001 --title "feat(ci): take it" --slug mirror-lag

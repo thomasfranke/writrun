@@ -1,7 +1,7 @@
 ---
 id: spec-0062
 task_ref: task-0044
-status: approved
+status: implemented
 created: 2026-09-04T14:51:09Z
 ---
 
@@ -128,4 +128,57 @@ states why none is added; the Issues mirror's body, which renders itself.
 
 ## Outcome
 
-_(fill after execution)_
+Built as planned, steps 1–7. The template's three declarations ship in
+the bullet shape — `## Derived work` as bullets with the spec nested
+under its task, `## Spec` as one bullet per spec, and a new `## Report`
+for the reporting pull request the template never had a section for. The
+`## Derived work` heading text is byte-identical to what it was; it is a
+contract marker `writrun check` finds by name, and the change is what
+sits under it. `conventions/prs.md` states the shape and the two link
+rules and links `body.md` for the reasoning. `take_task.sh` composes the
+bullets from `spec_ref`, in that order, each carrying the spec's own
+first heading with its `spec-NNNN — ` prefix stripped, and an absolute
+`blob/main` URL derived from the origin remote in both the ssh and https
+forms. `take-task.md` says what the script writes and what it writes
+instead when it cannot compose a URL. `make template-sync` leaves no
+diff.
+
+**Degradation is the design, not a fallback.** No URL leaves id and
+title; no spec file leaves the bare id; no `spec_ref` at all leaves the
+sentence that was there before. The act is the branch reaching the forge
+with a draft on it, and a take that refused over a heading it could not
+parse would trade the whole act for a bullet.
+
+**One interface the spec did not name: `WRITRUN_ORIGIN_URL`.** The suite
+cannot present a github.com remote to the script, because the act
+fetches `origin main` two hundred lines before it composes anything, so
+that fetch would have to reach github.com. `url.<base>.insteadOf` does
+not help — `git remote get-url` applies the rewrite too, so the case
+under test disappears into the local path. The remote is therefore read
+through an overridable name, which nothing but the suite sets; the shape
+is `WRITRUN_MIRROR_REFRESH_WAIT`'s in `rederive_labels.sh`, and the
+reason is the same one: a seam the suite needs and production never
+touches. Without it the URL forms in Tests required could not be tested
+at all.
+
+**The marker the composition replaces changed with the template.** The
+script matched `Implements spec-NNNN.`; it now matches the placeholder
+bullet the `## Spec` section ships, and the awk that drops the other
+kinds' sections drops two ranges rather than one, since `## Report` sits
+between `## Spec` and `## How to verify`.
+
+`conventions/prs.md` gained two bullets rather than the one step 2
+names — the reference shape, and the two questions
+([spec-0063](spec-0063-how-to-test.md)'s step 2, which lands in the same
+file and the same change). Splitting them was clearer than one bullet
+saying both.
+
+Tests: `the_body_names_what_it_implements_test.sh` covers the linked
+shape, `spec_ref` order, the two remote forms and the `.git`/trailing
+slash pair, the non-GitHub and local-remote fallbacks, that a take with
+no composable URL still opens the draft, and the no-spec sentence.
+`the_flags_hold_the_whole_act_test.sh`'s assertion on the old
+`Implements spec-…` sentence follows the bullet. The template mirror
+case is unchanged and green, and `check_derived_work.sh`'s own tier
+passes against the new shape — it reads the heading, and the heading did
+not move.
