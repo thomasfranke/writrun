@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 . "$(dirname "$0")/../../pipeline_lib.sh"
 
-# Each of the four ends. Triage ended the report, and an ended report
+# Each of the five ends. Triage ended the report, and an ended report
 # asks nothing of anyone.
-for end in tracked authored fixed declined; do
+for end in tracked authored fixed declined routed; do
   setup
   task_file task-001 ready spec-001
   spec_file spec-001 task-001 approved

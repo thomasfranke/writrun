@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 . "$(dirname "$0")/../../pipeline_lib.sh"
 
-# Two of the four ends say where the outcome went, and the field that says
+# Two of the five ends say where the outcome went, and the field that says
 # it is part of the judgement rather than a decoration on it: `tracked`
 # means a task now carries the work, `authored` means a rule was written
 # (docs/product/concepts/report.md#statuses--the-route-not-a-lifecycle).
