@@ -3,7 +3,7 @@ id: task-0050
 status: ready
 blocked_reason: null
 taken_by: null
-spec_ref: []
+spec_ref: [spec-0069]
 doc_ref: technical/settings/titles.md#pr_title_style
 origin: report
 priority: medium
@@ -18,7 +18,7 @@ provenance: []
 
 # Bound what a pull request title may claim
 
-**References:** [technical/settings/titles.md#pr_title_style](../../docs/technical/settings/titles.md#pr_title_style)
+**References:** [technical/settings/titles.md#pr_title_style](../../docs/technical/settings/titles.md#pr_title_style) · [spec-0069](../specs/spec-0069-bound-carried-claims.md)
 
 `writrun-progress.yml` runs on `pull_request_target`, so a fork's pull
 request reaches the recording, and both routes into the carried set —
