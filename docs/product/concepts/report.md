@@ -34,7 +34,7 @@ ref" is a task with no task file.
 
 ## Statuses — the route, not a lifecycle
 
-A report has one non-terminal state and four ends, and the four are the
+A report has one non-terminal state and five ends, and the five are the
 routes [triage](../stage-1-tasks-and-specs/authoring.md#reporting--work-found-or-reported-mid-flight)
 can take:
 
@@ -45,12 +45,13 @@ can take:
 | `authored` | no rule stated what "correct" was; a rule was written | `doc_ref` |
 | `fixed` | a trivial change handled it | the git history |
 | `declined` | not a defect, or not worth acting on | the body says why |
+| `routed` | real, and another repository's to act on | the upstream issue the body names |
 
 **There is no `resolved`, and the omission is the design.** Whether the
 underlying problem is fixed is the *task's* status, one hop away through
 `task_ref`. Copying it here would put one fact under two writers, and
 the copy would start drifting the day someone updated one of them. What
-a report knows and nothing else does is which of the four ends above it
+a report knows and nothing else does is which of the five ends above it
 came to rest on.
 
 A report is never reopened. The same thing happening again is a second
@@ -71,6 +72,32 @@ a second one, or writes the task the first should have produced. The
 first report keeps its date and its reasoning, which is what makes the
 disagreement legible later.
 
+### Routing upstream
+
+Some defects are not this project's to act on. An adopter hits one in
+what it consumes — the methodology itself: a kit script that
+misbehaves, a rule two documents state differently — and the local
+queue is the wrong destination: the maintainers who can fix it never
+read it. A finding recorded downstream of the repository that owns the
+defect is a finding lost with extra steps.
+
+Recording still happens here first, exactly as for any observation —
+capture costs nothing, and what follows may be refused. Routing is
+then triage's fifth route: the agent opens an issue on the upstream
+repository stating the observation — the title says what was seen, the
+body carries the evidence and the kit version — and the report ends
+`routed`, its body naming the issue it became. What arrives upstream
+is the other half of the
+[intake](../stage-3-github-issues/intake.md): the issue waits for a
+maintainer's label, becomes a report there, and is triaged by the
+project that can merge the fix. The local queue gains nothing, which
+is the point.
+
+**Opening an issue on another repository is an outward-facing act.**
+It happens on the user's explicit authorization, asked per report and
+never assumed from a session's flow — and a refused or unanswerable
+ask leaves the report `open`, where a person can route it by hand.
+
 **Who writes the status is a human or an agent, always.** This is the
 one place `work/` differs from the task queue, where from Stage 2 the
 status line has exactly one writer and it is the machinery. No forge
@@ -87,6 +114,14 @@ completed when it was acted on, not planned when it was `declined`.
 This is not decoration. `open` is the one state that asks something of a
 person, and a file nobody is prompted to open is a file that rots, which
 would leave this concept worse than the conversation it replaced.
+
+**The mirror can also be born first.** An observation from outside the
+repository — an adopter's agent routing a methodology defect upstream,
+a user with no write access — arrives as an issue, and a maintainer's
+label is what makes it a report
+([intake](../stage-3-github-issues/intake.md)). From that moment the
+issue is the file's mirror like any other; nothing downstream tells a
+report born from an issue from one born in a diff.
 
 **The mirror is one channel and not the only one.** At every stage, the
 task lister names every report still `open` in a section of its own —
@@ -115,11 +150,12 @@ goes back to being lost in a conversation — which is the state this
 concept exists to end.
 
 **The exemption covers what creates no work.** Recording (`open`) rides,
-and so do the three ends that leave the queue untouched: `authored`,
+and so do the four ends that leave the queue untouched: `authored`,
 whose outcome is the rule the change it rides writes, `fixed`, whose
-whole outcome is the change it rides, and `declined`, which produces
-nothing and closes the mirror where a person can see the judgement and
-disagree with it.
+whole outcome is the change it rides, `routed`, whose outcome lives on
+another repository entirely, and `declined`, which produces nothing and
+closes the mirror where a person can see the judgement and disagree
+with it.
 
 **The `tracked` route never rides.** It is the one route that puts work
 in the queue, and what enters the queue passes a gate: deriving a task

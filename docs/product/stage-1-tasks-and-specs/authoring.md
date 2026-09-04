@@ -140,6 +140,7 @@ landed on — that is the whole record, and nothing else keeps it.
 | A real defect — a broken screen, a 500, documented behaviour gone | A task, through a reporting pull request of its own: the `report/` branch presents the report, the task and the spec together, and the maintainer's merge is the assent that the finding deserves the work. The defect violates the doc of the feature itself; `doc_ref` names it — or stays `null` when the broken feature was never documented, with the evidence in the report body. | `tracked` |
 | A behavioural disagreement — "shouldn't it do X instead?" | **Authoring.** No doc states the rule, so fixing means deciding it — the agent stops and hands the pen back; the rule is written first and the task derives from it. | `authored` |
 | A trivial fix — a typo, an obvious one-liner | A commit, never a task (principle 6). | `fixed` |
+| A defect of something this project consumes — the methodology, its kit | **Upstream.** On the user's explicit authorization, an issue on the upstream repository carries the observation ([report](../concepts/report.md#routing-upstream)); the local queue gains nothing. A refused ask leaves the report `open`. | `routed` |
 | Not a defect at all, or not worth acting on | Nothing. The body says why, which is the part worth keeping. | `declined` |
 
 Recording and routing are **two moments, deliberately apart**. The
@@ -149,7 +150,7 @@ waits where somebody will see it — at Stage 3 an open Issue wearing
 when someone picks it up, and the one route that creates work — the
 defect row — travels through a reporting pull request of its own, where
 the human's merge is the judgement that the finding deserves the work.
-The other three routes end the report in place, and may ride exactly as
+The other four routes end the report in place, and may ride exactly as
 the recording did.
 
 ```mermaid
@@ -157,7 +158,7 @@ the recording did.
 flowchart LR
     A["HUMAN or AGENT<br/>records the report<br/>rides any open change · status: open"]
     W["The report waits, visibly<br/>Stage 3: an open Issue, status:open<br/>below: a grep over work/reports/"]
-    B["AGENT triages<br/>defect · rule missing · trivial · not a defect"]
+    B["AGENT triages<br/>defect · rule missing · trivial · upstream · not a defect"]
     C["AGENT, on a report/ branch of its own<br/>writrun-create-task-and-spec<br/>report: tracked · task: backlog · spec: draft"]
     H["HUMAN squash-merges the reporting PR<br/>the assent that the finding deserves work"]
     D["The approval gate takes over<br/>spec assented · task ready"]
@@ -165,6 +166,7 @@ flowchart LR
     B -->|"defect"| C --> H --> D
     B -->|"rule missing"| E["Flow 1 — authoring<br/>report: authored"]
     B -->|"trivial"| F["A commit, no task<br/>report: fixed · rides"]
+    B -->|"upstream"| U["HUMAN authorizes, AGENT opens<br/>an issue on the upstream repository<br/>report: routed · rides"]
     B -->|"not a defect"| G["No work<br/>report: declined · rides"]
 ```
 
@@ -233,6 +235,12 @@ put back exactly the cost the exemption exists to remove.
   change that carries other work.
 - When triage finds a report not worth acting on, the agent shall decline
   it and record the reason in its body, without escalating to a human.
+- When triage finds the defect belongs to a repository this project
+  consumes from, the agent shall ask the user's authorization, open an
+  issue on that repository stating the observation, and end the report
+  `routed` with the issue named in its body.
+- When authorization to route upstream is refused or cannot be asked,
+  the report shall stay `open`.
 - When a report asks for behaviour no permanent doc states, the agent
   shall stop and route it through authoring rather than decide the rule
   itself.
