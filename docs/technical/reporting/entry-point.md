@@ -33,15 +33,22 @@ The operation, deterministic end to end:
    question to the reporter.
 3. **Triage** answers two questions in order — *is this worth acting on
    at all?*, then, for what survives, *is what "correct" means already
-   written?* Four outcomes, and each writes the report's terminal
+   written?* Five outcomes, and each writes the report's terminal
    status: not a defect, or not worth acting on → `declined`, with the
    reason in the body; a defect against documented behaviour → a task,
    `tracked`; a rule nobody wrote → route to authoring, `authored`; a
-   trivial fix → a commit, `fixed`. The first question is new: while
-   reports evaporated there was nothing to close, so one question
-   sufficed and the table never had to name a "no". Both are the
-   agent's to answer, `declined` included — triage is not a human gate
-   ([gates](../../product/stage-1-tasks-and-specs/gates.md)).
+   trivial fix → a commit, `fixed`; a defect another repository owns →
+   an issue opened there, `routed`, the body naming it. The first
+   question is new: while reports evaporated there was nothing to
+   close, so one question sufficed and the table never had to name a
+   "no". All are the agent's to answer, `declined` included — triage is
+   not a human gate
+   ([gates](../../product/stage-1-tasks-and-specs/gates.md)) — with one
+   asymmetry: `routed` opens an issue on someone else's repository,
+   which is an outward-facing act, so it waits on the user's explicit
+   authorization, asked per report and never assumed from a session's
+   flow. A refused or unanswerable ask leaves the report `open`
+   ([routing upstream](../../product/concepts/report.md#routing-upstream)).
 4. **Generation**, on the defect path: `new.sh task` with
    `--origin report`, `--doc-ref` when a doc states the violated
    behaviour (null when the broken thing was never documented),
