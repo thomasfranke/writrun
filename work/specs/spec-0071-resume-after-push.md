@@ -10,8 +10,8 @@ created: 2026-09-04T19:27:30Z
 **References:** [task-0052](../tasks/task-0052-resume-after-push.md) · [report-0026](../reports/report-0026-resume-hint-unreachable.md)
 
 - **Goal:** the one state this act must not leave behind — a branch on
-  the forge with no pull request — has a recovery that runs, and it is
-  the line the failure prints.
+  the forge with no pull request — has a recovery that runs from the
+  checkout that pushed it, and it is the line the failure prints.
 
 ## Scope
 
@@ -87,28 +87,43 @@ narrowing it is a different question about a different guard.
    pull requests already refuses a task in flight on both paths, naming
    the pull request and its author — no second refusal is written; the
    resume simply now reaches it.
-3. Where `--resume` was given and the read produced no answer (`gh` was
+3. One question the fresh path never asks: whether a pull request, open
+   or closed, ever carried this branch — `gh pr list --head`, all
+   states, one read spent only on a resume. The open ones step 2
+   already answers; a closed one means the flight ended, and finishing
+   the branch now would open a second pull request over a base as old
+   as the interruption — the second take the deleted refusal used to
+   block by accident. The resume refuses, naming the closed pull
+   request and the fresh take that follows it; the branch on the forge
+   is that flight's leftover, deleted by hand or left to lie. An
+   unanswered read here stops the run exactly as step 4 stops the
+   unanswered open list.
+4. Where `--resume` was given and the read produced no answer (`gh` was
    not asked or answered nothing, `pr_source` is `none`), stop before
    the cut: exit 3, name that the one question a resume turns on went
    unanswered, and print the resume line, which runs once the forge is
    reachable. An unanswered read on the fresh path stays as it is.
-4. Leave the push in the resumed act. Over a remote branch at the same
+5. Leave the push in the resumed act. Over a remote branch at the same
    commit it is a no-op; over a local branch that moved ahead it is the
    fast-forward the pull request should open over; and a divergence it
    refuses is a real one, which stays an exit 3 rather than a force
    push this act never makes.
-5. Stop the sentences printed after the cut from claiming a location the
-   run has not established. One helper names what was left behind — kept
-   local where nothing records the branch on the forge, on the forge
-   without a pull request otherwise — and the three call sites that say
-   "kept local" today print it: the range guard, the commit failure and
-   the push failure. The `gh pr create` arm's own sentence is already
-   true and keeps its wording.
-6. Correct the exit-3 line in the script's header comment: after the cut
+6. Stop the sentences printed after the cut from claiming a location the
+   run has not established — and no helper re-reads the remote-tracking
+   ref to establish one, the record this spec has already ruled a cache:
+   it says this checkout once pushed, not that the forge holds the
+   branch now. Each site states what its own position proves. The range
+   guard and the commit failure sit before any push and keep saying
+   "kept local"; the push failure names what the refusal proves — a
+   non-fast-forward means the forge holds the branch, a connection that
+   dropped means only that this push did not complete; and the
+   `gh pr create` arm's own sentence, after a push that succeeded, is
+   already true and keeps its wording.
+7. Correct the exit-3 line in the script's header comment: after the cut
    the branch is named wherever it got to, and `--resume` finishes the
    act.
-7. `make template-sync` — `.writrun/` is mirrored into `template/`.
-8. Update `technical/distribution/take-task.md`: the forge-failure
+8. `make template-sync` — `.writrun/` is mirrored into `template/`.
+9. Update `technical/distribution/take-task.md`: the forge-failure
    sentence, and the paragraph that defines the carve-out by the
    branch's location.
 
@@ -119,6 +134,10 @@ narrowing it is a different question about a different guard.
   the forge.
 - When `--resume` is given and an open pull request carries the task,
   the system shall refuse, naming that pull request and its author.
+- When `--resume` is given and the only pull requests that ever carried
+  the branch are closed, the system shall refuse, naming the closed
+  pull request — an ended flight is finished by a fresh take, never
+  resumed.
 - When `--resume` is given and the forge did not answer which pull
   requests are open, the system shall exit 3 without pushing or opening,
   naming the unanswered read.
@@ -126,8 +145,9 @@ narrowing it is a different question about a different guard.
   commit, the system shall treat the push as done and open the draft.
 - When `gh pr create` fails after a successful push, the system shall
   print a `--resume` line that, run as printed, opens the draft.
-- When the act fails after the cut, the system shall name where the
-  branch is, and shall never describe a pushed branch as kept local.
+- When the act fails after the cut, the system shall claim only a
+  location its own evidence proves, and shall never describe a pushed
+  branch as kept local.
 
 ## Edge cases
 
@@ -137,9 +157,12 @@ narrowing it is a different question about a different guard.
   flight", which is correct — the act completed, and the failure was in
   the reporting.
 - **The status line moved first.** Where the draft did open, the
-  machinery writes `in-progress`, and the eligibility re-check refuses
-  the rerun before any of this is reached. The new guard answers only
-  for takes whose draft never opened.
+  machinery writes `in-progress` — to `main`, which an interrupted
+  checkout's working tree does not carry: its own task file still says
+  `ready`, so the eligibility re-check passes and does not catch this.
+  What refuses the rerun is the open-pull-request read, "already in
+  flight" — the forge read is the guard on this path, not the
+  eligibility gate.
 - **The local branch diverged from its remote.** Someone pushed to the
   branch in between. The push refuses, the run exits 3, and the message
   names the branch as on the forge — the divergence is real and
@@ -149,6 +172,21 @@ narrowing it is a different question about a different guard.
   the same sentence: resuming is not taking someone else's flight.
 - **The branch is on the forge and this checkout does not have it.**
   Still refused on "does not exist locally", per the Scope above.
+- **The checkout that pushed is gone.** A discarded worktree or a dead
+  disk pushed the branch and never opened the draft. No surviving clone
+  can resume it (the local-branch requirement, above) and the fresh
+  take still refuses the branch on the forge — the residue the
+  local-branch requirement costs, named plainly: the exit is
+  `git push origin --delete <branch>` by hand, then a fresh take.
+  Widening `--resume` into adopting another checkout's branch is a
+  different act, left to a report of its own if practice ever produces
+  this.
+- **The branch's pull request closed without merging.** The task landed
+  back at `ready` when it closed. A resume run later — the printed line
+  found in scrollback — meets step 3's read and is refused on the
+  closed pull request; without that read it would have pushed a branch
+  cut from a base as old as the closed flight and opened a second draft
+  over it.
 - **A conduct flag is `false`.** A resume without `--confirm` walks back
   into the gate and exits 2 having done nothing;
   `resume_command()` already carries `--confirm` through, and that is
@@ -173,10 +211,15 @@ narrowing it is a different question about a different guard.
   pull request. The file gains a resume over a pushed branch no pull
   request carries: exit 0, the draft opened, no second branch and no
   second commit; and a resume over a pushed branch an open pull request
-  does carry: refused, naming that pull request. Its three existing
-  cases are fresh-path or local-only and stay as written — note that the
-  refusal being removed is asserted nowhere today, so what this file
-  loses is a premise, not a case.
+  does carry: refused, naming that pull request. Its four existing
+  cases — the local refusal, the forge-only refusal on the fresh path,
+  the resume that finishes, and the resume with nothing to finish —
+  stay as written, the last one because the local-branch requirement is
+  a rule Scope keeps; note that the refusal being removed is asserted
+  nowhere today, so what this file loses is a premise, not a case. It
+  also gains a resume over a branch whose only pull request is closed:
+  refused, naming the closed pull request, nothing pushed and nothing
+  opened.
 - `a_forge_failure_names_what_is_left_test.sh` gains a failure after the
   push: the message names the branch as on the forge without a pull
   request, and does not say "kept local". Its existing cases assert
@@ -194,8 +237,9 @@ narrowing it is a different question about a different guard.
 
 - [ ] `--resume` finishes a branch already on the forge that no open
       pull request carries.
-- [ ] `--resume` refuses on a pull request that carries the task, and
-      stops where the forge did not answer.
+- [ ] `--resume` refuses on an open pull request that carries the task,
+      refuses on a closed one that carried the branch, and stops where
+      the forge did not answer.
 - [ ] No message names a pushed branch as kept local.
 - [ ] `make template-sync` run; `template/` matches byte for byte.
 - [ ] `take-task.md` states the carve-out as it is.
