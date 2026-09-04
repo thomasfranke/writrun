@@ -16,7 +16,7 @@ merged: null
 provenance: []
 ---
 
-# The entry point carries a pointer and the flow lives behind it
+# Bring the kit up to the minimal entry-point rule
 
 **References:** [product/adoption.md#the-entry-point-is-the-projects](../../docs/product/adoption.md#the-entry-point-is-the-projects) · [spec-0058](../specs/spec-0058-entry-point-pointer.md)
 
