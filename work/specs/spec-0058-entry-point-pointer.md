@@ -1,7 +1,7 @@
 ---
 id: spec-0058
 task_ref: task-0042
-status: approved
+status: implemented
 created: 2026-09-03T23:37:15Z
 ---
 
@@ -149,4 +149,23 @@ they are documented, not shipped.
 
 ## Outcome
 
-_(fill after execution)_
+Built as planned, steps 1–8: the flow moved whole into
+`.writrun/AGENTS.md` (mirrored into the kit), the gates into
+`.writrun/gates.md` — this repository's answers at the root, the TODO
+skeleton in the kit, the file excepted from the mirror beside
+`settings.json` — the template entry point shrank to title, TODO and
+the four-line pointer, the `CLAUDE.md` shim shipped as exactly the
+import line, and `kit.md`, `WRITRUN.md` and `.writrun/README.md` now
+describe the shipped shape. The two amended guards and the new
+`entry_point_is_a_pointer_test.sh` pass.
+
+Three divergences. The DoD's "no marker survives anywhere in the kit"
+overreached: the PR body template keeps its own `writrun:begin` pair —
+a different mechanism with a live reader (`writrun check` locates the
+`## Derived work` heading through it) — so what disappeared is the
+graft markers, which had no reader left. The taking act itself exposed
+a defect recorded as report-0019: `take_task.sh` commits nothing, so a
+fresh take always fails to open its draft on the forge's
+no-empty-pull-request rule; this take finished by hand. And the flow
+file points at `docs/technical/settings/` for the schema — the address
+the foldering created — where the old graft named the router.

@@ -11,9 +11,10 @@ depends_on: []
 milestone: null
 created: 2026-09-03T23:37:10Z
 queued: 2026-09-04T05:16:06Z
-completed: null
+completed: 2026-09-04T05:34:40Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-fable-5, login: thomasfranke, input: 156, output: 62536, cache_read: 20185891, cache_write: 78904}
 ---
 
 # Bring the kit up to the minimal entry-point rule
