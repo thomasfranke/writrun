@@ -1,7 +1,7 @@
 ---
 id: spec-0060
 task_ref: task-0043
-status: approved
+status: implemented
 created: 2026-09-04T06:26:06Z
 ---
 
@@ -124,4 +124,28 @@ issue to file after minting — the mirror stays one-way once born.
 
 ## Outcome
 
-_(fill after execution)_
+Built as planned, steps 1–5: `writrun-intake.yml` wires
+`issues: [labeled]` onto `intake_report.sh` behind the stage-3 gate,
+under a concurrency group of one; the script holds both refusals (a
+label that is not the gate, a title already carrying a mirror tag —
+which is also what makes a re-delivered event a no-op), mints over the
+generator's three views, writes the report with the issue's text passed
+through env and `printf '%s'`, lands it with the rebase-not-force
+pattern under a new `commit_subject.sh` literal (`intake` —
+`chore(queue): record what the label let in`, covered in the constant's
+own test), and turns the issue into the mirror: retitle, `status:open`,
+the file's path in a comment. The form ships label-free; the mirror
+list names both new files, so the byte-for-byte unit is their guard.
+The intake chapter is written and routed; `kit.md` says five and names
+the form.
+
+Details the spec left to the build. The integration tier runs on a new
+`tests/intake_lib.sh` fixture — a bare `origin` plus a clone shaped
+like the workflow's checkout, so the push is asserted on what the
+authority branch really holds, with mirror_lib's fake-`gh` posture
+rebuilt for the different questions the intake asks. The ships-vs-names
+units needed no edit: they guard directories under `template/work/` and
+the skills, and both new files land outside those parents — the mirror
+list is the pair that names them. One more count sentence than the
+spec listed said "four": `.writrun/README.md`'s, updated in the same
+pass.
