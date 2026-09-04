@@ -303,28 +303,8 @@ forge_issue() {
     >> "$FAKE_GH_DIR/issues"
 }
 
-# forge_told <name> <substring> — the log holds one entry per gh call;
-# the forge was told to do this.
-forge_told() {
-  if grep -qF -- "$2" "$FAKE_GH_LOG"; then
-    printf 'ok    %s\n' "$1"; pass=$((pass + 1))
-  else
-    printf 'FAIL  %s\n      expected a gh call containing: %s\n' "$1" "$2"
-    sed 's/^/      | /' "$FAKE_GH_LOG"
-    fail=$((fail + 1))
-  fi
-}
-
-# forge_not_told <name> <substring> — and this it must never have been.
-forge_not_told() {
-  if grep -qF -- "$2" "$FAKE_GH_LOG"; then
-    printf 'FAIL  %s\n      expected NO gh call containing: %s\n' "$1" "$2"
-    sed 's/^/      | /' "$FAKE_GH_LOG"
-    fail=$((fail + 1))
-  else
-    printf 'ok    %s\n' "$1"; pass=$((pass + 1))
-  fi
-}
+# The log assertions (forge_told, forge_not_told) are harness.sh's —
+# shared with intake_lib.sh over the same shape of log.
 
 # forge_untouched <name> — not a single call reached the forge.
 forge_untouched() {

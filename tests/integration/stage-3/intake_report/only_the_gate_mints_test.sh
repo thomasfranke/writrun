@@ -4,8 +4,8 @@
 # Arrival creates nothing and the label is the assent — so a label that
 # is not the gate mints nothing, and a title already carrying a mirror
 # tag says the issue is some file's mirror already, whose writer is
-# another workflow. The second refusal is also what makes a re-delivered
-# label event a no-op: the first run's retitle wrote the tag it exits on
+# another workflow. A re-delivered label event is a no-op too, but that
+# guard is the queue file, not the title — it has its own case
 # (docs/product/stage-3-github-issues/intake.md).
 setup_intake
 

@@ -65,6 +65,31 @@ refute() {
   pass=$((pass + 1))
 }
 
+# forge_told <name> <substring> — the fake forge's log holds one entry
+# per gh call; the forge was told to do this. Lives here because two
+# fixtures (mirror_lib.sh, intake_lib.sh) carried byte-identical copies;
+# a fixture that fakes gh owes only FAKE_GH_LOG.
+forge_told() {
+  if grep -qF -- "$2" "$FAKE_GH_LOG"; then
+    printf 'ok    %s\n' "$1"; pass=$((pass + 1))
+  else
+    printf 'FAIL  %s\n      expected a gh call containing: %s\n' "$1" "$2"
+    sed 's/^/      | /' "$FAKE_GH_LOG"
+    fail=$((fail + 1))
+  fi
+}
+
+# forge_not_told <name> <substring> — and this it must never have been.
+forge_not_told() {
+  if grep -qF -- "$2" "$FAKE_GH_LOG"; then
+    printf 'FAIL  %s\n      expected NO gh call containing: %s\n' "$1" "$2"
+    sed 's/^/      | /' "$FAKE_GH_LOG"
+    fail=$((fail + 1))
+  else
+    printf 'ok    %s\n' "$1"; pass=$((pass + 1))
+  fi
+}
+
 # bounded <seconds> <cmd...> — the command under a deadline, reported as
 # exit 124 when it outlives one.
 #

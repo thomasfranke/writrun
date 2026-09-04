@@ -14,7 +14,11 @@ the stage gate is the same first job every workflow runs
 the script, not in a YAML `if:`: a label that is not `writrun:report`,
 and a title already carrying a `[REPORT-` or `[TASK-` tag, which says
 the issue is already some file's mirror and its writer is another
-workflow.
+workflow. The YAML does carry one `if:` on the label name — a
+pre-filter, not a relocated refusal: every labelled event on every
+issue fires the workflow, and without the filter ordinary triage
+labels would start two runners and a full-history clone to run one
+string comparison the script then makes anyway.
 
 ## The script's contract
 
@@ -36,7 +40,9 @@ minting path it:
    provenance line naming the issue number and author, and the issue's
    text as the body;
 3. commits with `commit_subject.sh intake` and lands it with the same
-   rebase-not-force pattern every queue recording uses;
+   rebase-not-force pattern every queue recording uses — a conflicting
+   rebase aborts back to the recording commit rather than dying
+   half-applied with conflict markers in the queue;
 4. retitles the issue `[REPORT-NNNN] <title>`, labels it `status:open`,
    and comments the file's path — from that moment the issue is the
    report's mirror, and nothing downstream can tell it from one born in
@@ -48,13 +54,25 @@ one-way from birth, as everywhere else.
 ## The id race, and the concurrency answer
 
 Two `writrun:report` labels applied close together would each read the
-same queue and mint the same id. The workflow declares a concurrency
-group of one, so the forge serializes intake runs; the race that
-remains — an intake against any other queue recording — is the one every
-recording already has, and the same `git pull --rebase` before the push
-covers it. A second delivery of the *same* label event needs neither:
-the first run's retitle put the mirror tag on the issue, and the tag is
-the refusal the second run exits on.
+same queue and mint the same id. The workflow's concurrency group is
+**per issue**, not global: the forge does not serialize a shared group
+— it keeps one pending run and *cancels* the rest, and a cancelled
+intake is an issue that silently never becomes a report. So concurrent
+intakes are allowed to race, and the script itself settles the race:
+after every `git pull --rebase` it re-reads the tree, and an id another
+file now claims — a racing intake's, or a report/ branch merged in the
+window — is dropped and minted again, bounded at three attempts. The
+rebase alone could not see this: a report landing under a different
+filename replays cleanly, and the intake pushes straight to the
+authority branch with no pull-request gate to refuse the duplicate.
+
+A second delivery of the *same* label event is a no-op keyed on the
+queue, not on the title: before minting, the script looks for a report
+already carrying the `Issue #N` line it writes into every report it
+mints, and finding one it re-dresses the mirror for that file instead.
+The title tag alone could not be the guard — the retitle is the last
+write, so a run that died after the push left the report recorded and
+the issue untagged, and a title is a stranger's to edit besides.
 
 ## The body is data
 

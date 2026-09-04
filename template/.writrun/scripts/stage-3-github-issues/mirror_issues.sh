@@ -440,7 +440,11 @@ adopt_mirror() {
   if printf '%s\n' "$body" | grep -q "$OWN_RE"; then
     body=$(printf '%s\n' "$body" | sed "s/^| Introduced by | #[0-9][0-9]* |.*/${OWN_LINE}/")
   else
-    body="${body}"$'\n'"${OWN_LINE}"
+    # A mirror with no line yet is intake-born: its body is the
+    # reporter's own prose, which the intake never rewrites. The line
+    # goes on as a paragraph of its own — glued to their last line it
+    # renders as a broken table row inside their text.
+    body="${body}"$'\n\n'"${OWN_LINE}"
   fi
   gh api -X PATCH "repos/${REPO}/issues/${1}" -f "body=${body}" >/dev/null
 }
