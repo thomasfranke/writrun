@@ -58,8 +58,8 @@
 #      merge with nobody having weighed it — the mirror born closed, the
 #      evaluation the open Issue exists to invite silently never held
 #      (docs/product/concepts/report.md#recording-rides-any-change--routing-to-the-queue-does-not).
-#      The three routes that create no work — `authored`, `fixed`,
-#      `declined` — keep the exemption and ride anything. The stage
+#      The four routes that create no work — `authored`, `fixed`,
+#      `declined`, `routed` — keep the exemption and ride anything. The stage
 #      condition is the rule's own premise: the gate is a pull request's
 #      squash-merge, and a branchless project has none to be held to — it
 #      takes the route on `main`, because that is the only place it has.
@@ -301,7 +301,7 @@ for f in $CHANGED; do
       # stays, the body carries the reason, and the mirror shows it
       # (docs/product/concepts/report.md).
       case "$old" in
-        tracked|authored|fixed|declined)
+        tracked|authored|fixed|declined|routed)
           if [ "$new" = "open" ]; then
             echo "FORBIDDEN: ${f} returns ${old} -> open." >&2
             echo "  Triage ended this report; nothing reopens one. The same" >&2
@@ -339,7 +339,7 @@ for f in $CHANGED; do
           echo "  what enters the queue passes a gate: a reporting change of its" >&2
           echo "  own, on a report/ branch, whose merge is the assent that the" >&2
           echo "  finding deserves the work. Leave the report open here and route" >&2
-          echo "  it on its own branch; fixed and declined still ride." >&2
+          echo "  it on its own branch; fixed, declined and routed still ride." >&2
           status=1
         elif [ -n "$CARRIES_OUTSIDE" ]; then
           echo "FORBIDDEN: ${f} reaches 'tracked' in a change carrying more than reporting:" >&2
@@ -347,7 +347,7 @@ for f in $CHANGED; do
           echo "  A reporting change is the report and the pair the route mints," >&2
           echo "  and nothing else — the branch prefix is how such a change is" >&2
           echo "  named, never what makes it one. Route the report on a change" >&2
-          echo "  that carries only work/; fixed and declined still ride." >&2
+          echo "  that carries only work/; fixed, declined and routed still ride." >&2
           status=1
         fi
       fi
