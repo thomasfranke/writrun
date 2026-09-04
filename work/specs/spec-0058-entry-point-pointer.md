@@ -1,7 +1,7 @@
 ---
 id: spec-0058
 task_ref: task-0042
-status: approved
+status: implemented
 created: 2026-09-03T23:37:15Z
 ---
 
@@ -149,4 +149,48 @@ they are documented, not shipped.
 
 ## Outcome
 
-_(fill after execution)_
+Built as planned, steps 1–8: the flow moved whole into
+`.writrun/AGENTS.md` (mirrored into the kit), the gates into
+`.writrun/gates.md` — this repository's answers at the root, the TODO
+skeleton in the kit, the file excepted from the mirror beside
+`settings.json` — the template entry point shrank to title, TODO and
+the four-line pointer, the `CLAUDE.md` shim shipped as exactly the
+import line, and `kit.md`, `WRITRUN.md` and `.writrun/README.md` now
+describe the shipped shape. The two amended guards and the new
+`entry_point_is_a_pointer_test.sh` pass.
+
+Three divergences. The DoD's "no marker survives anywhere in the kit"
+overreached: the PR body template keeps its own `writrun:begin` pair —
+a different mechanism with a live reader (`writrun check` locates the
+`## Derived work` heading through it) — so what disappeared is the
+graft markers, which had no reader left. The taking act itself exposed
+a defect recorded as report-0019: `take_task.sh` commits nothing, so a
+fresh take always fails to open its draft on the forge's
+no-empty-pull-request rule; this take finished by hand. And the flow
+file points at `docs/technical/settings/` for the schema — the address
+the foldering created — where the old graft named the router.
+
+Review of the open pull request found five defects inside this spec's
+scope, corrected here. The shipped `gates.md` skeleton was missing the
+`tracked` row, so an adopter filling every TODO still met the stall the
+flow's own "a gate `gates.md` leaves unnamed is a question" rule
+describes. The flow file described taking and completing by hand while
+the kit ships `take_task.sh` and `preflight.sh` for both, which left it
+contradicting the root `AGENTS.md`; it now names them, and the root file
+says which of the two governs here. Its human-routing line pointed at a
+root `WRITRUN.md` this repository does not have, and `.writrun/README.md`
+claimed a root pointer this repository does not carry — both now state
+what the kit grafts rather than asserting a file. "Never code from the
+task title alone" left the kit with the entry point's old reading order
+and returned to the flow's completion step. The new guard read only for
+markers, so it passed a relative `@./` import and any amount of regrown
+flow under the claim; it now reads the claimed section for size, tables
+and sub-headings, and carries the negative cases that prove it bites.
+
+One finding is recorded and not applied: the forge-row rationale stands
+in this chapter, in the root `gates.md` and in the kit's, which
+[prose](../../.writrun/conventions/prose.md)'s "say it once" would have
+link instead. The kit cannot link — it ships without WritRun's product
+chapters — and the root copy is the worked example of a filled-in
+skeleton, so removing it there would make the example diverge from what
+an adopter's file has to hold. Left whole in both, deliberately.
