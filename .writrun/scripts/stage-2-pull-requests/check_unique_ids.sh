@@ -7,7 +7,7 @@
 #   test suite).
 #
 # An id is unique across the queue *and* across every open pull request
-# (docs/technical/README.md#task-schema). The generator mints from one
+# (docs/technical/schemas/task.md#task-schema). The generator mints from one
 # branch's view, so two branches cut from the same authority branch both
 # see the same highest id and both take the next one — and until now
 # nothing rejected it: the collision surfaced at the second merge, after
@@ -220,7 +220,7 @@ EOF
 if [ "$collisions" -gt 0 ]; then
   echo "" >&2
   echo "An id is unique across the queue and every open pull request" >&2
-  echo "(docs/technical/README.md#task-schema). A number a branch has not" >&2
+  echo "(docs/technical/schemas/task.md#task-schema). A number a branch has not" >&2
   echo "merged is not yet an id, so renumbering costs nothing — renumber" >&2
   echo "this change's files, and the reference to them, above the ids" >&2
   echo "named here." >&2

@@ -5,7 +5,7 @@
 #   bash .writrun/skills/writrun-select-next-task/list_tasks.sh
 #
 # Eligibility is steps 2–4 of the selection algorithm
-# (docs/technical/README.md#task-selection-algorithm): `ready`, every
+# (docs/technical/selection/algorithm.md#task-selection-algorithm): `ready`, every
 # `depends_on` done, every `spec_ref` approved or implemented. Those
 # are the gates, and they bind everyone.
 #
@@ -24,10 +24,10 @@
 # means none is, which is what every caller branching on the status
 # depends on. Naming is not selecting: what the section asks for is
 # triage, and `work/reports/` never becomes a second queue
-# (docs/technical/selection.md#an-open-report-is-named-never-selected).
+# (docs/technical/selection/visibility.md#an-open-report-is-named-never-selected).
 #
 # The three directories are taken together or not at all — the caller
-# rule `technical/distribution.md#running-the-checks` states for
+# rule `technical/distribution/checks.md#running-the-checks` states for
 # `check_front_matter.sh`, holding here for the same reason. A caller
 # naming the first two and not the third reads tasks from the tree it
 # named and reports from the working directory: it reports nothing
@@ -357,7 +357,7 @@ for f in "$TASK_DIR"/*.md; do
   # abandoned without the forge hearing about it; resume it before
   # selecting anything new. One with an open pull request is theirs,
   # however stale — named as in flight, never hidden, and taking it over
-  # is a human decision (technical/README.md#task-selection-algorithm).
+  # is a human decision (technical/selection/algorithm.md#task-selection-algorithm).
   if [ "$st" = "in-progress" ] || [ "$st" = "in-review" ]; then
     who=$(taken_by "$id")
     pause=$(suspension "$f")
@@ -384,7 +384,7 @@ for f in "$TASK_DIR"/*.md; do
 
   # The stored status summarizes the specs; the algorithm re-reads both
   # and stops loudly on a mismatch rather than trusting either side
-  # alone (technical/README.md#task-selection-algorithm).
+  # alone (technical/selection/algorithm.md#task-selection-algorithm).
   why=""
   for d in $(list_field "$f" depends_on); do
     [ -n "$d" ] || continue

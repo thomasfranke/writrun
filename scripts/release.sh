@@ -14,7 +14,7 @@
 # from the conventional commits.
 #
 # The changelog is the same history the forge publishes, kept where a
-# pinned copy can read it (docs/technical/distribution.md#distribution).
+# pinned copy can read it (docs/technical/distribution/README.md).
 # It is generated here and never edited by hand: one writer is what keeps
 # it from becoming a second history that agrees with the tags until
 # somebody forgets.

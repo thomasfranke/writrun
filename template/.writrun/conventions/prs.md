@@ -38,7 +38,7 @@
   **Whichever is declared, `writrun check` reads the title against it**
   from Stage 2 on — the style is a setting an agent was told to obey, and
   a title is where disobeying it leaves a trace
-  ([observance](https://github.com/thomasfranke/writrun/blob/main/docs/technical/README.md#observance-is-checked-where-it-leaves-a-trace)).
+  ([observance](https://github.com/thomasfranke/writrun/blob/main/docs/technical/settings/observance.md#observance-is-checked-where-it-leaves-a-trace)).
   Case inside the brackets is not judged: `[Fix]` and `[DOCS]` are both
   the vocabulary, spelled two ways this file itself uses.
 
