@@ -58,7 +58,9 @@ Three things happen off this line:
 - **A finding.** Something is noticed mid-work and it is not this task.
   Write a report — one file, one paragraph, no commitment. Later someone
   triages it: it becomes a task, becomes a rule, gets fixed on the spot,
-  or is declined with the reason kept. Recording one is cheap on purpose,
+  is declined with the reason kept, or is routed to the repository that
+  owns the defect — a defect of WritRun itself is reported to WritRun,
+  whose intake receives it. Recording one is cheap on purpose,
   and it rides whatever change you already had open. Only the route that
   turns it into a task is different: that one takes a `report/` branch of
   its own, and from Stage 2 the generator refuses it anywhere else.
@@ -76,7 +78,7 @@ Three things happen off this line:
 | `work/tasks/`, `work/specs/` | The queue and its plans. Statuses live in the file, never in the folder. |
 | `work/reports/` | What was noticed. Commits to nothing. |
 | `.writrun/` | The machinery: skills, scripts, conventions, settings. Its [README](.writrun/README.md) says which of them are WritRun's and which are yours. |
-| `.github/workflows/writrun-*.yml` | The checks and the recording. The two mirror workflows are optional. |
+| `.github/workflows/writrun-*.yml` | The checks, the recording, and the intake that turns a labelled issue into a report. The two mirror workflows and the intake are optional. |
 | `AGENTS.md` | Where an agent starts. WritRun claims four lines of it — a pointer to `.writrun/AGENTS.md`, where the whole flow lives; the rest is yours. |
 | `CLAUDE.md` | One line, `@AGENTS.md` — Claude Code reads this file, not `AGENTS.md`, so the shim points it at the shared entry. |
 

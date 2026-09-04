@@ -63,17 +63,41 @@ bash .writrun/skills/writrun-create-task-and-spec/new.sh report "<title>" \
 a rule nor work, so the one-kind-per-change rule does not reach it, and
 a finding that costs its own branch is a finding nobody writes down.
 
-Triage ends it, one of four ways: `tracked` when a task now carries the
+Triage ends it, one of five ways: `tracked` when a task now carries the
 work, `authored` when no rule said what "correct" was and a rule was
 written, `fixed` when a trivial change handled it, `declined` when it is
-not a defect or not worth acting on — with the reason kept in the body.
-`fixed` and `declined` are yours to write; declining destroys nothing,
-and the file stays where a person can disagree with it.
+not a defect or not worth acting on — with the reason kept in the body —
+and `routed` when the defect belongs to another repository and an issue
+there now carries it. `fixed`, `declined` and `routed` are yours to
+write — the last only behind the user's explicit yes, below. Declining
+destroys nothing, and the file stays where a person can disagree with
+it.
 
 **The `tracked` route is the one that never rides.** It puts work in the
 queue, so it takes a `report/` branch of its own carrying the report,
 the task and the spec together — and the merge of that pull request is
 the assent that the finding deserves the work.
+
+### When the defect is WritRun's
+
+A kit script that misbehaves, a rule two shipped documents state
+differently — a methodology defect recorded only here is a finding the
+maintainers who can fix it never see. Record the report locally first,
+exactly as for any observation. Then ask the user, per report and never
+assumed from the conduct flags: opening an issue on another repository
+is an outward-facing act. On an explicit yes, open the issue on the
+repository this kit came from —
+<https://github.com/thomasfranke/writrun>, the provenance pointer
+`WRITRUN.md` carries — with `gh issue create`, or the repository's
+report form by hand: the title states the observation, the body carries
+the evidence and the tag in `.writrun/VERSION`. End the local report
+`routed`, its body naming the issue it became. A refused or
+unanswerable ask — no `gh`, no network, no user to answer — leaves the
+report `open`, where a person can route it by hand.
+
+When the doubt is whether the defect is WritRun's or this project's use
+of it, point it at the evidence: reproduced against a clean kit copy it
+is upstream's; otherwise it is a local report like any other.
 
 ## Human gates
 
