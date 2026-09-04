@@ -1,13 +1,15 @@
 ---
 id: report-0022
-status: open
-task_ref: []
+status: tracked
+task_ref: [task-0047]
 doc_ref: null
 created: 2026-09-04T15:25:58Z
-triaged: null
+triaged: 2026-09-04T16:20:11Z
 ---
 
 # The in-flight half moves only the branch's task, not the title's other tags
+
+**References:** [task-0047](../tasks/task-0047-carried-tags-inflight.md)
 
 Adopter `writrun-cli` opened pull request #20 titled
 `[TASK-0003][TASK-0005][Feat] …`, which `conventions/prs.md` names as
