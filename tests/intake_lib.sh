@@ -49,8 +49,12 @@ setup_intake() {
   mkdir -p "$WORK/stub-bin"
   cat > "$WORK/stub-bin/gh" <<'GH'
 #!/usr/bin/env bash
-# fake gh — canned reads, recorded everything.
-printf '%s\n' "$*" >> "$FAKE_GH_LOG"
+# fake gh — canned reads, recorded everything. One line per call, always:
+# an Issue body arrives through `-f body=…` with newlines in it, and a
+# log that let them through would make one call look like several to
+# anything that counts lines (forge_told_times).
+_call="$*"
+printf '%s\n' "${_call//$'\n'/ }" >> "$FAKE_GH_LOG"
 if [ "$1" = "pr" ] && [ "$2" = "list" ]; then
   cat "$FAKE_GH_DIR/pr_numbers" 2>/dev/null
   exit 0

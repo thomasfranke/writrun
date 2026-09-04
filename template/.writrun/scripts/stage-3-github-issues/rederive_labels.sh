@@ -39,14 +39,23 @@
 # than a branch inside either caller.
 #
 # Exit codes: 0 done (including nothing to do); 1 a mirror this job
-# answered for was never found; 3 usage error.
+# answered for was never found; 2 the forge refused a call this pass
+# cannot go on without; 3 usage error.
+#
+# One code per condition, because 1 is what a red `writrun approve`
+# shows a maintainer: "the forge would not create the label" and "this
+# pass left a minted mirror unlabelled" are different mornings.
 #
 # Portable bash 3.2, POSIX awk/sed — no gawk extensions, no associative
 # arrays. See the standing rule in docs/technical/decisions/.
 
 set -euo pipefail
 
-REPO="${1:?usage: rederive_labels.sh <owner/repo> <spec-file>...}"
+if [ "$#" -lt 1 ]; then
+  echo "usage: rederive_labels.sh <owner/repo> [<spec-file>|<task-id>|<report-id>]... [--minted <id>...]" >&2
+  exit 3
+fi
+REPO="$1"
 shift
 
 TAB=$(printf '\t')
@@ -153,6 +162,22 @@ if [ -z "$have_work" ]; then
   exit 0
 fi
 
+# Everything after --minted is the mint's, so the flag's *position* is
+# the whole of what it says: a line carrying it twice was built wrong,
+# and the second one silently renaming nothing is how a miswired caller
+# stays miswired — with every id behind the misplaced flag turned from a
+# notice about the repository into a red step. Judged beside the check
+# above so a wrong line is refused before the forge is asked anything.
+seen_minted=""
+for sf in "$@"; do
+  [ "$sf" = "--minted" ] || continue
+  [ -z "$seen_minted" ] || {
+    echo "rederive_labels.sh: --minted given twice — everything after it is the mint's, so a second one names no second set" >&2
+    exit 3
+  }
+  seen_minted=yes
+done
+
 # fetch_mirrors <label> — one kind's mirror list. Identity is the tag in
 # the title, the same way every other lookup here resolves it. The row
 # shape is the one every reader of this list requests — body included and
@@ -187,11 +212,33 @@ num_of_id() {
     -e 's/^report-0*\([0-9][0-9]*\)$/\1/p'
 }
 
+# The ids this job already answered for, collected before anything is
+# projected. The same id can arrive twice — once from the commit range,
+# once from the mint — so reading the flag as the loop walks past it
+# would let the earlier arrival settle a question the later one answers.
+MINTED_TASKS=""
+MINTED_REPORTS=""
+minting=""
+for sf in "$@"; do
+  if [ "$sf" = "--minted" ]; then minting=yes; continue; fi
+  [ -n "$minting" ] || continue
+  mid=$(num_of_id "$(basename "$sf" .md | sed -E 's/^((task|report)-[0-9]+).*/\1/')")
+  [ -n "$mid" ] || continue
+  case "$(basename "$sf")" in
+    report-*) MINTED_REPORTS="$MINTED_REPORTS $mid" ;;
+    task-*)   MINTED_TASKS="$MINTED_TASKS $mid" ;;
+  esac
+done
+
 # One re-read answers every id still unresolved, so the budget is the
 # run's and not each id's: staleness seen once is paid for once, and a
 # run that sees none pays nothing. Two re-reads, spaced — the observed
 # gap between a create and a read that could not see it was about four
 # seconds. The wait is overridable because the suite must not spend it.
+#
+# The envelope and who may spend it are one question, and it is open:
+# report-0029. Widening the wait alone would only make the budget the
+# report is about more expensive to waste.
 REFRESH_BUDGET=2
 REFRESH_WAIT="${WRITRUN_MIRROR_REFRESH_WAIT:-3}"
 task_refreshes=0
@@ -345,7 +392,7 @@ ensure_label() {   # ensure_label <name> <color> <description>
   if ! out=$(gh api -X POST "repos/${REPO}/labels" \
       -f "name=$1" -f "color=$2" -f "description=$3" 2>&1); then
     printf '%s\n' "$out" | grep -q "HTTP 422" \
-      || { printf '%s\n' "$out" >&2; exit 1; }
+      || { printf '%s\n' "$out" >&2; exit 2; }
   fi
 }
 
@@ -355,24 +402,6 @@ ensure_origin_label() {   # ensure_origin_label <label>
     origin:report) ensure_label "origin:report" "d73a4a" "Born from a report of work an existing rule authorizes" ;;
   esac
 }
-
-# The ids this job already answered for, collected before anything is
-# projected. The same id can arrive twice — once from the commit range,
-# once from the mint — so reading the flag as the loop walks past it
-# would let the earlier arrival settle a question the later one answers.
-MINTED_TASKS=""
-MINTED_REPORTS=""
-minting=""
-for sf in "$@"; do
-  if [ "$sf" = "--minted" ]; then minting=yes; continue; fi
-  [ -n "$minting" ] || continue
-  mid=$(num_of_id "$(basename "$sf" .md | sed -E 's/^((task|report)-[0-9]+).*/\1/')")
-  [ -n "$mid" ] || continue
-  case "$(basename "$sf")" in
-    report-*) MINTED_REPORTS="$MINTED_REPORTS $mid" ;;
-    task-*)   MINTED_TASKS="$MINTED_TASKS $mid" ;;
-  esac
-done
 
 # minted <kind> <id> — did this job's mint step answer for this id.
 minted() {

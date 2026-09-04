@@ -39,8 +39,12 @@ setup_forge() {
   mkdir -p "$WORK/stub-bin"
   cat > "$WORK/stub-bin/gh" <<'GH'
 #!/usr/bin/env bash
-# fake gh — canned reads, recorded everything.
-printf '%s\n' "$*" >> "$FAKE_GH_LOG"
+# fake gh — canned reads, recorded everything. One line per call, always:
+# an Issue body arrives through `-f body=…` with newlines in it, and a
+# log that let them through would make one call look like several to
+# anything that counts lines (forge_told_times).
+_call="$*"
+printf '%s\n' "${_call//$'\n'/ }" >> "$FAKE_GH_LOG"
 [ "$1" = "api" ] || { echo "{}"; exit 0; }
 shift
 # forge_list <base> — one list as of this read. Reads are counted, and a

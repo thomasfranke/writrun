@@ -93,6 +93,12 @@ forge_not_told() {
 # forge_told_times <name> <count> <substring> — and exactly this many
 # times. For the cases whose subject is what a run costs the forge,
 # where "at least once" is not the claim being made.
+#
+# It counts matching *lines*, which is a count of calls because the
+# fixtures' `gh` writes exactly one line per call — an argument carrying
+# newlines is folded before it is logged. That is the fixture's job to
+# keep; break it and this helper starts counting an Issue body's lines
+# as calls.
 forge_told_times() {
   local n
   n=$(grep -cF -- "$3" "$FAKE_GH_LOG")

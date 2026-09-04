@@ -284,8 +284,23 @@ jobs:
         # correct it, and it has these two paths to it.
         env:
           GH_TOKEN: ${{ github.token }}
+          # Through env, never ${{ }} into the command line. `specs` is
+          # built from file *paths* (a merged pull request's own), so an
+          # interpolated one is a path the shell would parse — and this
+          # workflow holds contents: write on pull_request_target. As
+          # shell variables they are values, and the word splitting below
+          # is the deliberate kind.
+          SPECS: ${{ steps.flip.outputs.specs }}
+          SCOPE: ${{ steps.status.outputs.scope }}
+          MINTED_TASKS: ${{ steps.mint.outputs.tasks }}
+          MINTED_REPORTS: ${{ steps.mint.outputs.reports }}
         run: |
           set -euo pipefail
+          # The order is the contract: everything after --minted is the
+          # mint's, and a miss there fails the step. Passing the flag
+          # from a fixed position in this line rather than from inside
+          # any of the values is what keeps that true.
+          # shellcheck disable=SC2086
           bash .writrun/scripts/stage-3-github-issues/rederive_labels.sh \
-            "${{ github.repository }}" ${{ steps.flip.outputs.specs }} ${{ steps.status.outputs.scope }} \
-            --minted ${{ steps.mint.outputs.tasks }} ${{ steps.mint.outputs.reports }}
+            "$GITHUB_REPOSITORY" $SPECS $SCOPE \
+            --minted $MINTED_TASKS $MINTED_REPORTS
