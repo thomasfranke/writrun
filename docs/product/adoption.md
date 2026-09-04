@@ -72,10 +72,14 @@ All of the following, or the project is *adopting*, not *adopted*:
   the two statements do not disagree — the minimum is what a project
   must have to claim adoption, the kit is what a fresh copy starts with.
   An adopter who deletes it is still an adopter.
-- **The four human gates**, named somewhere in the project's own
-  `AGENTS.md`: who approves a doc change, who declares an authored rule
-  finished, who approves a spec, and what an agent does when a task's
-  brief is insufficient. Naming an agent as the operator of a gate is a
+- **The four human gates**, named at one stated address the entry point
+  carries or links: who approves a doc change, who declares an authored
+  rule finished, who approves a spec, and what an agent does when a
+  task's brief is insufficient. The kit's address is
+  `.writrun/gates.md`, the adopter's file
+  ([The entry point is the project's](#the-entry-point-is-the-projects));
+  a project that names them in its own `AGENTS.md` instead satisfies the
+  gate the same way. Naming an agent as the operator of a gate is a
   valid answer — leaving the gate unnamed is not.
 
 A project missing any one of these is not yet an adopter, regardless of how
@@ -147,6 +151,29 @@ that ships the behaviour. A project can satisfy the entire permanent side
 of WritRun and still not be an adopter, because the ephemeral side is what
 actually prevents drift.
 
+## The entry point is the project's
+
+`AGENTS.md` belongs to the adopting project, and the kit claims four
+lines of it: a pointer saying when to read `.writrun/AGENTS.md` —
+before touching `work/`, `docs/`, or anything in the queue. Everything
+WritRun has to tell an agent lives behind that pointer, in a file the
+kit owns and `writ update` replaces whole.
+
+The split is ownership, not length. A file under `.writrun/` is either
+the kit's — replaced entire on update, never edited by the adopter — or
+the adopter's — never touched by an update. No file is part both, which
+is what lets an update run without merging anyone's prose. The
+adopter's files are [`settings.json`](../../.writrun/settings.json) for
+values and `gates.md` for the four human gates; the kit's is
+`AGENTS.md`, carrying the flow.
+
+**The pointer is prose, never an import.** An entry file that
+hard-includes the flow loads it into every session, including the ones
+that never touch the queue; a link is read at the moment its condition
+names. A vendor whose agent reads a different entry file gets a shim
+that imports `AGENTS.md` — Claude Code's `CLAUDE.md` is the known
+case — and the kit creates a shim only where the project has none.
+
 ## Skills namespacing
 
 WritRun ships as five skills — `writrun-select-next-task`,
@@ -177,3 +204,7 @@ is unmissable at the path *and* at the name.
 - When WritRun's five skills are installed, they shall live under
   `.writrun/skills/`, apart from the project's own skill folder, and no
   skill across the two sets shall share a name.
+- When the kit lands in a project with an existing `AGENTS.md`, it shall
+  add the pointer and nothing else; what WritRun owns shall live in
+  files an update replaces whole, and the adopter's answers in files an
+  update never touches.
