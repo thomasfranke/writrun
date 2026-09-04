@@ -3,7 +3,7 @@ id: task-0052
 status: ready
 blocked_reason: null
 taken_by: null
-spec_ref: []
+spec_ref: [spec-0071]
 doc_ref: technical/distribution/take-task.md#take_tasksh--the-taking-act-in-one-command
 origin: report
 priority: medium
@@ -18,7 +18,7 @@ provenance: []
 
 # Give the take a recovery that works after the push
 
-**References:** [technical/distribution/take-task.md#take_tasksh--the-taking-act-in-one-command](../../docs/technical/distribution/take-task.md#take_tasksh--the-taking-act-in-one-command)
+**References:** [technical/distribution/take-task.md#take_tasksh--the-taking-act-in-one-command](../../docs/technical/distribution/take-task.md#take_tasksh--the-taking-act-in-one-command) · [spec-0071](../specs/spec-0071-resume-after-push.md)
 
 `take_task.sh` pushes the branch and then opens the draft. When the push
 succeeds and the forge then refuses the pull request, the script names
