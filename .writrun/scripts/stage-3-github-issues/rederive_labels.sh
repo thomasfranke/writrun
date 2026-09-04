@@ -15,6 +15,13 @@
 #   defect and exits non-zero. The same miss on any other id is a task
 #   that was never mirrored, which is a finding and stays a notice.
 #
+#   The flag is also who may pay to ask again. A caller that mints and
+#   labels in one job names its mints behind `--minted`, and only an id
+#   it names can spend a re-read — the flag with nothing behind it
+#   entitles nobody. A caller that says nothing buys the unconditional
+#   re-read: the saving is declared, never assumed, so a minting caller
+#   wired without the flag wastes seconds and can never lose a mirror.
+#
 #   A `report-NNNN` argument is the same projection one kind over: the
 #   file on disk says whether triage has ended it, and the mirror is made
 #   to agree. It is here so a report mirror that drifted is repaired by
@@ -229,6 +236,20 @@ for sf in "$@"; do
     task-*)   MINTED_TASKS="$MINTED_TASKS $mid" ;;
   esac
 done
+# Whether the flag was given at all, kept apart from what it named: the
+# flag with nothing behind it entitles nobody, and its absence entitles
+# everybody.
+MINTED_DECLARED="$minting"
+
+# minted_num <kind> <number> — did this job's mint step answer for this
+# id. The one membership test, over the numbers the lists hold.
+minted_num() {
+  case "$1" in
+    report) case " $MINTED_REPORTS " in *" $2 "*) return 0 ;; esac ;;
+    *)      case " $MINTED_TASKS " in *" $2 "*) return 0 ;; esac ;;
+  esac
+  return 1
+}
 
 # One re-read answers every id still unresolved, so the budget is the
 # run's and not each id's: staleness seen once is paid for once, and a
@@ -236,9 +257,11 @@ done
 # gap between a create and a read that could not see it was about four
 # seconds. The wait is overridable because the suite must not spend it.
 #
-# The envelope and who may spend it are one question, and it is open:
-# report-0029. Widening the wait alone would only make the budget the
-# report is about more expensive to waste.
+# Who may spend it is the caller's declaration. Behind a `--minted`
+# flag, only the ids it names: a miss on any other id cannot be this
+# run's staleness, and the list in hand already answers it. No flag at
+# all entitles every miss, so a caller that mints and stays silent
+# spends seconds it did not need to rather than losing a mirror.
 REFRESH_BUDGET=2
 REFRESH_WAIT="${WRITRUN_MIRROR_REFRESH_WAIT:-3}"
 task_refreshes=0
@@ -289,14 +312,21 @@ EOF
 # resolve_mirror <kind> <id-number> — the same lookup, retried against a
 # re-read list when it misses, with the answer left in FOUND.
 #
-# A miss is not a conclusion. The list was read before this id was looked
-# up, and the mirror can have been minted in between — by the very job
-# running this. The re-read is what keeps the rule the pass exists for:
-# every task the merge touched wears the label its file names
-# (docs/product/stage-3-github-issues/labels.md).
+# A miss on a minted id is not a conclusion. The list was read before
+# this id was looked up, and the mirror can have been minted in between —
+# by the very job running this. The re-read is what keeps the rule the
+# pass exists for: every task the merge touched wears the label its file
+# names (docs/product/stage-3-github-issues/labels.md).
+#
+# Entitlement is asked before anything is spent: where a `--minted` flag
+# was given, a miss on an id outside it is the answer, returned from the
+# list in hand — no re-read, no wait.
 FOUND=""
 resolve_mirror() {
   FOUND=$(find_mirror "$1" "$2")
+  if [ -n "$MINTED_DECLARED" ] && ! minted_num "$1" "$2"; then
+    return 0
+  fi
   while [ -z "$FOUND" ] && refresh_mirrors "$1"; do
     FOUND=$(find_mirror "$1" "$2")
   done
@@ -403,16 +433,12 @@ ensure_origin_label() {   # ensure_origin_label <label>
   esac
 }
 
-# minted <kind> <id> — did this job's mint step answer for this id.
+# minted <kind> <id> — minted_num over an id string, converting first.
 minted() {
   local n
   n=$(num_of_id "$2")
   [ -n "$n" ] || return 1
-  case "$1" in
-    report) case " $MINTED_REPORTS " in *" $n "*) return 0 ;; esac ;;
-    *)      case " $MINTED_TASKS " in *" $n "*) return 0 ;; esac ;;
-  esac
-  return 1
+  minted_num "$1" "$n"
 }
 
 # unresolved <kind> <id> — what a lookup that found nothing means, which
