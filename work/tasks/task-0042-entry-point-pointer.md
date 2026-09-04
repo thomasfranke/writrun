@@ -1,8 +1,8 @@
 ---
 id: task-0042
-status: ready
+status: in-progress
 blocked_reason: null
-taken_by: null
+taken_by: thomasfranke
 spec_ref: [spec-0058]
 doc_ref: product/adoption.md#the-entry-point-is-the-projects
 origin: rule
