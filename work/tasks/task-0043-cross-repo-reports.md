@@ -1,8 +1,8 @@
 ---
 id: task-0043
-status: ready
+status: in-progress
 blocked_reason: null
-taken_by: null
+taken_by: thomasfranke
 spec_ref: [spec-0059, spec-0060, spec-0061]
 doc_ref: product/concepts/report.md#routing-upstream
 origin: rule
