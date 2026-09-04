@@ -5,7 +5,13 @@ The front-matter schema is contract, not convention — see the
 generator (`new.sh`) writes it. What is taste, and this file's to state:
 
 - **Title**: imperative and outcome-shaped ("Mirror the queue into
-  Issues"), never activity-shaped ("Work on the mirror").
+  Issues"), never activity-shaped ("Work on the mirror") — and never
+  rule-shaped ("The queue mirrors into Issues"). A title that states the
+  end state as a fact reads as a doc heading and names nothing to do;
+  rule-stating is the authoring PR title's job, and the rule a task
+  serves is its `doc_ref`'s to state. The test is the listing: read
+  alone, the title recalls the act and what it is for — whoever takes
+  the task knows what done looks like before opening the file.
 - **Filename subject**: `task-NNNN-<subject>.md` — the id plus two or
   three kebab-case words (`task-0012-issue-mirrors.md`). Fixed at
   creation: a later retitle never renames the file.
