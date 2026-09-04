@@ -315,9 +315,18 @@ EOF
 #
 # The multi-task cases assert files rather than output: one run writes
 # several tasks, and only the file says what each of them became.
+# The read stops at the closing `---`, the same rule ql_fm_field holds:
+# a body line spelling `status:` at column 0 is prose, and an assertion
+# that read it would pass on a file the machinery says nothing about.
+# Inlined rather than sourced — a fixture that asserted through the
+# script under test would agree with it by construction.
 task_field() {
   local got
-  got=$(sed -n "s/^$3: *//p" "work/tasks/$2.md" | head -n1)
+  got=$(awk -v f="$3" '
+    NR == 1 { if ($0 != "---") exit; next }
+    /^---$/ { exit }
+    sub("^" f ": *", "") { sub(/[[:space:]]*$/, ""); print; exit }
+  ' "work/tasks/$2.md")
   if [ "$got" = "$4" ]; then
     printf 'ok    %s\n' "$1"; pass=$((pass + 1))
   else

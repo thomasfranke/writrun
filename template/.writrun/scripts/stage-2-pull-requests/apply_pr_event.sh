@@ -25,6 +25,16 @@
 # beside them (technical/settings/titles.md#pr_title_style). A pull
 # request carrying none by either route exits without writing.
 #
+# **What that widens, said plainly.** This runs on pull_request_target,
+# so a fork's pull request reaches it, and the title is the fork's to
+# write. Before the carried set, such a pull request could claim the one
+# task its head branch spelled; it can now claim every task its title
+# lists, and each claim is a status write pushed to the default branch.
+# The kind of exposure is unchanged — both routes were always the fork's
+# to choose — but the amount is not, and no ceiling is imposed here.
+# Recorded as report-0028 rather than capped on a number picked in
+# passing.
+#
 # On close-without-merge, the forge is asked whether another open pull
 # request still works the task: with a survivor, the newest one's author
 # and draftness are re-recorded instead of landing the task — never a
@@ -35,8 +45,11 @@
 # event, while a task stranded in-flight with no PR heals never.
 #
 # Exits 0 in every no-op case (nothing carried, no legal edge, merged
-# close); 3 only for usage errors. Mutates the working tree; the caller
-# commits, so one event's writes land as one commit.
+# close); 1 when a carried task's write failed, after the rest have been
+# attempted; 3 only for usage errors. Mutates the working tree; the
+# caller commits, so one event's writes land as one commit — and a
+# non-zero exit is what stops a half-applied one from being pushed under
+# a green run.
 #
 # Portable bash 3.2, POSIX awk/sed. See the standing rule in
 # docs/technical/decisions/.
@@ -65,11 +78,23 @@ draftness() {   # $1: true|false -> draft|ready
 # answer never abandons the tasks after it. The flip already exits 0 for
 # an id resolving to no file and for an event no edge applies to; a
 # louder exit is still one task's, so it is reported and the loop goes on.
+#
+# **Going on is not the same as passing.** The exit is remembered and
+# this script ends on it: the caller commits whatever the tree holds, so
+# a swallowed failure would push a half-applied event under a green run,
+# and the task that did not move stays `ready` with its work in flight —
+# a state no later event of this pull request heals, because `ready` has
+# no edge to `in-review`. Loud, then, exactly as the run that cannot push
+# is loud rather than shrugged at.
+FAILED=0
 flip_one() {
-  local task="$1" mode="$2"
+  local task="$1" mode="$2" code=0
   shift 2
-  bash "$FLIP" "$mode" "$task" "$@" \
-    || echo "flip ${mode} ${task} exited $? — the tasks after it still move" >&2
+  bash "$FLIP" "$mode" "$task" "$@" || code=$?
+  if [ "$code" -ne 0 ]; then
+    echo "flip ${mode} ${task} exited ${code} — the tasks after it still move" >&2
+    FAILED=1
+  fi
 }
 
 # flip_all <mode> [args...] — the same write, once per carried task.
@@ -105,19 +130,35 @@ case "$EVENT" in
       echo "closed by merging — the merge recording owns this move"
       exit 0
     fi
+    # **One listing answers every carried task.** Asking the question per
+    # task must not make the call per task: a pull request carrying six
+    # tags would fetch the same list six times, and no two of those
+    # answers could differ. The filter moves to the reader instead.
+    #
+    # `--limit` is given because `gh`'s default is 30 and the filter is
+    # client-side: a survivor sitting below that line comes back invisible,
+    # and an invisible survivor lands a task whose work is still open —
+    # the exact failure this query exists to prevent, produced by the
+    # query itself.
+    OPEN_PRS=""
+    if [ -n "${GH_TOKEN:-}" ] && command -v gh >/dev/null 2>&1; then
+      OPEN_PRS=$(gh pr list --repo "${GH_REPO:?}" --state open --limit 200 \
+        --json number,headRefName,author,isDraft \
+        --jq '.[] | "\(.number) \(.headRefName) \(.author.login) \(.isDraft)"' \
+        2>/dev/null || printf '')
+    fi
     for TASK in $CARRIED; do
       # A surviving open PR on the same task supersedes the landing. The
       # match is by number, zero-padding stripped — every id reader in
       # this machine normalizes, and a survivor spelling `task/019-` must
-      # not be invisible to a close on `task/0019-`.
+      # not be invisible to a close on `task/0019-`. The newest wins, so
+      # the highest number is kept rather than the last line read.
       num=$(printf '%s' "$TASK" | sed 's/^task-0*//')
-      survivor=""
-      if [ -n "${GH_TOKEN:-}" ] && command -v gh >/dev/null 2>&1; then
-        survivor=$(gh pr list --repo "${GH_REPO:?}" --state open \
-          --json number,headRefName,author,isDraft \
-          --jq "[.[] | select(.headRefName | test(\"^task/0*${num}-\"))] | sort_by(.number) | last | if . == null then \"\" else \"\(.author.login) \(.isDraft)\" end" \
-          2>/dev/null || printf '')
-      fi
+      survivor=$(printf '%s\n' "$OPEN_PRS" | awk -v n="$num" '
+        $2 ~ ("^task/0*" n "-") {
+          if ($1 + 0 > best) { best = $1 + 0; out = $3 " " $4 }
+        }
+        END { if (out != "") print out }')
       if [ -n "$survivor" ]; then
         s_login=${survivor%% *}
         s_draft=${survivor##* }
@@ -134,4 +175,4 @@ case "$EVENT" in
     ;;
 esac
 
-exit 0
+exit "$FAILED"
