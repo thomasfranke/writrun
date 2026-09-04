@@ -1,8 +1,8 @@
 ---
 id: task-0044
-status: ready
+status: in-progress
 blocked_reason: null
-taken_by: null
+taken_by: thomasfranke
 spec_ref: [spec-0062, spec-0063]
 doc_ref: product/stage-2-pull-requests/body.md
 origin: rule
