@@ -20,7 +20,7 @@ stopping as soon as you have what the task needs:
    proposing a behaviour change.
 3. [`docs/technical/README.md`](docs/technical/README.md) — the router to
    the one chapter your task needs, never the whole reference.
-   `schemas.md` before touching anything under `work/`.
+   `schemas/` before touching anything under `work/`.
 4. The task itself, its specs and anchors — never code from a title.
 
 ## Which kind of change you have
@@ -55,7 +55,7 @@ Not auto-discovered. Load the one whose moment you are at.
 
 Taking ends with the **draft pull request open**, not the branch created
 — one command, the whole act
-([contract](docs/technical/distribution.md#take_tasksh--the-taking-act-in-one-command)):
+([contract](docs/technical/distribution/take-task.md#take_tasksh--the-taking-act-in-one-command)):
 
 ```bash
 bash .writrun/scripts/stage-2-pull-requests/take_task.sh 0034 \

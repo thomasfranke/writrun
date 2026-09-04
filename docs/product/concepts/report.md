@@ -94,7 +94,7 @@ so the ask reaches the session picking work, which is the reader most
 likely to act on it, without waiting for anyone to remember a `grep`.
 Naming is not selecting: an open report enters no ordering and moves no
 exit code, and what the section asks for is triage
-([selection](../../technical/selection.md#an-open-report-is-named-never-selected)).
+([selection](../../technical/selection/visibility.md#an-open-report-is-named-never-selected)).
 
 What the open Issue asks for is the **evaluation**, never the fix: read
 the report, choose its route. Work enters the queue only when the

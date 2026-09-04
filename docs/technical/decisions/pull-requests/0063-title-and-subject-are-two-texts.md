@@ -16,7 +16,7 @@ Separated here. `stage_2.pr_title_style` governs the pull request title
 and nothing else — the key's name was always exact; its reach was not.
 **The commit subject is a constant**: Conventional Commits,
 `type(scope): summary`, over the vocabularies
-[`conventions/commits.md`](../../../.writrun/conventions/commits.md)
+[`conventions/commits.md`](../../../../.writrun/conventions/commits.md)
 carries. No project sets it. A style is worth offering where the readers
 differ, and the readers of a title differ — a queue of open pull requests
 is read by the people working it. `main` is read by tooling, by bisect,

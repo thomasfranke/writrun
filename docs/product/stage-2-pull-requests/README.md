@@ -7,7 +7,7 @@ about commits lives here: the
 [commit conventions](../../../.writrun/conventions/commits.md), the
 adopter's word on the agent's own git actions (`auto_commit`) and on
 whether the agent appears as a commit's co-author (`agent_coauthor` —
-[settings](../../technical/settings.md#settings)), and the
+[settings](../../technical/settings/schema.md#settings)), and the
 machinery that turns forge events into status lines. Nothing here is
 required to claim adoption — it is mechanical enforcement of what a
 person at Stage 1 does deliberately.
