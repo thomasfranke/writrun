@@ -137,8 +137,8 @@ question actually being asked.
 Built as planned, steps 1–6. `apply_pr_event.sh` sources `queue_lib.sh`
 and reads its carried set from `ql_carried_from_env`; the branch regex
 is gone. Every event's write runs once per carried task through a
-`flip_all` helper, and the close-without-merge arm loops the survivor
-query itself, one `gh pr list` per task. The `record` job of
+`flip_all` helper, and the close-without-merge arm asks the
+survivor question per task against one `gh pr list`. The `record` job of
 `writrun-progress.yml` now passes `PR_TITLE` beside `PR_HEAD_REF`, and
 `make template-sync` mirrored both files. `statuses.md`'s criteria gain
 the set. The sequence report-0022 saw half-recorded is the first case
@@ -175,10 +175,11 @@ it.
 
 **The survivor query still matches on head branch names only.** A pull
 request that carries a task by title tag alone is invisible to
-`--jq ... test("^task/0*N-")`, so it would not be found as a survivor
-for that task. Step 4 asked for the question to be asked per task, not
-for its reach to change, and widening it is a different question about
-a different reader — left where the spec left it.
+`test("^task/0*N-")`, so it would not be found as a survivor for that
+task. Step 4 asked for the question to be asked per task, not for its
+reach to change, and widening it is a different question about a
+different reader — left where the spec left it, and recorded as
+report-0027 rather than only in this paragraph.
 
 Two details the spec left to the build. Each flip is wrapped so a
 non-zero exit is reported and the tasks after it still move — the edge
@@ -187,3 +188,45 @@ an unresolvable id and a stale replay are a contract, not a reason to
 skip the guard. And `tests/pipeline_lib.sh` gained `task_field`: a
 multi-task run writes several files, and only the files say what each
 task became.
+
+**Three things review changed, after the build.**
+
+*Going on was passing.* The wrapper above reported the failure and
+returned zero, and the script ended `exit 0` — so a write that genuinely
+failed produced a green run, and the caller committed and pushed the
+half-applied event. Before this spec the flip ran bare under `set -e`
+and a failure was loud, which makes the wrapper a regression rather than
+a gap. The exit is remembered now and the script ends on it: the loop
+still completes, and the run is red. The cost of getting this wrong is
+not abstract — a carried task left `ready` with its work in flight has
+no edge back to `in-review`, so nothing later in the pull request heals
+it. `a_failed_write_is_not_a_green_run_test.sh` holds it.
+
+*One question, one call.* The survivor query sat inside the loop, so a
+pull request carrying six tags asked the forge the same list six times —
+and no two of those answers could differ. The listing is hoisted and the
+filter moved to the reader. `--limit` is now given with it: `gh`'s
+default page is 30 and the filter is client-side, so a survivor below
+that line came back invisible, and an invisible survivor lands a task
+whose work is still open — the failure the query exists to prevent,
+produced by the query itself. That half was there before this spec; it
+is fixed here because the same line was being rewritten.
+
+*And `task_field` read the whole file.* It took its field with
+`sed -n "s/^field: *//p" | head -n1`, where the queue's own reader stops
+at the closing `---`. Harmless against today's fixtures, whose bodies
+are one heading — and a trap for the first case that needs a realistic
+body, since a `status:` at column 0 in prose would make the assertion
+lie. It reads the front matter now, by the same rule `ql_fm_field`
+holds, inlined rather than sourced: a fixture asserting through the
+script under test would agree with it by construction.
+
+**And one thing review found that is recorded, not fixed.** This runs on
+`pull_request_target`, so a fork's pull request reaches it, and the
+title is the fork's to write — as the head branch always was. The kind
+of exposure is unchanged; the amount is not. A fork could claim the one
+task its branch spelled, and can now claim every task its title lists,
+in one commit, with `taken_by:` naming its author. No ceiling is imposed
+here: a number picked in passing is a rule, and this spec is not the
+place to write one. The script's header says so plainly, and
+report-0028 carries the question to triage.
