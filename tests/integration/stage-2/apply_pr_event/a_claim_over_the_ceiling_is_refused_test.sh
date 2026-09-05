@@ -23,7 +23,10 @@ task_field "nor the ninth" task-0009 status ready
 
 check "the message names the ceiling" 1 "the ceiling is 8" \
   -- bash "$CI_SCRIPTS/stage-2-pull-requests/apply_pr_event.sh" opened
-check "and the heal — close and reopen" 1 "close and reopen" \
+# The heal is the retitle itself, since spec-0077 wired `edited`: the
+# edit re-fires the recording, and a refused title claimed nothing that
+# would need undoing first.
+check "and the heal — retitle, which now re-fires the recording" 1 "the edit re-fires the recording" \
   -- bash "$CI_SCRIPTS/stage-2-pull-requests/apply_pr_event.sh" opened
 unset PR_HEAD_REF PR_TITLE PR_AUTHOR PR_DRAFT PR_MERGED
 

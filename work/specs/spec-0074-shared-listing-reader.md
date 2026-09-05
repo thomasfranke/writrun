@@ -160,6 +160,16 @@ parse and not for pull requests — and why converting it was refused as
 optional: the collapse is a property of `read`, not of where the row came
 from.
 
+**The guard case that enforces this had a platform-dependent flake, and
+it was caught by CI rather than locally.** It piped `sed` into `grep -q`;
+a quiet grep closes the pipe on its first match, and GNU sed reports the
+broken pipe as a failure while BSD sed stays silent. Under `set -o
+pipefail` that made the case pass on macOS and fail on Linux, decided by
+which script happened to match first. The stripped text is captured into
+a variable before it is searched now. Worth naming because the whole
+`sed | grep -q` shape is common, and this repository's shell floor is
+bash 3.2 on macOS — the platform that hides it.
+
 The helper returns 1 on a row with too few separators, so a caller skips
 a row it cannot answer instead of reading it short — the guard the hand
 parse carried, kept, and now in one place. No doc delta, as promised: the

@@ -26,7 +26,13 @@ for f in "$SCRIPTS"/*.sh; do
   #
   # Both spellings of the same mistake are caught: the TAB a script
   # computed once, and the one interpolated at the read.
-  if sed 's/^[[:space:]]*#.*$//' "$f" \
+  # The stripped text is captured before it is searched, never piped
+  # into `grep -q`: a quiet grep closes the pipe on its first match, and
+  # GNU sed reports the broken pipe as a failure while BSD sed does not.
+  # Under `set -o pipefail` that made this case pass on macOS and fail on
+  # Linux CI, on the strength of which script matched first.
+  stripped=$(sed 's/^[[:space:]]*#.*$//' "$f")
+  if printf '%s\n' "$stripped" \
      | grep -qE 'IFS="?\$\{?(TAB|QL_TAB)\}?"? +read|IFS="\$\(printf .\\t.\)" +read'; then
     offenders="${offenders}${base} "
   fi
@@ -42,7 +48,8 @@ fi
 
 # And the exemption is real: a name left here after the script stopped
 # offending would quietly exempt whatever takes its place.
-if sed 's/^[[:space:]]*#.*$//' "$SCRIPTS/take_task.sh" \
+exempt_text=$(sed 's/^[[:space:]]*#.*$//' "$SCRIPTS/take_task.sh")
+if printf '%s\n' "$exempt_text" \
    | grep -qE 'IFS="\$\(printf .\\t.\)" +read'; then
   echo "ok    the one exemption still names a script that needs it"
   pass=$((pass + 1))
