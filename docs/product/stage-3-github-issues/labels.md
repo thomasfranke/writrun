@@ -92,6 +92,12 @@ nobody is working.
 - When a recording commit changes a task's stored status, the machinery
   shall re-label that task's mirror from the queue as it then stands,
   rather than from the merge's own diff.
+- When a pull request closes, the machinery shall re-label the mirrors
+  of the tasks that close released, whatever its title claimed. What one
+  pull request may claim is bounded, and a close claims nothing: it
+  restates a release the queue already holds. A refusal here would leave
+  those mirrors reading `in-progress` over a queue that says `ready` —
+  a mirror ahead of the file, which no later event comes back to heal.
 - When a task is mirrored, its mirror shall carry the `origin:` label
   matching the task's stored `origin`, and the label shall stay on the
   mirror through every state, closed included.

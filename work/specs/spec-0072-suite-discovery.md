@@ -1,7 +1,7 @@
 ---
 id: spec-0072
 task_ref: task-0054
-status: approved
+status: implemented
 created: 2026-09-05T12:56:40Z
 ---
 
@@ -158,4 +158,27 @@ not to have.
 
 ## Outcome
 
-_(fill after execution)_
+Implemented first, as the task required, because every other spec here
+is verified against the suite this one repairs.
+
+Two faults, not one. `make test-integration`'s glob was one level deep
+over a tier that uses two — cross-stage suites at the tier root, and
+stage-bound suites under `stage-N/` — so it ran 57 of 253 cases and
+exited 0 about the rest. `test-%` had the same blind spot one level
+further down. Both now name every depth the layout uses, and the
+comments say why there are two.
+
+`tests/run.sh`'s tally was a fixed path under `tests/`, shared by every
+invocation in the worktree: two overlapping runs appended to one file
+and each counted the other's cases as its own. That is where the 795
+and 808 totals came from against a true 405 — an artefact of the runner,
+never a real count. The tally is now a private `mktemp` file with a trap
+that removes it however the run ends, which is what the truncation was
+standing in for. The template is explicit because bare `mktemp` is not
+in BSD's dialect.
+
+The suite went from 405 case files to 441 as a direct result — 36 cases
+that had been passing silently, or not, for as long as the glob was
+wrong. None of the newly reached cases failed, which is luck rather than
+evidence, and the reason this spec ran first.
+

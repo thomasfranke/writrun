@@ -214,9 +214,17 @@ fi
 # amendment. The row is skipped, with the notice on stderr, and the fact
 # that one was skipped is remembered: what the lookup can no longer
 # answer, the verdict must not report as an answer.
+#
+# The rows go through `ql_row_fields`, never `IFS="$TAB" read`: a tab is
+# IFS whitespace, so an empty field would vanish and shift every field
+# after it — a head branch this check cannot read as a task, and a
+# suspended pull request reported as one that does not exist. The helper's
+# header carries the whole hazard.
 readable=""
 skipped=""
-while IFS="$TAB" read -r num branch ptitle; do
+while IFS= read -r row; do
+  ql_row_fields 3 "$row" || continue
+  num="$QL_F1"; branch="$QL_F2"; ptitle="$QL_F3"
   [ -n "$num" ] || continue
   carried=$(ql_carried_of "$branch" "${ptitle:-}")
   case "$carried" in
@@ -235,8 +243,10 @@ EOF
 # task, or nothing. This pull request is skipped: the amendment is not
 # the work, and a queue/ branch carries no id anyway.
 task_pr() {
-  local want="$1" num carried c
-  while IFS="$TAB" read -r num carried; do
+  local want="$1" num carried c row
+  while IFS= read -r row; do
+    ql_row_fields 2 "$row" || continue
+    num="$QL_F1"; carried="$QL_F2"
     [ -n "$num" ] || continue
     [ "$num" = "$PR" ] && continue
     for c in $carried; do
@@ -258,7 +268,9 @@ EOF
 
 missing=0
 seen=""
-while IFS="$TAB" read -r task spec; do
+while IFS= read -r row; do
+  ql_row_fields 2 "$row" || continue
+  task="$QL_F1"; spec="$QL_F2"
   [ -n "$task" ] || continue
   case "$seen" in *" $task "*) continue ;; esac
   seen="${seen} ${task} "

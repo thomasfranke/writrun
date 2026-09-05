@@ -23,12 +23,32 @@ name: writrun progress
 #     workflow skips fork reviews; the state heals at the next _target
 #     event (converted_to_draft, ready_for_review, closed all still
 #     fire).
+#
+# `edited` is here because the title is one of the two routes into the
+# carried set, and it is the author's to rewrite after the recording. A
+# pull request recorded under one tag and retitled to nine had no event
+# read the new title, so the tasks it named were never in flight and the
+# close could not release them. The event also fires on body and base
+# edits, which carry no claim; the recorder answers those from
+# `changes.title.from` alone, at no cost.
+#
+# The burst posture was checked before the trigger was added, not after.
+# Neither a body-only edit nor a retitle that adds no task reaches the
+# Commit step — it stands down on `git diff --quiet -- work/tasks` — so
+# a burst of edits costs runners and no pushes. Only an edit that adds a
+# task races, and the carried ceiling bounds those at QL_CARRIED_MAX.
+# push_recording.sh's five-attempt budget is sized for five; an author
+# adding one tag at a time up to the ceiling could out-run it, and the
+# result is a red run on their own pull request with the recording not
+# landed, healed by the next event. Visible and bounded, so the budget
+# stays where push_recording.sh's header sized it (spec-0077's Outcome
+# records this).
 # Pushes made with GITHUB_TOKEN trigger no workflow runs, which is what
 # keeps the recording from looping.
 
 on:
   pull_request_target:
-    types: [opened, reopened, ready_for_review, converted_to_draft, review_requested, closed]
+    types: [opened, reopened, ready_for_review, converted_to_draft, review_requested, edited, closed]
   pull_request_review:
     types: [submitted]
 
@@ -79,6 +99,11 @@ jobs:
           # The branch names one task; the title's tags name the rest,
           # and the recording reaches every one of them.
           PR_TITLE: ${{ github.event.pull_request.title }}
+          # Set by the forge only on an `edited` event whose title moved,
+          # and empty on every other event and on a body-only edit — the
+          # whole test the recorder needs to stand down cheaply. Through
+          # env like the title beside it: both are the author's to write.
+          PR_TITLE_FROM: ${{ github.event.changes.title.from }}
           PR_AUTHOR: ${{ github.event.pull_request.user.login }}
           PR_DRAFT: ${{ github.event.pull_request.draft }}
           PR_MERGED: ${{ github.event.pull_request.merged }}
@@ -155,4 +180,4 @@ jobs:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
           bash .writrun/scripts/stage-3-github-issues/project_pr_tasks.sh \
-            "${{ github.repository }}"
+            "${{ github.repository }}" "${{ github.event.action }}"

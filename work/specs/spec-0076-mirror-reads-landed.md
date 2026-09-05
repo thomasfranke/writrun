@@ -1,7 +1,7 @@
 ---
 id: spec-0076
 task_ref: task-0054
-status: approved
+status: implemented
 created: 2026-09-05T12:57:21Z
 ---
 
@@ -148,4 +148,27 @@ behaviour that spec never scoped.
 
 ## Outcome
 
-_(fill after execution)_
+`rederive_labels.sh` reads the branch that landed, not the runner's tree.
+
+The pass runs under `!cancelled()`, so it follows a push that may have
+been refused — and the tree then still carries the commit `main`
+rejected. A mirror *behind* the queue catches up at the next recording;
+one *ahead* of it asserts a state `main` refused, and nothing ever comes
+back for it. `AUTHORITY_REF` is what makes the labeller read the landed
+branch, supplied by `writrun-approve.yml` as the remote-tracking ref,
+which a successful push has already moved.
+
+The `!cancelled()` gate did not move, as the spec required: a skipped or
+no-op recording still leaves a readable queue, and gating the mirror on
+the recording's success is how a merge that recorded nothing stops
+projecting anything.
+
+A ref the checkout cannot read exits 4 rather than falling back to the
+working tree — the fallback is exactly how a mirror gets ahead of the
+queue. The fetch before the verify is best-effort and only for the run
+that never pushed at all.
+
+No doc delta, as promised: `labels.md` already states the rule this
+restores, and the labeller was wrong about it. Being wrong about a rule
+is not a version of it.
+

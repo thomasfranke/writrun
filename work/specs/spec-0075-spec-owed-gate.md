@@ -1,7 +1,7 @@
 ---
 id: spec-0075
 task_ref: task-0054
-status: approved
+status: implemented
 created: 2026-09-05T12:57:12Z
 ---
 
@@ -195,4 +195,29 @@ and never passes quietly.
 
 ## Outcome
 
-_(fill after execution)_
+Rule L's declaration half now has the input it needs, and a caller that
+omits it is loud instead of quiet.
+
+`spec_ref: []` on a task born of a report means both "the spec is owed"
+and "no spec was warranted", and nothing in the diff separates them —
+only the change's own declaration does, and that lives in the pull
+request body. `check_state.sh` reads `PR_BODY`, and
+`writrun-check.yml` supplies it; the step's comment says why the body is
+safe there, which is the same reason `HEAD_REF` is.
+
+The hard case the spec named — a body that is present and says nothing —
+is a refusal, not a stand-down. The stand-down is reserved for `PR_BODY`
+being *unset*, which is a caller that never passed it; `${PR_BODY+set}`
+is the test, so an empty body from a real pull request is an answer and
+not an absence.
+
+Scoped to newly added tasks. A task the base branch already holds with
+an empty `spec_ref` is not this change's to answer for, and judging it
+would refuse pull requests that never touched it.
+
+Two criteria in `statuses.md` — the three shapes that pass, and the
+`blocked`-without-`blocked_reason` refusal — and the caller's obligation
+in `checks.md`, including that the trigger list is part of it: the
+declaration is written by editing the body, so a workflow that does not
+run on `edited` reads the body as it was before the reviewer asked.
+

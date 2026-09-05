@@ -168,15 +168,31 @@ never trusted to prose discipline.
   machinery shall move the task to `done`.
 - When an event matches no legal transition for the status a task
   holds, the machinery shall write nothing.
-- When the machinery cannot land a write it owes — the authority branch
-  refused it — it shall report the failure, and never report success
-  over a queue it left unwritten.
+- When the machinery cannot land a write it owes, it shall report the
+  failure, and never report success over a queue it left unwritten.
 - When a change on a branch moves a task between the machinery's five
   working states, the machinery shall reject the change; a hand-written
   move to or from `blocked`, or to `dropped`, it shall accept.
 - When a change adds a queue file whose id the authority branch or
   another open pull request already claims, the machinery shall reject
   the change.
+- When a change adds a task born of a report that references no spec,
+  `writrun check` shall reject it unless one of three things is true:
+  the change adds that task's spec, or the task lands `blocked` with a
+  `blocked_reason` naming the spec it waits for, or the body says of
+  that task by id that no spec is warranted. A task referencing no spec
+  merges `ready` and is selectable at once, so the queue never learns
+  from the file alone whether the spec was owed or never needed.
+- When a change adds a task born of a report that lands `blocked` with
+  no `blocked_reason`, `writrun check` shall reject it, whatever the
+  project's stage: a hold naming nothing to wait for is a hold no
+  reader can release.
+- When a pull request's title is edited, the machinery shall re-derive
+  what the pull request carries and record the tasks the old title did
+  not claim; when the edit leaves the title unchanged, it shall write
+  nothing. A title is one of the two routes into the carried set, and it
+  is writable after the recording, so a claim read only at `opened` is a
+  claim read once and then trusted.
 - When a merge returns a spec of an in-flight task to `draft`, the
   machinery shall not move that task's status — flight belongs to the
   task's own pull request's events, and to no other merge.

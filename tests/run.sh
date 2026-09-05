@@ -24,9 +24,17 @@ set -uo pipefail
 
 TESTS_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-# Truncated up front: an interrupted run leaves this file behind, and
-# appending to a stale one would inflate the next run's totals.
-: > "$TESTS_DIR/.tally"
+# The tally is private to this run. A fixed path under tests/ was shared
+# by every invocation in the worktree, so two overlapping runs appended
+# to one file and each counted the other's cases as its own — reported
+# totals of 795 and 808 against a true 405. What protects the count now
+# is the path, not a truncation: no other run can name this file. The
+# trap removes it however the run ends, including interrupted, which is
+# what the truncation was standing in for.
+# The explicit template is the portable form — `mktemp` with no argument
+# is not in BSD's dialect (bash 3.2 and macOS, per docs/technical/decisions/).
+TALLY="$(mktemp "${TMPDIR:-/tmp}/writrun-tally.XXXXXX")" || exit 1
+trap 'rm -f "$TALLY"' EXIT INT TERM
 
 find "$TESTS_DIR" -name '*_test.sh' -print | sed 's|/[^/]*$||' | sort -u \
 | while IFS= read -r dir; do
@@ -36,14 +44,14 @@ find "$TESTS_DIR" -name '*_test.sh' -print | sed 's|/[^/]*$||' | sort -u \
     # stdin closed: the discovery list feeds this loop through a pipe,
     # and a case that reads stdin would silently eat the rest of it.
     bash "$case_file" < /dev/null
-    echo "case:$?" >> "$TESTS_DIR/.tally"
+    echo "case:$?" >> "$TALLY"
   done
   echo
 done
-pass=$(grep -c '^case:0$' "$TESTS_DIR/.tally" 2>/dev/null || echo 0)
-total=$(grep -c '^case:' "$TESTS_DIR/.tally" 2>/dev/null || echo 0)
+pass=$(grep -c '^case:0$' "$TALLY" 2>/dev/null || echo 0)
+total=$(grep -c '^case:' "$TALLY" 2>/dev/null || echo 0)
 fail=$((total - pass))
-rm -f "$TESTS_DIR/.tally"
+rm -f "$TALLY"
 
 printf '%s case files passed, %s failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]

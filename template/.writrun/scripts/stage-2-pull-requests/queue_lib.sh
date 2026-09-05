@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # queue_lib.sh — the helpers both halves of the transition machine share:
 # front-matter reads and writes, the resting derivation, the task-file
-# resolver, and the carried-ids parser. Sourced, never executed; the
-# sourcing script owes `set -euo pipefail` itself.
+# resolver, the carried-ids parser, and the tab-delimited row reader.
+# Sourced, never executed; the sourcing script owes `set -euo pipefail`
+# itself.
 #
 # One copy on purpose: flip_task_status.sh and record_task_status.sh
 # each carried private clones of these until a review caught the clones
@@ -151,6 +152,58 @@ ql_carried_of() {
 # running on, read from env as data (PR_HEAD_REF, PR_TITLE).
 ql_carried_from_env() {
   ql_carried_of "${PR_HEAD_REF:-}" "${PR_TITLE:-}"
+}
+
+# --- the tab-delimited row ------------------------------------------------
+#
+# QL_TAB — the delimiter, computed once. `printf '\t'` in every caller was
+# four spellings of one character.
+QL_TAB=$(printf '\t')
+
+# ql_row_fields <count> <row> — splits one tab-delimited row into exactly
+# <count> fields, left to right, and leaves them in QL_F1 … QL_F<count>.
+# The last field takes the remainder, tabs and all. Returns 1 when the
+# row holds fewer separators than that, so a caller skips a row it cannot
+# answer instead of reading it short.
+#
+# **`read` cannot do this, and that is why the helper exists.** A tab is
+# an IFS *whitespace* character, so `IFS="$TAB" read -r a b c` folds a run
+# of tabs into one separator: an empty field vanishes and every field
+# after it shifts left by one. The empty field is not hypothetical — `gh`
+# emits `author.login` as the empty string for a pull request whose
+# author deleted their account, and `@tsv` writes that as two adjacent
+# tabs. The shift is silent, and what it produced was a listing row about
+# a pull request still working a task being read as a row about something
+# else.
+#
+# One reader for three callers, for the reason the helpers above are one
+# copy: three correct copies of one parse agree until one of them is
+# edited. Named for the parse rather than for the forge, because one of
+# the three rows never came from a forge — check_unique_ids.sh assembles
+# its own — and a helper named for pull requests would read wrong there.
+#
+# **A newline does not survive, and cannot.** It is the *row* separator
+# every caller splits on before this is reached, so a field carrying one
+# has already ended its row. That is why every projection puts the
+# free-text field last: a title is the only field a person writes, and
+# last is where a broken row costs a title rather than a number.
+ql_row_fields() {
+  local want="$1" row="$2" i=1 f
+  while [ "$i" -lt "$want" ]; do
+    case "$row" in
+      *"$QL_TAB"*) ;;
+      *) return 1 ;;
+    esac
+    f=${row%%"$QL_TAB"*}
+    row=${row#*"$QL_TAB"}
+    # eval, because bash 3.2 has no name references and no associative
+    # arrays. The value reaches the assignment through $f, never through
+    # the evaluated string, so a field holding a quote or a `$` is data.
+    eval "QL_F${i}=\$f"
+    i=$((i + 1))
+  done
+  eval "QL_F${want}=\$row"
+  return 0
 }
 
 # --- minting ------------------------------------------------------------

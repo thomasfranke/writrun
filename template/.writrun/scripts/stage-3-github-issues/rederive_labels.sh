@@ -6,6 +6,9 @@
 #          [--minted <task-id|report-id>...]
 #   Run from a checkout of the authority branch, *after* the flip has been
 #   committed to it — the whole point is to read the queue's new state.
+#   Where the tree and that branch can disagree — a recording whose push
+#   was refused — set `AUTHORITY_REF` to the branch and the queue is read
+#   from there instead (below).
 #   `gh` must be on PATH and authenticated (GH_TOKEN in CI; a stub in the
 #   test suite). Named no id, it does nothing and says so.
 #
@@ -47,11 +50,14 @@
 #
 # Exit codes: 0 done (including nothing to do); 1 a mirror this job
 # answered for was never found; 2 the forge refused a call this pass
-# cannot go on without; 3 usage error.
+# cannot go on without; 3 usage error; 4 `AUTHORITY_REF` was set and
+# could not be read, so no label was written.
 #
 # One code per condition, because 1 is what a red `writrun approve`
 # shows a maintainer: "the forge would not create the label" and "this
-# pass left a minted mirror unlabelled" are different mornings.
+# pass left a minted mirror unlabelled" are different mornings. 4 is a
+# fifth: the queue this pass projects could not be found at all, and a
+# fallback to the working tree is exactly what it must not do.
 #
 # Portable bash 3.2, POSIX awk/sed — no gawk extensions, no associative
 # arrays. See the standing rule in docs/technical/decisions/.
@@ -67,6 +73,81 @@ shift
 
 TAB=$(printf '\t')
 
+# --- which tree the queue is read from ------------------------------------
+#
+# `AUTHORITY_REF` names the branch this pass must project. Set it and the
+# queue is read from that ref; leave it unset and the queue is the
+# working tree, which is what every caller running *from* the authority
+# branch already has.
+#
+# **Why the script reads the ref rather than the workflow resetting the
+# tree.** Both were on the table. The workflow shape is one line and
+# leaves this script honest about reading "the tree" — but it cannot
+# answer the case it exists for: the mirror steps run under
+# `!cancelled()`, so a reset step that itself failed would be followed by
+# the labeller reading the unreset tree, which is the original fault with
+# an extra step in front of it. Reading the ref puts the failure where
+# the label is written: unreadable means no label, said out loud, here.
+#
+# The fault: `writrun-approve.yml`'s mirror steps run inside the recording
+# job, after the commit and push, and the gate lets them run when the
+# push failed. The tree at that moment still carries the commit `main`
+# refused, so a labeller reading it projects a queue state that exists
+# nowhere but the runner — and writes it onto the mirror. A mirror
+# *behind* the queue catches up at the next recording; one *ahead* of it
+# asserts a state `main` refused, and the next successful recording has
+# no reason to revisit a label that already reads what it is about to
+# write.
+#
+# **One answer to "which tree", not two.** The ref is materialised once,
+# into a directory `queue_file` resolves against, so every reader below
+# — `fm`, `label_for`, `close_for`, the report projection — reads the
+# same tree by construction. A second reader taught the ref separately is
+# the divergence again, smaller.
+AUTHORITY_REF="${AUTHORITY_REF:-}"
+QUEUE_ROOT="."
+QUEUE_TMP=""
+cleanup_queue() { [ -n "$QUEUE_TMP" ] && rm -rf "$QUEUE_TMP"; return 0; }
+trap cleanup_queue EXIT
+
+if [ -n "$AUTHORITY_REF" ]; then
+  # A stale remote-tracking ref is the same class of wrong in the other
+  # direction — a tree older than the queue. A successful push updates
+  # the ref it pushed to, so the ordinary case is already current; the
+  # fetch is for the case where this runner never pushed at all. It is
+  # best-effort: a fetch that fails leaves the ref the runner has, and
+  # the verify below is what decides whether that ref can be read.
+  case "$AUTHORITY_REF" in
+    */*)
+      _rem=${AUTHORITY_REF%%/*}
+      _brn=${AUTHORITY_REF#*/}
+      if git remote 2>/dev/null | grep -qxF "$_rem"; then
+        git fetch --quiet "$_rem" "$_brn" >/dev/null 2>&1 || true
+      fi
+      ;;
+  esac
+  if ! git rev-parse --verify --quiet "${AUTHORITY_REF}^{commit}" >/dev/null 2>&1; then
+    echo "AUTHORITY_REF '${AUTHORITY_REF}' names no commit this checkout can read." >&2
+    echo "  The labels this pass would write are the authority branch's to" >&2
+    echo "  decide, and falling back to the working tree is how a mirror gets" >&2
+    echo "  ahead of the queue. No label was written." >&2
+    exit 4
+  fi
+  QUEUE_TMP=$(mktemp -d "${TMPDIR:-/tmp}/writrun-queue.XXXXXX")
+  QUEUE_ROOT="$QUEUE_TMP"
+  # A ref with no `work/` at all is a queue with nothing in it, not a ref
+  # that could not be read — the empty directories below give every
+  # lookup its existing "no file on this branch" answer.
+  if git cat-file -e "${AUTHORITY_REF}:work" 2>/dev/null; then
+    if ! git archive "$AUTHORITY_REF" work | tar -xf - -C "$QUEUE_ROOT"; then
+      echo "AUTHORITY_REF '${AUTHORITY_REF}' holds a work/ this pass could not read." >&2
+      echo "  No label was written." >&2
+      exit 4
+    fi
+  fi
+  mkdir -p "$QUEUE_ROOT/work/tasks" "$QUEUE_ROOT/work/reports"
+fi
+
 if printf '' | base64 -d >/dev/null 2>&1; then B64_FLAG="-d"; else B64_FLAG="-D"; fi
 b64_decode() { base64 "$B64_FLAG"; }
 
@@ -80,8 +161,10 @@ fm() {   # fm <file> <field>
 
 # queue_file <dir> <prefix> <id> — the file whose id is <id>, whatever its
 # subject slug and whatever width its number was written at.
+# The one place a queue path is resolved, so `$QUEUE_ROOT` is the one
+# answer to which tree this pass reads.
 queue_file() {
-  local dir="$1" prefix="$2" want f n
+  local dir="$QUEUE_ROOT/$1" prefix="$2" want f n
   want=$(printf '%s' "$3" | tr '[:upper:]' '[:lower:]' \
     | sed -E "s/^${prefix}-0*([0-9]+)$/\1/")
   [ -n "$want" ] || return 0
@@ -479,8 +562,12 @@ for sf in "$@"; do
     task-*)
       tref=$(basename "$sf" .md | sed -E 's/^(task-[0-9]+).*/\1/') ;;
     *)
-      [ -f "$sf" ] || continue
-      tref=$(fm "$sf" task_ref) ;;
+      # Through $QUEUE_ROOT like every other read: a spec file named on
+      # the command line is still a queue file, and reading it from the
+      # tree while the tasks come from the ref is the two-answers
+      # divergence in miniature.
+      [ -f "$QUEUE_ROOT/$sf" ] || continue
+      tref=$(fm "$QUEUE_ROOT/$sf" task_ref) ;;
   esac
   [ -n "$tref" ] || continue
   tnum=$(num_of_id "$tref")

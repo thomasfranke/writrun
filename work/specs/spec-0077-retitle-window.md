@@ -1,7 +1,7 @@
 ---
 id: spec-0077
 task_ref: task-0054
-status: approved
+status: implemented
 created: 2026-09-05T12:57:30Z
 ---
 
@@ -188,4 +188,52 @@ which is what a caller reads when deciding whether to retry.
 
 ## Outcome
 
-_(fill after execution)_
+Implemented as specified, with two answers the spec asked for in writing.
+
+`edited` is in both `writrun-progress.yml` copies, and the recorder's
+new arm stands down on an empty `PR_TITLE_FROM` — the forge sets
+`changes.title.from` only on edits that moved the title, so a body or
+base edit costs no file read and no forge call. `PR_TITLE_FROM` joined
+the `PR_*` enumeration in `technical/distribution/checks.md`, which is
+this task's delta by way of spec-0073 and spec-0075 rather than this
+spec's own list; the doc-contract case spec-0072's tier now reaches
+caught the omission on the first run, which is the enumeration working.
+
+**The dropped-tag case is reported, not answered.** A task the old title
+claimed and the new one does not stays in flight, and no later event
+releases it: the close reads the title as it then stands, so the dropped
+tag is invisible there too. Releasing it needs the close arm's survivor
+query — a second open pull request may still carry the task — which is a
+claim question wearing a release's clothes, and outside this spec's
+Scope. It is stated in the `edited` arm's own comment, in decision 0069,
+and here, and it wants a report of its own.
+
+**The over-ceiling old title is read as claiming nothing**, which the
+spec did not anticipate. Re-reading it with the ceiling lifted, the way
+the new set's sentinel is unwrapped, would have counted a refused claim
+as a claim — and then the edit that brings a nine-tag title back under
+the ceiling would record nothing at all, the stranding surviving its own
+fix. The refusal is whole, so no event under that title ever wrote a
+status; the corollary is recorded in decision 0069 and covered by a case.
+
+The ceiling refusal was left where it stands and the event name checked
+before it, which is the second of the two placements the spec allowed.
+One list names the events, so the guard and the dispatch cannot drift;
+the dispatch's `*)` arm is now unreachable and says so.
+
+The projector learned the event as a **positional argument**, not a
+sixth `PR_*` name: the enumeration is the contract `checks.md` holds the
+caller to, and what a script is asked to do is the caller's word, not a
+field of the pull request. A caller that omits it gets the refusal, which
+a case asserts.
+
+**The burst posture was checked before the trigger was added.** Neither
+a body-only edit nor a retitle that adds no task reaches the Commit
+step — it stands down on `git diff --quiet -- work/tasks` — so a burst
+costs runners and no pushes. Only an edit that adds a task races, and
+the ceiling bounds those at eight. `push_recording.sh`'s budget is five,
+so an author adding one tag at a time up to the ceiling could out-run
+it; the result is a red run on their own pull request with the recording
+not landed, healed by the next event. Visible and bounded, so the budget
+was left where its header sized it.
+

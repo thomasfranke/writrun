@@ -4,7 +4,7 @@
 
 ## Running the checks
 
-Three of the skills are gates, and three rules about *how* they are
+Three of the skills are gates, and five rules about *how* they are
 called belong to the caller rather than to any script — a wrong call
 passes, which is why they are stated here and not left to whoever
 remembers.
@@ -37,8 +37,9 @@ never papered over. A spec is marked `implemented`, and a task's
 
 **A `PR_*` name carries pull-request event data, set by the workflow
 step that calls the script.** `PR_HEAD_REF`, `PR_TITLE`, `PR_AUTHOR`,
-`PR_DRAFT` and `PR_MERGED` reach `apply_pr_event.sh` and its siblings
-that way. A script an agent also runs locally reads the bare name:
+`PR_DRAFT`, `PR_MERGED`, `PR_NUMBER` and `PR_TITLE_FROM` reach
+`apply_pr_event.sh` and its siblings that way. A script an agent also runs locally reads the
+bare name:
 `check_state.sh` reads `HEAD_REF`, because outside CI there is no pull
 request for the prefix to be true about. Copying one workflow's `env:`
 block into another's step therefore sets a name the callee never reads,
@@ -57,5 +58,34 @@ line every pull request carrying no task legitimately prints, so a
 miswired `writrun-progress.yml` stops recording the task lifecycle and
 looks ordinary doing it. Two names rather than one is a wider way to be
 miswired, not a narrower one: the step goes quiet if *either* is copied
-wrong, and says the same ordinary thing.
+wrong, and says the same ordinary thing. An empty `PR_NUMBER` is
+quieter still, and costs more. The close arm drops the closing pull
+request's own row from the open listing by matching that number, so
+with none set the drop is a no-op and the pull request finds *itself*
+surviving — and on a listing that still shows it open it then claims
+every task its title carries, not only the one its head branch spells
+([spec-0068](../../../work/specs/spec-0068-survivor-every-route.md)).
+
+**`PR_TITLE_FROM` is the whole test for a body-only edit.** The
+`edited` event fires on body and base changes as well as titles, and
+only a title change carries a claim. The forge sets
+`github.event.changes.title.from` on exactly the edits that moved the
+title, so the recorder stands down on an empty one without reading a
+file or calling the forge. A step that omits the name makes every
+`edited` event look like a body edit, and the retitle it was added for
+goes unrecorded — silently, and green
+([spec-0077](../../../work/specs/spec-0077-retitle-window.md)).
+
+**`check_state.sh` gets the pull request body, or one of its rules
+cannot run.** The owed-spec rule asks whether the change declares that a
+task warrants no spec, and that declaration lives in the body — nowhere
+in the diff can answer it, because an empty `spec_ref` means both "owed"
+and "never needed"
+([statuses](../../product/stage-2-pull-requests/statuses.md#criteria)).
+A step that omits `PR_BODY` leaves the half standing down and the task
+unjudged; the run still exits 0, so the omission costs a rule and
+nothing tells the maintainer except the stand-down line. The trigger
+list is part of the same obligation: the declaration is written by
+editing the body, so a workflow that does not run on `edited` reads the
+body as it was before the reviewer asked for the line.
 
