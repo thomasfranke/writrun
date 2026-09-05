@@ -444,12 +444,16 @@ show_composition() {
 # pushed branch without its pull request, the one state this act must
 # not leave behind.
 rerun_command() {
-  printf '  bash %s %s --title "%s" --slug %s%s %s\n' \
+  printf '  bash %s %s --title "%s" --slug %s%s%s\n' \
     "$0" "$TASK_ARG" "$TITLE" "$SLUG" \
-    "${COAUTHOR:+ --coauthor \"${COAUTHOR}\"}" "$1"
+    "${COAUTHOR:+ --coauthor \"${COAUTHOR}\"}" "${1:+ $1}"
 }
 resume_command()  { rerun_command "--resume${CONFIRM:+ --confirm}"; }
 confirm_command() { rerun_command "--confirm"; }
+# fresh_command — the take again, from nothing. What a refusal prints
+# where the recovery is a new take rather than a resume: a refusal that
+# names no runnable line leaves the operator with neither path.
+fresh_command()   { rerun_command "${CONFIRM:+--confirm}"; }
 
 # --- the branch must not already exist -------------------------------
 
@@ -511,7 +515,7 @@ fi
 if ! GH_ERR=$(gh auth status 2>&1); then
   echo "gh cannot reach the forge:" >&2
   printf '%s\n' "$GH_ERR" | head -n 3 >&2
-  echo "Nothing was done; the repository is untouched." >&2
+  echo "This run committed nothing, pushed nothing and opened nothing." >&2
   exit 3
 fi
 
@@ -594,27 +598,75 @@ fi
 if [ -n "$RESUME" ]; then
   if [ "$pr_source" = none ]; then
     echo "The open pull request list went unanswered, and whether one already carries this take is the one question a resume turns on." >&2
-    echo "Nothing was pushed and nothing was opened. Once the forge answers, finish the act with:" >&2
+    echo "This run pushed nothing and opened nothing. Once the forge answers, finish the act with:" >&2
     resume_command >&2
     exit 3
   fi
-  # One question the fresh path never asks: whether any pull request,
-  # open or closed, ever carried this branch. The open ones the loop
-  # above already refused; a closed one means the flight ended, and
-  # finishing the branch now would open a second pull request over a
-  # base as old as the interruption. The branch on the forge is that
-  # flight's leftover — deleted by hand, or left to lie.
+  # One question the fresh path never asks: which pull requests ever
+  # carried this branch, in any state. It is asked branch-scoped, so it
+  # answers where the repo-wide open list above cannot — past its cap of
+  # 200 this take's own pull request falls off that list, and these rows
+  # still hold it.
+  #
+  # `--head` matches a head branch's *name*, and forks share that
+  # namespace: a fork's pull request on `task/0007-widget` is not this
+  # take's flight, so the cross-repository rows are dropped.
   if ! head_lines=$(gh pr list --head "$BRANCH" --state all --limit 200 \
-        --json number,state \
-        --jq '.[] | "\(.number)\t\(.state)"' 2>/dev/null); then
+        --json number,state,headRefOid,closedAt,author,isCrossRepository \
+        --jq '.[] | "\(.number)\t\(.state)\t\(.headRefOid)\t\(.closedAt)\t\(.author.login)\t\(.isCrossRepository)"' 2>/dev/null); then
     echo "Whether a pull request ever carried ${BRANCH} went unanswered, and it is the one question a resume turns on." >&2
-    echo "Nothing was pushed and nothing was opened. Once the forge answers, finish the act with:" >&2
+    echo "This run pushed nothing and opened nothing. Once the forge answers, finish the act with:" >&2
     resume_command >&2
     exit 3
   fi
-  closed_pr=$(printf '%s\n' "$head_lines" \
-    | awk -F'\t' '$1 != "" && $2 != "OPEN" { print $1; exit }')
-  [ -z "$closed_pr" ] || refuse "pull request #${closed_pr} carried ${BRANCH} and is closed — an ended flight is finished by a fresh take, never resumed"
+  BRANCH_TIP=$(git rev-parse --verify --quiet "refs/heads/${BRANCH}")
+  while IFS="$(printf '\t')" read -r hnum hstate hoid hclosed hauthor hcross; do
+    [ -n "$hnum" ] || continue
+    [ "$hcross" = true ] && continue
+    if [ "$hstate" = OPEN ]; then
+      refuse "${ID} is already in flight on pull request #${hnum} (by @${hauthor}) — resuming is not taking"
+    fi
+    # An ended flight is finished by a fresh take, never resumed — but
+    # only this branch's own flight ends this branch. Branch names are
+    # deterministic, so a name an ended pull request once used is the
+    # name the next take cuts again, and refusing on the name alone
+    # would burn it for every take that follows.
+    #
+    # The commit the pull request ended on is the evidence: a branch
+    # carrying it is that flight continued. Where this clone no longer
+    # has that commit, the close's timestamp stands in — a tip made
+    # after the flight ended was never part of it. With neither in hand
+    # the run cannot tell, and refuses.
+    if [ -n "$hoid" ] && [ "$hoid" != null ] \
+       && git cat-file -e "${hoid}^{commit}" 2>/dev/null; then
+      git merge-base --is-ancestor "$hoid" "$BRANCH_TIP" 2>/dev/null || continue
+      hwhy="carries that flight's commits"
+    elif [ -n "$hclosed" ] && [ "$hclosed" != null ]; then
+      [ -z "$(git rev-list -1 --since="$hclosed" "$BRANCH_TIP" 2>/dev/null)" ] || continue
+      hwhy="was last committed to before that flight ended"
+    else
+      hwhy="cannot be told apart from that flight"
+    fi
+    # The state is named as the forge gave it: a merged flight ended more
+    # conclusively than a closed one, and calling it closed would be the
+    # same kind of over-claim these sentences exist to stop. So is the
+    # reason — three refusals stand on three different pieces of
+    # evidence, and each says which one it has.
+    #
+    # The way out is printed in full, because there is no other. A resume
+    # is refused here and a fresh take is refused on the branch that
+    # still exists, so a refusal naming only the first of those leaves
+    # the operator with nothing to run.
+    hended=$(printf '%s' "$hstate" | tr 'A-Z' 'a-z')
+    echo "REFUSED: pull request #${hnum} carried ${BRANCH} and is ${hended} — an ended flight is finished by a fresh take, never resumed." >&2
+    echo "This checkout's ${BRANCH} ${hwhy}. The fresh take needs the name back:" >&2
+    echo "  git switch main && git branch -D ${BRANCH}" >&2
+    echo "  git push origin --delete ${BRANCH}   # where the forge still holds it" >&2
+    fresh_command >&2
+    exit 1
+  done <<EOF
+$head_lines
+EOF
 fi
 
 
@@ -664,18 +716,28 @@ if [ "$AHEAD" = 0 ]; then
   fi
 fi
 
-if ! PUSH_ERR=$(git push -u origin "$BRANCH" 2>&1); then
+# LC_ALL=C because the arms below read git's own words. Under any other
+# locale git translates them, every pattern misses, and a failure whose
+# meaning is known falls to the arm that establishes least.
+if ! PUSH_ERR=$(LC_ALL=C git push -u origin "$BRANCH" 2>&1); then
   echo "git push failed:" >&2
   printf '%s\n' "$PUSH_ERR" | head -n 3 >&2
-  # The sentence claims only what the refusal proves. A non-fast-forward
-  # is the forge answering over a branch it already holds; a remote that
-  # never answered moved nothing, so the branch stays where it was; and
-  # anything else — a connection that dropped mid-push — proves only
+  # The sentence claims only what the failure proves. A non-fast-forward
+  # is the forge answering over a branch it already holds; a ref the
+  # forge received and declined — branch protection, a pre-receive hook
+  # — says nothing about whether it holds the branch at all; a remote
+  # that never answered moved nothing, so the branch stays where it was;
+  # and anything else — a connection that dropped mid-push — proves only
   # that this push did not complete.
   case "$PUSH_ERR" in
-    *non-fast-forward*|*'[rejected]'*|*'[remote rejected]'*)
+    *'[remote rejected]'*)
+      echo "The forge received this push and declined the ref, so ${BRANCH} did not move there. Settle what declined it — a protection rule, or a hook — then finish with:" >&2 ;;
+    *non-fast-forward*|*'[rejected]'*)
       echo "The forge holds ${BRANCH} and refused this push over it — the divergence is real, and no force push finishes this act. Reconcile the two, then finish with:" >&2 ;;
-    *'Could not read from remote repository'*|*'does not appear to be a git repository'*)
+    *'Could not read from remote repository'*|*'does not appear to be a git repository'* \
+    |*'Could not resolve host'*|*'Could not resolve proxy'* \
+    |*'Failed to connect to'*|*'Connection refused'*|*'Connection timed out'* \
+    |*'Network is unreachable'*|*'No route to host'*|*'Operation timed out'*)
       echo "The remote never answered, so this push moved nothing and ${BRANCH} is kept local. Finish the act with:" >&2 ;;
     *)
       echo "The push did not complete, and where ${BRANCH} stands on the forge is not established. Finish the act with:" >&2 ;;
