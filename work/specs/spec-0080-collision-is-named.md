@@ -1,7 +1,7 @@
 ---
 id: spec-0080
 task_ref: task-0057
-status: approved
+status: implemented
 created: 2026-09-05T13:48:56Z
 ---
 
@@ -208,4 +208,23 @@ scope at that point in the loop.
 
 ## Outcome
 
-_(fill after execution)_
+Implemented as specified. Output only: no write, no forge call and no
+exit code moved.
+
+`report_row_of` appends the mirror's title as a fifth base64 field; the
+caller's four `cut` reads are untouched. The adoption line names the
+state it found — `adopted stale mirror #18, closed — …` — placed after
+the number rather than before "stale", so the substring the two existing
+adoption cases assert on is extended and not replaced. Those two are the
+task loop's anyway, which this change does not reach.
+
+The comparison strips the mirror's `[REPORT-NNNN]` tag and trims both
+sides, and is not case-folded. It runs only where this pass adopted the
+mirror and the diff carries a title, so a restore prints nothing new, a
+mirror this pull request owns never warns, and a status-only edit
+compares nothing.
+
+The warning names the mirror, the state it was in, both titles, the pull
+request that introduced it — or that none did — and the rule. Then the
+reopen and the label happen exactly as before: a collision named and
+projected is strictly better than one neither named nor projected.
