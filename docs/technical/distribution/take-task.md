@@ -71,11 +71,14 @@ of the task's specs suspends it, named. Only then is the branch cut from
 `origin/main`, given its first commit, pushed, and the draft opened. A
 forge failure *after* the cut also exits 3, naming the branch wherever
 its own evidence puts it — a push that never reached the remote leaves
-it kept local, a push the forge refused proves the forge holds it, and a
-`gh pr create` that failed after a push that did not leaves it on the
-forge with no pull request — and naming `--resume`, which finishes the
-act: push and pull request only, never a second branch and never a
-second commit.
+it kept local, a non-fast-forward proves the forge holds it, a ref the
+forge received and declined proves only that this push did not move it,
+and a `gh pr create` that failed after a push that succeeded leaves it
+on the forge with no pull request — and naming `--resume`, which
+finishes the act: push and pull request only, never a second branch and
+never a second commit. The evidence is git's own words, so the push is
+made under a forced C locale; a translated message is one no arm can
+read.
 
 **The carve-out turns on the pull request, not the branch's location.**
 What `--resume` finishes is a take that has no pull request, wherever it
@@ -84,12 +87,20 @@ get does not change what finishing it costs, and the state this act must
 never leave behind — a branch on the forge with no pull request — is
 exactly the one a recovery has to be able to reach. So the forge answers
 it. An open pull request carrying the task refuses the resume as it
-refuses the fresh take; a pull request that ever carried the branch and
-is now closed refuses it too, because that flight ended and is finished
-by a fresh take rather than resumed. Where the forge could not say, the
-resume stops at exit 3 without pushing or opening — an unanswered read
-is not "no pull request", and opening a second pull request over a
-branch that has one is the failure this act exists to avoid. What stays
+refuses the fresh take — on the repo-wide list, and again on the read
+scoped to this branch, which still holds this take's own pull request
+past the point the capped list drops it. An ended pull request refuses
+it too, because that flight ended and is finished by a fresh take rather
+than resumed. That refusal turns on the commit the flight ended on:
+branch names are deterministic, so a name an ended flight used is a name
+every later take cuts again, and refusing on the name alone would burn
+it. A fork's pull request on that name is not this take's flight either,
+and is dropped. Every refusal here prints the deletions and the fresh
+take that follow it — a resume refused over a branch that still exists
+has no other way out. Where the forge could not say, the resume stops at
+exit 3 without pushing or opening — an unanswered read is not "no pull
+request", and opening a second pull request over a branch that has one
+is the failure this act exists to avoid. What stays
 local is the requirement that the branch be here: a branch this checkout
 never had would have to be fetched and adopted, which is not finishing a
 take.
