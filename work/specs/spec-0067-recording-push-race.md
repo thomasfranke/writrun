@@ -391,6 +391,22 @@ Divergences:
   `pre-push` hook silently. The race then never happens, and two cases
   go red naming `push_recording.sh` for a fault in the fixture.
 
+- **The mirror claim is true of `reflect` and false of approve.** Edge
+  cases says of a failed recording that the mirror stays faithful to the
+  queue, which is the mirror's entire contract. That holds for
+  `writrun-progress.yml`'s `reflect`: a separate job, a fresh checkout
+  of `main`, reading what landed. It does not hold for
+  `writrun-approve.yml`, whose two mirror steps run inside the recording
+  job — gated `!cancelled()` so a merged close still answers something —
+  and whose labeller reads `queue_file work/tasks`, the working tree,
+  which after an exhausted or unmoved exit still carries the commit
+  `main` refused. The mirror is labelled ahead of the queue rather than
+  behind it. The gate is not this change's to move: the step's own
+  comment forbids it, citing decision 0060, and two assertions in
+  `merged_close/one_workflow_answers_it_test.sh` hold it. What the
+  labeller reads is the fault, and reading the landed branch instead is
+  behaviour this spec never scoped.
+
 The last line of the Definition of Done is unticked by construction: it
 is the burst on this repository with real runs, which no suite can
 schedule — the limit the Tests required section already states.
