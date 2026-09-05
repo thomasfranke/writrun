@@ -1,7 +1,7 @@
 ---
 id: spec-0068
 task_ref: task-0049
-status: approved
+status: implemented
 created: 2026-09-04T19:27:27Z
 ---
 
@@ -264,4 +264,59 @@ must still cost the forge one call and the helper one pass.
 
 ## Outcome
 
-_(fill after execution)_
+Built as specified. The close-without-merge arm of `apply_pr_event.sh`
+now asks the forge for `number,headRefName,author,isDraft,title`,
+emitted with `@tsv` and read as tab-separated fields, so a title's own
+spaces and newlines stay inside their field. The survivor index is
+built once, before the loop over carried tasks: one line per open pull
+request — number, login, draftness, and the carried set
+`ql_carried_of` answers for its head branch and title. The closing
+pull request's own row is dropped by number, and rows that cannot
+carry a task (head not under `task/`, title whose first character is
+neither `[` nor blank) are dropped by one cheap test before the helper
+forks. The per-task filter
+is field-wise membership in that carried set; the loop's own
+`sed 's/^task-0*//'` went with the branch regex, since both sides
+arrive normalized through `ql_task_num`. One listing per run,
+`--limit 200` kept. The script header's close paragraph now says the
+question reaches every route through the same helper as the reader,
+and `ql_carried_of`'s comment names this second caller beside the
+amendment check. `make template-sync` run; `template/` matches.
+
+Tests: `a_survivor_answers_for_one_task_test.sh` re-aimed exactly as
+required — @tsv rows, a survivor title carrying `[TASK-0022]`, the
+inverted assertion, the landing half moved to a third carried task,
+and both harness assertions (one `gh pr list` call, `--limit` present)
+preserved. Four new cases cover the two-survivors-by-different-routes
+pair in both listing orders, the no-task row, the closing pull
+request's own row (highest-numbered, so counting it would have won),
+and the tags-ahead-of-`[Feat][Ci]`-prose title.
+`no_forge_answer_lands_the_task_test.sh` and every non-close case pass
+unchanged.
+
+Review found two leaks in front of the helper, both fixed here rather
+than left for a follow-up, since each reopens the exact defect this
+spec closes. First, `IFS=$TAB read` does not read tab-separated fields:
+a tab is an IFS whitespace character, so a run of tabs collapses to one
+separator and an empty field takes every field after it with it — and
+`author.login` is empty for a deleted account, which is enough to lose
+a row's title and land a task an open pull request still works. The row
+is now peeled field by field, and a row not holding the five fields
+asked for is skipped rather than read short. Second, the cheap guard
+tested the title's first character for `[` while `ql_carried_of` strips
+leading whitespace before it looks — a guard narrower than the reader
+it guards, so a title opening with a space was dropped unasked. The
+guard now lets a blank-leading title through to the helper. Two
+regression cases were added:
+`an_empty_field_shifts_no_other_test.sh` and
+`the_guard_is_never_narrower_than_the_reader_test.sh`, both verified to
+fail against the pre-fix reader.
+
+One divergence, in the direction the fix required: step 2 drops the
+closing pull request's own row by number, but no number reached the
+script — its env contract carried head, title, author, draftness and
+merge state only. So the contract gained `PR_NUMBER`, documented in
+the header beside the others, and `writrun-progress.yml` passes
+`github.event.pull_request.number` to the apply step (mirrored to
+`template/` by the sync). An empty `PR_NUMBER` skips nothing, which is
+exactly today's behaviour for any caller not yet passing it.
