@@ -11,9 +11,11 @@ depends_on: []
 milestone: null
 created: 2026-09-04T21:14:33Z
 queued: 2026-09-04T21:22:06Z
-completed: null
+completed: 2026-09-04T21:33:00Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-fable-5, login: thomasfranke}
+  - {by: agent, model: claude-opus-5, login: thomasfranke}
 ---
 
 # State the route a spec takes when it lands after its task

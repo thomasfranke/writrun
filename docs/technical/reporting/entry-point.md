@@ -64,10 +64,20 @@ The operation, deterministic end to end:
 5. **Recording**, at Stage 2+: branch `report/short-name` — no task id
    in the name, because the PR records work rather than working it —
    and a PR that only adds queue files. The merge authorizes the task;
-   the approval gate takes over. **This branch is for a change that is
-   only a report**; a report file added alongside other work needs no
-   branch of its own, which is step 1's exemption seen from the forge
-   side.
+   the approval gate takes over. **This branch is for the change that
+   carries queue files and nothing else**; a report file added
+   alongside other work needs no branch of its own, which is step 1's
+   exemption seen from the forge side.
+6. **The late spec**, where step 4 wrote none: the pair lands with
+   `spec_ref: []`, the task `blocked`, its `blocked_reason` naming the
+   spec owed, and the pull request body saying why the pair was split.
+   The spec follows on a second `report/` branch, naming its task **in
+   the body only** — no `[TASK-NNNN]` title tag and no task id in the
+   branch name, because `apply_pr_event.sh` reads either as the task
+   being worked and would flip it `in-progress` with `taken_by` set.
+   That second merge approves the spec, appends its id to `spec_ref`
+   and releases the task from `blocked`
+   ([the reporting rules](../../product/stage-1-tasks-and-specs/authoring.md#reporting--work-found-or-reported-mid-flight)).
 
 One inversion a client must know: **an outage ships the fix first.**
 When documented behaviour is down, the patch goes out through an

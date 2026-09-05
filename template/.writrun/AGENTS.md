@@ -83,9 +83,20 @@ destroys nothing, and the file stays where a person can disagree with
 it.
 
 **The `tracked` route is the one that never rides.** It puts work in the
-queue, so it takes a `report/` branch of its own carrying the report,
-the task and the spec together — and the merge of that pull request is
-the assent that the finding deserves the work.
+queue, so it takes a `report/` branch of its own, carrying the report,
+the task and the spec together by default — and the merge of that pull
+request is the assent that the finding deserves the work.
+
+**The spec may be drafted later.** Say in the pull request body why the
+pair was split, and land the task `blocked` with a `blocked_reason`
+naming the spec owed: a task referencing no spec is `ready` and
+selectable otherwise, and would be picked up against a brief no spec has
+bounded. Draft the spec on a second `report/` branch, which names its
+task **in the body only** — a `[TASK-NNNN]` title tag or a task id in
+the branch name reads as the task being worked, and would flip it
+`in-progress` under whoever really has it. That second merge approves
+the spec, appends its id to `spec_ref`, and releases the task from
+`blocked`.
 
 ### When the defect is WritRun's
 

@@ -100,6 +100,22 @@ the merge contract `writrun-check-spec-deltas` reads. "none" only where
 genuinely nothing in that category changes. **Leave `status: draft`** —
 approval is a human gate, never written here.
 
+**A spec drafted for a task already in the queue takes a `report/`
+branch of its own** — the same branch kind the route that tracked the
+task took, because this change puts a plan in the queue and works
+nothing:
+
+```bash
+git switch -c report/<short-name>
+```
+
+Its pull request states the spec it drafts and names the task **in the
+body only** — never as a `[TASK-NNNN]` title tag and never in the branch
+name, both of which read as the task being worked. Such a task waits
+`blocked` until then, so the same change clears its `status` and
+`blocked_reason` back to `backlog` and `null`. The merge is the
+approval.
+
 ## Recording a report
 
 ```bash
