@@ -1,8 +1,8 @@
 ---
 id: task-0053
-status: ready
+status: done
 blocked_reason: null
-taken_by: null
+taken_by: thomasfranke
 spec_ref: []
 doc_ref: product/stage-1-tasks-and-specs/authoring.md
 origin: report
@@ -11,9 +11,11 @@ depends_on: []
 milestone: null
 created: 2026-09-04T21:14:33Z
 queued: 2026-09-04T21:22:06Z
-completed: null
-merged: null
-provenance: []
+completed: 2026-09-04T21:33:00Z
+merged: 2026-09-05T13:14:07Z
+provenance:
+  - {by: agent, model: claude-fable-5, login: thomasfranke}
+  - {by: agent, model: claude-opus-5, login: thomasfranke}
 ---
 
 # State the route a spec takes when it lands after its task

@@ -19,6 +19,12 @@
 # — a relabelling pass over dozens of mirrors would be the same refused
 # claim wearing Stage 3's clothes.
 #
+# This path mints nothing and says so — `--minted` with nothing behind
+# it. Almost every miss it sees is a finding about the repository. The
+# exception is a mirror another workflow minted between this run's read
+# and its lookup. Either is answered from one read of the list, and
+# healed by the next pull-request event if it was not.
+#
 # Exit codes: 0 done (including nothing to do); 1 the claim is over the
 # ceiling, nothing projected; 3 usage error.
 #
@@ -49,4 +55,4 @@ esac
 # One projector: rederive_labels reads the queue files and restates
 # them, one to one, closing terminal states.
 # shellcheck disable=SC2086
-bash "$HERE/rederive_labels.sh" "$REPO" $carried
+bash "$HERE/rederive_labels.sh" "$REPO" $carried --minted

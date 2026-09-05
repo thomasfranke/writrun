@@ -1,6 +1,6 @@
 ---
 id: task-0048
-status: in-progress
+status: done
 blocked_reason: null
 taken_by: thomasfranke
 spec_ref: [spec-0067]
@@ -11,9 +11,11 @@ depends_on: []
 milestone: null
 created: 2026-09-04T18:30:49Z
 queued: 2026-09-04T19:23:29Z
-completed: null
-merged: null
-provenance: []
+completed: 2026-09-05T10:37:04Z
+merged: 2026-09-05T13:14:22Z
+provenance:
+  - {by: agent, model: claude-fable-5, login: thomasfranke}
+  - {by: agent, model: claude-opus-5, login: thomasfranke}
 ---
 
 # Hold the recording push against a concurrent one

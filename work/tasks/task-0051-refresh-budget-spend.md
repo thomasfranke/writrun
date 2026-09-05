@@ -1,8 +1,8 @@
 ---
 id: task-0051
-status: ready
+status: done
 blocked_reason: null
-taken_by: null
+taken_by: thomasfranke
 spec_ref: [spec-0070]
 doc_ref: product/stage-3-github-issues/labels.md#criteria
 origin: report
@@ -11,9 +11,10 @@ depends_on: []
 milestone: null
 created: 2026-09-04T18:30:54Z
 queued: 2026-09-04T19:23:29Z
-completed: null
-merged: null
-provenance: []
+completed: 2026-09-04T21:34:01Z
+merged: 2026-09-05T13:13:30Z
+provenance:
+  - {by: agent, model: claude-fable-5, login: thomasfranke, input: 0, output: 0, cache_read: 0, cache_write: 0}
 ---
 
 # Spend the re-read budget only where a miss can be staleness

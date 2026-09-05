@@ -7,9 +7,10 @@ name: release readiness
 # **A red main that a script can fix is the bot's to fix**
 # (docs/technical/README.md#distribution). Three phases, one job:
 # regenerate (the template sync), heal (commit the regeneration when it
-# changed anything, with the same token and rebase-not-force pattern the
-# queue recording uses), verdict (the full suite, on the tree as
-# pushed). A GITHUB_TOKEN push triggers no new runs — which is why the
+# changed anything, with the same token and the same rebase-not-force
+# push, unretried — readiness_heal.sh's header says why), verdict (the
+# full suite, on the tree as pushed). A GITHUB_TOKEN push triggers no
+# new runs — which is why the
 # verdict runs here, in the run that healed, rather than waiting for a
 # run the sync commit will never cause. Red is reserved for what
 # regeneration cannot repair.

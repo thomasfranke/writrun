@@ -15,6 +15,8 @@
 #   PR_AUTHOR     the pull request author's login (forge-authenticated)
 #   PR_DRAFT      true|false
 #   PR_MERGED     true|false (closed only)
+#   PR_NUMBER     this pull request's own number, so the survivor query
+#                 can drop its own row from a listing that lags
 #   GH_REPO       owner/repo, for the survivor query
 #   GH_TOKEN      lets `gh` ask the forge about surviving pull requests
 #
@@ -46,13 +48,19 @@
 # (report-0028; spec-0069).
 #
 # On close-without-merge, the forge is asked whether another open pull
-# request still works the task: with a survivor, the newest one's author
-# and draftness are re-recorded instead of landing the task — never a
-# silent skip, or taken_by strands on the closed PR's author. The
-# question is per task, because a survivor for one carried task says
-# nothing about another. When the forge cannot answer, the task lands: a
-# queue that briefly forgets a survivor heals at that survivor's next
-# event, while a task stranded in-flight with no PR heals never.
+# request still works the task — by every route the reader counts: each
+# open pull request's head branch and leading title tags pass through
+# ql_carried_of, the same helper that derived this event's own carried
+# set, so the question reaches exactly as far as the reader does. With a
+# survivor, the newest one's author and draftness are re-recorded
+# instead of landing the task — never a silent skip, or taken_by strands
+# on the closed PR's author. The question is per task, because a
+# survivor for one carried task says nothing about another; the closing
+# pull request's own row answers for none of them, wherever the
+# listing's lag still shows it — the event in hand is better evidence
+# than the cache. When the forge cannot answer, the task lands: a queue
+# that briefly forgets a survivor heals at that survivor's next event,
+# while a task stranded in-flight with no PR heals never.
 #
 # Exits 0 in every no-op case (nothing carried, no legal edge, merged
 # close); 1 when a carried task's write failed, after the rest have been
@@ -193,23 +201,88 @@ case "$EVENT" in
     # and an invisible survivor lands a task whose work is still open —
     # the exact failure this query exists to prevent, produced by the
     # query itself.
+    #
+    # `@tsv`, because the title is a field now: it has spaces in it and
+    # may carry a newline, and a space-joined row would hand title text
+    # to whichever field reads next. @tsv escapes both, so one pull
+    # request is one line and a tab is the only separator — a claim the
+    # reader below has to keep, since `read` on its own does not.
     OPEN_PRS=""
     if [ -n "${GH_TOKEN:-}" ] && command -v gh >/dev/null 2>&1; then
       OPEN_PRS=$(gh pr list --repo "${GH_REPO:?}" --state open --limit 200 \
-        --json number,headRefName,author,isDraft \
-        --jq '.[] | "\(.number) \(.headRefName) \(.author.login) \(.isDraft)"' \
+        --json number,headRefName,author,isDraft,title \
+        --jq '.[] | [.number, .headRefName, .author.login, .isDraft, .title] | @tsv' \
         2>/dev/null || printf '')
     fi
+    # **The survivor index, built once.** One line per open pull request
+    # — number, login, draftness, and the carried set ql_carried_of
+    # answers for its head branch and title — computed before the loop
+    # over carried tasks, so a close carrying six tags still costs the
+    # helper one pass. Two kinds of row never reach the helper. The
+    # closing pull request's own, dropped by number: the event in hand
+    # proves it closed, wherever the listing's lag still shows it, and a
+    # closed pull request must answer for nothing. And any row that
+    # cannot carry a task — a head branch not under task/ and a title
+    # whose first character is neither `[` nor blank — dropped by one
+    # cheap test first, because the helper forks subshells and a 200-row
+    # listing would otherwise buy several hundred forks for rows that
+    # answer nothing.
+    #
+    # **The row is split by hand, because `read` cannot split it.** A tab
+    # is an IFS *whitespace* character, so `IFS=$TAB read` folds a run of
+    # tabs into one separator and every empty field vanishes with it —
+    # and `author.login` is empty for a deleted account, which `gh` emits
+    # verbatim. That one absence would shift the title into the draftness
+    # field and leave the title empty, and the row would then be dropped
+    # by the guard below while the pull request it names is still working
+    # the task. Peeling one field at a time keeps an empty field empty. A
+    # row that does not hold the five fields asked for is not a row this
+    # reader can answer, so it is skipped rather than read short.
+    TAB=$(printf '\t')
+    INDEX=""
+    while IFS= read -r o_row; do
+      case "$o_row" in
+        *"$TAB"*"$TAB"*"$TAB"*"$TAB"*) ;;
+        *) continue ;;
+      esac
+      o_num=${o_row%%"$TAB"*};   o_row=${o_row#*"$TAB"}
+      o_head=${o_row%%"$TAB"*};  o_row=${o_row#*"$TAB"}
+      o_login=${o_row%%"$TAB"*}; o_row=${o_row#*"$TAB"}
+      o_draft=${o_row%%"$TAB"*}; o_title=${o_row#*"$TAB"}
+      [ -n "$o_num" ] || continue
+      [ "$o_num" = "${PR_NUMBER:-}" ] && continue
+      # The guard is never narrower than the helper it saves work for.
+      # ql_carried_of strips leading whitespace before it looks for a
+      # tag, so a title opening with whitespace goes through to it. A row
+      # let through wrongly costs one fork; a row dropped wrongly lands a
+      # task whose work is still open.
+      case "$o_head" in
+        task/*) ;;
+        *) case "$o_title" in '['*|[[:space:]]*) ;; *) continue ;; esac ;;
+      esac
+      o_carried=$(ql_carried_of "$o_head" "$o_title")
+      [ -n "$o_carried" ] || continue
+      INDEX="${INDEX}${o_num}${TAB}${o_login}${TAB}${o_draft}${TAB}${o_carried}
+"
+    done <<EOT
+$OPEN_PRS
+EOT
     for TASK in $CARRIED; do
       # A surviving open PR on the same task supersedes the landing. The
-      # match is by number, zero-padding stripped — every id reader in
-      # this machine normalizes, and a survivor spelling `task/019-` must
-      # not be invisible to a close on `task/0019-`. The newest wins, so
-      # the highest number is kept rather than the last line read.
-      num=$(printf '%s' "$TASK" | sed 's/^task-0*//')
-      survivor=$(printf '%s\n' "$OPEN_PRS" | awk -v n="$num" '
-        $2 ~ ("^task/0*" n "-") {
-          if ($1 + 0 > best) { best = $1 + 0; out = $3 " " $4 }
+      # match is membership in the row's carried set — field-wise, never
+      # a substring of the line, so a login or a number that spells a
+      # task id stays a login or a number. Both sides arrive normalized
+      # through ql_task_num, which is why nothing is stripped here. The
+      # newest wins, so the highest number is kept rather than the last
+      # line read.
+      survivor=$(printf '%s\n' "$INDEX" | awk -F'\t' -v t="$TASK" '
+        {
+          n = split($4, c, " ")
+          for (i = 1; i <= n; i++)
+            if (c[i] == t) {
+              if ($1 + 0 > best) { best = $1 + 0; out = $2 " " $3 }
+              break
+            }
         }
         END { if (out != "") print out }')
       if [ -n "$survivor" ]; then

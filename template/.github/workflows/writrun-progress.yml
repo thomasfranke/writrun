@@ -82,6 +82,9 @@ jobs:
           PR_AUTHOR: ${{ github.event.pull_request.user.login }}
           PR_DRAFT: ${{ github.event.pull_request.draft }}
           PR_MERGED: ${{ github.event.pull_request.merged }}
+          # The survivor query drops this pull request's own row from
+          # the open listing — a listing that lags may still show it.
+          PR_NUMBER: ${{ github.event.pull_request.number }}
           # pull_request_review carries its verdict here; every
           # pull_request_target event leaves it empty.
           REVIEW_STATE: ${{ github.event.review.state }}
@@ -113,11 +116,13 @@ jobs:
           git commit \
             -m "$(bash .writrun/scripts/stage-2-pull-requests/commit_subject.sh forge)" \
             -m "Pull request #${PR_NUMBER}, event ${{ github.event.action }}."
-          # Another recording may have landed between checkout and here.
-          # Rebase onto it rather than force: this is an addition to the
-          # branch's history, never a replacement of it.
-          git pull --rebase origin "$BASE_REF"
-          git push origin "HEAD:${BASE_REF}"
+          # Another recording may have landed between checkout and here,
+          # and may land again between the rebase and the push. Landing
+          # is push_recording.sh's: rebase onto it rather than force —
+          # an addition to the branch's history, never a replacement of
+          # it — retried only while the branch keeps moving. The budget,
+          # the retry test and the abort live in its header.
+          bash .writrun/scripts/stage-2-pull-requests/push_recording.sh "$BASE_REF"
 
   reflect:
     name: mirror follows the file

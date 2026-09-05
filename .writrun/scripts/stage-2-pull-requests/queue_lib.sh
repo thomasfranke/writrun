@@ -112,7 +112,9 @@ QL_CARRIED_MAX=8
 #
 # Taking the pair as arguments is what lets a caller ask the question of
 # *another* pull request — the amendment check has to, to name the one it
-# suspends — while the env-reading form below stays the shape CI uses.
+# suspends, and apply_pr_event.sh's survivor query has to, so a close
+# finds a survivor by every route it carries a task — while the
+# env-reading form below stays the shape CI uses.
 ql_carried_of() {
   local carried="" num rest tg
   case "${1:-}" in
