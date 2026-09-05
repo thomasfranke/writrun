@@ -1,6 +1,6 @@
 ---
 id: task-0052
-status: in-review
+status: done
 blocked_reason: null
 taken_by: thomasfranke
 spec_ref: [spec-0071]
@@ -12,7 +12,7 @@ milestone: null
 created: 2026-09-04T18:30:55Z
 queued: 2026-09-04T19:23:29Z
 completed: 2026-09-05T10:36:11Z
-merged: null
+merged: 2026-09-05T13:14:54Z
 provenance:
   - {by: agent, model: claude-fable-5, login: thomasfranke, input: 0, output: 0, cache_read: 0, cache_write: 0}
 ---
