@@ -14,7 +14,10 @@
 # The carried ids come from env, as data (PR_HEAD_REF, PR_TITLE — a
 # fork's to write): the head branch's task and every [TASK-NNNN] tag
 # leading the title. No id means nothing to project, which is not an
-# error.
+# error. A claim over QL_CARRIED_MAX comes back as the helper's
+# over-ceiling sentinel: nothing is projected and the exit is non-zero
+# — a relabelling pass over dozens of mirrors would be the same refused
+# claim wearing Stage 3's clothes.
 #
 # This path mints nothing and says so — `--minted` with nothing behind
 # it. Almost every miss it sees is a finding about the repository. The
@@ -22,7 +25,8 @@
 # and its lookup. Either is answered from one read of the list, and
 # healed by the next pull-request event if it was not.
 #
-# Exit codes: 0 done (including nothing to do); 3 usage error.
+# Exit codes: 0 done (including nothing to do); 1 the claim is over the
+# ceiling, nothing projected; 3 usage error.
 #
 # Portable bash 3.2, POSIX awk/sed. See the standing rule in
 # docs/technical/decisions/.
@@ -39,6 +43,14 @@ if [ -z "$carried" ]; then
   echo "the pull request names no task — nothing to project"
   exit 0
 fi
+case "$carried" in
+  over-ceiling:*)
+    echo "the head branch and title claim ${carried#over-ceiling:} distinct tasks — the ceiling is ${QL_CARRIED_MAX}." >&2
+    echo "Nothing was projected. Retitle the pull request to what the work carries," >&2
+    echo "then close and reopen it: the reopened event re-fires the projection." >&2
+    exit 1
+    ;;
+esac
 
 # One projector: rederive_labels reads the queue files and restates
 # them, one to one, closing terminal states.

@@ -27,15 +27,25 @@
 # beside them (technical/settings/titles.md#pr_title_style). A pull
 # request carrying none by either route exits without writing.
 #
+# **The ceiling bounds claiming, not releasing.** Above QL_CARRIED_MAX
+# distinct tasks the helper answers with its over-ceiling sentinel, and
+# every event that expands flight writes nothing and exits non-zero. The
+# close is exempt: it hands work back, and a claim edited over the
+# ceiling after the recording landed would otherwise strand every task
+# that recording moved.
+#
 # **What that widens, said plainly.** This runs on pull_request_target,
 # so a fork's pull request reaches it, and the title is the fork's to
 # write. Before the carried set, such a pull request could claim the one
 # task its head branch spelled; it can now claim every task its title
 # lists, and each claim is a status write pushed to the default branch.
 # The kind of exposure is unchanged — both routes were always the fork's
-# to choose — but the amount is not, and no ceiling is imposed here.
-# Recorded as report-0028 rather than capped on a number picked in
-# passing.
+# to choose — and the amount is bounded: above QL_CARRIED_MAX distinct
+# tasks the helper answers with its over-ceiling sentinel, and this
+# script writes nothing and exits non-zero, naming the count, the
+# ceiling, and the heal — closing and reopening the pull request
+# re-fires the event once the title claims what the work carries
+# (report-0028; spec-0069).
 #
 # On close-without-merge, the forge is asked whether another open pull
 # request still works the task — by every route the reader counts: each
@@ -54,8 +64,10 @@
 #
 # Exits 0 in every no-op case (nothing carried, no legal edge, merged
 # close); 1 when a carried task's write failed, after the rest have been
-# attempted; 3 only for usage errors. Mutates the working tree; the
-# caller commits, so one event's writes land as one commit — and a
+# attempted, and when a claim over the ceiling reaches an event that
+# would expand flight — refused whole, nothing written; 3 only for usage
+# errors. Mutates the working tree;
+# the caller commits, so one event's writes land as one commit — and a
 # non-zero exit is what stops a half-applied one from being pushed under
 # a green run.
 #
@@ -76,6 +88,40 @@ CARRIED=$(ql_carried_from_env)
 if [ -z "$CARRIED" ]; then
   echo "head '${PR_HEAD_REF:-}' and title '${PR_TITLE:-}' carry no task — nothing to record"
   exit 0
+fi
+OVER=""
+case "$CARRIED" in
+  over-ceiling:*)
+    OVER="${CARRIED#over-ceiling:}"
+    # The ids are still read, because one arm below needs them and does
+    # not claim on their authority. Re-read through the same helper with
+    # the ceiling lifted to the count it just reported — never a second
+    # parser, and never a leak: the assignment lives in the substitution's
+    # own subshell.
+    CARRIED=$(QL_CARRIED_MAX="$OVER" ql_carried_from_env)
+    ;;
+esac
+
+# **The refusal bounds claiming, not releasing.** Every event but the
+# close expands what the queue says is in flight, and above the ceiling
+# the whole set is refused — never the first eight of it, since a partial
+# write riding a green run is the failure this script's exit contract
+# exists to prevent. The run goes red on the author's own pull request,
+# and the heal is theirs.
+#
+# The close is the one arm that hands work back. It lands a task in
+# flight, or re-records it from a surviving pull request the forge
+# confirms — both are the queue converging on what the forge already
+# says, and `land` against a resting task is an echo. Refusing here too
+# would strand every task the pull request had already recorded under a
+# shorter title: nothing re-records on an `edited` event, so the close is
+# the last event that can release them, and a task stranded in-flight
+# with no pull request heals never (spec-0069's Outcome).
+if [ -n "$OVER" ] && [ "$EVENT" != "closed" ]; then
+  echo "the head branch and title claim ${OVER} distinct tasks — the ceiling is ${QL_CARRIED_MAX}." >&2
+  echo "Nothing was recorded. Retitle the pull request to what the work carries," >&2
+  echo "then close and reopen it: the reopened event re-fires the recording." >&2
+  exit 1
 fi
 
 draftness() {   # $1: true|false -> draft|ready
@@ -137,6 +183,13 @@ case "$EVENT" in
     if [ "${PR_MERGED:-false}" = "true" ]; then
       echo "closed by merging — the merge recording owns this move"
       exit 0
+    fi
+    if [ -n "$OVER" ]; then
+      # Said, not hidden — but on stdout and green: the release is
+      # correct and the claim it rides was already met red at the event
+      # that made it.
+      echo "the head branch and title claim ${OVER} distinct tasks — the ceiling is ${QL_CARRIED_MAX}."
+      echo "A close releases rather than claims, so the whole set is still let go."
     fi
     # **One listing answers every carried task.** Asking the question per
     # task must not make the call per task: a pull request carrying six

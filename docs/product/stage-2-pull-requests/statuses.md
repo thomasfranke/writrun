@@ -127,6 +127,19 @@ never trusted to prose discipline.
 - When a pull request carries more than one task, the machinery shall
   apply each event's write to every task carried, in one commit — never
   to the one its branch is named after alone.
+- When a pull request's head branch and title together name more than
+  eight distinct tasks, the machinery shall refuse the whole carried
+  set and write no status line on its authority: an event that would
+  expand flight records nothing and fails, naming the count and the
+  ceiling. Two writes do not rest on that authority and survive the
+  refusal. A merge still records every task its own diff range puts in
+  scope — the range is the repository's evidence, the title only the
+  author's claim. A close still releases every task the set names,
+  because releasing is not claiming and a task stranded in flight with
+  no pull request heals never.
+- When a reader meets an over-ceiling claim on another open pull
+  request's row, it shall skip that row, say which pull request it was,
+  and not fail the act it was asked to serve.
 - When the recording commit of the merge that creates a task approves
   its every spec — or finds it references none — the machinery shall
   move the task `backlog → ready` in that same commit.

@@ -202,22 +202,50 @@ if [ "$forge_view" = "none" ]; then
   exit 0
 fi
 
+# --- the rows this check can read -----------------------------------------
+#
+# The carried set of every open pull request, resolved once. Once,
+# because the lookup below runs per suspended task and the answer is the
+# same every time — and because a row skipped for claiming too much owes
+# one notice per pull request, not one per task that asked about it.
+#
+# Another pull request's over-ceiling claim is its author's fault, and
+# failing this act over it would let one hostile title stop every
+# amendment. The row is skipped, with the notice on stderr, and the fact
+# that one was skipped is remembered: what the lookup can no longer
+# answer, the verdict must not report as an answer.
+readable=""
+skipped=""
+while IFS="$TAB" read -r num branch ptitle; do
+  [ -n "$num" ] || continue
+  carried=$(ql_carried_of "$branch" "${ptitle:-}")
+  case "$carried" in
+    over-ceiling:*)
+      echo "pull request #${num} claims ${carried#over-ceiling:} distinct tasks — over the ceiling of ${QL_CARRIED_MAX}; its row is skipped" >&2
+      skipped="${skipped}#${num} "
+      continue
+      ;;
+  esac
+  readable="${readable}${num}${TAB}${carried}"$'\n'
+done <<EOF
+$pr_lines
+EOF
+
 # task_pr <task-id> — the number of the open pull request working that
 # task, or nothing. This pull request is skipped: the amendment is not
 # the work, and a queue/ branch carries no id anyway.
 task_pr() {
-  local want="$1" num branch ptitle carried c
-  while IFS="$TAB" read -r num branch ptitle; do
+  local want="$1" num carried c
+  while IFS="$TAB" read -r num carried; do
     [ -n "$num" ] || continue
     [ "$num" = "$PR" ] && continue
-    carried=$(ql_carried_of "$branch" "${ptitle:-}")
     for c in $carried; do
       if [ "$(ql_task_num "$c")" = "$(ql_task_num "$want")" ]; then
         printf '%s' "$num"; return 0
       fi
     done
   done <<EOF
-$pr_lines
+$readable
 EOF
   return 0
 }
@@ -236,6 +264,17 @@ while IFS="$TAB" read -r task spec; do
   seen="${seen} ${task} "
 
   num=$(task_pr "$task")
+  if [ -z "$num" ] && [ -n "$skipped" ]; then
+    # A row was skipped, so "no open pull request works it" is not
+    # something this check knows — the skipped one may be exactly it.
+    # Said rather than passed off as a clean answer, and still not
+    # failed: the best-effort contract above holds for a question that
+    # cannot be asked, however it came to be unaskable.
+    echo "${task} reads as in flight and no readable pull request works it." >&2
+    echo "Skipped for claiming over the ceiling: ${skipped% }. The one to name" >&2
+    echo "may be among them. Check by hand that this body references it." >&2
+    continue
+  fi
   if [ -z "$num" ]; then
     echo "${task} reads as in flight but no open pull request works it —"
     echo "nothing to name. Its flight state is stale, not this change's business."
