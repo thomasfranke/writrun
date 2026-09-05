@@ -16,6 +16,12 @@
 # leading the title. No id means nothing to project, which is not an
 # error.
 #
+# This path mints nothing and says so — `--minted` with nothing behind
+# it. Almost every miss it sees is a finding about the repository. The
+# exception is a mirror another workflow minted between this run's read
+# and its lookup. Either is answered from one read of the list, and
+# healed by the next pull-request event if it was not.
+#
 # Exit codes: 0 done (including nothing to do); 3 usage error.
 #
 # Portable bash 3.2, POSIX awk/sed. See the standing rule in
@@ -37,4 +43,4 @@ fi
 # One projector: rederive_labels reads the queue files and restates
 # them, one to one, closing terminal states.
 # shellcheck disable=SC2086
-bash "$HERE/rederive_labels.sh" "$REPO" $carried
+bash "$HERE/rederive_labels.sh" "$REPO" $carried --minted

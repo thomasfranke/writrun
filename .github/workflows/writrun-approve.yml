@@ -282,6 +282,18 @@ jobs:
         # (work/reports/report-0021-rederive-labels-sh.md). Minted and
         # never labelled is the one outcome with no second event to
         # correct it, and it has these two paths to it.
+        #
+        # The flag carried one thing — what a miss means — and now
+        # carries two: it is also who may pay to ask again. Only an id
+        # behind it can spend the pass's re-read, so it is passed only
+        # where the mint succeeded. A failed mint's outputs are empty,
+        # and an empty entitlement would lose the one thing the
+        # unconditional re-read healed: a mirror the mint created before
+        # it failed, on the one path with no second event, missed by a
+        # first read the forge has not caught up to. So a failed mint
+        # passes no flag, every miss is entitled again, and that mirror
+        # is still found and labelled. The job is red from the mint
+        # either way.
         env:
           GH_TOKEN: ${{ github.token }}
           # Through env, never ${{ }} into the command line. `specs` is
@@ -294,13 +306,20 @@ jobs:
           SCOPE: ${{ steps.status.outputs.scope }}
           MINTED_TASKS: ${{ steps.mint.outputs.tasks }}
           MINTED_REPORTS: ${{ steps.mint.outputs.reports }}
+          MINT_OUTCOME: ${{ steps.mint.outcome }}
         run: |
           set -euo pipefail
           # The order is the contract: everything after --minted is the
           # mint's, and a miss there fails the step. Passing the flag
-          # from a fixed position in this line rather than from inside
-          # any of the values is what keeps that true.
-          # shellcheck disable=SC2086
+          # from a fixed position in the argv rather than from inside
+          # any of the values is what keeps that true. So the argv is
+          # built once and the flag appended to it: one invocation, and
+          # the gate is the only thing the mint's outcome decides.
+          # shellcheck disable=SC2206
+          args=("$GITHUB_REPOSITORY" $SPECS $SCOPE)
+          if [ "$MINT_OUTCOME" = "success" ]; then
+            # shellcheck disable=SC2206
+            args+=(--minted $MINTED_TASKS $MINTED_REPORTS)
+          fi
           bash .writrun/scripts/stage-3-github-issues/rederive_labels.sh \
-            "$GITHUB_REPOSITORY" $SPECS $SCOPE \
-            --minted $MINTED_TASKS $MINTED_REPORTS
+            "${args[@]}"
