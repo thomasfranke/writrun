@@ -11,9 +11,10 @@ depends_on: []
 milestone: null
 created: 2026-09-05T13:27:36Z
 queued: 2026-09-05T13:41:35Z
-completed: null
+completed: 2026-09-05T18:12:29Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-opus-5, login: thomasfranke, input: 72, output: 35493, cache_read: 3531304, cache_write: 53314}
 ---
 
 # Compose the task tag as the declared title style spells it
