@@ -11,9 +11,10 @@ depends_on: []
 milestone: null
 created: 2026-09-05T13:37:51Z
 queued: 2026-09-05T14:11:40Z
-completed: null
+completed: 2026-09-05T21:05:00Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-opus-5, login: thomasfranke, input: 112, output: 51936, cache_read: 14285698, cache_write: 73264}
 ---
 
 # A mirror links the file it mirrors

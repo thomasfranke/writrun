@@ -78,7 +78,20 @@ while [ $# -gt 0 ]; do
 done
 case "$method $path" in
   "GET repos/"*"/pulls/"*"/files") cat "$FAKE_GH_DIR/pr_files" 2>/dev/null ;;
+  # Two reads of one endpoint, told apart by the fields they ask for —
+  # the way the `--json` arms above tell theirs apart. This one is the
+  # mirror link's: the commit the pull request stands at and the branch
+  # it lands on. A case that declared neither gets the stub's own pair,
+  # so every existing case keeps composing a resolvable link without
+  # saying anything about refs.
   "GET repos/"*"/pulls/"*)
+    if [ "${jq#*head.sha}" != "$jq" ]; then
+      [ -e "$FAKE_GH_DIR/no_refs" ] && { echo "gh: server error" >&2; exit 1; }
+      printf '%s\t%s\n' \
+        "$(cat "$FAKE_GH_DIR/head_sha" 2>/dev/null || echo deadbee)" \
+        "$(cat "$FAKE_GH_DIR/base_ref" 2>/dev/null || echo main)"
+      exit 0
+    fi
     # One pull request's own state. A number nothing declared is one the
     # forge does not know, and it answers the way the real one does.
     n=$(printf '%s' "$path" | sed -n 's|.*/pulls/\([0-9][0-9]*\)$|\1|p')
@@ -306,6 +319,19 @@ forge_pr_state() {
   printf '%s\n' "$2" > "$FAKE_GH_DIR/pr_${1}_state"
 }
 
+# forge_head <sha> [base-ref] — the commit the pull request under test
+# stands at, and the branch it targets. The stub answers `deadbee`/`main`
+# without one, so a case only declares these when the link's ref is what
+# it is about.
+forge_head() {
+  printf '%s\n' "$1" > "$FAKE_GH_DIR/head_sha"
+  printf '%s\n' "${2:-main}" > "$FAKE_GH_DIR/base_ref"
+}
+
+# forge_refs_unreadable — the pull request's own record cannot be read,
+# so neither ref is known. The link falls all the way back to the diff.
+forge_refs_unreadable() { : > "$FAKE_GH_DIR/no_refs"; }
+
 # forge_list_file <base> <generation> — where rows of one generation are
 # declared. The first is the plain file every case has always written,
 # so a case that never relists is untouched by any of this.
@@ -331,17 +357,27 @@ forge_relists() {
   if [ -e "$cur" ]; then cp "$cur" "$next"; else : > "$next"; fi
 }
 
+# The opening sentence a case declares with a sixth argument: the path
+# the mirror says it mirrors, linked the way mirror_issues.sh links it.
+# Without one the body keeps the placeholder line every existing case was
+# written against — which the merge rewrite reads as a body somebody
+# edited by hand and leaves alone, exactly as it should.
+mirror_opening() {   # mirror_opening <path> [ref]
+  printf 'Mirrors [`%s`](https://github.com/o/r/blob/%s/%s), which is the authority.' \
+    "$1" "${2:-oldsha}" "$1"
+}
+
 # forge_report_issue <number> <state> <labels-csv> <title> [introduced-by-pr]
-# — one row of the forge's writrun:report issue list, same shape and same
-# ownership line as a task mirror's.
+# [mirrored-path] — one row of the forge's writrun:report issue list, same
+# shape and same ownership line as a task mirror's.
 forge_report_issue() {
-  local body
+  local body first
+  first="Mirrors a report file, which is the authority."
+  [ -n "${6:-}" ] && first=$(mirror_opening "$6")
   if [ "${5:-}" = "none" ]; then
-    body="Mirrors a report file, which is the authority."
+    body="$first"
   else
-    body=$(printf '%s\n' \
-      "Mirrors a report file, which is the authority." \
-      "| Introduced by | #${5:-7} |")
+    body=$(printf '%s\n' "$first" "| Introduced by | #${5:-7} |")
   fi
   printf '%s\t%s\t%s\t%s\t%s\n' \
     "$1" "$2" "$3" \
@@ -350,19 +386,19 @@ forge_report_issue() {
     >> "$(forge_list_file report_issues "$FORGE_REPORT_GEN")"
 }
 
-# forge_issue <number> <state> <labels-csv> <title> [introduced-by-pr] —
-# one row of the forge's writrun:task issue list, its body carrying the
+# forge_issue <number> <state> <labels-csv> <title> [introduced-by-pr]
+# [mirrored-path] — one row of the forge's writrun:task issue list, its body carrying the
 # ownership line mirror_issues.sh writes and reads back. Pass `none` as
 # the fifth argument for a body that carries no ownership line at all —
 # an issue nothing in this machinery wrote.
 forge_issue() {
-  local body
+  local body first
+  first="Mirrors a task file, which is the authority."
+  [ -n "${6:-}" ] && first=$(mirror_opening "$6")
   if [ "${5:-}" = "none" ]; then
-    body="Mirrors a task file, which is the authority."
+    body="$first"
   else
-    body=$(printf '%s\n' \
-      "Mirrors a task file, which is the authority." \
-      "| Introduced by | #${5:-7} |")
+    body=$(printf '%s\n' "$first" "| Introduced by | #${5:-7} |")
   fi
   printf '%s\t%s\t%s\t%s\t%s\n' \
     "$1" "$2" "$3" \

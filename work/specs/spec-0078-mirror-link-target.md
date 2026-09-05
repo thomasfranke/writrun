@@ -1,7 +1,7 @@
 ---
 id: spec-0078
 task_ref: task-0056
-status: approved
+status: implemented
 created: 2026-09-05T13:56:57Z
 ---
 
@@ -128,3 +128,51 @@ comes from the call it is already making.
   keep is the sentence in the mirror itself.
 
 ## Outcome
+
+Implemented as specified.
+
+`mirror_issues.sh` reads the head sha and the base ref from one
+`gh api repos/{repo}/pulls/{n}` call, `--jq`'d to both fields at once. No
+sixth `PR_*` name. The base ref is read, never assumed.
+
+Two helpers, not one: `file_url` decides the ref — the head sha while the
+pull request is open, the base ref once it merged — and `mirror_line`
+composes the whole sentence, because the sentence is what the two writers
+and the merge rewrite have to agree on character for character, and a
+helper that returned only the URL would have left three copies of the
+prose around it. Both writers call `mirror_line`; `relink_mirror` matches
+on its shape and rewrites line 1 alone.
+
+**The fork case holds, verified against a real fork pull request** as the
+spec asked. `cli/cli#14363` has head `a6cb3e85…` in `areesh-ali/cli`;
+`gh api repos/cli/cli/commits/a6cb3e85…` resolves it from the base
+repository, and `https://github.com/cli/cli/blob/a6cb3e85…/docs/primer/foundations/README.md`
+returns **HTTP 200**. So the permalink is composed on the base repository
+for a fork's pull request too, and the base-ref fallback is reserved for
+the case the spec's last criterion names — a pull request whose own
+record could not be read.
+
+**A third fallback the spec did not enumerate.** Where the pull request
+cannot be read at all, *neither* ref is known, so "link the base ref"
+has nothing to link. The chain ends at the diff — which is exactly where
+the sentence pointed before this change — rather than composing a URL
+with an empty ref. A mirror that points somewhere beats one that fails to
+be written.
+
+**The host is taken from `PR_HTML_URL`**, not written as a literal: the
+forge that served the pull request serves its blobs, and an adopter on an
+Enterprise host has neither hardcoded.
+
+**`adopt_mirror` now leaves the body it wrote in `ADOPTED_BODY`.** Two
+writers touch one body in one pass, and without this the relink would
+have PATCHed the adoption's ownership line straight back off.
+
+**This does not reverse
+[0067](../../docs/technical/decisions/pull-requests/0067-a-body-link-points-at.md),**
+which rejected a head-sha permalink — for a *pull request body*, composed
+by `take_task.sh` at take time on an empty branch, where there is no
+commit to point at and no later writer to move the link off a superseded
+revision. A mirror is born from a commit that exists and is rewritten at
+merge, so both objections that entry names are answered rather than
+ignored. Said in `file_url`'s header, where the next reader meets it; no
+decisions entry, per this spec's Proposed technical changes.
