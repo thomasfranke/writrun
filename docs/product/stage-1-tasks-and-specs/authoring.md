@@ -110,8 +110,8 @@ whatever change is already open** — a report is neither a rule nor
 work, so the one-kind-per-change rule does not reach it.
 
 At Stage 2+ a change that is *only* recording — the report, plus the
-task and spec triage produced from it — touches no permanent doc and
-implements nothing. That is the third kind of change, next to authoring
+task and spec triage produced from it, in one change or in two (below)
+— touches no permanent doc and implements nothing. That is the third kind of change, next to authoring
 and implementing (`AGENTS.md`) — and for the `tracked` route it is the
 **only** vehicle: a task derived from a report lands through a
 `report/` branch of its own, never riding a change that is about
@@ -144,13 +144,39 @@ landed on — that is the whole record, and nothing else keeps it.
 | Not a defect at all, or not worth acting on | Nothing. The body says why, which is the part worth keeping. | `declined` |
 
 **The spec may land after its task.** Together is the default: one
-merge assents to the finding, the work and its shape at once. When the
-specs riding along would make that single assent too large to review as
-one decision, the task is tracked with `spec_ref: []` and the pair
-rides without its spec. The spec is then drafted in a pull request of
-its own, on a `report/` branch, stating the spec it drafts and the task
-that asked for it. The merge of that pull request is the assent the
-spec's `draft → approved` transition requires ([gates](gates.md)).
+merge assents to the finding, the work and its shape at once.
+
+**Splitting the pair is the author's call, and the pull request states
+why it was taken.** When one merge would assent to more than a reviewer
+can weigh at once is a judgement, and no line count or delta count
+turns it into a threshold. So the rule asks for the reason rather than
+a measurement: what a reviewer checks is *was a reason given*, which
+has an answer, never *was it big enough*, which never will.
+
+**The task is held `blocked` while its spec is in flight.** The pair
+lands with `spec_ref: []`, `status: blocked`, and a `blocked_reason`
+naming the spec still owed. Without the hold it lands `ready` and is
+fully selectable: a task referencing no spec passes the approval filter
+by construction
+([selection](../../technical/selection/algorithm.md#task-selection-algorithm)).
+An agent taking it would implement against a brief no spec has bounded,
+and meet the spec's **Proposed changes** at the completion gate binding
+a diff the work never targeted. What unblocks the task is a spec nobody
+has written yet — outside the queue entirely, which is `blocked`'s case
+and never `depends_on`'s
+([task](../concepts/task.md#blocked-vs-depends_on)). A task that
+warrants no spec at all is untouched by this — nothing is owed, so
+nothing holds it.
+
+The spec is then drafted in a pull request of its own, on a `report/`
+branch, stating the spec it drafts. **That pull request names its task
+in the body alone** — never as a `[TASK-NNNN]` title tag and never in
+the branch name. Both are read as work in flight, and the machinery
+believes them; this pull request drafts a plan and works nothing, which
+is what the `report/` prefix already says. Its merge approves the spec,
+appends the id to the task's `spec_ref`, and releases the task from
+`blocked` in the same change — and that merge is the assent the spec's
+`draft → approved` transition requires ([gates](gates.md)).
 
 Recording and routing are **two moments, deliberately apart**. The
 report rides whatever change is open and lands `open`; from there it
@@ -171,8 +197,13 @@ flowchart LR
     C["AGENT, on a report/ branch of its own<br/>writrun-create-task-and-spec<br/>report: tracked · task: backlog · spec: draft"]
     H["HUMAN squash-merges the reporting PR<br/>the assent that the finding deserves work"]
     D["The approval gate takes over<br/>spec assented · task ready"]
+    C2["AGENT, on a report/ branch of its own<br/>report: tracked · task: blocked, reason names the spec owed<br/>PR body states why the pair was split"]
+    H2["HUMAN squash-merges the pair"]
+    S["AGENT drafts the spec<br/>a second report/ PR, task named in the body only<br/>spec: draft · task released from blocked"]
+    H3["HUMAN squash-merges the spec PR<br/>the assent the spec's draft → approved needs"]
     A --> W --> B
-    B -->|"defect"| C --> H --> D
+    B -->|"defect · spec written now"| C --> H --> D
+    B -->|"defect · spec written later"| C2 --> H2 --> S --> H3 --> D
     B -->|"rule missing"| E["Flow 1 — authoring<br/>report: authored"]
     B -->|"trivial"| F["A commit, no task<br/>report: fixed · rides"]
     B -->|"upstream"| U["HUMAN authorizes, AGENT opens<br/>an issue on the upstream repository<br/>report: routed · rides"]
@@ -210,7 +241,9 @@ prefix is `report/` on purpose — carrying no task id, because such a PR
 records work, it is not working it, and must not read as in flight — and
 flow 2 takes over at the merge
 ([the Stage 2 chapter](../stage-2-pull-requests/README.md)). **That
-prefix is for the change that carries nothing else.** A report added
+prefix is for the change that carries queue files and nothing else** —
+the report and the pair together, or, where the spec lands later, the
+pair and then that spec on its own. A report added
 alongside other work needs no branch of its own, which is the exemption
 above seen from the forge side: requiring the prefix in every case would
 put back exactly the cost the exemption exists to remove.
@@ -265,3 +298,10 @@ put back exactly the cost the exemption exists to remove.
   queue, the spec shall land through a `report/` pull request of its
   own, and that pull request's merge shall carry the assent the spec's
   `draft → approved` transition requires.
+- When the report and its pair land without the spec, the pull request
+  body shall state why the pair was split, and the task shall land
+  `blocked` with a `blocked_reason` naming the spec still owed.
+- When a pull request drafts the spec of a task already in the queue,
+  it shall name that task in its body only — never in a `[TASK-NNNN]`
+  title tag and never in its branch name — and shall release the task
+  from `blocked` in the same change.

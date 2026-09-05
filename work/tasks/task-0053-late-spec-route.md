@@ -15,6 +15,7 @@ completed: 2026-09-04T21:33:00Z
 merged: null
 provenance:
   - {by: agent, model: claude-fable-5, login: thomasfranke}
+  - {by: agent, model: claude-opus-5, login: thomasfranke}
 ---
 
 # State the route a spec takes when it lands after its task
