@@ -63,7 +63,9 @@ in-flight recorder. Both bends have the same warrant — the write in
 question releases rather than claims — and the projector's close
 relabels mirrors for tasks the recorder has *already* released, so it
 claims nothing at all. The argument to make is that this is a third
-instance of the existing exemption, not a new one.
+instance of the existing exemption, not a new one — and it is recorded
+as decision 0069, extending 0068, because the log is append-only and
+0068 stays true about the two benders it knew.
 
 ### 3. An unknown event over the ceiling exits 1, not 3
 
@@ -90,9 +92,13 @@ which is what a caller reads when deciding whether to retry.
 5. Move the ceiling refusal in `apply_pr_event.sh` after the event
    dispatch's usage check, or check the event name first, so an unknown
    event exits 3.
-6. Extend decision 0068 to name the third caller that bends the
-   refusal, and record the criteria in `statuses.md` and `labels.md`.
-7. Mirror into `template/` with `make template-sync`.
+6. Write decision 0069 under `decisions/pull-requests/` and append its
+   row to `decisions/README.md`'s chronology. It states the exemption
+   as one rule — a close releases the whole claim in every writer — and
+   names 0068 as the entry it extends. Do not edit 0068: the log is
+   append-only, and a revised decision keeps its file and its number.
+7. Record the criteria in `statuses.md` and `labels.md`.
+8. Mirror into `template/` with `make template-sync`.
 
 ## Acceptance criteria (EARS)
 
@@ -149,7 +155,9 @@ which is what a caller reads when deciding whether to retry.
 - [ ] The dropped-tag case is answered or reported, in writing.
 - [ ] The projector exits 0 on an over-ceiling close and relabels.
 - [ ] An unknown event over the ceiling exits 3.
-- [ ] Decision 0068 names three bends, not two.
+- [ ] Decision 0069 exists, names 0068 as the entry it extends, and
+      carries its row in the chronology.
+- [ ] Decision 0068's file is unchanged.
 - [ ] `template/` twins identical.
 
 ## Proposed product changes
@@ -164,10 +172,19 @@ which is what a caller reads when deciding whether to retry.
 
 ## Proposed technical changes
 
-- `technical/decisions/pull-requests/0068-what-a-pull-request-claims-is-bounded.md`
-  — the "two callers bend the refusal" paragraph gains the third, with
-  the same warrant: releasing is not claiming. The file arrives with
-  #204, which this spec depends on; it is not on `main` yet.
+- `technical/decisions/pull-requests/0069-a-close-releases-what-it-cannot-claim.md`
+  — a new dated entry: a close releases the whole claim in every writer,
+  because releasing is not claiming. It names
+  [0068](../../docs/technical/decisions/pull-requests/0068-what-a-pull-request-claims-is-bounded.md)
+  as the entry it **extends**, never supersedes — 0068's constant, its
+  whole-set refusal and its reasoning all stand, and it is true about
+  the two benders it knew. The number is free: 0067 is the highest on
+  `main` and #204 takes 0068.
+- `technical/decisions/README.md` — that entry's row in the chronology,
+  appended. The log is append-only: an entry is never edited, and a
+  decision the next one revises keeps its file and its number
+  (`decisions/README.md`). Rewriting 0068's paragraph would break that
+  rule, which is why this is a new entry and not an amendment.
 
 ## Outcome
 
