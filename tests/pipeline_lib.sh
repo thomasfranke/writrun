@@ -136,13 +136,43 @@ printf '%s\n' "$*" >> "$FORGE_LOG"
 [ -e "$FORGE_DIR/refuse_${1:-}_${2:-}" ] && exit 1
 case "${1:-}" in
   pr)
-    field=""; prev=""
+    field=""; head=""; prev=""
     for a in "$@"; do
       [ "$prev" = "--json" ] && field="$a"
+      [ "$prev" = "--head" ] && head="$a"
       prev="$a"
     done
+    # `gh pr list` is two call sites, and a seam that cannot tell them
+    # apart cannot exercise either one's failure alone: refusing them
+    # together makes both print "went unanswered", which is exactly what
+    # an assertion has to distinguish. The head read is the one carrying
+    # `--head`; `gh pr create` carries it too, so the state check is
+    # scoped to `list`.
+    if [ "${2:-}" = list ]; then
+      if [ -n "$head" ]; then
+        [ -e "$FORGE_DIR/refuse_pr_list_head" ] && exit 1
+      else
+        [ -e "$FORGE_DIR/refuse_pr_list_open" ] && exit 1
+      fi
+    fi
     case "$field" in
       number)         cat "$FORGE_DIR/pr_numbers" 2>/dev/null ;;
+      # The resume's every-state read: `gh pr list --head <branch>
+      # --state all --json number,state,headRefOid,closedAt,author,
+      # isCrossRepository`. Served from pr_head_lines, filtered to the
+      # branch asked about — a read the open list below never answers,
+      # because ended pull requests live only here. `headRefOid` is what
+      # tells it apart, and it is matched first: this read asks for the
+      # author column too, so the arm below would swallow it. The fork
+      # rows come back like any other, the way `--head` really answers —
+      # narrowing a branch *name* to one repository is the caller's job,
+      # not the stub's.
+      *headRefOid*)
+        [ -f "$FORGE_DIR/pr_head_lines" ] &&
+          awk -F'\t' -v OFS='\t' -v b="$head" \
+            '$1 == b { print $2, $3, $4, $5, $6, $7 }' \
+            "$FORGE_DIR/pr_head_lines"
+        ;;
       # Two consumers of the same list, told apart by the fields they ask
       # for the way the `api` arm below tells its two apart by --jq: the
       # lister asks for the author column and the amendment check does
@@ -152,20 +182,6 @@ case "${1:-}" in
       *headRefName*)  [ -f "$FORGE_DIR/pr_lines" ] &&
                         awk -F'\t' -v OFS='\t' '{ print $1, $2, $4 }' \
                           "$FORGE_DIR/pr_lines" ;;
-      # The resume's every-state read: `gh pr list --head <branch>
-      # --state all --json number,state`. Served from pr_head_lines,
-      # filtered to the branch asked about — a read the open list above
-      # never answers, because closed pull requests live only here.
-      *state*)
-        head=""; prev=""
-        for a in "$@"; do
-          [ "$prev" = "--head" ] && head="$a"
-          prev="$a"
-        done
-        [ -f "$FORGE_DIR/pr_head_lines" ] &&
-          awk -F'\t' -v OFS='\t' -v b="$head" '$1 == b { print $2, $3 }' \
-            "$FORGE_DIR/pr_head_lines"
-        ;;
     esac
     ;;
   api)
@@ -228,11 +244,28 @@ forge_pr_filler() {
   done
 }
 
-# forge_closed_pr <number> <branch> [state] — a pull request that carried
-# the branch and ended, visible only to the resume's every-state read.
-# CLOSED unless a case says MERGED; never OPEN, which is forge_open_pr's.
+# forge_head_pr <number> <branch> <state> [oid] [closed-at] [author] [cross]
+#
+# One row of the resume's every-state read, in any state — the only
+# writer of `pr_head_lines`, and the only way a case can put an OPEN row
+# where that read will see it. The head oid defaults to the branch's
+# current tip, which is what a pull request opened over this branch would
+# really carry; a case that wants the row to name a *different* line of
+# history passes its own.
+forge_head_pr() {
+  local oid="${4:-}"
+  [ -n "$oid" ] || oid=$(git rev-parse --verify --quiet "refs/heads/$2")
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+    "$2" "$1" "$3" "${oid:-null}" "${5:-null}" "${6:-someone}" "${7:-false}" \
+    >> "$FORGE_DIR/pr_head_lines"
+  return 0
+}
+
+# forge_closed_pr <number> <branch> [state] [oid] [closed-at] — a pull
+# request that carried the branch and ended. CLOSED unless a case says
+# MERGED; never OPEN, which is forge_head_pr's to write.
 forge_closed_pr() {
-  printf '%s\t%s\t%s\n' "$2" "$1" "${3:-CLOSED}" >> "$FORGE_DIR/pr_head_lines"
+  forge_head_pr "$1" "$2" "${3:-CLOSED}" "${4:-}" "${5:-}"
 }
 
 # forge_unavailable — no `gh` answer at all, from here on.
@@ -240,7 +273,9 @@ forge_unavailable() { : > "$FORGE_DIR/unavailable"; }
 
 # forge_refuses <subcommand> / forge_allows <subcommand> — one `gh`
 # subcommand ("pr create", "pr list") failing while the rest keep
-# answering, and the recovery that ends it.
+# answering, and the recovery that ends it. "pr list open" and
+# "pr list head" name the two `gh pr list` call sites one at a time;
+# "pr list" is both of them together.
 forge_refuses() { : > "$FORGE_DIR/refuse_$(printf '%s' "$1" | tr ' ' '_')"; }
 forge_allows()  { rm -f "$FORGE_DIR/refuse_$(printf '%s' "$1" | tr ' ' '_')"; }
 
