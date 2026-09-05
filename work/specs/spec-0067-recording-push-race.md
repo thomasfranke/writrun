@@ -1,7 +1,7 @@
 ---
 id: spec-0067
 task_ref: task-0048
-status: approved
+status: implemented
 created: 2026-09-04T19:27:26Z
 ---
 
@@ -304,4 +304,47 @@ and confirmed afterwards by the same last line.
 
 ## Outcome
 
-_(fill after execution)_
+Built as specified. `.writrun/scripts/stage-2-pull-requests/push_recording.sh`
+takes the branch, refuses a dirty tree and a `HEAD` with nothing ahead of
+the remote-tracking ref the checkout already carries — both before the
+remote is touched, and the range git cannot answer is a refusal too —
+then runs five attempts, each opening with
+`git pull --rebase origin "$BRANCH"` and closing with
+`git push origin "HEAD:$BRANCH"`. No `--force`, no `--force-with-lease`,
+no sleep, no stderr read. The retry test is the branch's movement: the
+tip the attempt's own fetch reports, compared against the tip the refused
+push was rebased onto. Unmoved, it fails at once naming the branch;
+conflicting, it aborts back to the recording commit and fails; exhausted,
+it exits non-zero naming the branch and the attempts spent. Both `Commit`
+steps call it in place of their rebase-and-push pair, and
+`writrun-approve.yml`'s inline abort block went with them.
+`statuses.md#criteria` gained the one criterion, and nothing else under
+`docs/` changed.
+
+Divergences, all in the fixture and none in the script:
+
+- **The racer hoist brought company.** The spec asked for the racer
+  clone to move into `tests/intake_lib.sh`; it went as `setup_racer` and
+  `racer_lands`, and three more helpers went with it —
+  `arm_racer_hook` (the `pre-push` window the spec names, parameterised
+  by how many pushes it fires before), `recording_commit` (the caller's
+  half, composed the same way in six cases), and `spy_git` / `spied` /
+  `git_told_times`. The last is what the spec's own cases require and
+  the lib had no way to answer: "one push, one fetch", "exactly five
+  pushes" are counts of what a run costs the remote. The spy is a `PATH`
+  shim logging each `git` line client-side, because a refused push and a
+  landed one cost the same call and no server hook sees a fetch at all.
+  `a_landed_sibling_forces_a_remint_test.sh` now calls the hoisted pair
+  and passes unchanged in what it asserts.
+- **The fetch a case counts is the pull.** The no-hook case asserts one
+  `pull` and zero `fetch`, rather than one `fetch`: the attempt's fetch
+  *is* `git pull --rebase`, and the zero is the assertion that the
+  caller-side guard adds no fetch of its own.
+- **The exhausted-budget case reads one run twice.** Its two message
+  assertions are about a single spent budget; invoking the script a
+  second time would spend a second one and make the five-push count
+  prove nothing, so the run's output is captured once and replayed.
+
+The last line of the Definition of Done is unticked by construction: it
+is the burst on this repository with real runs, which no suite can
+schedule — the limit the Tests required section already states.
