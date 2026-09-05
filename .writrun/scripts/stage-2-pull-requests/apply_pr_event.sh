@@ -15,6 +15,8 @@
 #   PR_AUTHOR     the pull request author's login (forge-authenticated)
 #   PR_DRAFT      true|false
 #   PR_MERGED     true|false (closed only)
+#   PR_STATE      open|closed — the pull request's own state, which an
+#                 `edited` event carries for a closed pull request too
 #   PR_NUMBER     this pull request's own number, so the survivor query
 #                 can drop its own row from a listing that lags
 #   GH_REPO       owner/repo, for the survivor query
@@ -43,9 +45,10 @@
 # to choose — and the amount is bounded: above QL_CARRIED_MAX distinct
 # tasks the helper answers with its over-ceiling sentinel, and this
 # script writes nothing and exits non-zero, naming the count, the
-# ceiling, and the heal — closing and reopening the pull request
-# re-fires the event once the title claims what the work carries
-# (report-0028; spec-0069).
+# ceiling, and the heal — editing the title back under the ceiling
+# re-records what the work carries, and closing and reopening the pull
+# request re-fires the rest of the event's edges
+# (report-0028; spec-0069; spec-0077).
 #
 # On close-without-merge, the forge is asked whether another open pull
 # request still works the task — by every route the reader counts: each
@@ -77,6 +80,20 @@
 set -euo pipefail
 
 EVENT="${1:?usage: apply_pr_event.sh <event>}"
+
+# **The event name is checked before anything the pull request carries.**
+# A name this script does not know is a usage error whatever the title
+# says, and the caller reads the exit code to decide whether to retry: 3
+# says "you called me wrong", 1 says "the claim was too big". With the
+# ceiling refusal standing first, an unknown event riding an over-ceiling
+# title exited 1 and told the caller to retitle a pull request whose
+# title was never the fault. One list, named once, so the dispatch below
+# and this guard cannot drift apart.
+EVENTS='opened reopened ready_for_review converted_to_draft review_requested changes_requested edited closed'
+case " $EVENTS " in
+  *" $EVENT "*) ;;
+  *) echo "usage: apply_pr_event.sh <${EVENTS// /|}>" >&2; exit 3 ;;
+esac
 
 HERE="$(dirname "$0")"
 FLIP="$HERE/flip_task_status.sh"
@@ -114,13 +131,15 @@ esac
 # confirms — both are the queue converging on what the forge already
 # says, and `land` against a resting task is an echo. Refusing here too
 # would strand every task the pull request had already recorded under a
-# shorter title: nothing re-records on an `edited` event, so the close is
-# the last event that can release them, and a task stranded in-flight
-# with no pull request heals never (spec-0069's Outcome).
+# shorter title: the close is the last event that can release them, and a
+# task stranded in-flight with no pull request heals never (spec-0069's
+# Outcome). The `edited` arm below now re-records a retitle, which is the
+# cause this exemption was standing in for — but it only adds, so the
+# close is still the only writer that hands work back.
 if [ -n "$OVER" ] && [ "$EVENT" != "closed" ]; then
   echo "the head branch and title claim ${OVER} distinct tasks — the ceiling is ${QL_CARRIED_MAX}." >&2
-  echo "Nothing was recorded. Retitle the pull request to what the work carries," >&2
-  echo "then close and reopen it: the reopened event re-fires the recording." >&2
+  echo "Nothing was recorded. Retitle the pull request to what the work carries:" >&2
+  echo "the edit re-fires the recording, and a refused title claimed nothing to undo." >&2
   exit 1
 fi
 
@@ -179,6 +198,109 @@ case "$EVENT" in
     fi
     flip_all review
     ;;
+  edited)
+    # **The title is one of the two routes into the carried set, and it
+    # is writable after the recording.** Without this arm a pull request
+    # recorded under one tag and retitled to nine was stranded: no event
+    # re-read the title, so the close was the first writer to see it —
+    # and above the ceiling the close was refused too
+    # (docs/technical/decisions/pull-requests/0069-*).
+    #
+    # `edited` also fires on body and base changes, which say nothing
+    # about what is carried. `changes.title.from` is set by the forge
+    # only when the title moved, so an empty one is the whole test, and
+    # the cheap path costs no forge call and no file read. A pull
+    # request's title cannot be empty, so empty never means "was empty".
+    if [ -z "${PR_TITLE_FROM:-}" ]; then
+      echo "the title did not change — nothing to re-record"
+      exit 0
+    fi
+    # **A closed pull request claims nothing.** The forge fires `edited`
+    # on closed and merged pull requests as readily as on open ones, and
+    # nothing above this line reads the state: without the guard, adding
+    # a tag to the title of a pull request that closed last week took the
+    # task it named — `in-progress` with `taken_by`, on work no pull
+    # request is doing. That is the stranding this arm exists to end,
+    # written by the arm itself.
+    #
+    # The close wins the ordered case here, which is what spec-0077's
+    # edge case asks for. It cannot win a truly simultaneous one: an
+    # `edited` payload minted while the pull request was still open says
+    # `open` however late its run lands, and no state a script reads
+    # afterwards is the event's own. That residue stays as the spec
+    # records it, bounded by the close being the last event either way.
+    if [ "${PR_MERGED:-false}" = "true" ] || [ "${PR_STATE:-open}" = "closed" ]; then
+      echo "the pull request is closed — a retitle after the release claims nothing"
+      exit 0
+    fi
+    # **Re-recording adds; it does not release.** Only the tasks the old
+    # title did not claim are taken. A task already in flight keeps the
+    # status its own events gave it — `take` against an in-review task
+    # would knock it back to in-progress, and a title edit is not a
+    # review event.
+    #
+    # A task the old title claimed and the new one does not is left in
+    # flight, and no later event releases it: the close reads the title
+    # as it then stands, so a dropped tag is invisible there too. That is
+    # a stranding this arm does not answer — releasing it needs the close
+    # arm's survivor query, since a second pull request may still carry
+    # the task — and it is recorded as such in spec-0077's Outcome rather
+    # than half-answered here.
+    #
+    # The old set is read through the same helper, never a second parser.
+    # An over-ceiling old title is read as claiming *nothing*, and not
+    # re-read with the ceiling lifted: the refusal is whole, so no event
+    # under that title ever wrote a status, and its tags name tasks it
+    # did not put in flight. Counting them as already claimed would make
+    # the edit that brings a nine-tag title back under the ceiling record
+    # nothing at all — the stranding this arm exists to end, surviving
+    # its own fix.
+    #
+    # **What that leaves the title unable to answer, the queue answers.**
+    # "No event under that title" is not "no event": a pull request
+    # opened as one tag, moved to `in-progress` by a changes-requested
+    # review, retitled to nine and then back to one reaches here with the
+    # nine-tag title as `WAS` and its first task reading as newly added.
+    # `take` would knock that task out of the state the review gave it —
+    # the move the rule above forbids, reached by the corollary beside
+    # it. So the cheap test's survivors are checked against the file, and
+    # a task this author already has in flight is skipped. In flight
+    # under *someone else* still goes through: that is two pull requests
+    # on one task, and `take`'s newest-wins edge is the rule for it.
+    WAS=$(PR_TITLE="$PR_TITLE_FROM" ql_carried_from_env)
+    case "$WAS" in over-ceiling:*) WAS="" ;; esac
+    ADDED=""
+    HELD=""
+    for task in $CARRIED; do
+      case " $WAS " in
+        *" $task "*) continue ;;
+      esac
+      t_file=$(ql_task_file "$task")
+      if [ -n "$t_file" ] \
+         && [ "$(ql_fm_field taken_by "$t_file")" = "${PR_AUTHOR:?}" ]; then
+        case "$(ql_fm_field status "$t_file")" in
+          in-progress|in-review)
+            echo "already in flight under ${PR_AUTHOR}: ${t_file} — a retitle does not move it"
+            HELD=1
+            continue ;;
+        esac
+      fi
+      ADDED="$ADDED $task"
+    done
+    if [ -z "$ADDED" ]; then
+      # Two reasons reach here and the line names the one that applies:
+      # a reader deciding whether a recording is missing is reading this.
+      if [ -n "${HELD:-}" ]; then
+        echo "the retitle claims no task not already in flight — nothing to record"
+      else
+        echo "the retitle claims no task the old title did not — nothing to record"
+      fi
+      exit 0
+    fi
+    for task in $ADDED; do
+      flip_one "$task" take "${PR_AUTHOR:?}" "$(draftness "${PR_DRAFT:-true}")"
+    done
+    ;;
   closed)
     if [ "${PR_MERGED:-false}" = "true" ]; then
       echo "closed by merging — the merge recording owns this move"
@@ -228,27 +350,23 @@ case "$EVENT" in
     # listing would otherwise buy several hundred forks for rows that
     # answer nothing.
     #
-    # **The row is split by hand, because `read` cannot split it.** A tab
-    # is an IFS *whitespace* character, so `IFS=$TAB read` folds a run of
-    # tabs into one separator and every empty field vanishes with it —
-    # and `author.login` is empty for a deleted account, which `gh` emits
-    # verbatim. That one absence would shift the title into the draftness
-    # field and leave the title empty, and the row would then be dropped
-    # by the guard below while the pull request it names is still working
-    # the task. Peeling one field at a time keeps an empty field empty. A
-    # row that does not hold the five fields asked for is not a row this
-    # reader can answer, so it is skipped rather than read short.
+    # **The row is split by the shared reader, because `read` cannot
+    # split it.** A tab is an IFS *whitespace* character, so `IFS=$TAB
+    # read` folds a run of tabs into one separator and every empty field
+    # vanishes with it — and `author.login` is empty for a deleted
+    # account, which `gh` emits verbatim. That one absence would shift
+    # the title into the draftness field and leave the title empty, and
+    # the row would then be dropped by the guard below while the pull
+    # request it names is still working the task. `ql_row_fields` peels
+    # one field at a time, which keeps an empty field empty, and it
+    # returns 1 for a row that does not hold the five fields asked for —
+    # a row this reader cannot answer is skipped, never read short.
     TAB=$(printf '\t')
     INDEX=""
     while IFS= read -r o_row; do
-      case "$o_row" in
-        *"$TAB"*"$TAB"*"$TAB"*"$TAB"*) ;;
-        *) continue ;;
-      esac
-      o_num=${o_row%%"$TAB"*};   o_row=${o_row#*"$TAB"}
-      o_head=${o_row%%"$TAB"*};  o_row=${o_row#*"$TAB"}
-      o_login=${o_row%%"$TAB"*}; o_row=${o_row#*"$TAB"}
-      o_draft=${o_row%%"$TAB"*}; o_title=${o_row#*"$TAB"}
+      ql_row_fields 5 "$o_row" || continue
+      o_num="$QL_F1"; o_head="$QL_F2"; o_login="$QL_F3"
+      o_draft="$QL_F4"; o_title="$QL_F5"
       [ -n "$o_num" ] || continue
       [ "$o_num" = "${PR_NUMBER:-}" ] && continue
       # The guard is never narrower than the helper it saves work for.
@@ -296,7 +414,10 @@ EOT
     done
     ;;
   *)
-    echo "usage: apply_pr_event.sh <opened|reopened|ready_for_review|converted_to_draft|review_requested|changes_requested|closed>" >&2
+    # Unreachable: the guard at the top admits only the names above. Kept
+    # so a name added to $EVENTS and forgotten here fails loudly instead
+    # of falling through the case and exiting 0 over an unwritten queue.
+    echo "apply_pr_event.sh: '${EVENT}' is in \$EVENTS but has no arm" >&2
     exit 3
     ;;
 esac

@@ -49,6 +49,13 @@ RANGE="${1:?usage: check_unique_ids.sh <diff-range> <owner/repo> <pr-number>}"
 REPO="${2:?usage: check_unique_ids.sh <diff-range> <owner/repo> <pr-number>}"
 PR="${3:?usage: check_unique_ids.sh <diff-range> <owner/repo> <pr-number>}"
 
+# Sourced for one helper: `ql_row_fields`, the reader every tab-delimited
+# row in this repository goes through. The rows below are assembled here
+# and never leave, which is exactly why a private parse was tempting and
+# why it is refused — the collapse is a property of `read`, not of where
+# the row came from.
+. "$(dirname "$0")/queue_lib.sh"
+
 TAB=$(printf '\t')
 
 # gh defaults to 30 open pull requests, and a silently truncated list
@@ -194,8 +201,17 @@ fi
 
 # --- the verdict ----------------------------------------------------------
 
+# The rows go through `ql_row_fields`, never `IFS="$TAB" read`. These
+# three fields are assembled here rather than read off a forge, but the
+# parse is the same one and the collapse is the same collapse — a tab is
+# IFS whitespace, so an empty field would take the next field's place and
+# the verdict would name the wrong file. One reader for every row this
+# repository splits on tabs is what keeps the class closed; the hazard is
+# written out in the helper's header.
 collisions=0
-while IFS="$TAB" read -r kind num file; do
+while IFS= read -r row; do
+  ql_row_fields 3 "$row" || continue
+  kind="$QL_F1"; num="$QL_F2"; file="$QL_F3"
   [ -n "$kind" ] || continue
 
   other=$(printf '%s' "$held" | awk -F"$TAB" -v k="$kind" -v n="$num" \

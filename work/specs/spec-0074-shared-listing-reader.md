@@ -1,7 +1,7 @@
 ---
 id: spec-0074
 task_ref: task-0054
-status: approved
+status: implemented
 created: 2026-09-05T12:57:03Z
 ---
 
@@ -142,4 +142,36 @@ command substitution for the same reason: one writer per question.
 
 ## Outcome
 
-_(fill after execution)_
+One reader, `ql_row_fields`, in `queue_lib.sh` beside the helpers that
+are one copy for the same reason.
+
+`IFS="$TAB" read` cannot split these rows: a tab is IFS *whitespace*, so
+a run of tabs folds into one separator, an empty field vanishes and every
+field after it shifts left. The empty field is not hypothetical — `gh`
+writes `author.login` as the empty string when the author deleted their
+account, and `@tsv` emits two adjacent tabs. What the shift produced was
+a listing row about a pull request still working a task being read as a
+row about something else.
+
+Three callers converted: `apply_pr_event.sh`, `check_amendment_reference.sh`
+(three loops) and `check_unique_ids.sh`. The third assembles its own rows
+rather than reading a forge, which is why the helper is named for the
+parse and not for pull requests — and why converting it was refused as
+optional: the collapse is a property of `read`, not of where the row came
+from.
+
+**The guard case that enforces this had a platform-dependent flake, and
+it was caught by CI rather than locally.** It piped `sed` into `grep -q`;
+a quiet grep closes the pipe on its first match, and GNU sed reports the
+broken pipe as a failure while BSD sed stays silent. Under `set -o
+pipefail` that made the case pass on macOS and fail on Linux, decided by
+which script happened to match first. The stripped text is captured into
+a variable before it is searched now. Worth naming because the whole
+`sed | grep -q` shape is common, and this repository's shell floor is
+bash 3.2 on macOS — the platform that hides it.
+
+The helper returns 1 on a row with too few separators, so a caller skips
+a row it cannot answer instead of reading it short — the guard the hand
+parse carried, kept, and now in one place. No doc delta, as promised: the
+reasoning lives in the helper's own header.
+

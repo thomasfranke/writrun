@@ -445,7 +445,7 @@ case "$cmd" in
       fi
       if [[ "$tracked_stage" -ge 2 && -n "$tracked_branch" && "$tracked_branch" != report/* ]]; then
         echo "'${tracked_branch}' is not a report/ branch — a task with 'origin: report' is the tracked route, and that route never rides" >&2
-        echo "Deriving a task from a report is a reporting change of its own: its pull request presents the report, the task and the spec together, and the maintainer's squash-merge is the assent that the finding deserves the work (docs/product/concepts/report.md#recording-rides-any-change--routing-to-the-queue-does-not)." >&2
+        echo "Deriving a task from a report is a reporting change of its own: its pull request presents the report and the task, with the spec either beside them or in a reporting pull request of its own, and the maintainer's squash-merge is the assent that the finding deserves the work (docs/product/concepts/report.md#recording-rides-any-change--routing-to-the-queue-does-not)." >&2
         echo "Open that change and run this again — 'git switch -c report/<short-name>'. Recording a report still rides anything; so do the fixed, declined and routed ends." >&2
         exit 3
       fi

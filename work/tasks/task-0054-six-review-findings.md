@@ -11,9 +11,11 @@ depends_on: []
 milestone: null
 created: 2026-09-05T12:56:31Z
 queued: 2026-09-05T13:33:10Z
-completed: null
+completed: 2026-09-05T16:42:51Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-opus-5, login: thomasfranke}
+  - {by: agent, model: claude-opus-5, login: thomasfranke}
 ---
 
 # Close the six findings the review of #199-#204 could not fix in place

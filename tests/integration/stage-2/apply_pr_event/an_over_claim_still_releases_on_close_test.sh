@@ -3,8 +3,8 @@
 
 # The ceiling bounds claiming, not releasing. A pull request records its
 # task under a one-tag title, the title is later edited over the ceiling
-# — no `edited` trigger is wired, so nothing re-records — and the pull
-# request is closed unmerged. Refusing the close too would leave the task
+# — which the `edited` arm refuses whole, so nothing re-records — and the
+# pull request is closed unmerged. Refusing the close too would leave the task
 # `in-progress` with `taken_by` naming a closed pull request, and no
 # later event of that pull request can free it: the "stranded in-flight
 # with no PR heals never" state this script's own header forbids

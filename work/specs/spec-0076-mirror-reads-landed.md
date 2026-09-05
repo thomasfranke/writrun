@@ -1,7 +1,7 @@
 ---
 id: spec-0076
 task_ref: task-0054
-status: approved
+status: implemented
 created: 2026-09-05T12:57:21Z
 ---
 
@@ -148,4 +148,36 @@ behaviour that spec never scoped.
 
 ## Outcome
 
-_(fill after execution)_
+`rederive_labels.sh` reads the branch that landed, not the runner's tree.
+
+The pass runs under `!cancelled()`, so it follows a push that may have
+been refused — and the tree then still carries the commit `main`
+rejected. A mirror *behind* the queue catches up at the next recording;
+one *ahead* of it asserts a state `main` refused, and nothing ever comes
+back for it. `AUTHORITY_REF` is what makes the labeller read the landed
+branch, supplied by `writrun-approve.yml` as the remote-tracking ref,
+which a successful push has already moved.
+
+The `!cancelled()` gate did not move, as the spec required: a skipped or
+no-op recording still leaves a readable queue, and gating the mirror on
+the recording's success is how a merge that recorded nothing stops
+projecting anything.
+
+A ref the checkout cannot read exits 4 rather than falling back to the
+working tree — the fallback is exactly how a mirror gets ahead of the
+queue. The fetch before the verify is best-effort and only for the run
+that never pushed at all.
+
+Its remote check was written as `git remote | grep -qxF`, and a review
+caught the shape. Under `pipefail` a quiet grep closes the pipe on its
+first match, the writer can die on SIGPIPE, and the pipeline reports 141
+— so the `if` reads false and the fetch is skipped, leaving exactly the
+stale ref it was added to refresh. The listing is captured before it is
+searched now. This repository met the same shape once already, in a
+`sed | grep -q` that was green on macOS and red on CI, which is why the
+race being usually won is not an argument for leaving it.
+
+No doc delta, as promised: `labels.md` already states the rule this
+restores, and the labeller was wrong about it. Being wrong about a rule
+is not a version of it.
+

@@ -241,12 +241,19 @@ jobs:
       - name: Label every task this merge touched, from the queue
         if: >
           !cancelled() && needs.gate.outputs.mirror == 'true'
-        # Deliberately *after* the commit: the script reads the queue from
-        # disk, and the flip is only in the queue once it has been written
-        # there. Reading the merge's own diff instead is what made
-        # `status:ready` unreachable — right for what the merge carried,
-        # wrong for what it caused
+        # Deliberately *after* the commit: the flip is only in the queue
+        # once it has been written there. Reading the merge's own diff
+        # instead is what made `status:ready` unreachable — right for what
+        # the merge carried, wrong for what it caused
         # (docs/product/stage-3-github-issues/labels.md).
+        #
+        # And read from the base branch, not from this runner's tree.
+        # These steps run under `!cancelled()`, so they follow a push that
+        # may have been refused — and the tree then still carries the
+        # commit `main` rejected. A mirror *behind* the queue catches up
+        # at the next recording; one *ahead* of it asserts a state `main`
+        # refused, and nothing ever comes back for it. `AUTHORITY_REF` is
+        # what makes the labeller read the branch that landed.
         #
         # `scope`, not `tasks`: every task the merge put in front of the
         # recording, not only those it moved. A task born ready — an
@@ -289,6 +296,11 @@ jobs:
         # either way.
         env:
           GH_TOKEN: ${{ github.token }}
+          # The branch the recording had to land on, as this runner can
+          # name it: the remote-tracking ref, which a successful push has
+          # already moved and which a refused one leaves reading what
+          # `main` really holds.
+          AUTHORITY_REF: origin/${{ github.event.pull_request.base.ref }}
           # Through env, never ${{ }} into the command line. `specs` is
           # built from file *paths* (a merged pull request's own), so an
           # interpolated one is a path the shell would parse — and this

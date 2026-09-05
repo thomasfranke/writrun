@@ -1,7 +1,7 @@
 ---
 id: spec-0073
 task_ref: task-0054
-status: approved
+status: implemented
 created: 2026-09-05T12:56:54Z
 ---
 
@@ -165,4 +165,22 @@ next author as the boundary of the rule.
 
 ## Outcome
 
-_(fill after execution)_
+Three sentences that were false, corrected where they stood.
+
+`statuses.md`'s criterion on a write the machinery cannot land named the
+authority branch's refusal as though it were the only way to fail; the
+clause is gone and the criterion now covers all three.
+
+`checks.md`'s `PR_*` enumeration was missing `PR_NUMBER`, and the
+paragraph on what an empty one costs is new: the close arm drops the
+closing pull request's own row by matching that number, so with none set
+the drop is a no-op and the pull request finds itself surviving — then
+claims every task its title carries rather than the one its head branch
+spells. Quieter than the empty-title case beside it, and more expensive.
+
+The enumeration is now checked rather than remembered:
+`tests/unit/doc_contracts/the_pr_env_enumeration_is_whole_test.sh`
+asserts it names every `PR_*` the scripts read and nothing they do not.
+It earned its place inside this same task — it caught `PR_TITLE_FROM`
+missing on spec-0077's first run.
+

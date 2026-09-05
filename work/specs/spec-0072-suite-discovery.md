@@ -1,7 +1,7 @@
 ---
 id: spec-0072
 task_ref: task-0054
-status: approved
+status: implemented
 created: 2026-09-05T12:56:40Z
 ---
 
@@ -158,4 +158,47 @@ not to have.
 
 ## Outcome
 
-_(fill after execution)_
+Implemented first, as the task required, because every other spec here
+is verified against the suite this one repairs.
+
+Two faults, not one. `make test-integration`'s glob was one level deep
+over a tier that uses two — cross-stage suites at the tier root, and
+stage-bound suites under `stage-N/` — so it ran 57 of 253 cases and
+exited 0 about the rest. `test-%` had the same blind spot one level
+further down. Both now name every depth the layout uses, and the
+comments say why there are two.
+
+`test-unit` was left behind, and a review caught it. The layout the
+runner's header sanctions is the layout of *either* tier, so the sibling
+target's one-level glob is the same defect waiting on the first unit
+suite placed under a `stage-N/` folder — silent there while `run.sh` runs
+it, which is exactly what this spec exists to end. It skipped nothing on
+the day it was fixed, which is why it survived the first pass; the case
+now asserts the real tree against both targets' globs rather than one.
+
+`tests/run.sh`'s tally was a fixed path under `tests/`, shared by every
+invocation in the worktree: two overlapping runs appended to one file
+and each counted the other's cases as its own. That is where the 795
+and 808 totals came from against a true 405 — an artefact of the runner,
+never a real count. The tally is now a private `mktemp` file with a trap
+that removes it however the run ends, which is what the truncation was
+standing in for. The template is explicit because bare `mktemp` is not
+in BSD's dialect.
+
+**The first trap removed the file and let the run continue**, which the
+same review caught: a handler replaces the default terminate action, so
+the cases after a signal recreated the tally with `>>` and the count saw
+only those — `fail` reaching 0 and the run exiting green over the cases
+it never ran, the manufacturable green this spec exists to remove, one
+signal over. The handler now exits on the signal's own code, and the
+discovery list arrives by here-document so the loop runs in the shell
+that holds the trap: a trap set in the parent cannot stop a loop running
+in a pipeline's subshell, which is a terminate handler that does not
+terminate. A case asserts that an interrupted run reports nothing and
+exits non-zero, beside the one asserting it leaves no file behind.
+
+The suite went from 405 case files to 441 as a direct result — 36 cases
+that had been passing silently, or not, for as long as the glob was
+wrong. None of the newly reached cases failed, which is luck rather than
+evidence, and the reason this spec ran first.
+
