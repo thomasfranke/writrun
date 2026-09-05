@@ -102,6 +102,19 @@ fi
 FILES=$(gh api "repos/${REPO}/pulls/${PR}/files" --paginate \
   --jq '.[] | [.status, .filename, (.previous_filename // "-"), ((.patch // "") | @base64)] | @tsv')
 
+# The commit this pull request stands at, and the branch its files land
+# on. One call, two fields, and **no sixth `PR_*` name** — a name the
+# caller never sets or the callee never reads is the miswiring hazard
+# `technical/distribution/checks.md` exists to name, and neither half of
+# it is loud. The base ref is read rather than assumed: `main` is this
+# repository's answer and not every adopter's.
+#
+# A call that fails leaves both empty, and the link falls back a step at
+# a time rather than failing the mirror.
+PR_META=$(gh api "repos/${REPO}/pulls/${PR}" --jq '[.head.sha, .base.ref] | @tsv' 2>/dev/null || true)
+HEAD_SHA=$(printf '%s' "$PR_META" | cut -f1)
+BASE_REF=$(printf '%s' "$PR_META" | cut -f2)
+
 # Front-matter and title, read out of the patch. Every line of an added
 # file's patch is a '+' line, so stripping that column reconstructs the
 # file without fetching across repositories — which a fork PR would
@@ -248,6 +261,55 @@ renamed_from() {
   [ "$1" = renamed ] || return 0
   [ -n "$2" ] && [ "$2" != "-" ] || return 0
   printf '%s' "$2"
+}
+
+# file_url <path> — where a mirror's opening sentence points, which the
+# sentence says is the file itself.
+#
+# **The file is not on the base branch while the pull request is open**,
+# which is why that sentence used to link the diff — a nine-file changed
+# -files view, making the reader do the lookup the sentence exists to
+# save. But the file does exist, on the head commit, from the moment the
+# mirror is born. So the open window gets a permalink at that sha: it
+# resolves the instant the Issue is created and keeps resolving after the
+# branch is deleted. Verified against a real fork pull request — a fork's
+# head commit is reachable from the base repository, so `blob/<sha>` on
+# the base repository resolves it too.
+#
+# The merge moves it to the base ref, because a mirror outlives its pull
+# request and a reader arriving a year later wants the file, not a
+# snapshot of a branch that is gone. A mirror created *at* merge — the
+# catch-up path — is born on the base ref and never on a sha.
+#
+# **This does not reverse
+# `decisions/pull-requests/0067-a-body-link-points-at.md`.** That entry
+# is about a *pull request body*, composed by `take_task.sh` at take time
+# on an empty branch: there is no commit to point at, and no later writer
+# to move the link off a revision the next push supersedes. A mirror is
+# born from a commit that exists and is rewritten at merge, so both
+# objections 0067 names are answered here rather than ignored.
+#
+# The host comes from `PR_HTML_URL` rather than a literal: the same
+# forge that served the pull request serves its blobs, and an adopter on
+# an Enterprise host has neither hardcoded.
+file_url() {
+  local ref=""
+  [ "${merged:-false}" = "true" ] || ref="$HEAD_SHA"
+  [ -n "$ref" ] || ref="$BASE_REF"
+  if [ -n "$ref" ]; then
+    printf '%s/blob/%s/%s' "${PR_HTML_URL%/pull/*}" "$ref" "$1"
+  else
+    # Neither ref could be read. The diff is where the sentence pointed
+    # before this, so it is what a run with no answer falls back to: a
+    # mirror that points somewhere beats one that fails to be written.
+    printf '%s/files' "$PR_HTML_URL"
+  fi
+}
+
+# mirror_line <path> — the opening sentence, the one place the two
+# writers and the merge rewrite have to agree on character for character.
+mirror_line() {
+  printf 'Mirrors [`%s`](%s), which is the authority.' "$1" "$(file_url "$1")"
 }
 
 # A mirror's title names its task, and that is how a mirror is found —
@@ -526,6 +588,39 @@ adopt_mirror() {
     body="${body}"$'\n\n'"${OWN_LINE}"
   fi
   gh api -X PATCH "repos/${REPO}/issues/${1}" -f "body=${body}" >/dev/null
+  # Left where the relink below can read it: two writers on one body in
+  # one pass, and the second must not PATCH the first one away.
+  ADOPTED_BODY="$body"
+}
+
+ADOPTED_BODY=""
+
+# relink_mirror <issue> <body> <path> — at merge, move the opening
+# sentence's link off the head commit and onto the base ref, where the
+# file now lives.
+#
+# **The first line only, and only when it is the sentence this script
+# writes.** A body somebody edited by hand is left exactly as it is: the
+# rewrite is here to keep a link true, not to reclaim a maintainer's
+# text. A line already saying what it should is not written either — the
+# forge would record an edit that changed nothing.
+relink_mirror() {
+  local body first want
+  body="$2"
+  first=${body%%$'\n'*}
+  # The shape this script writes, and nothing else: an opening `Mirrors [`
+  # and a closing `), which is the authority.` with a link between them.
+  # The path is not matched — a rename moved it, and the whole point of
+  # the rewrite is to land on wherever the file now is.
+  case "$first" in
+    'Mirrors ['*'), which is the authority.') ;;
+    *) return 0 ;;
+  esac
+  want=$(mirror_line "$3")
+  [ "$first" = "$want" ] && return 0
+  body=$(printf '%s\n' "$body" | sed "1s|.*|${want}|")
+  gh api -X PATCH "repos/${REPO}/issues/${1}" -f "body=${body}" >/dev/null
+  return 0
 }
 
 # clear_status <issue> <labels-csv> — a retired mirror keeps every label
@@ -711,7 +806,7 @@ while IFS="$TAB" read -r tid fname priority milestone torigin ttitle; do
       status_args=(-f "labels[]=status:proposed")
     fi
     body=$(printf '%s\n' \
-      "Mirrors [\`${fname}\`](${PR_HTML_URL}/files), which is the authority." \
+      "$(mirror_line "$fname")" \
       "Edits made here are **not** written back to the file." \
       "" \
       "| | |" \
@@ -762,6 +857,7 @@ while IFS="$TAB" read -r tid fname priority milestone torigin ttitle; do
   # existed: adopt it, because refusing leaves the task with no mirror at
   # all and nothing ever creates one.
   adopted=false
+  ADOPTED_BODY=""
   if ! is_mine "$ibody"; then
     owner=$(owner_of "$ibody")
     if [ -n "$owner" ] && pr_is_open "$owner"; then
@@ -775,6 +871,15 @@ while IFS="$TAB" read -r tid fname priority milestone torigin ttitle; do
     else
       echo "${tid}: adopted unowned mirror #${num} — no pull request introduced it."
     fi
+  fi
+
+  # The merge is when the file stops being a proposal and becomes what
+  # the base branch holds, so it is when the mirror's link has to move
+  # there. A mirror this pass just adopted is relinked from the body the
+  # adoption wrote, never from the one it replaced.
+  if [ "$merged" = "true" ]; then
+    relink_mirror "$num" \
+      "${ADOPTED_BODY:-$(printf '%s' "$ibody" | b64_decode)}" "$fname"
   fi
 
   if [ "$open" = "true" ]; then
@@ -909,7 +1014,7 @@ while IFS="$TAB" read -r rid fname rstatus rtitle; do
     fi
     [ "$open" = "true" ] || ensure_label "writrun:report" "5319e7" "Mirrors a work/reports/ entry"
     body=$(printf '%s\n' \
-      "Mirrors [\`${fname}\`](${PR_HTML_URL}/files), which is the authority." \
+      "$(mirror_line "$fname")" \
       "Edits made here are **not** written back to the file." \
       "" \
       "${OWN_LINE}" \
@@ -957,6 +1062,7 @@ while IFS="$TAB" read -r rid fname rstatus rtitle; do
   # closed mirror adopted is half the evidence that an id has come back,
   # and the line that omitted it said nothing a reader could act on.
   adopted=""
+  ADOPTED_BODY=""
   if ! is_mine "$ibody"; then
     owner=$(owner_of "$ibody")
     if [ -n "$owner" ] && pr_is_open "$owner"; then
@@ -970,6 +1076,13 @@ while IFS="$TAB" read -r rid fname rstatus rtitle; do
     else
       echo "${rid}: adopted unowned mirror #${num}, ${istate} — no pull request introduced it."
     fi
+  fi
+
+  # The same move the task loop makes, and for the same reason: at merge
+  # the report is on the base branch, and that is where its mirror points.
+  if [ "$merged" = "true" ]; then
+    relink_mirror "$num" \
+      "${ADOPTED_BODY:-$(printf '%s' "$ibody" | b64_decode)}" "$fname"
   fi
 
   # Closed without a merge: what this pull request's diff said about the
