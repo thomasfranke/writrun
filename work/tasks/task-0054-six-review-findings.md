@@ -1,8 +1,8 @@
 ---
 id: task-0054
-status: ready
+status: in-progress
 blocked_reason: null
-taken_by: null
+taken_by: thomasfranke
 spec_ref: [spec-0072, spec-0073, spec-0074, spec-0075, spec-0076, spec-0077]
 doc_ref: product/stage-1-tasks-and-specs/authoring.md#two-ways-a-permanent-doc-changes
 origin: report
