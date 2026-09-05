@@ -26,6 +26,22 @@ the durable record of the id, is consulted by none of them either.
 `TASK-0013` made ids unique across open pull requests; a closed one's
 ids and the mirror's own are the gap left.
 
+Repairing it downstream surfaced two more of the same shape, and all
+three read a change the same way. `check_unique_ids.sh:130` collects
+`--diff-filter=A` and compares it against `git ls-tree` of the base, so
+a change that renumbers a file to free an id and then claims that id is
+reported as a collision with itself; the repair had to be split across
+two pull requests it cannot see are one. `mirror_issues.sh:321` collects
+reports with `case "$fstatus" in added|modified) ;; *) continue ;; esac`,
+and the forge reports a renumbered queue file as `status=renamed` — so
+the file was skipped, the new id was minted no Issue, and the old Issue
+kept a title describing something else. A report with no mirror is one
+nobody can triage.
+
+**The machinery reads additions and modifications, and a rename is
+neither.** That is the one blind spot behind the reuse, the false
+collision and the missing mirror.
+
 Also observed: the reopening is silent. Nothing in the run names the
 collision, and a maintainer reads it as a triaged finding coming back
 on its own.
