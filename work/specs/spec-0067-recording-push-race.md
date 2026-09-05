@@ -344,6 +344,16 @@ Divergences, all in the fixture and none in the script:
   assertions are about a single spent budget; invoking the script a
   second time would spend a second one and make the five-push count
   prove nothing, so the run's output is captured once and replayed.
+- **One existing case had to follow the wiring.** Tests required says
+  the merge-recording cases pass unchanged, and in what they assert they
+  do. But `merged_close/one_workflow_answers_it_test.sh` locates the
+  push by grepping `writrun-approve.yml` for the literal
+  `git push origin "HEAD:${BASE_REF}"`, to prove the queue is pushed
+  before the mirror is minted and labelled. Step 6 removes that literal,
+  so the case now finds the landing call by its path — the claim about
+  the order is untouched, and only the line that spells the push moved.
+  It is the one case in the suite that reads the wiring rather than
+  running it, which is why it is also the one the change reached.
 
 The last line of the Definition of Done is unticked by construction: it
 is the burst on this repository with real runs, which no suite can
