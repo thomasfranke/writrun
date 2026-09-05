@@ -15,6 +15,7 @@ completed: 2026-09-05T10:37:04Z
 merged: null
 provenance:
   - {by: agent, model: claude-fable-5, login: thomasfranke}
+  - {by: agent, model: claude-opus-5, login: thomasfranke}
 ---
 
 # Hold the recording push against a concurrent one
