@@ -1,7 +1,7 @@
 ---
 id: spec-0070
 task_ref: task-0051
-status: approved
+status: implemented
 created: 2026-09-04T19:27:29Z
 ---
 
@@ -274,4 +274,34 @@ thing this pass needs: a failure that reproduces.
 
 ## Outcome
 
-_(fill after execution)_
+Implemented as specified. `resolve_mirror` asks entitlement before it
+spends: the membership test moved into a number-taking `minted_num`,
+`minted` converts and calls it, and `MINTED_DECLARED` keeps "was the
+flag given" apart from what it named — no flag entitles every miss,
+the flag given is the entitlement list, empty means nobody.
+`project_pr_tasks.sh:40` gained the empty flag and its header the
+mints-nothing side of the contract; `rederive_labels.sh`'s header
+states the caller's side, and the paragraph naming report-0029 as open
+is gone. `writrun-approve.yml`'s label step passes `--minted` only
+where the mint's own outcome is success (read through env, like every
+other value it hands a shell) and no flag where it is not, so a mirror
+minted before a failed mint is still healed. The envelope is untouched:
+two re-reads per list, the flat `WRITRUN_MIRROR_REFRESH_WAIT`, zero
+meaning none.
+
+Tests: the two no-flag cases in
+`a_mirror_younger_than_the_read_is_found_test.sh` name their
+entitlement (the report case as `--minted report-0003`), the
+non-minted-miss case declares the empty flag and measures one read, and
+the three owed cases exist — unentitled-before-entitled, the fail-open
+half pinned, and the wiring case `the_saving_is_declared_test.sh`
+beside `one_workflow_answers_it_test.sh`. All fourteen of
+report-0021's mirrors still label. No `docs/` change, as both
+Proposed-changes sections say.
+
+One divergence, collateral rather than scope:
+`one_workflow_answers_it_test.sh`'s push-mint-label ordering assertion
+read `rederive_labels.sh`'s line number with a bare `grep -n`, and the
+label step now holds two invocations — the first is taken as the
+order's witness (`head -n1`). Without it the existing case fails on
+this change's wiring, so the one-line fix rides here.
