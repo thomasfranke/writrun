@@ -1,8 +1,8 @@
 ---
 id: task-0057
-status: ready
+status: in-progress
 blocked_reason: null
-taken_by: null
+taken_by: thomasfranke
 spec_ref: [spec-0081, spec-0079, spec-0080]
 doc_ref: technical/schemas/task.md#task-schema
 origin: report
