@@ -3,7 +3,7 @@ id: task-0056
 status: backlog
 blocked_reason: null
 taken_by: null
-spec_ref: []
+spec_ref: [spec-0078]
 doc_ref: null
 origin: report
 priority: low
@@ -17,6 +17,8 @@ provenance: []
 ---
 
 # A mirror links the file it mirrors
+
+**References:** [spec-0078](../specs/spec-0078-mirror-link-target.md)
 
 A mirror's opening sentence names the file it mirrors; the link on that
 name shall reach that file. Today it reaches the pull request's
