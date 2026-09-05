@@ -1,13 +1,15 @@
 ---
 id: report-0031
-status: open
-task_ref: []
+status: tracked
+task_ref: [task-0057]
 doc_ref: null
 created: 2026-09-05T11:47:09Z
-triaged: null
+triaged: 2026-09-05T13:48:35Z
 ---
 
 # An id the mirror still holds is minted again
+
+**References:** [task-0057](../tasks/task-0057-id-claims-unseen.md)
 
 In adopter `writrun-cli`, `report-0001` was minted on pull request #17
 and removed from that branch before the merge; the squashed commit
