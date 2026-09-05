@@ -10,18 +10,22 @@ tests:
 # `make test` is the muscle-memory alias for the same thing.
 test: tests
 
+# Two depths in both tier targets, because tests/run.sh's header
+# sanctions two in either tier: cross-stage suites at the tier root, a
+# suite bound to one adoption stage under its stage-N/ folder. The
+# integration glob was one level deep and ran 57 of that tier's cases,
+# exiting 0 about the rest; this one was fixed a change later, because
+# every unit suite happens to sit at depth 2 and it was skipping nothing
+# to be caught at. A target silent about what it does not reach is worth
+# no less when the tree has not yet grown the case it would miss.
 test-unit:
 	@fail=0; \
-	for f in tests/unit/*/*_test.sh; do \
+	for f in tests/unit/*/*_test.sh tests/unit/*/*/*_test.sh; do \
 	  [ -e "$$f" ] || continue; \
 	  bash "$$f" || fail=1; \
 	done; \
 	exit $$fail
 
-# Two depths, because the tier uses two: cross-stage suites sit at the
-# tier root, and a suite bound to one adoption stage sits under its
-# stage-N/ folder (tests/run.sh's header states the layout). A one-level
-# glob here ran 57 of the tier's cases and exited 0 about the rest.
 test-integration:
 	@fail=0; \
 	for f in tests/integration/*/*_test.sh tests/integration/*/*/*_test.sh; do \

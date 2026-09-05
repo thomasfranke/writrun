@@ -44,11 +44,12 @@ fi
 # every other process on the machine.
 unset RUNNER_FIXTURE_SLEEP
 tally_home="$WORK/tallies"; mkdir -p "$tally_home"
-RUNNER_FIXTURE_SLEEP=5 TMPDIR="$tally_home" bash "$ROOT/tests/run.sh" >/dev/null 2>&1 &
+slow_out="$WORK/slow.out"
+RUNNER_FIXTURE_SLEEP=5 TMPDIR="$tally_home" bash "$ROOT/tests/run.sh" > "$slow_out" 2>&1 &
 slow_pid=$!
 sleep 1
 kill -TERM "$slow_pid" 2>/dev/null
-wait "$slow_pid" 2>/dev/null
+wait "$slow_pid" 2>/dev/null; slow_code=$?
 
 left=$(find "$tally_home" -type f | wc -l | tr -d ' ')
 if [ "$left" = "0" ] && [ ! -e "$ROOT/tests/.tally" ]; then
@@ -58,6 +59,24 @@ else
   printf 'FAIL  an interrupted run left %s tally file(s) behind\n' "$left"
   find "$tally_home" -type f | sed 's/^/      | /'
   [ -e "$ROOT/tests/.tally" ] && echo "      | tests/.tally"
+  fail=$((fail + 1))
+fi
+
+# And the half a handler that only removes the file cannot answer. A
+# trap replaces the default terminate action, so the run went on: the
+# cases after the signal recreated the tally with `>>`, the count saw
+# only those, and `fail` reached 0 — an interrupted run reporting a
+# green over the cases it never ran. The interrupted run must report
+# nothing and exit non-zero.
+reported=$(sed -n 's/^\([0-9]*\) case files passed.*/\1/p' "$slow_out")
+
+if [ -z "$reported" ] && [ "$slow_code" -ne 0 ]; then
+  echo "ok    an interrupted run reports no tally and exits non-zero"
+  pass=$((pass + 1))
+else
+  printf 'FAIL  an interrupted run reported "%s" and exited %s\n' \
+    "$reported" "$slow_code"
+  sed 's/^/      | /' "$slow_out"
   fail=$((fail + 1))
 fi
 

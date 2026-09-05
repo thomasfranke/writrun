@@ -57,4 +57,25 @@ else
   fail=$((fail + 1))
 fi
 
+# The sibling target, against the same property. `test-unit` was left at
+# one depth while `test-integration` was fixed to two, and it skips
+# nothing today only because every unit suite happens to sit at depth 2
+# — a fact no rule holds true. run.sh's header sanctions a stage-N/
+# folder in either tier, so the first unit suite placed under one would
+# run there and be silently skipped here, which is the fault this file
+# exists to end rather than to halve.
+u_globs=$(recipe_globs test-unit)
+u_reached=$(cd "$REPO_ROOT" && for f in $u_globs; do [ -e "$f" ] || continue; echo "$f"; done | sort -u | wc -l | tr -d ' ')
+u_held=$(cd "$REPO_ROOT" && find tests/unit -name '*_test.sh' | wc -l | tr -d ' ')
+
+if [ "$u_reached" = "$u_held" ]; then
+  printf 'ok    the unit globs reach all %s of the tier'"'"'s cases\n' "$u_held"
+  pass=$((pass + 1))
+else
+  printf 'FAIL  the unit globs reach %s of the tier'"'"'s %s cases\n' \
+    "$u_reached" "$u_held"
+  printf '      globs: %s\n' "$u_globs"
+  fail=$((fail + 1))
+fi
+
 finish
