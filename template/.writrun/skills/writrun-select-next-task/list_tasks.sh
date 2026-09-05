@@ -47,6 +47,20 @@ REPORT_DIR="${3:-work/reports}"
 
 [ -d "$TASK_DIR" ] || { echo "No such directory: $TASK_DIR" >&2; exit 3; }
 
+# Which tasks a pull request carries is one question, and `ql_carried_of`
+# is where its answer lives — the ceiling included. This lister kept a
+# private copy of the tag parser and so had no ceiling: one title naming
+# nine tasks moved all nine out of Available and left the reader every
+# session runs first printing "Nothing is available."
+# (docs/technical/settings/titles.md#pr_title_style; spec-0069).
+#
+# The path is the skills-to-scripts one `new.sh` already takes; the kit
+# ships both trees together, so it resolves in an adopting project too.
+# Sourced without `set -e` on purpose: nothing read from here needs it,
+# and this script's own contract is that a fault in one row never ends
+# the listing.
+. "$(cd "$(dirname "$0")" && pwd)/../../scripts/stage-2-pull-requests/queue_lib.sh"
+
 field() { sed -n "s/^$2: *//p" "$1" | head -n1; }
 title() { sed -n 's/^# *//p' "$1" | head -n1; }
 
@@ -132,6 +146,7 @@ rank() {
 
 taken=""       # id|#number|author
 idless=""      # numbers of the open pull requests carrying no task id
+over_ceiling=""  # number|count of the rows skipped for claiming too much
 pr_source="none"
 
 pr_lines=""
@@ -155,22 +170,33 @@ if [ "$pr_source" != "none" ]; then
   while IFS="$(printf '\t')" read -r num branch author ptitle; do
     [ -n "$branch" ] || continue
 
-    # The title is the authority on which tasks a pull request carries: a
-    # branch name holds one id, and a PR may carry several. Every task
-    # tagged in the leading run is in flight; only when the title carries
-    # no tag does the branch marker answer instead.
+    # The carried set: the head branch's own id and every [TASK-NNNN] tag
+    # leading the title, from the one helper the machinery asks. A branch
+    # name holds one id and a title holds as many as the work carries;
+    # only when neither route names a task does the branch marker below
+    # answer instead.
+    carried=$(ql_carried_of "$branch" "${ptitle:-}")
+    case "$carried" in
+      over-ceiling:*)
+        # Another pull request's over-long title is its author's fault,
+        # and it must not empty this list: moving its whole claim into
+        # "In flight" is the queue denial the ceiling exists to prevent
+        # (docs/product/stage-2-pull-requests/statuses.md#criteria).
+        # Skipped and named, never emptied — an empty carried set is what
+        # routes a row into the amendment probe below and its paginated
+        # files read.
+        over_ceiling="${over_ceiling}${num}|${carried#over-ceiling:}"$'\n'
+        continue
+        ;;
+    esac
     tagged=""
-    rest="${ptitle:-}"
-    while :; do
-      rest=$(printf '%s' "$rest" | sed 's/^[[:space:]]*//')
-      tg=$(printf '%s' "$rest" \
-        | sed -n 's/^\[[Tt][Aa][Ss][Kk]-0*\([0-9][0-9]*\)\].*/\1/p')
-      [ -n "$tg" ] || break
+    for c in $carried; do
+      tg=$(ql_task_num "$c")
+      [ -n "$tg" ] || continue
       tf=$(num_file "$TASK_DIR" task "$tg")
       if [ -n "$tf" ]; then tid=$(field "$tf" id)
       else tid=$(printf 'task-%04d' "$tg"); fi
       tagged="${tagged} ${tid}"
-      rest=$(printf '%s' "$rest" | sed 's/^\[[Tt][Aa][Ss][Kk]-[0-9][0-9]*\]//')
     done
     if [ -n "$tagged" ]; then
       for tid in $tagged; do
@@ -474,6 +500,16 @@ if [ -n "$open_reports" ]; then
   printf '%s' "$open_reports" | sed '/^$/d' | sort | while IFS='|' read -r id tt; do
     printf '  %-12s %s\n' "$id" "$tt"
   done
+fi
+
+if [ -n "$over_ceiling" ]; then
+  echo
+  printf '%s' "$over_ceiling" | sed '/^$/d' | sort -u \
+    | while IFS='|' read -r num n; do
+        echo "Note: pull request #${num} claims ${n} distinct tasks — over the"
+        echo "ceiling of ${QL_CARRIED_MAX}. Its row was skipped, so a task it works"
+        echo "reads as available above. Check that pull request before starting."
+      done
 fi
 
 if [ "$pr_source" = "none" ]; then

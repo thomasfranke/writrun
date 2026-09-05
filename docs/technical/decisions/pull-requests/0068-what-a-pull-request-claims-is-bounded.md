@@ -39,11 +39,16 @@ nine-task pull request reporting eight under a green run, with nothing
 anywhere saying the ninth was dropped. Refusing the whole set is the
 honest cost: the run goes red on the author's own pull request at the
 moment they typed the title, and the refusal names the heal — close and
-reopen, which re-fires `take` from `ready`. One caller bends the exit,
-never the refusal: the merge recorder still writes what its own diff
-range proves and exits 0, because a merged close fires no second event
-and the commit behind it is success-gated — a red exit there would turn
-one refused claim into a queue permanently unrecorded. And the readers
+reopen, which re-fires `take` from `ready`. Two callers bend the
+refusal, and both bend it toward writes the claim did not earn. The
+merge recorder still writes what its own diff range proves and exits 0,
+because a merged close fires no second event and the commit behind it is
+success-gated — a red exit there would turn one refused claim into a
+queue permanently unrecorded. The close arm of the in-flight recorder
+still releases the whole set, because releasing is not claiming: a title
+edited over the ceiling after the recording landed would otherwise leave
+every task that recording moved stranded in flight, with no later event
+able to free it. And the readers
 that meet another pull request's over-ceiling row skip it with a
 notice: failing a person's own take over somebody else's title would be
 the denial the ceiling exists to prevent.

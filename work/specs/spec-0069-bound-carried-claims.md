@@ -377,8 +377,70 @@ Three things the spec left to execution, decided here:
   stderr would be the only trace of a refusal in an otherwise silent
   success.
 
-No divergence from the Steps, the acceptance criteria, or the Tests
-required. The exposure named in the spec's last paragraph stands as
-written: this closes report-0028 while the origin question — whether a
-fork's pull request may reach the recording at all — remains untracked,
-awaiting a report of its own.
+The exposure named in the spec's last paragraph stands as written: this
+closes report-0028 while the origin question — whether a fork's pull
+request may reach the recording at all — remains untracked, awaiting a
+report of its own.
+
+**What review found, and what changed after it.** Four faults, three of
+them the ceiling's own reach and one a copied noun. The Steps and the
+Tests required stand; one acceptance criterion does not, and the
+divergence is stated here rather than smoothed over.
+
+- **A sixth caller, and the one every session runs first.**
+  `list_tasks.sh` kept a private copy of the `[TASK-NNNN]` parser and
+  never sourced `queue_lib.sh`, so it had no ceiling. Scope counted the
+  helper's five callers and the parser's readers are not the same set —
+  that is what the count missed. An open pull request claiming nine
+  tasks moved all nine out of Available into In flight, and the lister
+  printed "Nothing is available." and exited 1: the queue denial the
+  ceiling exists to prevent, produced by the ceiling's absence in the
+  reader that decides what anyone works on next. It now asks
+  `ql_carried_of` like every other reader and takes the reader posture —
+  skip the row, name the pull request, never fail the act. The path is
+  the skills-to-scripts one `new.sh` already takes, so it resolves in an
+  adopting project too.
+
+- **The close arm is exempt from the refusal, and the acceptance
+  criterion saying otherwise is wrong.** The spec says the in-flight
+  writer exits non-zero on the sentinel, and `apply_pr_event.sh` put
+  that refusal before the event dispatch — so it refused `closed`, the
+  only arm that releases an already-recorded task. A pull request
+  records `task-0001 -> in-progress` under a one-tag title; the title is
+  edited to nine tags, and nothing re-records, because no `edited`
+  trigger is wired; the pull request closes unmerged and the refusal
+  fires before `land`. The task stays `in-progress` with `taken_by` on a
+  closed pull request, and no later event of that pull request can free
+  it — the state this script's own header calls the one that heals
+  never. The refusal now bounds every event that expands flight and
+  leaves the close alone. That is sound because the close writes nothing
+  on the claim's authority: `land` against a resting task is an echo,
+  and the survivor arm re-records from an open pull request the forge
+  itself named. It also covers the adopter who upgrades with an
+  over-ceiling pull request already in flight.
+  `docs/product/stage-2-pull-requests/statuses.md#criteria` and decision
+  `0068` were corrected to say so; both were already this spec's to
+  change.
+
+- **A skipped row is not an absent pull request.**
+  `check_amendment_reference.sh` reported the over-ceiling row it had
+  just skipped as "no open pull request works it — its flight state is
+  stale, not this change's business", and passed. When the skipped row
+  *is* the pull request working the suspended task, that sentence is
+  false and the cross-reference gate is off in silence, letting an
+  amendment merge without naming what it suspends. The check now says
+  its view was narrow and names the skipped pull request as the one that
+  may be owed — the same best-effort posture it already holds for a
+  forge that will not answer, and still not a failure. The carried sets
+  are also resolved once, before the per-task lookup, so the skip notice
+  is printed once per pull request rather than once per task that asked.
+
+- **`project_pr_tasks.sh` told the maintainer to fix the recording**,
+  its refusal having taken `apply_pr_event.sh`'s heal sentence whole. It
+  names the projection now.
+
+Three regression cases were added, in the callers the faults were in:
+`tests/unit/list_tasks/an_over_claiming_pull_request_is_skipped_test.sh`,
+`tests/integration/stage-2/apply_pr_event/an_over_claim_still_releases_on_close_test.sh`,
+and
+`tests/integration/stage-2/amendment_reference/a_skipped_row_is_not_an_absent_pull_request_test.sh`.

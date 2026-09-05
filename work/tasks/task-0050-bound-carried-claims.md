@@ -15,6 +15,7 @@ completed: 2026-09-05T10:36:25Z
 merged: null
 provenance:
   - {by: agent, model: claude-fable-5, login: thomasfranke}
+  - {by: agent, model: claude-opus-5, login: thomasfranke}
 ---
 
 # Bound what a pull request title may claim

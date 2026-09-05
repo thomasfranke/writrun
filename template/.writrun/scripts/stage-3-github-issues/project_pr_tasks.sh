@@ -41,7 +41,7 @@ case "$carried" in
   over-ceiling:*)
     echo "the head branch and title claim ${carried#over-ceiling:} distinct tasks — the ceiling is ${QL_CARRIED_MAX}." >&2
     echo "Nothing was projected. Retitle the pull request to what the work carries," >&2
-    echo "then close and reopen it: the reopened event re-fires the recording." >&2
+    echo "then close and reopen it: the reopened event re-fires the projection." >&2
     exit 1
     ;;
 esac
