@@ -113,11 +113,13 @@ jobs:
           git commit \
             -m "$(bash .writrun/scripts/stage-2-pull-requests/commit_subject.sh forge)" \
             -m "Pull request #${PR_NUMBER}, event ${{ github.event.action }}."
-          # Another recording may have landed between checkout and here.
-          # Rebase onto it rather than force: this is an addition to the
-          # branch's history, never a replacement of it.
-          git pull --rebase origin "$BASE_REF"
-          git push origin "HEAD:${BASE_REF}"
+          # Another recording may have landed between checkout and here,
+          # and may land again between the rebase and the push. Landing
+          # is push_recording.sh's: rebase onto it rather than force —
+          # an addition to the branch's history, never a replacement of
+          # it — retried only while the branch keeps moving. The budget,
+          # the retry test and the abort live in its header.
+          bash .writrun/scripts/stage-2-pull-requests/push_recording.sh "$BASE_REF"
 
   reflect:
     name: mirror follows the file

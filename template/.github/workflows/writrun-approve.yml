@@ -181,21 +181,14 @@ jobs:
           git commit \
             -m "$(bash .writrun/scripts/stage-2-pull-requests/commit_subject.sh merge)" \
             -m "Assent given by @${MERGED_BY} merging #${PR_NUMBER}."
-          # Another change may have landed between the merge and this run.
-          # Rebase onto it rather than force: the flip is an addition to
-          # the branch's history, never a replacement of it.
-          #
-          # A conflicting rebase stops half-applied and leaves conflict
-          # markers in the very queue files the mirror steps below read
-          # from disk. Abort back to the recording commit before failing:
-          # what this step can lose is the push, and the projection that
-          # follows still needs a queue it can parse.
-          if ! git pull --rebase origin "$BASE_REF"; then
-            git rebase --abort || true
-            echo "::error::Rebase onto ${BASE_REF} failed; the recording was not pushed."
-            exit 1
-          fi
-          git push origin "HEAD:${BASE_REF}"
+          # Another change may have landed between the merge and this
+          # run, and may land again between the rebase and the push.
+          # Landing is push_recording.sh's: rebase onto it rather than
+          # force — the flip is an addition to the branch's history,
+          # never a replacement of it — retried only while the branch
+          # keeps moving. The budget, the retry test and the abort live
+          # in its header.
+          bash .writrun/scripts/stage-2-pull-requests/push_recording.sh "$BASE_REF"
 
       # The two steps below are **the merged close's whole mirror
       # answer**, and no other workflow gives one: writrun-issues.yml and

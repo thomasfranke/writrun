@@ -1,15 +1,19 @@
 #!/usr/bin/env bash
 # intake_lib.sh — the fixture behind the intake cases
-# (.writrun/scripts/stage-3-github-issues/intake_report.sh).
+# (.writrun/scripts/stage-3-github-issues/intake_report.sh) and the
+# push_recording cases
+# (.writrun/scripts/stage-2-pull-requests/push_recording.sh), which need
+# only its authority half.
 #
-# Two halves, because the script has two counterparties. The authority
-# branch is a real one: a bare `origin` and a clone shaped like the
-# workflow's checkout, so the recording's rebase-and-push lands where a
-# later reader can assert on it. The forge is the same fake `gh` posture
-# as mirror_lib.sh — reads served from canned files, every invocation
-# logged, mutations asserted against the log — rebuilt here because the
-# intake asks different questions (`gh pr list`, one pull request's file
-# list) than the mirror scripts do.
+# Two halves, because the intake has two counterparties. The authority
+# branch is a real one: a bare `origin`, a clone shaped like the
+# workflow's checkout, and a racer clone that lands commits on `origin`
+# behind the checkout's back, so a recording's rebase-and-push lands
+# where a later reader can assert on it. The forge is the same fake `gh`
+# posture as mirror_lib.sh — reads served from canned files, every
+# invocation logged, mutations asserted against the log — rebuilt here
+# because the intake asks different questions (`gh pr list`, one pull
+# request's file list) than the mirror scripts do.
 #
 # Same constraints as every other fixture: git, bash, POSIX awk/sed, no
 # framework (tests/harness.sh has the assertion core).
@@ -93,6 +97,107 @@ GH
 # have landed: the clone's own tree passing proves only half the act.
 authority() {
   git -C "$WORK/origin.git" "$@"
+}
+
+# recording_commit <path> <line> — the composed write a case lands: one
+# line at <path>, committed in the clone. The caller's half of
+# push_recording.sh's contract, done before the script is asked to land
+# it.
+recording_commit() {
+  mkdir -p "$(dirname "$1")"
+  printf '%s\n' "$2" > "$1"
+  git add -A >/dev/null
+  git commit -qm "chore(queue): record what the event decided"
+}
+
+# setup_racer — a clone that lands commits on origin behind the
+# checkout's back, exactly as a sibling recording or a report/ branch
+# squash-merge would put them there. `-b main` because the bare origin's
+# HEAD still names the machine's default branch — a clone left to guess
+# lands somewhere else and the racer's push dies silently, and with it
+# the race under test.
+setup_racer() {
+  git clone -q -b main "$WORK/origin.git" "$WORK/racer" 2>/dev/null
+  git -C "$WORK/racer" config user.email r@example.com
+  git -C "$WORK/racer" config user.name Racer
+}
+
+# racer_lands <path> <subject> — the racer commits stdin to <path> and
+# lands it on origin's main. Pulls first: the racer may itself be behind
+# by whatever landed since its clone.
+racer_lands() {
+  (
+    cd "$WORK/racer" || exit 1
+    git pull -q --rebase origin main 2>/dev/null
+    mkdir -p "$(dirname "$1")"
+    cat > "$1"
+    git add -A >/dev/null
+    git commit -qm "$2"
+    git push -q origin main 2>/dev/null
+  )
+}
+
+# arm_racer_hook [count] — the window made deterministic, never by
+# timing: a pre-push hook in the clone lands one racer commit on origin
+# and lets the push proceed, so the push meets a branch that moved
+# *after* the rebase — the refusal report-0023 recorded, without a sleep
+# and without a flake. Fires before each of the first <count> pushes;
+# no count means every push. The hook calls git by absolute path so the
+# spy below never counts the racer's own traffic.
+arm_racer_hook() {
+  local real_git
+  real_git=$(command -v git)
+  cat > .git/hooks/pre-push <<HOOK
+#!/usr/bin/env bash
+n=\$(cat "$WORK/racer_fires" 2>/dev/null || echo 0)
+if [ -n "${1:-}" ] && [ "\$n" -ge "${1:-0}" ]; then exit 0; fi
+echo \$((n + 1)) > "$WORK/racer_fires"
+cd "$WORK/racer" || exit 1
+"$real_git" pull -q --rebase origin main
+echo "race \$n" > "race-\$n.txt"
+"$real_git" add -A >/dev/null
+"$real_git" commit -qm "racer: race \$n"
+"$real_git" push -q origin main
+exit 0
+HOOK
+  chmod +x .git/hooks/pre-push
+}
+
+# spy_git / spied — what a run costs the remote. The spy is a PATH shim
+# that logs every git subcommand line before handing over to the real
+# binary, and `spied` runs one command under it; the counts come out of
+# git_told_times. Client-side on purpose: a refused push and a landed
+# one cost the same call, and no server hook sees a fetch at all.
+spy_git() {
+  GIT_SPY_LOG="$WORK/git-spy.log"
+  : > "$GIT_SPY_LOG"
+  mkdir -p "$WORK/spy-bin"
+  cat > "$WORK/spy-bin/git" <<SPY
+#!/usr/bin/env bash
+printf '%s\n' "\$*" >> "$GIT_SPY_LOG"
+exec "$(command -v git)" "\$@"
+SPY
+  chmod +x "$WORK/spy-bin/git"
+}
+
+spied() {
+  PATH="$WORK/spy-bin:$PATH" "$@"
+}
+
+# git_told_times <name> <count> <subcommand> — the spy's log holds one
+# line per git call; the run spent exactly this many. Anchored to the
+# line's start so `push` never counts a `pull`'s arguments.
+git_told_times() {
+  local n
+  n=$(grep -c -- "^$3" "$GIT_SPY_LOG")
+  if [ "$n" -eq "$2" ]; then
+    printf 'ok    %s\n' "$1"; pass=$((pass + 1))
+  else
+    printf 'FAIL  %s\n      expected %s git calls starting: %s (got %s)\n' \
+      "$1" "$2" "$3" "$n"
+    sed 's/^/      | /' "$GIT_SPY_LOG"
+    fail=$((fail + 1))
+  fi
 }
 
 # The log assertions (forge_told, forge_not_told) are harness.sh's —

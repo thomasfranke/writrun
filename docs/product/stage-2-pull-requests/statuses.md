@@ -155,6 +155,9 @@ never trusted to prose discipline.
   machinery shall move the task to `done`.
 - When an event matches no legal transition for the status a task
   holds, the machinery shall write nothing.
+- When the machinery cannot land a write it owes — the authority branch
+  refused it — it shall report the failure, and never report success
+  over a queue it left unwritten.
 - When a change on a branch moves a task between the machinery's five
   working states, the machinery shall reject the change; a hand-written
   move to or from `blocked`, or to `dropped`, it shall accept.
