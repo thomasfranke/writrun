@@ -1,7 +1,7 @@
 ---
 id: spec-0067
 task_ref: task-0048
-status: approved
+status: implemented
 created: 2026-09-04T19:27:26Z
 ---
 
@@ -304,4 +304,109 @@ and confirmed afterwards by the same last line.
 
 ## Outcome
 
-_(fill after execution)_
+Built as specified. `.writrun/scripts/stage-2-pull-requests/push_recording.sh`
+takes the branch, refuses a dirty tree and a `HEAD` with nothing ahead of
+the remote-tracking ref the checkout already carries — both before the
+remote is touched, and the range git cannot answer is a refusal too —
+then runs five attempts, each opening with
+`git pull --rebase origin "$BRANCH"` and closing with
+`git push origin "HEAD:$BRANCH"`. No `--force`, no `--force-with-lease`,
+no sleep, no stderr read. The retry test is the branch's movement: the
+tip the attempt's own fetch reports, compared against the tip the refused
+push was rebased onto. Unmoved, it fails at once naming the branch;
+conflicting, it aborts back to the recording commit and fails; exhausted,
+it exits non-zero naming the branch and the attempts spent. Both `Commit`
+steps call it in place of their rebase-and-push pair, and
+`writrun-approve.yml`'s inline abort block went with them.
+`statuses.md#criteria` gained the one criterion, and nothing else under
+`docs/` changed.
+
+Divergences:
+
+- **A git failure is three things, not two.** Scope reasons about a
+  push the remote refused and a rebase that conflicted, and the loop as
+  first written read every failure as one of those two. A failure that
+  never reached the remote is neither, and reading it as either is what
+  loses the recording: a pull that could not read the branch was
+  reported as a conflict — the verdict that spends no attempts — and a
+  push that never completed left the tip where it was, which the
+  movement test reads as a ruleset. The script separates the three. A
+  rebase in progress after a failed pull is the conflict, its absence an
+  unread branch. A push exits 1 when the remote answered about the refs
+  and dies with something else when it did not, and a push that never
+  arrived does not arm the movement test at all. The acceptance criteria
+  stand as written — "refused" is the remote answering — and still no
+  stderr is read: the exit status is a status, not wording.
+- **The abort is checked rather than assumed.** An abort that failed
+  over a tree still carrying markers must not be reported as a restored
+  tree, because the mirror steps that follow a failed recording parse
+  those files from disk. The abort's own status and `git status
+  --porcelain` after it both have to agree before the run says the
+  recording commit is back.
+- **A missing `<branch>` exits 3**, not the 1 `${1:?}` gives. It is a
+  caller error like the two beside it, and 1 is the code that means the
+  recording could not be landed.
+- **The racer hoist brought company.** The spec asked for the racer
+  clone to move into `tests/intake_lib.sh`; it went as `setup_racer` and
+  `racer_lands`, and three more helpers went with it —
+  `arm_racer_hook` (the `pre-push` window the spec names, parameterised
+  by how many pushes it fires before), `recording_commit` (the caller's
+  half, composed the same way in six cases), and `spy_git` / `spied` /
+  `git_told_times`. The last is what the spec's own cases require and
+  the lib had no way to answer: "one push, one fetch", "exactly five
+  pushes" are counts of what a run costs the remote. The spy is a `PATH`
+  shim logging each `git` line client-side, because a refused push and a
+  landed one cost the same call and no server hook sees a fetch at all.
+  `a_landed_sibling_forces_a_remint_test.sh` now calls the hoisted pair
+  and passes unchanged in what it asserts.
+- **The fetch a case counts is the pull.** The no-hook case asserts one
+  `pull` and zero `fetch`, rather than one `fetch`: the attempt's fetch
+  *is* `git pull --rebase`, and the zero is the assertion that the
+  caller-side guard adds no fetch of its own.
+- **The exhausted-budget case reads one run twice.** Its two message
+  assertions are about a single spent budget; invoking the script a
+  second time would spend a second one and make the five-push count
+  prove nothing, so the run's output is captured once and replayed.
+- **One existing case had to follow the wiring.** Tests required says
+  the merge-recording cases pass unchanged, and in what they assert they
+  do. But `merged_close/one_workflow_answers_it_test.sh` locates the
+  push by grepping `writrun-approve.yml` for the literal
+  `git push origin "HEAD:${BASE_REF}"`, to prove the queue is pushed
+  before the mirror is minted and labelled. Step 6 removes that literal,
+  so the case now finds the landing call by its path — the claim about
+  the order is untouched, and only the line that spells the push moved.
+  It is the one case in the suite that reads the wiring rather than
+  running it, which is why it is also the one the change reached.
+- **The fixture can make a git call fail.** Tests required names the
+  hook that moves the branch; it has no way to produce a remote that was
+  never reached, and the three-state taxonomy above is not testable
+  without one. `remote_unreachable_for` and `git_noops_for` are
+  injections in the spy shim — one shim rather than two, because two
+  `PATH` shims would have to agree on which delegates to the other — and
+  they carry git's own exit status for the class, since the status is
+  what the script reads.
+- **The hook the window rests on is pinned to `.git/hooks`.** A global
+  `core.hooksPath` — husky, pre-commit, a corporate gitconfig on a dev
+  machine or a runner image — is inherited by the clone and disables the
+  `pre-push` hook silently. The race then never happens, and two cases
+  go red naming `push_recording.sh` for a fault in the fixture.
+
+- **The mirror claim is true of `reflect` and false of approve.** Edge
+  cases says of a failed recording that the mirror stays faithful to the
+  queue, which is the mirror's entire contract. That holds for
+  `writrun-progress.yml`'s `reflect`: a separate job, a fresh checkout
+  of `main`, reading what landed. It does not hold for
+  `writrun-approve.yml`, whose two mirror steps run inside the recording
+  job — gated `!cancelled()` so a merged close still answers something —
+  and whose labeller reads `queue_file work/tasks`, the working tree,
+  which after an exhausted or unmoved exit still carries the commit
+  `main` refused. The mirror is labelled ahead of the queue rather than
+  behind it. The gate is not this change's to move: the step's own
+  comment forbids it, citing decision 0060, and two assertions in
+  `merged_close/one_workflow_answers_it_test.sh` hold it. What the
+  labeller reads is the fault, and reading the landed branch instead is
+  behaviour this spec never scoped.
+
+The last line of the Definition of Done is unticked by construction: it
+is the burst on this repository with real runs, which no suite can
+schedule — the limit the Tests required section already states.

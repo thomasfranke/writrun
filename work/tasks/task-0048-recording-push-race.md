@@ -11,9 +11,11 @@ depends_on: []
 milestone: null
 created: 2026-09-04T18:30:49Z
 queued: 2026-09-04T19:23:29Z
-completed: null
+completed: 2026-09-05T10:37:04Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-fable-5, login: thomasfranke}
+  - {by: agent, model: claude-opus-5, login: thomasfranke}
 ---
 
 # Hold the recording push against a concurrent one

@@ -32,7 +32,15 @@ stands_down writrun-progress.yml reflect
 # And the owner runs both halves, in the only order that can be right:
 # the queue is written and pushed, then the mirror is made to exist, then
 # it is labelled from the queue that now holds what the merge decided.
-push=$(grep -n 'git push origin "HEAD:${BASE_REF}"' "$APPROVE" | cut -d: -f1)
+#
+# The push is read as the call that lands the recording, not as a raw
+# `git push`: the landing is push_recording.sh's since it gained the
+# retry, and the order this case is about is unchanged by which of the
+# two spells it.
+# The call is matched by its path, which the step's comment above it
+# does not carry — a bare script name would match both and hand the
+# comparison two line numbers.
+push=$(grep -n 'scripts/stage-2-pull-requests/push_recording.sh' "$APPROVE" | cut -d: -f1)
 mint=$(grep -n 'mirror_issues.sh' "$APPROVE" | cut -d: -f1)
 label=$(grep -n 'rederive_labels.sh' "$APPROVE" | cut -d: -f1)
 

@@ -5,9 +5,12 @@
 # script cannot fix (docs/technical/README.md#distribution).
 #
 # Usage: readiness_heal.sh <remote-branch>
-#   Run from the repository root after `make template-sync`. Pushes with
-#   the rebase-not-force pattern the queue recording uses. This file is
-#   this repository's own CI, never shipped in the kit.
+#   Run from the repository root after `make template-sync`. Pushes
+#   rebase-not-force, and once: the queue recording retries that push
+#   through push_recording.sh, and this heal deliberately does not — a
+#   lost heal repairs itself on the next push to the branch, where a
+#   lost recording has no next run. This file is this repository's own
+#   CI, never shipped in the kit.
 #
 # Exit codes: 0 healed or nothing to heal; non-zero when git could not
 # commit or push — a heal that failed must be seen, not shrugged at.
