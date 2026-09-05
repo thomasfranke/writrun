@@ -15,6 +15,8 @@
 #   PR_AUTHOR     the pull request author's login (forge-authenticated)
 #   PR_DRAFT      true|false
 #   PR_MERGED     true|false (closed only)
+#   PR_STATE      open|closed — the pull request's own state, which an
+#                 `edited` event carries for a closed pull request too
 #   PR_NUMBER     this pull request's own number, so the survivor query
 #                 can drop its own row from a listing that lags
 #   GH_REPO       owner/repo, for the survivor query
@@ -213,6 +215,24 @@ case "$EVENT" in
       echo "the title did not change — nothing to re-record"
       exit 0
     fi
+    # **A closed pull request claims nothing.** The forge fires `edited`
+    # on closed and merged pull requests as readily as on open ones, and
+    # nothing above this line reads the state: without the guard, adding
+    # a tag to the title of a pull request that closed last week took the
+    # task it named — `in-progress` with `taken_by`, on work no pull
+    # request is doing. That is the stranding this arm exists to end,
+    # written by the arm itself.
+    #
+    # The close wins the ordered case here, which is what spec-0077's
+    # edge case asks for. It cannot win a truly simultaneous one: an
+    # `edited` payload minted while the pull request was still open says
+    # `open` however late its run lands, and no state a script reads
+    # afterwards is the event's own. That residue stays as the spec
+    # records it, bounded by the close being the last event either way.
+    if [ "${PR_MERGED:-false}" = "true" ] || [ "${PR_STATE:-open}" = "closed" ]; then
+      echo "the pull request is closed — a retitle after the release claims nothing"
+      exit 0
+    fi
     # **Re-recording adds; it does not release.** Only the tasks the old
     # title did not claim are taken. A task already in flight keeps the
     # status its own events gave it — `take` against an in-review task
@@ -235,17 +255,46 @@ case "$EVENT" in
     # the edit that brings a nine-tag title back under the ceiling record
     # nothing at all — the stranding this arm exists to end, surviving
     # its own fix.
+    #
+    # **What that leaves the title unable to answer, the queue answers.**
+    # "No event under that title" is not "no event": a pull request
+    # opened as one tag, moved to `in-progress` by a changes-requested
+    # review, retitled to nine and then back to one reaches here with the
+    # nine-tag title as `WAS` and its first task reading as newly added.
+    # `take` would knock that task out of the state the review gave it —
+    # the move the rule above forbids, reached by the corollary beside
+    # it. So the cheap test's survivors are checked against the file, and
+    # a task this author already has in flight is skipped. In flight
+    # under *someone else* still goes through: that is two pull requests
+    # on one task, and `take`'s newest-wins edge is the rule for it.
     WAS=$(PR_TITLE="$PR_TITLE_FROM" ql_carried_from_env)
     case "$WAS" in over-ceiling:*) WAS="" ;; esac
     ADDED=""
+    HELD=""
     for task in $CARRIED; do
       case " $WAS " in
-        *" $task "*) ;;
-        *) ADDED="$ADDED $task" ;;
+        *" $task "*) continue ;;
       esac
+      t_file=$(ql_task_file "$task")
+      if [ -n "$t_file" ] \
+         && [ "$(ql_fm_field taken_by "$t_file")" = "${PR_AUTHOR:?}" ]; then
+        case "$(ql_fm_field status "$t_file")" in
+          in-progress|in-review)
+            echo "already in flight under ${PR_AUTHOR}: ${t_file} — a retitle does not move it"
+            HELD=1
+            continue ;;
+        esac
+      fi
+      ADDED="$ADDED $task"
     done
     if [ -z "$ADDED" ]; then
-      echo "the retitle claims no task the old title did not — nothing to record"
+      # Two reasons reach here and the line names the one that applies:
+      # a reader deciding whether a recording is missing is reading this.
+      if [ -n "${HELD:-}" ]; then
+        echo "the retitle claims no task not already in flight — nothing to record"
+      else
+        echo "the retitle claims no task the old title did not — nothing to record"
+      fi
       exit 0
     fi
     for task in $ADDED; do

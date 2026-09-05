@@ -216,6 +216,32 @@ the ceiling would record nothing at all, the stranding surviving its own
 fix. The refusal is whole, so no event under that title ever wrote a
 status; the corollary is recorded in decision 0069 and covered by a case.
 
+**That corollary is true about the refused title and not about the pull
+request**, which a review caught after the first implementation. "No
+event under *that* title" is not "no event": a pull request opened as one
+tag, moved to `in-progress` by a changes-requested review, retitled to
+nine and then back to one arrives with the refused title as its old set,
+and the task its *first* title claimed reads as newly added. `take`
+against it discarded the review's verdict — the one move this arm's own
+rule forbids, reached by the corollary beside it. The arm now checks the
+survivors of the title test against the queue and skips a task already in
+flight under this pull request's author; in flight under someone else
+still goes through, because two pull requests on one task is `take`'s
+newest-wins edge and not this arm's question. Decision 0069 is unedited:
+its sentence is careful — *in flight by way of it* — and stays true.
+
+**The retitle-during-close race is answered in its ordered half.** The
+forge fires `edited` on closed and merged pull requests as readily as on
+open ones, and the first implementation read no state: a tag added to the
+title of a pull request that closed last week took the task it named, on
+work no pull request is doing. The recorder now reads `PR_STATE`, added to
+`checks.md`'s enumeration with it, and a
+retitle after a close records nothing. What stays as the spec's edge case
+put it is the simultaneous half: an `edited` payload minted while the
+pull request was still open says `open` however late its run lands, and
+no state read afterwards is the event's own. The close is still the last
+event either way, so the residue is bounded.
+
 The ceiling refusal was left where it stands and the event name checked
 before it, which is the second of the two placements the spec allowed.
 One list names the events, so the guard and the dispatch cannot drift;

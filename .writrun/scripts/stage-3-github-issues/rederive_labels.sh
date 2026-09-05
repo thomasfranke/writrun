@@ -121,7 +121,16 @@ if [ -n "$AUTHORITY_REF" ]; then
     */*)
       _rem=${AUTHORITY_REF%%/*}
       _brn=${AUTHORITY_REF#*/}
-      if git remote 2>/dev/null | grep -qxF "$_rem"; then
+      # The listing is captured before it is searched, never piped into
+      # `grep -q`. A quiet grep exits on its first match and closes the
+      # pipe; under `pipefail` the writer can then die on SIGPIPE and the
+      # pipeline reports 141, so the `if` reads false and the fetch this
+      # block exists for is skipped — leaving exactly the stale ref it
+      # was added to refresh. The race is won on a short listing and lost
+      # on a long one, and which happens is the platform's to decide
+      # (docs/technical/decisions/).
+      _remotes=$(git remote 2>/dev/null || printf '')
+      if printf '%s\n' "$_remotes" | grep -qxF "$_rem"; then
         git fetch --quiet "$_rem" "$_brn" >/dev/null 2>&1 || true
       fi
       ;;

@@ -107,6 +107,11 @@ jobs:
           PR_AUTHOR: ${{ github.event.pull_request.user.login }}
           PR_DRAFT: ${{ github.event.pull_request.draft }}
           PR_MERGED: ${{ github.event.pull_request.merged }}
+          # `edited` fires on a closed pull request too, and the recorder
+          # must not re-take what the close released. The state is the
+          # pull request's own field, not the event's, so it is read here
+          # rather than inferred from the action.
+          PR_STATE: ${{ github.event.pull_request.state }}
           # The survivor query drops this pull request's own row from
           # the open listing — a listing that lags may still show it.
           PR_NUMBER: ${{ github.event.pull_request.number }}

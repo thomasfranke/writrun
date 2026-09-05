@@ -37,7 +37,7 @@ never papered over. A spec is marked `implemented`, and a task's
 
 **A `PR_*` name carries pull-request event data, set by the workflow
 step that calls the script.** `PR_HEAD_REF`, `PR_TITLE`, `PR_AUTHOR`,
-`PR_DRAFT`, `PR_MERGED`, `PR_NUMBER` and `PR_TITLE_FROM` reach
+`PR_DRAFT`, `PR_MERGED`, `PR_NUMBER`, `PR_TITLE_FROM` and `PR_STATE` reach
 `apply_pr_event.sh` and its siblings that way. A script an agent also runs locally reads the
 bare name:
 `check_state.sh` reads `HEAD_REF`, because outside CI there is no pull
