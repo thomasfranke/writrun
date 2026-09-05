@@ -543,6 +543,17 @@ if [ "$pr_source" != none ]; then
   while IFS="$(printf '\t')" read -r num branch author ptitle; do
     [ -n "$branch" ] || continue
     carried=$(ql_carried_of "$branch" "${ptitle:-}")
+    case "$carried" in
+      over-ceiling:*)
+        # Skipped, never emptied: an empty set is what routes a row
+        # into the amendment-candidate list below and its files probe,
+        # so "carrying nothing" would hand a hostile title a paginated
+        # files read and a suspended take. Somebody else's over-long
+        # title must not stop this take either — its own check is red.
+        echo "pull request #${num} claims ${carried#over-ceiling:} distinct tasks — over the ceiling of ${QL_CARRIED_MAX}; its row is skipped"
+        continue
+        ;;
+    esac
     if [ -z "$carried" ]; then
       idless="${idless}${num}"$'\n'
       continue

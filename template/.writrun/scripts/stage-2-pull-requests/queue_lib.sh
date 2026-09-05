@@ -84,10 +84,31 @@ ql_resting() {
   printf 'ready'
 }
 
+# QL_CARRIED_MAX — the most distinct tasks one pull request may claim.
+# It bounds the carried set below, counted after dedup, because the set
+# is what becomes status writes: both routes into it are the author's to
+# type, and without a ceiling one title moves the queue by being long.
+# A constant, not a setting: the schema requires a key's documented
+# default to be the behaviour from before the key existed, and here that
+# behaviour is unbounded — the defect itself. Eight sits above five, the
+# largest related batch one merge here ever produced, and far below the
+# queue (docs/technical/decisions/pull-requests/0068-what-a-pull-request-claims-is-bounded.md).
+QL_CARRIED_MAX=8
+
 # ql_carried_of <head-branch> <title> — the task ids whose work a pull
 # request carries: the head branch's own (task/NNNN-*) plus every
 # [TASK-NNNN] tag leading the title, deduplicated. Both arguments are a
 # fork's to write, so only digits survive.
+#
+# Above QL_CARRIED_MAX distinct tasks, the whole set is refused: the
+# sentinel `over-ceiling:<count>` is printed alone on stdout, and the
+# exit stays 0. A caller tests for it with one `case` before touching
+# the ids; ql_carried_from_env passes it through untouched. Exit 0 on
+# purpose — every call site assigns this output bare under
+# `set -euo pipefail`, and a non-zero substitution would kill such a
+# caller with no message at all. The sentinel is a token no task id can
+# be, in the stream every caller already reads, so a forgetful caller
+# meets a non-id that matches no task file, never a vanished run.
 #
 # Taking the pair as arguments is what lets a caller ask the question of
 # *another* pull request — the amendment check has to, to name the one it
@@ -111,6 +132,16 @@ ql_carried_of() {
     esac
     rest=$(printf '%s' "$rest" | sed 's/^\[[Tt][Aa][Ss][Kk]-[0-9][0-9]*\]//')
   done
+  # The count is of the deduplicated set, never of the tags: the set is
+  # what becomes writes, so a title repeating one tag fifty times still
+  # claims one task. Word splitting is the count — the ids carry no
+  # spaces and no globs.
+  # shellcheck disable=SC2086
+  set -- $carried
+  if [ "$#" -gt "$QL_CARRIED_MAX" ]; then
+    printf 'over-ceiling:%s' "$#"
+    return 0
+  fi
   printf '%s' "$carried"
 }
 

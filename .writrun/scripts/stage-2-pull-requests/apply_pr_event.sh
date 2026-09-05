@@ -31,9 +31,12 @@
 # task its head branch spelled; it can now claim every task its title
 # lists, and each claim is a status write pushed to the default branch.
 # The kind of exposure is unchanged — both routes were always the fork's
-# to choose — but the amount is not, and no ceiling is imposed here.
-# Recorded as report-0028 rather than capped on a number picked in
-# passing.
+# to choose — and the amount is bounded: above QL_CARRIED_MAX distinct
+# tasks the helper answers with its over-ceiling sentinel, and this
+# script writes nothing and exits non-zero, naming the count, the
+# ceiling, and the heal — closing and reopening the pull request
+# re-fires the event once the title claims what the work carries
+# (report-0028; spec-0069).
 #
 # On close-without-merge, the forge is asked whether another open pull
 # request still works the task: with a survivor, the newest one's author
@@ -46,8 +49,9 @@
 #
 # Exits 0 in every no-op case (nothing carried, no legal edge, merged
 # close); 1 when a carried task's write failed, after the rest have been
-# attempted; 3 only for usage errors. Mutates the working tree; the
-# caller commits, so one event's writes land as one commit — and a
+# attempted, and when the claim is over the ceiling — refused whole,
+# nothing written; 3 only for usage errors. Mutates the working tree;
+# the caller commits, so one event's writes land as one commit — and a
 # non-zero exit is what stops a half-applied one from being pushed under
 # a green run.
 #
@@ -69,6 +73,18 @@ if [ -z "$CARRIED" ]; then
   echo "head '${PR_HEAD_REF:-}' and title '${PR_TITLE:-}' carry no task — nothing to record"
   exit 0
 fi
+case "$CARRIED" in
+  over-ceiling:*)
+    # The whole set is refused, never the first eight of it: a partial
+    # write riding a green run is the failure this script's own exit
+    # contract exists to prevent. The run goes red on the author's own
+    # pull request, and the heal is theirs.
+    echo "the head branch and title claim ${CARRIED#over-ceiling:} distinct tasks — the ceiling is ${QL_CARRIED_MAX}." >&2
+    echo "Nothing was recorded. Retitle the pull request to what the work carries," >&2
+    echo "then close and reopen it: the reopened event re-fires the recording." >&2
+    exit 1
+    ;;
+esac
 
 draftness() {   # $1: true|false -> draft|ready
   [ "$1" = "true" ] && printf 'draft' || printf 'ready'

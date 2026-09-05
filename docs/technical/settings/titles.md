@@ -35,3 +35,10 @@ the machinery and `list_tasks.sh` learn which tasks a pull request
 carries, and a branch name holds one id: a title without it reduces a
 multi-task pull request to reporting one task, silently.
 
+What the pair may claim is bounded: at most eight distinct tasks per
+pull request, counted after dedup, and above that the machinery refuses
+the whole set. The ceiling is a constant beside the parser, not a
+setting — the only honest default for a key would be the unbounded
+behaviour from before it existed, which is the defect the bound removes
+([0068](../decisions/pull-requests/0068-what-a-pull-request-claims-is-bounded.md)).
+

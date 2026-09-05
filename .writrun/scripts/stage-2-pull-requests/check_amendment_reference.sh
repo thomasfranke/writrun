@@ -211,6 +211,16 @@ task_pr() {
     [ -n "$num" ] || continue
     [ "$num" = "$PR" ] && continue
     carried=$(ql_carried_of "$branch" "${ptitle:-}")
+    case "$carried" in
+      over-ceiling:*)
+        # Another pull request's over-ceiling claim is its author's
+        # fault, and failing this act over it would let one hostile
+        # title stop the work. Skipped, with the notice on stderr —
+        # this function's stdout is the answer being substituted.
+        echo "pull request #${num} claims ${carried#over-ceiling:} distinct tasks — over the ceiling of ${QL_CARRIED_MAX}; its row is skipped" >&2
+        continue
+        ;;
+    esac
     for c in $carried; do
       if [ "$(ql_task_num "$c")" = "$(ql_task_num "$want")" ]; then
         printf '%s' "$num"; return 0
