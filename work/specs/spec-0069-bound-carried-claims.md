@@ -1,7 +1,7 @@
 ---
 id: spec-0069
 task_ref: task-0050
-status: approved
+status: implemented
 created: 2026-09-04T19:27:28Z
 ---
 
@@ -344,4 +344,41 @@ question is routed through a report of its own.
 
 ## Outcome
 
-_(fill after execution)_
+Implemented as specified. `QL_CARRIED_MAX=8` sits beside `ql_carried_of`
+in `queue_lib.sh`, which counts the deduplicated set and answers a larger
+one with `over-ceiling:<count>` alone on stdout, exit 0; the header
+documents the sentinel and says `ql_carried_from_env` passes it through.
+Each of the five callers takes the posture the spec assigned it —
+`apply_pr_event.sh` and `project_pr_tasks.sh` write nothing and exit 1
+naming the count, the ceiling and the reopen; `record_task_status.sh`
+drops the carried ids, records the range-derived scope, prints the
+refusal and exits 0; `check_amendment_reference.sh` and `take_task.sh`
+skip the row with a notice naming the pull request. `make template-sync`
+run, `template/` byte-identical.
+
+The Definition of Done's replay was performed rather than reasoned
+about: report-0028's sequence at 23 tags — a 256-character title, the
+largest the forge accepts — leaves the working tree clean, every one of
+the 23 tasks `ready` with `taken_by: null`, and `apply_pr_event.sh`
+exits 1 saying why; the merge half refuses the same claim and exits 0
+with nothing recorded, its range being empty.
+
+Three things the spec left to execution, decided here:
+
+- **The decision is `0068`.** Both pull requests open beside this one
+  add no decision file, so the number was free.
+- **`check_amendment_reference.sh`'s notice goes to stderr**, alone
+  among the five. Its skip sits inside `task_pr`, whose stdout *is* the
+  answer being substituted — a notice printed there would be read back
+  as a pull request number. `take_task.sh`'s notice is on stdout, where
+  the rest of that script's narration is.
+- **`record_task_status.sh`'s refusal is on stdout**, not stderr: its
+  output contract is stdout, and the run is green, so a message on
+  stderr would be the only trace of a refusal in an otherwise silent
+  success.
+
+No divergence from the Steps, the acceptance criteria, or the Tests
+required. The exposure named in the spec's last paragraph stands as
+written: this closes report-0028 while the origin question — whether a
+fork's pull request may reach the recording at all — remains untracked,
+awaiting a report of its own.
