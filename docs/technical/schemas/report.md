@@ -23,8 +23,11 @@ machinery accepts cannot part company.
 
 A report file is named `report-NNNN-<subject>.md`, the same shape as a
 task's and a spec's. Its id is minted by the same generator over the
-same three views — the directory, the git history, and every open pull
-request — and is never reused.
+same four views — the directory, the git history, every open pull
+request, and every mirror the forge holds — and is never reused. The
+fourth is the one that answers for a number whose file left with the
+branch that made it
+([0070](../decisions/tasks-and-specs/0070-the-mirror-is-the-fourth-view.md)).
 
 `status` is the **route triage took**, not a lifecycle. `open` is the
 only non-terminal value; the five others are the ways a report ends, and

@@ -11,9 +11,10 @@ depends_on: []
 milestone: null
 created: 2026-09-05T13:48:35Z
 queued: 2026-09-05T18:04:02Z
-completed: null
+completed: 2026-09-05T19:40:00Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-opus-5, login: thomasfranke, input: 114, output: 24742, cache_read: 2987535, cache_write: 194670}
 ---
 
 # Close the four ways a claim on an id goes unseen

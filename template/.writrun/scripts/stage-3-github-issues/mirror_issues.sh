@@ -87,12 +87,20 @@ if [ "$PR_STATE" = "open" ] && [ "$PR_DRAFT" = "true" ]; then
   exit 0
 fi
 
-# The diff, as the API tells it: one row per file — status, path, patch.
-# The jq only reshapes; every filter lives below, where the tests run.
-# The patch travels base64-encoded so an attacker-controlled patch line
-# can never masquerade as a row of this stream.
+# The diff, as the API tells it: one row per file — status, path, the
+# path it had before, patch. The jq only reshapes; every filter lives
+# below, where the tests run. The patch travels base64-encoded so an
+# attacker-controlled patch line can never masquerade as a row of this
+# stream, and it stays last because it is the widest field.
+#
+# `previous_filename` is the forge's word for a rename, and a rename is a
+# claim on the id it lands on — the third thing a queue file can do to an
+# id, after adding and modifying. It travels as "-" where the forge sends
+# nothing, never as the empty string: a tab is IFS whitespace, so an empty
+# middle field would collapse on read and put the patch where the path
+# goes.
 FILES=$(gh api "repos/${REPO}/pulls/${PR}/files" --paginate \
-  --jq '.[] | [.status, .filename, ((.patch // "") | @base64)] | @tsv')
+  --jq '.[] | [.status, .filename, (.previous_filename // "-"), ((.patch // "") | @base64)] | @tsv')
 
 # Front-matter and title, read out of the patch. Every line of an added
 # file's patch is a '+' line, so stripping that column reconstructs the
@@ -206,6 +214,42 @@ base_status_of() {
   ' "$1"
 }
 
+# file_fm <file> / file_heading <file> — the front matter and the first
+# heading of a file the base-branch checkout holds, read whole rather
+# than out of a patch. They exist for one status: **a rename carries no
+# patch.** Renumbering a queue file changes only its path, so the forge
+# sends an empty patch, and a reader that keeps the patch-only rule to
+# the letter learns nothing about a file it can plainly see.
+#
+# The rule is not relaxed — it is told what a rename *is*: the same file,
+# at a new id. The file is read at the path it had **before** the rename,
+# because that is the path the base branch holds and this workflow checks
+# out the base and never the pull request's code (writrun-issues.yml).
+# Where the rename also carries a patch, the patch's fields are put
+# first and win, since fm_field reads the first line that names a field.
+#
+# The patch-only rule keeps its whole meaning for `modified`, which is
+# where it was written for: a status the patch does not carry means
+# "this diff says nothing about where the report is".
+file_fm() {
+  [ -f "$1" ] || return 0
+  awk 'NR == 1 { if ($0 != "---") exit; next } /^---$/ { exit } { print }' "$1"
+}
+file_heading() {
+  [ -f "$1" ] || return 0
+  awk '/^# / { sub(/^# /, ""); sub(/[[:space:]]*$/, ""); print; exit }' "$1"
+}
+
+# renamed_from <status> <previous-filename> — the base-branch path a
+# renamed row came from, and nothing for every other row. "-" is the
+# absence the tuple carries; a caller reading it as a path would look up
+# a file named "-".
+renamed_from() {
+  [ "$1" = renamed ] || return 0
+  [ -n "$2" ] && [ "$2" != "-" ] || return 0
+  printf '%s' "$2"
+}
+
 # A mirror's title names its task, and that is how a mirror is found —
 # there is no stored number anywhere. The rule now spells the name as the
 # tag a pull request title carries, `[TASK-NNNN] <task title>`
@@ -269,17 +313,35 @@ tag_of_id() {
 # The task files the diff adds, one tab-separated record each: id,
 # filename, priority, milestone, origin, title.
 TASKS=""
-while IFS="$TAB" read -r fstatus fname fpatch; do
-  [ "$fstatus" = "added" ] || continue
+while IFS="$TAB" read -r fstatus fname fprev fpatch; do
+  case "$fstatus" in added|renamed) ;; *) continue ;; esac
   printf '%s' "$fname" | tr '[:upper:]' '[:lower:]' \
     | grep -qE '^work/tasks/task-[0-9]+(-[a-z0-9-]+)?\.md$' || continue
   patch=$(printf '%s' "$fpatch" | b64_decode)
-  # A task file only ever arrives added, so its patch is the whole file
-  # and the block opens on line 1 of it — no base file to bound with.
-  tfm=$(printf '%s\n' "$patch" | patch_fm "")
+  prev=$(renamed_from "$fstatus" "$fprev")
+  # **A task file arrives added, or renamed onto its id.** An added one
+  # brings its whole file as the patch, so the block opens on line 1 of
+  # it and there is no base file to bound with. A renamed one brings no
+  # patch at all — it is the same file at a new id — so it is read from
+  # the base checkout at the path it left, with whatever the patch does
+  # carry put first and winning.
+  tfm=$(printf '%s\n' "$patch" | patch_fm "$prev")
   body=$(printf '%s\n' "$patch" | sed -n 's/^+//p')
-  tid=$(fm_field "$tfm" id)
+  if [ -n "$prev" ]; then
+    tfm=$(printf '%s\n%s\n' "$tfm" "$(file_fm "$prev")")
+  fi
+  # The id of a renamed task is the one its **filename** lands on. Front
+  # matter that travelled unchanged still names the id the file left, and
+  # the id a change claims is the one in the path — which is what the
+  # uniqueness check reads and what the mirror is found by.
+  if [ -n "$prev" ]; then
+    tid=$(printf '%s' "$fname" | tr '[:upper:]' '[:lower:]' \
+      | sed -n 's|^work/tasks/\(task-[0-9][0-9]*\).*|\1|p')
+  else
+    tid=$(fm_field "$tfm" id)
+  fi
   ttitle=$(first_heading "$body")
+  [ -n "$ttitle" ] || ttitle=$(file_heading "$prev")
   if [ -z "$tid" ] || [ -z "$ttitle" ]; then
     echo "WARNING: Could not parse ${fname}; skipping."
     continue
@@ -317,8 +379,8 @@ EOF
 # an empty status is "this diff says nothing about where the report is" —
 # left alone rather than guessed at.
 REPORTS=""
-while IFS="$TAB" read -r fstatus fname fpatch; do
-  case "$fstatus" in added|modified) ;; *) continue ;; esac
+while IFS="$TAB" read -r fstatus fname fprev fpatch; do
+  case "$fstatus" in added|modified|renamed) ;; *) continue ;; esac
   lname=$(printf '%s' "$fname" | tr '[:upper:]' '[:lower:]')
   printf '%s' "$lname" \
     | grep -qE '^work/reports/report-[0-9]+(-[a-z0-9-]+)?\.md$' || continue
@@ -326,7 +388,16 @@ while IFS="$TAB" read -r fstatus fname fpatch; do
     | sed -n 's|^work/reports/\(report-[0-9][0-9]*\).*|\1|p')
   [ -n "$rid" ] || continue
   rpatch=$(printf '%s' "$fpatch" | b64_decode)
-  rfm=$(printf '%s\n' "$rpatch" | patch_fm "$(base_file_of "$rid")")
+  rprev=$(renamed_from "$fstatus" "$fprev")
+  # A renamed report is bounded by the file it left, not by a file at the
+  # id it lands on — the base branch has never heard of that id — and
+  # what the patch does not carry is read from that file whole.
+  if [ -n "$rprev" ]; then
+    rfm=$(printf '%s\n%s\n' "$(printf '%s\n' "$rpatch" | patch_fm "$rprev")" \
+      "$(file_fm "$rprev")")
+  else
+    rfm=$(printf '%s\n' "$rpatch" | patch_fm "$(base_file_of "$rid")")
+  fi
   rbody=$(printf '%s\n' "$rpatch" | sed -n 's/^+//p')
   # Tab is IFS whitespace, so an empty middle field collapses on read and
   # every field after it shifts one left — the title landing in the status
@@ -335,7 +406,9 @@ while IFS="$TAB" read -r fstatus fname fpatch; do
   # task's origin: every body-only edit produces one.
   rstatus=$(fm_field "$rfm" status)
   [ -n "$rstatus" ] || rstatus="-"
-  REPORTS="${REPORTS}${rid}${TAB}${fname}${TAB}${rstatus}${TAB}$(first_heading "$rbody")"$'\n'
+  rtitle=$(first_heading "$rbody")
+  [ -n "$rtitle" ] || rtitle=$(file_heading "$rprev")
+  REPORTS="${REPORTS}${rid}${TAB}${fname}${TAB}${rstatus}${TAB}${rtitle}"$'\n'
 done <<EOF
 $FILES
 EOF
@@ -385,6 +458,11 @@ EOF
   return 0
 }
 
+# The title travels out as a fifth field, base64-encoded like the body
+# beside it. It is already fetched, matched on and dropped here; carrying
+# it costs no forge call, and it is the one thing that can tell a report
+# coming back from an *id* coming back (spec-0080). Appended, never
+# inserted: the caller's four reads are unchanged.
 report_row_of() {   # report_row_of <report-id> — same row shape, report list
   local num state labels tb bb t tn want
   want=$(num_of_id "$1")
@@ -395,7 +473,8 @@ report_row_of() {   # report_row_of <report-id> — same row shape, report list
     tn=$(num_of_id "$(id_of_title "$t" report)")
     [ -n "$tn" ] || continue
     if [ "$tn" -eq "$want" ] 2>/dev/null; then
-      printf '%s\t%s\t%s\t%s\n' "$num" "$state" "$labels" "$bb"; return 0
+      printf '%s\t%s\t%s\t%s\t%s\n' "$num" "$state" "$labels" "$bb" "$tb"
+      return 0
     fi
   done <<EOF
 $REPORT_ISSUES
@@ -868,10 +947,16 @@ while IFS="$TAB" read -r rid fname rstatus rtitle; do
   istate=$(printf '%s' "$row" | cut -f2)
   ilabels=$(printf '%s' "$row" | cut -f3)
   ibody=$(printf '%s' "$row" | cut -f4)
+  ititle=$(printf '%s' "$row" | cut -f5 | b64_decode)
 
   # Whose mirror this is — the same three answers a task's gets, and for
   # the same reason: two live pull requests must never fight over one
   # mirror, and refusing an unowned one leaves a report with none.
+  #
+  # The state the mirror was adopted *in* travels with the message. A
+  # closed mirror adopted is half the evidence that an id has come back,
+  # and the line that omitted it said nothing a reader could act on.
+  adopted=""
   if ! is_mine "$ibody"; then
     owner=$(owner_of "$ibody")
     if [ -n "$owner" ] && pr_is_open "$owner"; then
@@ -879,10 +964,11 @@ while IFS="$TAB" read -r rid fname rstatus rtitle; do
       continue
     fi
     adopt_mirror "$num" "$ibody"
+    adopted=yes
     if [ -n "$owner" ]; then
-      echo "${rid}: adopted stale mirror #${num} — #${owner} is no longer open."
+      echo "${rid}: adopted stale mirror #${num}, ${istate} — #${owner} is no longer open."
     else
-      echo "${rid}: adopted unowned mirror #${num} — no pull request introduced it."
+      echo "${rid}: adopted unowned mirror #${num}, ${istate} — no pull request introduced it."
     fi
   fi
 
@@ -930,6 +1016,41 @@ while IFS="$TAB" read -r rid fname rstatus rtitle; do
 
   ensure_report_status_label "$want_label"
   if [ "$istate" = "closed" ]; then
+    # **A reopen is ordinary; a reopen onto a different title is an id
+    # coming back.** Two reopens are legitimate — a pull request that
+    # closed unmerged and was reopened, and a report moved to a terminal
+    # status and back inside one pull request's life — and on both the
+    # mirror is a projection of the same file, so its title still names
+    # the same finding. When the *id* has come back the title describes
+    # something else, and that mismatch is exactly what makes the Issue
+    # in front of a maintainer wrong.
+    #
+    # So the title is the discriminator, and it is also the thing worth
+    # printing. Only a mirror this pass adopted is compared: one this
+    # pull request already owns is one it created, and its title moving
+    # is the pull request editing its own report. A diff carrying no
+    # title compares nothing — an absent title is not a differing one.
+    #
+    # The pass names it and projects it anyway. This script is the
+    # best-effort write half (decisions/pull-requests/0010), and a
+    # collision named and projected beats one neither named nor
+    # projected — a report with no mirror at all is the one state this
+    # reconciliation may not leave behind.
+    if [ -n "$adopted" ] && [ -n "$rtitle" ]; then
+      mtitle=$(printf '%s' "$ititle" | sed 's/^\[[Rr][Ee][Pp][Oo][Rr][Tt]-[0-9][0-9]*\] *//')
+      mtitle=$(printf '%s' "$mtitle" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
+      dtitle=$(printf '%s' "$rtitle" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')
+      if [ "$mtitle" != "$dtitle" ]; then
+        echo "WARNING: ${rid} reopens closed mirror #${num}, which names a different finding."
+        if [ -n "$owner" ]; then
+          echo "  #${num} was introduced by #${owner} and titled: ${mtitle}"
+        else
+          echo "  #${num} was introduced by no pull request and titled: ${mtitle}"
+        fi
+        echo "  this diff carries: ${dtitle}"
+        echo "  An id is never reused — if these are two findings, one of them holds the wrong number."
+      fi
+    fi
     gh api -X PATCH "repos/${REPO}/issues/${num}" -f state=open >/dev/null
   fi
   put_report_labels "$num" "$ilabels" "$want_label"

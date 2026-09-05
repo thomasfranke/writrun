@@ -1,7 +1,7 @@
 ---
 id: spec-0081
 task_ref: task-0057
-status: approved
+status: implemented
 created: 2026-09-05T13:48:48Z
 ---
 
@@ -303,4 +303,39 @@ nothing to hide rather than a question unasked.
 
 ## Outcome
 
-_(fill after execution)_
+Implemented as specified.
+
+`ql_forge_scan` grew a second half after the pull-request loop: one
+paginated `issues?labels=writrun:task&state=all` listing and one for
+`writrun:report`, `--jq`'d to the title alone and reduced to ids by
+`ql_mirror_ids`, a new helper carrying the same leading-tag grammar
+`mirror_issues.sh`'s `id_of_title` reads. The grammar lives twice
+because the two scripts share no library — `mirror_issues.sh` sources
+nothing from `stage-2-pull-requests/` — and the header says so rather
+than leaving the duplication to be found.
+
+`QL_FORGE_VIEW` is three-valued and set in order: `local` until the file
+lists answer, `open-pull-requests` the moment they do, `forge` once both
+listings have. A mirror listing that fails returns early from the middle
+state, which is what makes the failure narrow the view instead of
+discarding the answer already in hand. `ql_mint_note` prints all three;
+both pinned substrings are unmoved and the two cases that assert on them
+pass untouched.
+
+**The unknown-label question the spec asked to be settled: the forge
+answers with an empty list, not a refusal.** Checked against
+`repos/thomasfranke/writrun/issues?labels=writrun:no-such-label-xyz` —
+exit 0, no rows. So a repository with no `writrun:report` label reports a
+complete view, and only a call that errors reaches the middle one. The
+distinction is pinned by the middle-view case, which produces the error
+through a new `forge_mirrors_unreadable` seam in the fixture; nothing
+else can produce it, since `forge_unavailable` takes both halves down
+together.
+
+The harness helper is `forge_mirror <kind> <title>`, not `forge_issue`.
+The spec asked for a `forge_issue`-shaped helper and named the hazard
+that `tests/mirror_lib.sh` already has one meaning a five-column
+projection row; giving this one the same name would have been a case
+that reads right and stubs the wrong thing. Both fixtures that mint —
+`pipeline_lib.sh` and `intake_lib.sh` — carry `forge_mirror` with the
+same signature and the same meaning.

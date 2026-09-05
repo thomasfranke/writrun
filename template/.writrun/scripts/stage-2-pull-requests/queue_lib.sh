@@ -216,12 +216,15 @@ ql_row_fields() {
 # clone had already dropped the outside-a-repository guard and the
 # generator's collision check.
 #
-# QL_FORGE_VIEW is `forge` once open pull requests have answered,
-# `local` otherwise; QL_FORGE_PATHS holds every path they touch. Never
-# call ql_forge_scan from inside a command substitution — the subshell
-# would swallow both.
+# QL_FORGE_VIEW names how much of the forge answered: `forge` when both
+# halves did, `open-pull-requests` when the file lists answered and the
+# mirrors did not, `local` when neither did. QL_FORGE_PATHS holds every
+# path those pull requests touch, QL_FORGE_MIRROR_IDS every id a mirror
+# carries. Never call ql_forge_scan from inside a command substitution —
+# the subshell would swallow all three.
 QL_FORGE_VIEW=local
 QL_FORGE_PATHS=""
+QL_FORGE_MIRROR_IDS=""
 
 # ql_forge_scan [owner/repo] — asks the forge for the paths open pull
 # requests touch. With an argument, every call is pinned to that
@@ -239,9 +242,26 @@ QL_FORGE_PATHS=""
 # local rather than quietly narrow, since a scan that under-reports
 # without saying so is the exact failure the uniqueness rule exists to
 # prevent.
+#
+# **The mirrors are the second half, and the only record of an id that
+# outlives the branch that spent it.** A queue file minted on a branch
+# and dropped before that branch merged is in no tree, no history and no
+# open pull request — but its Issue is on the forge, titled with the id,
+# and a number that has been published is spent whatever became of the
+# file (decisions/tasks-and-specs/0070). So both labels are listed, in
+# every state, and the ids their titles spell are carried out.
+#
+# All or nothing holds per half, because the halves answer different
+# questions. The file lists failing leaves the view local, as it always
+# did; the mirror listing failing narrows it to `open-pull-requests`
+# rather than discarding an answer the run already had. A listing that
+# succeeds and returns nothing is a complete answer, not a failure — an
+# adopter below Stage 3 has no mirrors, and the forge answers a label it
+# does not know with an empty list rather than a refusal.
 ql_forge_scan() {
   QL_FORGE_VIEW=local
   QL_FORGE_PATHS=""
+  QL_FORGE_MIRROR_IDS=""
   command -v gh >/dev/null 2>&1 || return 0
   local repo="${1:-}" numbers paths files n count
   if [ -n "$repo" ]; then
@@ -269,20 +289,72 @@ ql_forge_scan() {
     paths="${paths}${files}
 "
   done
-  QL_FORGE_VIEW=forge
   QL_FORGE_PATHS="$paths"
+  QL_FORGE_VIEW=open-pull-requests
+
+  # Both labels, whatever kind is being minted, and both fetched even for
+  # a spec mint that can use neither. ql_next_id runs inside a command
+  # substitution, so it cannot make a forge call of its own without
+  # risking a stray line landing in the id — every call in this stack
+  # belongs to this one pre-pass. A kind argument here would save one
+  # listing and add a second thing every caller must get right silently,
+  # where a wrong value produces exactly the reuse this input closes.
+  #
+  # --paginate for the reason the file list above gives in its own
+  # words: the listing is ordered by issue number and the id lives in
+  # the title, so the highest id is not the newest Issue, and a first
+  # page read alone would be a guess.
+  local kind titles mirrors=""
+  for kind in task report; do
+    if [ -n "$repo" ]; then
+      titles=$(gh api "repos/${repo}/issues?labels=writrun:${kind}&state=all&per_page=100" \
+        --paginate --jq '.[].title' 2>/dev/null) || return 0
+    else
+      titles=$(gh api "repos/{owner}/{repo}/issues?labels=writrun:${kind}&state=all&per_page=100" \
+        --paginate --jq '.[].title' 2>/dev/null) || return 0
+    fi
+    mirrors="${mirrors}$(ql_mirror_ids "$kind" "$titles")
+"
+  done
+  QL_FORGE_MIRROR_IDS="$mirrors"
+  QL_FORGE_VIEW=forge
   return 0
 }
 
+# ql_mirror_ids <kind> <titles> — the ids a mirror listing's titles name,
+# one `task-0011` or `report-0003` per line. The grammar is the one
+# mirror_issues.sh's id_of_title reads, because it is the one that script
+# writes; it lives twice because that script shares no library with this
+# one, and a title is the whole contract between them.
+#
+# A title with no tag contributes nothing and is not an error: an
+# Issue a maintainer labelled by hand, waiting for the intake to retitle
+# it, names no id yet.
+ql_mirror_ids() {
+  printf '%s\n' "$2" | tr '[:upper:]' '[:lower:]' | sed -n \
+    -e "s/^\[\($1-[0-9][0-9]*\)\].*/\1/p" \
+    -e "s/^\($1-[0-9][0-9]*\)[[:space:]].*/\1/p"
+}
+
 # ql_mint_note — what the id was minted against, printed after the file
-# so an id claimed elsewhere is never reported as simply "created".
+# so an id claimed elsewhere is never reported as simply "created". Three
+# shapes for the three views, because a run that had part of the forge
+# should claim that part and no more.
 ql_mint_note() {
-  if [ "$QL_FORGE_VIEW" = forge ]; then
-    echo "Minted above the queue, its history, and every open pull request."
-  else
-    echo "Minted from this checkout and its history only — no forge answered," >&2
-    echo "so an id an open pull request already claims would not have been seen." >&2
-  fi
+  case "$QL_FORGE_VIEW" in
+    forge)
+      echo "Minted above the queue, its history, every open pull request, and every mirror."
+      ;;
+    open-pull-requests)
+      echo "Minted above the queue, its history, and every open pull request —" >&2
+      echo "the mirrors went unanswered, so an id only a closed mirror still holds" >&2
+      echo "would not have been seen." >&2
+      ;;
+    *)
+      echo "Minted from this checkout and its history only — no forge answered," >&2
+      echo "so an id an open pull request already claims would not have been seen." >&2
+      ;;
+  esac
 }
 
 # ql_next_id <dir> <prefix> — e.g. ql_next_id work/tasks task
@@ -326,6 +398,25 @@ ql_next_id() {
       case "$f" in "$dir"/*) bump "$f" ;; esac
     done <<EOT
 $QL_FORGE_PATHS
+EOT
+  fi
+
+  # And a mirror holds a number all three of those can lose: a queue file
+  # minted on a branch and dropped before it merged left the tree, the
+  # history and the pull request list, and left its Issue standing. The
+  # fourth input is that Issue's title, already reduced to an id.
+  #
+  # Guarded by the prefix, so a task mint reads no report's number — and
+  # a spec mint reads nothing at all, because only tasks and reports are
+  # mirrored. These are ids and not paths, deliberately: QL_FORGE_PATHS
+  # is filtered by the caller's own directory, and a synthesized
+  # `work/tasks/…` would be wrong for any adopter whose queue lives
+  # elsewhere.
+  if [ -n "$QL_FORGE_MIRROR_IDS" ]; then
+    while IFS= read -r f; do
+      case "$f" in "$prefix"-*) bump "$f" ;; esac
+    done <<EOT
+$QL_FORGE_MIRROR_IDS
 EOT
   fi
 

@@ -29,11 +29,13 @@ branch. The issue's fields arrive through env — `ISSUE_TITLE`,
 `BASE_REF` — never as interpolated text, for the reason below. On the
 minting path it:
 
-1. mints the next report id over the same three views the generator
-   reads — the directory, the git history, and every open pull
-   request's file list ([report schema](../schemas/report.md#report-schema));
-   the forge view is all-or-nothing, and the output says which view
-   answered;
+1. mints the next report id over the same four views the generator
+   reads — the directory, the git history, every open pull request's
+   file list, and every mirror the forge holds
+   ([report schema](../schemas/report.md#report-schema)); each forge
+   half is all-or-nothing on its own, so the view is the whole forge,
+   the pull requests alone, or neither, and the output says which of the
+   three the run had;
 2. writes `work/reports/report-NNNN-<slug>.md` — `status: open`, the
    issue's title as the report's title, `created` from the issue when
    its timestamp is canonical and from the clock when it is not, a

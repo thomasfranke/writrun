@@ -133,14 +133,42 @@ git_read() {
   rm -f "$err"
 }
 
+# **A rename is a claim, and a release.** A queue filename is an id plus
+# a subject slug, so renumbering a file changes its path and git pairs it
+# as a rename rather than a modification — invisible to `--diff-filter=A`,
+# which is how a change that frees an id and then claims it was refused
+# for colliding with itself. So the claim side reads additions and
+# renames both: a rename's destination is a claim like any other, and its
+# source is a release, subtracted from the base below.
 mine=""
-git_read "git diff --name-only --diff-filter=A ${RANGE} -- work/tasks work/specs work/reports" \
-  diff --name-only --diff-filter=A "$RANGE" -- 'work/tasks/*.md' 'work/specs/*.md' 'work/reports/*.md'
-while IFS= read -r f; do
-  [ -n "$f" ] || continue
-  k=$(queue_id "$f")
+released=""
+git_read "git diff --name-status --diff-filter=AR ${RANGE} -- work/tasks work/specs work/reports" \
+  diff --name-status --diff-filter=AR "$RANGE" -- 'work/tasks/*.md' 'work/specs/*.md' 'work/reports/*.md'
+while IFS= read -r row; do
+  [ -n "$row" ] || continue
+  # A status row is status<TAB>path, or status<TAB>src<TAB>dst for a
+  # rename. A row with no tab is not one of ours; skipping it is the same
+  # answer the filename-shape guard gives a path that is not a queue file.
+  case "$row" in *"$TAB"*) ;; *) continue ;; esac
+  status=${row%%"$TAB"*}
+  rest=${row#*"$TAB"}
+  case "$status" in
+    # R comes scored — R100, R087 — and the score is the heuristic's
+    # confidence, not part of the verdict.
+    R*)
+      ql_row_fields 2 "$rest" || continue
+      src="$QL_F1"; dst="$QL_F2"
+      k=$(queue_id "$src")
+      [ -n "$k" ] && released="${released}${k}"$'\n'
+      ;;
+    A)
+      src=""; dst="$rest"
+      ;;
+    *) continue ;;
+  esac
+  k=$(queue_id "$dst")
   [ -n "$k" ] || continue
-  mine="${mine}${k}${TAB}${f}"$'\n'
+  mine="${mine}${k}${TAB}${dst}"$'\n'
 done <<EOF
 $GIT_OUT
 EOF
@@ -164,12 +192,38 @@ done <<EOF
 $GIT_OUT
 EOF
 
+# An id whose only holder on the base is a file this change renamed away
+# is not held any more — the other half of the same blindness, and the
+# half that makes a renumber and the claim it frees one change instead of
+# two. Subtracted by id, never by path: the point of a renumber is that
+# the path changed, and a rename that moves only the slug releases and
+# claims the same id, which cancels exactly as it should.
+if [ -n "$released" ]; then
+  kept=""
+  while IFS= read -r row; do
+    ql_row_fields 3 "$row" || continue
+    if printf '%s' "$released" | awk -F"$TAB" -v k="$QL_F1" -v n="$QL_F2" \
+         '$1 == k && $2 == n { found = 1 } END { exit !found }'; then
+      continue
+    fi
+    kept="${kept}${row}"$'\n'
+  done <<EOF
+$held
+EOF
+  held="$kept"
+fi
+
 # --- what other open pull requests claim ----------------------------------
 #
 # Per pull request, because only the API's file list carries `status`, and
-# without it a modification would read as a claim. The pull request being
-# checked is skipped: its own additions are the ones under examination and
-# must not collide with themselves.
+# without it a modification would read as a claim — and a rename would
+# read as nothing at all. The destination of a rename is asked for and
+# the source is not: what this reader wants to know is which ids somebody
+# else has taken, and a pull request that renames a file away has not
+# released that id to anyone. It still holds it until it merges.
+#
+# The pull request being checked is skipped: its own additions are the
+# ones under examination and must not collide with themselves.
 
 claimed=""
 forge_view="none"
@@ -185,7 +239,7 @@ if command -v gh >/dev/null 2>&1; then
       count=$((count + 1))
       if [ "$n" = "$PR" ]; then continue; fi
       files=$(gh api "repos/${REPO}/pulls/${n}/files" --paginate \
-        --jq '.[] | select(.status == "added") | .filename' 2>/dev/null || true)
+        --jq '.[] | select(.status == "added" or .status == "renamed") | .filename' 2>/dev/null || true)
       while IFS= read -r f; do
         [ -n "$f" ] || continue
         k=$(queue_id "$f")

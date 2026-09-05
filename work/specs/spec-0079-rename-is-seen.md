@@ -1,7 +1,7 @@
 ---
 id: spec-0079
 task_ref: task-0057
-status: approved
+status: implemented
 created: 2026-09-05T13:48:52Z
 ---
 
@@ -280,4 +280,48 @@ meaning for `modified`, which is where it was written for.
 
 ## Outcome
 
-_(fill after execution)_
+Implemented as specified, with one substantive departure from Step 8,
+named below.
+
+`check_unique_ids.sh` reads `--name-status --diff-filter=AR` and parses
+the two-path form: an `A` row and a rename's destination enter `mine`, a
+rename's source enters `released`, and `released` is subtracted from
+`held` by id before the verdict. The forge side selects
+`added or renamed` and takes the destination only. The collision message
+and its advice are unchanged, which is the point — the advice was
+already right and the readers were not.
+
+`mirror_issues.sh` carries `previous_filename` as the tuple's third
+field with `-` for its absence, and both loops accept `renamed`.
+
+**Step 8 says a renamed file is read "from the checkout at its new
+path". It cannot be, and the reason is a security property.**
+`writrun-issues.yml` runs on `pull_request_target` and checks out the
+**base** branch, never the pull request's code — that is what makes the
+elevated token safe, and it is stated in the workflow's own header. The
+new path exists only on the head. What the base checkout does hold is
+the file at the path the rename *left*, which for a renumber is the same
+file byte for byte — so that is what is read, through two new helpers
+(`file_fm`, `file_heading`) that read a whole file rather than a patch.
+The spec's substance is unchanged: a rename carries no patch, the file
+it names is the same file, and it is read as an arrival. Only the path
+it is read at moved, from one that does not exist to one that does.
+
+Where a rename also carries a patch, the patch's front-matter lines are
+placed first and the base file's after, so `fm_field` — which takes the
+first line naming a field — prefers what the change says and falls back
+to what the file already held. The edge case the spec wrote for a head
+checkout ("the file on disk is the change's own result") is answered
+this way instead.
+
+**A renamed task's id comes from its filename, not its front matter.**
+The task loop reads `id:` out of the patch, and a pure rename carries
+the block unchanged — so the front matter still names the id the file
+left. The id a change claims is the one its path lands on, which is what
+`check_unique_ids.sh` reads and what the mirror is found by, so the
+renamed arm takes it from there. The report loop already did.
+
+The orphan sweeps needed nothing: a vacated id is absent from
+`LIVE_NUMS`/`LIVE_REPORT_NUMS`, so the sweep that retires a mirror whose
+file left the diff retires it already. Both new mirror cases assert the
+retirement alongside the mint.
