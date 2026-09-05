@@ -282,7 +282,25 @@ fi
 SLUG=$(printf '%s' "$SLUG" | tr ' ' '-')
 
 BRANCH=$(printf 'task/%04d-%s' "$NUM" "$SLUG")
-PR_TITLE=$(printf '[TASK-%04d] %s' "$NUM" "$TITLE")
+
+# The tag leads the title in both styles, and how it meets the summary is
+# the style's to spell: `bracketed` runs the brackets together, and
+# `conventional` keeps one space
+# (technical/settings/titles.md#pr_title_style). One format string
+# carrying the space always titled every bracketed pull request against
+# the card a session is told to run for a value, and an agent reading an
+# open pull request to learn the form learned the disagreement.
+#
+# An unreadable style keeps the space, the same direction valid_summary
+# takes: check_settings.sh is where a style nobody declared is named, and
+# composing the tighter spelling on a guess would be this script deciding
+# it. The door's tolerance for the space is untouched — every title
+# already open stays valid.
+case "$STYLE" in
+  bracketed) TAG_GAP='' ;;
+  *)         TAG_GAP=' ' ;;
+esac
+PR_TITLE=$(printf '[TASK-%04d]%s%s' "$NUM" "$TAG_GAP" "$TITLE")
 
 TEMPLATE=".writrun/templates/pull_request_template.md"
 

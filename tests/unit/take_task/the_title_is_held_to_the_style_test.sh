@@ -56,6 +56,6 @@ commit_all
 publish_main
 check "the declared style is the one applied" 0 "Took task-001" \
   -- bash "$TAKE_TASK" task-001 --title "[Feat][Ci] Take it" --slug mirror-lag
-check "and the tag leads the title" 0 "" -- grep -q 'pr create .*--title \[TASK-0001\] \[Feat\]\[Ci\] Take it' "$FORGE_LOG"
+check "and the tag leads the title" 0 "" -- grep -q 'pr create .*--title \[TASK-0001\]\[Feat\]\[Ci\] Take it' "$FORGE_LOG"
 
 finish
