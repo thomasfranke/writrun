@@ -152,7 +152,8 @@ case "$EVENT" in
     # `@tsv`, because the title is a field now: it has spaces in it and
     # may carry a newline, and a space-joined row would hand title text
     # to whichever field reads next. @tsv escapes both, so one pull
-    # request is one line and a tab is the only separator.
+    # request is one line and a tab is the only separator — a claim the
+    # reader below has to keep, since `read` on its own does not.
     OPEN_PRS=""
     if [ -n "${GH_TOKEN:-}" ] && command -v gh >/dev/null 2>&1; then
       OPEN_PRS=$(gh pr list --repo "${GH_REPO:?}" --state open --limit 200 \
@@ -168,18 +169,43 @@ case "$EVENT" in
     # closing pull request's own, dropped by number: the event in hand
     # proves it closed, wherever the listing's lag still shows it, and a
     # closed pull request must answer for nothing. And any row that
-    # cannot carry a task — a head branch not under task/ and a title not
-    # opening with `[` — dropped by one cheap test first, because the
-    # helper forks subshells and a 200-row listing would otherwise buy
-    # several hundred forks for rows that answer nothing.
+    # cannot carry a task — a head branch not under task/ and a title
+    # whose first character is neither `[` nor blank — dropped by one
+    # cheap test first, because the helper forks subshells and a 200-row
+    # listing would otherwise buy several hundred forks for rows that
+    # answer nothing.
+    #
+    # **The row is split by hand, because `read` cannot split it.** A tab
+    # is an IFS *whitespace* character, so `IFS=$TAB read` folds a run of
+    # tabs into one separator and every empty field vanishes with it —
+    # and `author.login` is empty for a deleted account, which `gh` emits
+    # verbatim. That one absence would shift the title into the draftness
+    # field and leave the title empty, and the row would then be dropped
+    # by the guard below while the pull request it names is still working
+    # the task. Peeling one field at a time keeps an empty field empty. A
+    # row that does not hold the five fields asked for is not a row this
+    # reader can answer, so it is skipped rather than read short.
     TAB=$(printf '\t')
     INDEX=""
-    while IFS="$TAB" read -r o_num o_head o_login o_draft o_title; do
+    while IFS= read -r o_row; do
+      case "$o_row" in
+        *"$TAB"*"$TAB"*"$TAB"*"$TAB"*) ;;
+        *) continue ;;
+      esac
+      o_num=${o_row%%"$TAB"*};   o_row=${o_row#*"$TAB"}
+      o_head=${o_row%%"$TAB"*};  o_row=${o_row#*"$TAB"}
+      o_login=${o_row%%"$TAB"*}; o_row=${o_row#*"$TAB"}
+      o_draft=${o_row%%"$TAB"*}; o_title=${o_row#*"$TAB"}
       [ -n "$o_num" ] || continue
       [ "$o_num" = "${PR_NUMBER:-}" ] && continue
+      # The guard is never narrower than the helper it saves work for.
+      # ql_carried_of strips leading whitespace before it looks for a
+      # tag, so a title opening with whitespace goes through to it. A row
+      # let through wrongly costs one fork; a row dropped wrongly lands a
+      # task whose work is still open.
       case "$o_head" in
         task/*) ;;
-        *) case "$o_title" in '['*) ;; *) continue ;; esac ;;
+        *) case "$o_title" in '['*|[[:space:]]*) ;; *) continue ;; esac ;;
       esac
       o_carried=$(ql_carried_of "$o_head" "$o_title")
       [ -n "$o_carried" ] || continue
