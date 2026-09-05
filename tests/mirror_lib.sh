@@ -129,19 +129,35 @@ GH
 # pr_file <status> <filename> — one row of the PR's file list; the file's
 # full content arrives on stdin and becomes its patch, shaped like the
 # forge shapes an added file's (a hunk header, then all-'+' lines).
+#
+# The third column is `previous_filename`, and "-" is how the forge's
+# absence of one travels: every row carries it, so no empty middle field
+# can collapse on read.
 pr_file() {
   local content patch
   content=$(cat)
   patch=$(printf '@@ -0,0 +1,1 @@\n%s\n' \
     "$(printf '%s\n' "$content" | sed 's/^/+/')")
-  printf '%s\t%s\t%s\n' "$1" "$2" "$(printf '%s' "$patch" | b64)" \
+  printf '%s\t%s\t%s\t%s\n' "$1" "$2" "-" "$(printf '%s' "$patch" | b64)" \
     >> "$FAKE_GH_DIR/pr_files"
 }
 
 # pr_patch <status> <filename> — same row, but the raw patch itself on
 # stdin: for a modified file, whose patch mixes context and +/- lines.
 pr_patch() {
-  printf '%s\t%s\t%s\n' "$1" "$2" "$(b64)" >> "$FAKE_GH_DIR/pr_files"
+  printf '%s\t%s\t%s\t%s\n' "$1" "$2" "-" "$(b64)" \
+    >> "$FAKE_GH_DIR/pr_files"
+}
+
+# pr_renamed <previous-filename> <filename> — a queue file renumbered: the
+# path changed and nothing else did, so the forge sends both names and an
+# empty patch. The file at the *previous* path is what the base-branch
+# checkout holds, and it is what the script reads the rename from — so a
+# case writes that file with base_file, exactly as it would for any other
+# file the branch already carried.
+pr_renamed() {
+  printf '%s\t%s\t%s\t%s\n' "renamed" "$2" "$1" "" \
+    >> "$FAKE_GH_DIR/pr_files"
 }
 
 # added_report <id> <title> [status] [task-refs-csv] [triaged] — a

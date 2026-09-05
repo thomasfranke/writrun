@@ -53,18 +53,34 @@ provenance:
   is this, among these" is a judgement about the queue rather than a
   string operation on the title; a generator derives them only when
   nobody chose.
-- **An id is unique across the queue *and* across every open pull
-  request.** Minting the next one from the branch you are on is not
+- **An id is unique across the queue, every open pull request, and every
+  mirror.** Minting the next one from the branch you are on is not
   enough: two branches that start from the same `main` both see the same
   highest id and both claim the next, and neither can tell until one
   merges. So the queue is the union of what the authority branch holds
   and what open pull requests propose — anything else is a claim on a
   number somebody else may already have taken.
 
+  Where a project mirrors its queue into Issues, the mirror is in that
+  union too, and it is the only member of it that **outlives the branch
+  that spent the number**. A file minted on a branch dropped before it
+  merged is in no tree, no history and no open pull request, and its
+  Issue is still there carrying the id in its title. A number that has
+  been published is spent whatever became of the file
+  ([0070](../decisions/tasks-and-specs/0070-the-mirror-is-the-fourth-view.md)).
+
   A number claimed by a branch that has not merged is **not yet an id**,
   and renumbering it costs nothing: identity begins at the merge that
   puts the file on the authority branch. "An id is never renumbered"
   binds from there, not from the moment a generator printed one.
+
+  And renumbering is **one change, not two**. The machinery reads a
+  rename as what it is — a claim on the id the file lands on, and a
+  release of the id it left — so freeing a number and claiming it happen
+  in the same pull request. Before that it read additions and
+  modifications only, and a rename is neither: a change that renumbered
+  a file to free an id and then claimed that id was refused for
+  colliding with itself.
 - `spec_ref` is a list because the relationship is 0..N: a task can ship
   without a spec (trivial-but-tracked work) or span several (sequential phases,
   or parallel concerns of the same task). An empty list is valid and explicit

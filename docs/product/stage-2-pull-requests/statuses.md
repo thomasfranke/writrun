@@ -173,9 +173,11 @@ never trusted to prose discipline.
 - When a change on a branch moves a task between the machinery's five
   working states, the machinery shall reject the change; a hand-written
   move to or from `blocked`, or to `dropped`, it shall accept.
-- When a change adds a queue file whose id the authority branch or
-  another open pull request already claims, the machinery shall reject
-  the change.
+- When a change claims a queue id — by adding a file at it, or by
+  renaming a file onto it — and the authority branch or another open
+  pull request already claims that id, the machinery shall reject the
+  change. An id the same change renames a file away from is not one the
+  authority branch still holds.
 - When a change adds a task born of a report that references no spec,
   `writrun check` shall reject it unless one of three things is true:
   the change adds that task's spec, or the task lands `blocked` with a
