@@ -1,7 +1,7 @@
 ---
 id: spec-0068
 task_ref: task-0049
-status: approved
+status: implemented
 created: 2026-09-04T19:27:27Z
 ---
 
@@ -264,4 +264,40 @@ must still cost the forge one call and the helper one pass.
 
 ## Outcome
 
-_(fill after execution)_
+Built as specified. The close-without-merge arm of `apply_pr_event.sh`
+now asks the forge for `number,headRefName,author,isDraft,title`,
+emitted with `@tsv` and read as tab-separated fields, so a title's own
+spaces and newlines stay inside their field. The survivor index is
+built once, before the loop over carried tasks: one line per open pull
+request — number, login, draftness, and the carried set
+`ql_carried_of` answers for its head branch and title. The closing
+pull request's own row is dropped by number, and rows that cannot
+carry a task (head not under `task/`, title not opening with `[`) are
+dropped by one cheap test before the helper forks. The per-task filter
+is field-wise membership in that carried set; the loop's own
+`sed 's/^task-0*//'` went with the branch regex, since both sides
+arrive normalized through `ql_task_num`. One listing per run,
+`--limit 200` kept. The script header's close paragraph now says the
+question reaches every route through the same helper as the reader,
+and `ql_carried_of`'s comment names this second caller beside the
+amendment check. `make template-sync` run; `template/` matches.
+
+Tests: `a_survivor_answers_for_one_task_test.sh` re-aimed exactly as
+required — @tsv rows, a survivor title carrying `[TASK-0022]`, the
+inverted assertion, the landing half moved to a third carried task,
+and both harness assertions (one `gh pr list` call, `--limit` present)
+preserved. Four new cases cover the two-survivors-by-different-routes
+pair in both listing orders, the no-task row, the closing pull
+request's own row (highest-numbered, so counting it would have won),
+and the tags-ahead-of-`[Feat][Ci]`-prose title.
+`no_forge_answer_lands_the_task_test.sh` and every non-close case pass
+unchanged.
+
+One divergence, in the direction the fix required: step 2 drops the
+closing pull request's own row by number, but no number reached the
+script — its env contract carried head, title, author, draftness and
+merge state only. So the contract gained `PR_NUMBER`, documented in
+the header beside the others, and `writrun-progress.yml` passes
+`github.event.pull_request.number` to the apply step (mirrored to
+`template/` by the sync). An empty `PR_NUMBER` skips nothing, which is
+exactly today's behaviour for any caller not yet passing it.

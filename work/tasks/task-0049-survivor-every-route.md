@@ -11,9 +11,10 @@ depends_on: []
 milestone: null
 created: 2026-09-04T18:30:51Z
 queued: 2026-09-04T19:23:29Z
-completed: null
+completed: 2026-09-05T10:33:44Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-fable-5, login: thomasfranke, input: 20, output: 109852, cache_read: 2165364, cache_write: 34608}
 ---
 
 # Ask the survivor question by every route a pull request carries a task
