@@ -1,8 +1,8 @@
 ---
 id: task-0055
-status: ready
+status: in-progress
 blocked_reason: null
-taken_by: null
+taken_by: thomasfranke
 spec_ref: []
 doc_ref: technical/settings/titles.md#pr_title_style
 origin: report
