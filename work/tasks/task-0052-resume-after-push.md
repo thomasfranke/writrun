@@ -11,9 +11,10 @@ depends_on: []
 milestone: null
 created: 2026-09-04T18:30:55Z
 queued: 2026-09-04T19:23:29Z
-completed: null
+completed: 2026-09-05T10:36:11Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-fable-5, login: thomasfranke, input: 0, output: 0, cache_read: 0, cache_write: 0}
 ---
 
 # Give the take a recovery that works after the push

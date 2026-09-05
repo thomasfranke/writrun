@@ -1,7 +1,7 @@
 ---
 id: spec-0071
 task_ref: task-0052
-status: approved
+status: implemented
 created: 2026-09-04T19:27:30Z
 ---
 
@@ -271,4 +271,45 @@ narrowing it is a different question about a different guard.
 
 ## Outcome
 
-_(fill after execution)_
+Implemented as specified, in `take_task.sh` and the two documents its
+Proposed changes name.
+
+`--resume`'s refusal over a branch already on the forge is gone; the arm
+keeps its local-branch requirement and nothing else, and the comment
+above it now says why the remote-tracking ref is deliberately not
+consulted. The open-pull-request loop, unchanged, is what refuses a task
+in flight on both paths. A resume-only block sits between the amendment
+check and the cut: it stops at exit 3 where `pr_source` is `none`, then
+spends one `gh pr list --head <branch> --state all` and refuses on the
+first pull request that ever carried the branch and is not `OPEN`,
+naming it and the fresh take that follows. That read's own failure stops
+the run the same way the open list's does. The push stays where it was
+in the resumed act.
+
+The post-cut sentences were split by what each position proves. The
+range guard and the commit failure keep "kept local" — both sit before
+any push. The push failure reads its own error: a rejection names the
+forge as holding the branch and the divergence as real, a remote that
+could not be read leaves the branch kept local, and anything else claims
+only that the push did not complete. The `gh pr create` arm's sentence
+was already true after a successful push and is unchanged. The header's
+exit-3 line now says the branch is named wherever it got to.
+
+**Divergences: none.** Two choices the spec left to the execution are
+worth naming. The push-failure arm distinguishes its three cases by
+matching `git push`'s own stderr, which is the only evidence in reach —
+the alternative, a helper that re-read the remote, is the cache this
+spec ruled out. And the closed-pull-request read treats every state that
+is not `OPEN` as an ended flight, `MERGED` included: a merged flight is
+finished more conclusively than a closed one, and both are refused with
+the same sentence.
+
+The fixture gained the seam the spec said it needed: a
+`refuse_<subcommand>` file fails one `gh` subcommand while the rest keep
+answering, which `unavailable` cannot express because it fails
+`gh auth status` too. Alongside it, `forge_closed_pr` and a stub arm
+serving the every-state head read, since closed pull requests are
+invisible to the open list the stub already served.
+
+All four named test files pass, the resume cases in
+`the_first_commit_opens_the_draft_test.sh` unchanged.
