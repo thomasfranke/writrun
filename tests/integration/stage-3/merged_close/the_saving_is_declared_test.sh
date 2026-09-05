@@ -33,13 +33,22 @@ wired "the flag is gated on the mint's outcome" \
 wired "and only success passes it" \
   "$APPROVE" '"$MINT_OUTCOME" = "success"' 1
 
-# Two invocations, one contract each: the succeeded mint names its
-# mints, the failed one says nothing and buys the re-read back.
+# One argv, two contracts: the succeeded mint names its mints, the
+# failed one says nothing and buys the re-read back.
 wired "a mint that succeeded names its mints" \
   "$APPROVE" '--minted $MINTED_TASKS $MINTED_REPORTS' 1
-# The failed branch's invocation is the line that *ends* at $SCOPE — no
-# continuation, no flag — which only an anchor can say.
-if [ "$(grep -c '\$SPECS \$SCOPE$' "$APPROVE")" -eq 1 ]; then
+# And the flag is *appended* under that gate, never built into the argv
+# the step always passes — which is what "a failed mint passes no flag"
+# means when there is one invocation. Read the step's shell, comments
+# aside: `--minted` reaches the argv between the gate and its `fi`, and
+# nowhere else.
+if awk '
+    /^[[:space:]]*#/ { next }
+    /\$MINT_OUTCOME" = "success"/ { gate = 1; next }
+    gate && /^[[:space:]]*fi[[:space:]]*$/ { gate = 0; next }
+    /--minted/ { if (gate) inside++; else outside++ }
+    END { exit(inside == 1 && outside == 0 ? 0 : 1) }
+  ' "$APPROVE"; then
   printf 'ok    a mint that failed passes no flag\n'; pass=$((pass + 1))
 else
   printf 'FAIL  a mint that failed passes no flag\n'; fail=$((fail + 1))

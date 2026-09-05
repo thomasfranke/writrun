@@ -17,9 +17,10 @@
 # error.
 #
 # This path mints nothing and says so — `--minted` with nothing behind
-# it. So every miss it sees is a finding about the repository: answered
-# from one read of the list, and healed by the next pull-request event
-# if it was not.
+# it. Almost every miss it sees is a finding about the repository. The
+# exception is a mirror another workflow minted between this run's read
+# and its lookup. Either is answered from one read of the list, and
+# healed by the next pull-request event if it was not.
 #
 # Exit codes: 0 done (including nothing to do); 3 usage error.
 #

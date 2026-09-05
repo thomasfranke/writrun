@@ -299,9 +299,23 @@ beside `one_workflow_answers_it_test.sh`. All fourteen of
 report-0021's mirrors still label. No `docs/` change, as both
 Proposed-changes sections say.
 
-One divergence, collateral rather than scope:
+Two divergences from the plan, both from the approving review.
+
+Step 6's gate is one argv rather than two invocations. The label step
+builds `args` once and appends `--minted` to it under the gate, where
+the plan read as an `if`/`else` over the whole command line. The argv
+is identical in every case — a succeeded mint, a failed one, a mint
+that recorded nothing — and one invocation leaves
 `one_workflow_answers_it_test.sh`'s push-mint-label ordering assertion
-read `rederive_labels.sh`'s line number with a bare `grep -n`, and the
-label step now holds two invocations — the first is taken as the
-order's witness (`head -n1`). Without it the existing case fails on
-this change's wiring, so the one-line fix rides here.
+exactly as it was, reading `rederive_labels.sh`'s line number with a
+bare `grep -n`. So this change touches no test it did not add.
+`the_saving_is_declared_test.sh` asserts the gating rather than the
+line shape: `--minted` reaches the argv between the outcome gate and
+its `fi`, and nowhere else.
+
+Step 5's header sentence says "almost every miss" where the step said
+"every miss". A miss on this path is a finding about the repository in
+the steady state, and a mirror another workflow minted between this
+run's read and its lookup in the window this spec's own edge case
+names. The behaviour is what the step asked for; the sentence is now
+true of both.

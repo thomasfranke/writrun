@@ -311,15 +311,15 @@ jobs:
           set -euo pipefail
           # The order is the contract: everything after --minted is the
           # mint's, and a miss there fails the step. Passing the flag
-          # from a fixed position in this line rather than from inside
-          # any of the values is what keeps that true.
+          # from a fixed position in the argv rather than from inside
+          # any of the values is what keeps that true. So the argv is
+          # built once and the flag appended to it: one invocation, and
+          # the gate is the only thing the mint's outcome decides.
+          # shellcheck disable=SC2206
+          args=("$GITHUB_REPOSITORY" $SPECS $SCOPE)
           if [ "$MINT_OUTCOME" = "success" ]; then
-            # shellcheck disable=SC2086
-            bash .writrun/scripts/stage-3-github-issues/rederive_labels.sh \
-              "$GITHUB_REPOSITORY" $SPECS $SCOPE \
-              --minted $MINTED_TASKS $MINTED_REPORTS
-          else
-            # shellcheck disable=SC2086
-            bash .writrun/scripts/stage-3-github-issues/rederive_labels.sh \
-              "$GITHUB_REPOSITORY" $SPECS $SCOPE
+            # shellcheck disable=SC2206
+            args+=(--minted $MINTED_TASKS $MINTED_REPORTS)
           fi
+          bash .writrun/scripts/stage-3-github-issues/rederive_labels.sh \
+            "${args[@]}"

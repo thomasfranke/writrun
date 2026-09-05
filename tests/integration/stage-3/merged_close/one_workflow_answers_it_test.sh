@@ -34,9 +34,7 @@ stands_down writrun-progress.yml reflect
 # it is labelled from the queue that now holds what the merge decided.
 push=$(grep -n 'git push origin "HEAD:${BASE_REF}"' "$APPROVE" | cut -d: -f1)
 mint=$(grep -n 'mirror_issues.sh' "$APPROVE" | cut -d: -f1)
-# The label step invokes the projection once per mint outcome; both live
-# in the one step, so the first is the order's witness.
-label=$(grep -n 'rederive_labels.sh' "$APPROVE" | head -n1 | cut -d: -f1)
+label=$(grep -n 'rederive_labels.sh' "$APPROVE" | cut -d: -f1)
 
 if [ -n "$push" ] && [ -n "$mint" ] && [ -n "$label" ] \
    && [ "$push" -lt "$mint" ] && [ "$mint" -lt "$label" ]; then
