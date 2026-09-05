@@ -37,6 +37,14 @@ setup_intake() {
   cd checkout || exit 1
   git config user.email t@example.com
   git config user.name Test
+  # The window arm_racer_hook opens is a `pre-push` hook in .git/hooks,
+  # and a global core.hooksPath — husky, pre-commit, a corporate
+  # gitconfig on a dev machine or a runner image — silently disables it.
+  # The clone inherits that setting, no racer commit ever lands, and the
+  # race cases go red pointing at push_recording.sh instead of here.
+  # Absolute, because git resolves a relative hooksPath against the
+  # working directory git was invoked from, not against the repository.
+  git config core.hooksPath "$PWD/.git/hooks"
   git symbolic-ref HEAD refs/heads/main
   mkdir -p work/reports work/tasks work/specs
   printf '# reports\n' > work/reports/README.md
@@ -168,16 +176,71 @@ HOOK
 # binary, and `spied` runs one command under it; the counts come out of
 # git_told_times. Client-side on purpose: a refused push and a landed
 # one cost the same call, and no server hook sees a fetch at all.
+#
+# The shim is also where a failing git call is injected (git_fails_for
+# below): one shim rather than two, because two PATH shims would have to
+# agree on which of them the other delegates to, and the one that lost
+# the race would stop counting.
 spy_git() {
   GIT_SPY_LOG="$WORK/git-spy.log"
   : > "$GIT_SPY_LOG"
+  rm -f "$WORK/git_fails" "$WORK/git_fails_fired"
   mkdir -p "$WORK/spy-bin"
   cat > "$WORK/spy-bin/git" <<SPY
 #!/usr/bin/env bash
 printf '%s\n' "\$*" >> "$GIT_SPY_LOG"
+if [ -f "$WORK/git_fails" ]; then
+  read -r _sub _count _status _message < "$WORK/git_fails"
+  if [ "\$1" = "\$_sub" ]; then
+    _fired=\$(cat "$WORK/git_fails_fired" 2>/dev/null || echo 0)
+    if [ "\$_fired" -lt "\$_count" ]; then
+      echo \$((_fired + 1)) > "$WORK/git_fails_fired"
+      [ -n "\$_message" ] && echo "\$_message" >&2
+      exit "\$_status"
+    fi
+  fi
+fi
 exec "$(command -v git)" "\$@"
 SPY
   chmod +x "$WORK/spy-bin/git"
+}
+
+# git_fails_for <subcommand> <count> [message] — the first <count> calls
+# to `git <subcommand>` fail without running, every later one goes
+# through. Requires spy_git: the shim is where the refusal lives.
+#
+# Exit status is git's own for the class: a push that never completed
+# dies, and git's die is 128; a pull whose fetch could not reach the
+# remote returns 1. The script reads that status, so a fixture that
+# invented one would prove nothing about the world.
+git_fails_for() {
+  local status
+  case "$1" in
+    push) status=128 ;;
+    *)    status=1 ;;
+  esac
+  printf '%s %s %s %s\n' "$1" "$2" "$status" \
+    "${3:-fatal: the fixture refused this call}" > "$WORK/git_fails"
+  rm -f "$WORK/git_fails_fired"
+}
+
+# remote_unreachable_for <subcommand> <count> — a network blip, a forge
+# 500 and a proxy timeout, made deterministic. All three arrive as a git
+# call that never reached the remote, and no fixture can produce one by
+# waiting for it.
+remote_unreachable_for() {
+  git_fails_for "$1" "$2" \
+    "fatal: unable to access 'origin': Could not resolve host"
+}
+
+# git_noops_for <subcommand> <count> — the first <count> calls to `git
+# <subcommand>` report success without running. For a claim a script
+# rests on an exit status alone: an abort that returned 0 and restored
+# nothing is not an abort that restored the tree, and only reading the
+# tree separates them.
+git_noops_for() {
+  printf '%s %s 0 \n' "$1" "$2" > "$WORK/git_fails"
+  rm -f "$WORK/git_fails_fired"
 }
 
 spied() {

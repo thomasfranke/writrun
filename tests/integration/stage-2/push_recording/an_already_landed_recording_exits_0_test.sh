@@ -18,6 +18,15 @@ racer_lands work/tasks/task-0001.md "queue: the first run landed it" <<'EOF'
 status: in-review
 EOF
 
+# Loud when the fixture's own push failed. Without this the race never
+# happens: the file and the single landing below are what this run would
+# produce on an empty branch, so both assertions pass over a world where
+# nothing landed first and the case proves nothing. The racer's subject
+# is the one thing the two worlds do not share.
+check "the first run really landed it before this one" 0 \
+  "queue: the first run landed it" \
+  -- authority log -1 --format=%s main
+
 check "a recording already on the branch is not a failure" 0 \
   "" \
   -- bash "$PUSH" main
