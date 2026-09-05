@@ -85,6 +85,12 @@ case "$path" in
   repos/*/pulls/*/files)
     n=$(printf '%s' "$path" | sed -n 's|.*/pulls/\([0-9][0-9]*\)/files$|\1|p')
     cat "$FAKE_GH_DIR/pr_${n}_files" 2>/dev/null ;;
+  # The mint's fourth input, served post-jq as one title per line. The
+  # path carries the repository the intake pinned, so the log this call
+  # leaves is also how a case proves the pin held.
+  repos/*/issues?labels=*)
+    kind=$(printf '%s' "$path" | sed -n 's|.*labels=writrun:\([a-z][a-z]*\).*|\1|p')
+    cat "$FAKE_GH_DIR/issues_${kind}" 2>/dev/null ;;
   *) echo "{}" ;;
 esac
 exit 0
@@ -98,6 +104,15 @@ GH
   export ISSUE_BODY=""
   export ISSUE_AUTHOR="someone"
   export ISSUE_CREATED_AT="2026-09-01T12:00:00Z"
+}
+
+# forge_mirror <task|report> <title> — one mirror Issue the mint's fourth
+# input will see, in whatever state: the listing asks for `state=all` and
+# reads nothing but the title. The same helper pipeline_lib.sh has, by
+# the same name, because it stubs the same call.
+forge_mirror() {
+  printf '%s\n' "$2" >> "$FAKE_GH_DIR/issues_${1}"
+  return 0
 }
 
 # authority <path...> — the named git command against a fresh read of

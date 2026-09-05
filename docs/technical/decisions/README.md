@@ -89,3 +89,4 @@ appending a row.
 | [0067](pull-requests/0067-a-body-link-points-at.md) | 2026-09-04 | `pull-requests` | a pull request body's links are absolute, and point at `main`. |
 | [0068](pull-requests/0068-what-a-pull-request-claims-is-bounded.md) | 2026-09-04 | `pull-requests` | what one pull request may claim is bounded by a constant, and the constant is eight. |
 | [0069](pull-requests/0069-a-close-releases-what-it-cannot-claim.md) | 2026-09-05 | `pull-requests` | a close releases the whole claim in every writer, because releasing is not claiming — extending [0068](pull-requests/0068-what-a-pull-request-claims-is-bounded.md). |
+| [0070](tasks-and-specs/0070-the-mirror-is-the-fourth-view.md) | 2026-09-05 | `tasks-and-specs` | an id is minted above the mirror, the only record of it that survives a dropped branch — extending [0013](tasks-and-specs/0013-new-sh-reads-git.md). |

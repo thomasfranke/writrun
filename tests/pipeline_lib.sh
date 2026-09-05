@@ -102,6 +102,7 @@ stub_gh() {
 #   gh pr list --json number        -> $FORGE_DIR/pr_numbers
 #   gh api .../pulls/N/files        -> $FORGE_DIR/pr_N_paths
 #   ... --jq '...status == "added"' -> $FORGE_DIR/pr_N_added
+#   gh api .../issues?labels=…      -> $FORGE_DIR/issues_<kind>
 #
 # The two consumers of the file list want different halves of it: the
 # check selects the added files, the generator reads every path. The jq
@@ -185,6 +186,18 @@ case "${1:-}" in
     esac
     ;;
   api)
+    # The mirror listing, the mint's fourth input. One file per label,
+    # served post-jq as a bare title per line — the shape ql_forge_scan
+    # asks for. `refuse_issues` is the seam for the middle view: the file
+    # lists answer and this half does not.
+    case "${2:-}" in
+      *"/issues?labels=writrun:"*)
+        [ -e "$FORGE_DIR/refuse_issues" ] && exit 1
+        kind=$(printf '%s' "${2:-}" | sed -n 's|.*labels=writrun:\([a-z][a-z]*\).*|\1|p')
+        cat "$FORGE_DIR/issues_${kind}" 2>/dev/null
+        exit 0
+        ;;
+    esac
     n=$(printf '%s' "${2:-}" | sed -n 's|.*/pulls/\([0-9][0-9]*\)/files$|\1|p')
     [ -n "$n" ] || exit 0
     jq=""; prev=""; paginate=""
@@ -207,16 +220,22 @@ GH
   export PATH="$WORK/stub-bin:$PATH"
 }
 
-# forge_pr <number> <added|modified> <path> — one file on one open pull
-# request. The number joins the open list once; the path is visible to the
-# generator either way, and only an added one is a claim the check reads.
-# Files land in the order they are declared, which is the order the pages
-# come in.
+# forge_pr <number> <added|modified|renamed> <path> — one file on one open
+# pull request. The number joins the open list once; the path is visible
+# to the generator either way, and an added or renamed one is a claim the
+# check reads. Files land in the order they are declared, which is the
+# order the pages come in.
+#
+# `renamed` and `added` share a file because the check's own selector
+# takes them together — it asks for a rename's destination and not its
+# source, so a renamed row and an added one are the same claim to it.
 forge_pr() {
   grep -qxF "$1" "$FORGE_DIR/pr_numbers" 2>/dev/null \
     || printf '%s\n' "$1" >> "$FORGE_DIR/pr_numbers"
   printf '%s\n' "$3" >> "$FORGE_DIR/pr_${1}_paths"
-  [ "$2" = added ] && printf '%s\n' "$3" >> "$FORGE_DIR/pr_${1}_added"
+  case "$2" in
+    added|renamed) printf '%s\n' "$3" >> "$FORGE_DIR/pr_${1}_added" ;;
+  esac
   return 0
 }
 
@@ -233,6 +252,25 @@ forge_open_pr() {
     || printf '%s\n' "$1" >> "$FORGE_DIR/pr_numbers"
   return 0
 }
+
+# forge_mirror <task|report> <title> — one mirror Issue on the forge, in
+# whatever state, as the mint's fourth input sees it: the listing asks
+# for `state=all` and reads the title and nothing else, so the title is
+# the whole of what a case has to give it.
+#
+# Named for the mirror rather than the Issue on purpose: tests/mirror_lib.sh
+# has a `forge_issue` that means the projection pass's five-column row,
+# and one name for two shapes is a case that reads right and stubs the
+# wrong thing.
+forge_mirror() {
+  printf '%s\n' "$2" >> "$FORGE_DIR/issues_${1}"
+  return 0
+}
+
+# forge_mirrors_unreadable — the mirror listing refuses while the file
+# lists keep answering. The middle view, which no other seam can produce:
+# forge_unavailable takes both halves down together.
+forge_mirrors_unreadable() { : > "$FORGE_DIR/refuse_issues"; }
 
 # forge_pr_filler <number> <count> — <count> modified files on one open
 # pull request, to push what follows them onto a later page.
