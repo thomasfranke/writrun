@@ -1,7 +1,7 @@
 ---
 id: spec-0071
 task_ref: task-0052
-status: approved
+status: implemented
 created: 2026-09-04T19:27:30Z
 ---
 
@@ -271,4 +271,91 @@ narrowing it is a different question about a different guard.
 
 ## Outcome
 
-_(fill after execution)_
+Implemented as specified, in `take_task.sh` and the two documents its
+Proposed changes name.
+
+`--resume`'s refusal over a branch already on the forge is gone; the arm
+keeps its local-branch requirement and nothing else, and the comment
+above it now says why the remote-tracking ref is deliberately not
+consulted. The open-pull-request loop, unchanged, is what refuses a task
+in flight on both paths. A resume-only block sits between the amendment
+check and the cut: it stops at exit 3 where `pr_source` is `none`, then
+spends one `gh pr list --head <branch> --state all` and refuses on the
+first pull request that ever carried the branch and is not `OPEN`,
+naming it and the fresh take that follows. That read's own failure stops
+the run the same way the open list's does. The push stays where it was
+in the resumed act.
+
+The post-cut sentences were split by what each position proves. The
+range guard and the commit failure keep "kept local" — both sit before
+any push. The push failure reads its own error: a rejection names the
+forge as holding the branch and the divergence as real, a remote that
+could not be read leaves the branch kept local, and anything else claims
+only that the push did not complete. The `gh pr create` arm's sentence
+was already true after a successful push and is unchanged. The header's
+exit-3 line now says the branch is named wherever it got to.
+
+**Divergences: none.** Two choices the spec left to the execution are
+worth naming. The push-failure arm distinguishes its three cases by
+matching `git push`'s own stderr, which is the only evidence in reach —
+the alternative, a helper that re-read the remote, is the cache this
+spec ruled out. And the closed-pull-request read treats every state that
+is not `OPEN` as an ended flight, `MERGED` included: a merged flight is
+finished more conclusively than a closed one, and both are refused with
+the same sentence.
+
+The fixture gained the seam the spec said it needed: a
+`refuse_<subcommand>` file fails one `gh` subcommand while the rest keep
+answering, which `unavailable` cannot express because it fails
+`gh auth status` too. Alongside it, `forge_closed_pr` and a stub arm
+serving the every-state head read, since closed pull requests are
+invisible to the open list the stub already served.
+
+All four named test files pass, the resume cases in
+`the_first_commit_opens_the_draft_test.sh` unchanged.
+
+### What review corrected before the merge
+
+The two choices named above as "left to the execution" were both wrong.
+"Divergences: none" stands as what the first implementation claimed; it
+is not edited, and this section is what the review found instead.
+
+**Every state that is not `OPEN` is not an ended flight of *this*
+branch.** Branch names are deterministic — `task/NNNN-slug` — so the
+name an ended pull request carried is the name every later take of that
+task cuts again. Refusing on the name alone burned it: a task whose
+pull request closed unmerged goes back to `ready`, the stale remote
+branch is deleted by hand, a genuinely fresh take pushes, `gh pr create`
+fails, and the `--resume` line the script itself printed was refused on
+that old pull request — while the fresh take it recommended was refused
+on the branch that now exists. The operator had no printed way out. The
+read now carries `headRefOid` and `closedAt`, and the refusal turns on
+evidence: a branch carrying the commit the flight ended on is that
+flight continued; where this clone no longer has that commit, a tip made
+after the close was never part of it. With neither in hand it still
+refuses. Every one of those refusals now prints the two deletions and
+the fresh take that follow it.
+
+**Matching `git push`'s stderr was right; matching it in whatever
+language git happened to speak was not.** The push runs under `LC_ALL=C`
+so the arms read words that do not move, and the connectivity arm was
+widened past the fixture's own shape — `Could not resolve host`,
+`Failed to connect to`, `Connection refused` and the rest — because a
+real GitHub failure says none of what a bad local path says, and the one
+arm that preserves "kept local" never fired in practice.
+`[remote rejected]` left the non-fast-forward arm: a ref the forge
+received and declined is not a divergence, and the branch it named may
+never have existed there.
+
+Two further corrections, both about a question asked in the wrong place:
+the branch-scoped read now refuses on an `OPEN` row of its own, because
+the repo-wide open list above it is capped at 200 and past that cap this
+take's own pull request falls off it; and the rows are filtered to this
+repository's own, because `--head` matches a branch *name* across forks.
+
+The fixture's seam was too coarse to see any of it: `forge_refuses
+"pr list"` failed both `gh pr list` call sites, and both print "went
+unanswered", so no assertion could tell them apart. It is now refusable
+per call site, and `forge_head_pr` writes a row in any state — the
+only way a case can put an `OPEN` one where the branch-scoped read sees
+it.
