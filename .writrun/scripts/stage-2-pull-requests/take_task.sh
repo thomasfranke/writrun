@@ -38,8 +38,8 @@
 #      the body are printed and nothing was done. Rerun with --confirm
 #      to perform exactly the printed act.
 #   3  the forge or git failed. Before the branch was cut the repository
-#      is untouched; after it, the branch is named and --resume finishes
-#      the act.
+#      is untouched; after it, the branch is named wherever it got to,
+#      and --resume finishes the act.
 #
 # Portable bash 3.2, POSIX awk/sed. See the standing rule in
 # docs/technical/decisions/.
@@ -459,14 +459,16 @@ branch_remote=""
 git rev-parse --verify --quiet "refs/remotes/origin/${BRANCH}" >/dev/null 2>&1 && branch_remote=yes
 
 if [ -n "$RESUME" ]; then
-  # The one carve-out: a local branch with no upstream and no open pull
-  # request is the leftover of an interrupted take, and finishing it is
-  # not a second take. Everything else stays a refusal.
+  # The one carve-out: a local branch no pull request carries is the
+  # leftover of an interrupted take, and finishing it is not a second
+  # take — wherever the branch got to. The push is idempotent, so how
+  # far the interruption let the act get does not change what finishing
+  # it costs; what would make the resume wrong is a pull request that
+  # already exists, and the forge reads below are what answer that. The
+  # remote-tracking ref is deliberately not consulted: it is a cache
+  # saying this checkout once pushed, not that the forge holds the
+  # branch now.
   [ -n "$branch_local" ] || refuse "--resume was given but ${BRANCH} does not exist locally — a take that left nothing behind is a take, not a resume"
-  [ -z "$branch_remote" ] || refuse "${BRANCH} is already on the forge — what --resume finishes is a branch that never reached it"
-  # A pull request for the task means the act completed and something
-  # else is going on; --resume is for the half-finished one only. The
-  # forge read below is what answers that, on the acting path.
 else
   [ -z "$branch_local" ] || refuse "${BRANCH} already exists locally — resuming is not taking; --resume finishes an interrupted take"
   [ -z "$branch_remote" ] || refuse "${BRANCH} already exists on the forge — resuming is not taking"
@@ -581,6 +583,40 @@ if [ -n "$idless" ] && [ -n "$SPECS" ]; then
   done
 fi
 
+# --- what only a resume asks -----------------------------------------
+#
+# A resume's one guard is the forge's answer: without it the run cannot
+# tell the state it recovers from the state it refuses, and opening a
+# second pull request over a branch that has one is the failure this
+# whole act exists to avoid. The fresh path is left as it is — its own
+# local guards stand without that answer.
+
+if [ -n "$RESUME" ]; then
+  if [ "$pr_source" = none ]; then
+    echo "The open pull request list went unanswered, and whether one already carries this take is the one question a resume turns on." >&2
+    echo "Nothing was pushed and nothing was opened. Once the forge answers, finish the act with:" >&2
+    resume_command >&2
+    exit 3
+  fi
+  # One question the fresh path never asks: whether any pull request,
+  # open or closed, ever carried this branch. The open ones the loop
+  # above already refused; a closed one means the flight ended, and
+  # finishing the branch now would open a second pull request over a
+  # base as old as the interruption. The branch on the forge is that
+  # flight's leftover — deleted by hand, or left to lie.
+  if ! head_lines=$(gh pr list --head "$BRANCH" --state all --limit 200 \
+        --json number,state \
+        --jq '.[] | "\(.number)\t\(.state)"' 2>/dev/null); then
+    echo "Whether a pull request ever carried ${BRANCH} went unanswered, and it is the one question a resume turns on." >&2
+    echo "Nothing was pushed and nothing was opened. Once the forge answers, finish the act with:" >&2
+    resume_command >&2
+    exit 3
+  fi
+  closed_pr=$(printf '%s\n' "$head_lines" \
+    | awk -F'\t' '$1 != "" && $2 != "OPEN" { print $1; exit }')
+  [ -z "$closed_pr" ] || refuse "pull request #${closed_pr} carried ${BRANCH} and is closed — an ended flight is finished by a fresh take, never resumed"
+fi
+
 
 if [ -z "$RESUME" ]; then
   if ! CUT_ERR=$(git switch -c "$BRANCH" origin/main 2>&1); then
@@ -631,7 +667,19 @@ fi
 if ! PUSH_ERR=$(git push -u origin "$BRANCH" 2>&1); then
   echo "git push failed:" >&2
   printf '%s\n' "$PUSH_ERR" | head -n 3 >&2
-  echo "${BRANCH} is kept local. Finish the act with:" >&2
+  # The sentence claims only what the refusal proves. A non-fast-forward
+  # is the forge answering over a branch it already holds; a remote that
+  # never answered moved nothing, so the branch stays where it was; and
+  # anything else — a connection that dropped mid-push — proves only
+  # that this push did not complete.
+  case "$PUSH_ERR" in
+    *non-fast-forward*|*'[rejected]'*|*'[remote rejected]'*)
+      echo "The forge holds ${BRANCH} and refused this push over it — the divergence is real, and no force push finishes this act. Reconcile the two, then finish with:" >&2 ;;
+    *'Could not read from remote repository'*|*'does not appear to be a git repository'*)
+      echo "The remote never answered, so this push moved nothing and ${BRANCH} is kept local. Finish the act with:" >&2 ;;
+    *)
+      echo "The push did not complete, and where ${BRANCH} stands on the forge is not established. Finish the act with:" >&2 ;;
+  esac
   resume_command >&2
   exit 3
 fi

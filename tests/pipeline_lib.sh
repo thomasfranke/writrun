@@ -129,6 +129,11 @@ stub_forge() {
 #!/usr/bin/env bash
 printf '%s\n' "$*" >> "$FORGE_LOG"
 [ -e "$FORGE_DIR/unavailable" ] && exit 1
+# The narrower seam: one subcommand refused, everything else answering.
+# What a rate limit, branch protection, and a dropped connection on one
+# endpoint look like from the caller's side — `unavailable` cannot say
+# this, because it fails `gh auth status` too.
+[ -e "$FORGE_DIR/refuse_${1:-}_${2:-}" ] && exit 1
 case "${1:-}" in
   pr)
     field=""; prev=""
@@ -147,6 +152,20 @@ case "${1:-}" in
       *headRefName*)  [ -f "$FORGE_DIR/pr_lines" ] &&
                         awk -F'\t' -v OFS='\t' '{ print $1, $2, $4 }' \
                           "$FORGE_DIR/pr_lines" ;;
+      # The resume's every-state read: `gh pr list --head <branch>
+      # --state all --json number,state`. Served from pr_head_lines,
+      # filtered to the branch asked about — a read the open list above
+      # never answers, because closed pull requests live only here.
+      *state*)
+        head=""; prev=""
+        for a in "$@"; do
+          [ "$prev" = "--head" ] && head="$a"
+          prev="$a"
+        done
+        [ -f "$FORGE_DIR/pr_head_lines" ] &&
+          awk -F'\t' -v OFS='\t' -v b="$head" '$1 == b { print $2, $3 }' \
+            "$FORGE_DIR/pr_head_lines"
+        ;;
     esac
     ;;
   api)
@@ -209,8 +228,21 @@ forge_pr_filler() {
   done
 }
 
+# forge_closed_pr <number> <branch> [state] — a pull request that carried
+# the branch and ended, visible only to the resume's every-state read.
+# CLOSED unless a case says MERGED; never OPEN, which is forge_open_pr's.
+forge_closed_pr() {
+  printf '%s\t%s\t%s\n' "$2" "$1" "${3:-CLOSED}" >> "$FORGE_DIR/pr_head_lines"
+}
+
 # forge_unavailable — no `gh` answer at all, from here on.
 forge_unavailable() { : > "$FORGE_DIR/unavailable"; }
+
+# forge_refuses <subcommand> / forge_allows <subcommand> — one `gh`
+# subcommand ("pr create", "pr list") failing while the rest keep
+# answering, and the recovery that ends it.
+forge_refuses() { : > "$FORGE_DIR/refuse_$(printf '%s' "$1" | tr ' ' '_')"; }
+forge_allows()  { rm -f "$FORGE_DIR/refuse_$(printf '%s' "$1" | tr ' ' '_')"; }
 
 # forge_untouched <name> — not a single call reached the forge.
 forge_untouched() {

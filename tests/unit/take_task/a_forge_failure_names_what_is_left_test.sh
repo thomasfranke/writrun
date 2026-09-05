@@ -42,6 +42,60 @@ else
   echo "FAIL  and the branch it cut is still there"; fail=$((fail + 1))
 fi
 
+# After the push, "kept local" is a claim about a branch the forge holds
+# — the false sentence report-0026 recorded. What the run has actually
+# established is that the branch is on the forge with no pull request on
+# it, and that is what it has to say.
+take_setup
+task_file task-001 ready ""
+commit_all
+publish_main
+forge_refuses "pr create"
+out=$(bash "$TAKE_TASK" task-001 --title "feat(ci): take it" --slug mirror-lag 2>&1)
+code=$?
+for want in "is pushed but has no pull request" "Finish it with" "--resume"; do
+  if [ "$code" -eq 3 ] && printf '%s' "$out" | grep -qF -- "$want"; then
+    printf 'ok    a failure after the push exits 3 and says: %s\n' "$want"; pass=$((pass + 1))
+  else
+    printf 'FAIL  a failure after the push exits 3 and says: %s (exit %s)\n' "$want" "$code"
+    printf '%s\n' "$out" | sed 's/^/      | /'; fail=$((fail + 1))
+  fi
+done
+if printf '%s' "$out" | grep -qF "kept local"; then
+  printf 'FAIL  and never calls a pushed branch kept local\n'
+  printf '%s\n' "$out" | sed 's/^/      | /'; fail=$((fail + 1))
+else
+  printf 'ok    and never calls a pushed branch kept local\n'; pass=$((pass + 1))
+fi
+if git -C "$WORK/origin.git" rev-parse --verify --quiet refs/heads/task/0001-mirror-lag >/dev/null; then
+  printf 'ok    because the branch really did reach the forge\n'; pass=$((pass + 1))
+else
+  printf 'FAIL  because the branch really did reach the forge\n'; fail=$((fail + 1))
+fi
+
+# A resume's one guard is the forge's answer. Where the open list fails
+# — auth fine, that one read refused — the run cannot tell the state it
+# recovers from the state it refuses, so it stops before the cut rather
+# than opening a second pull request over a branch that may have one.
+take_setup
+task_file task-001 ready ""
+commit_all
+publish_main
+git switch -q -c task/0001-mirror-lag origin/main
+git commit -q --allow-empty -m "chore(tasks): take task-0001"
+git push -q -u origin task/0001-mirror-lag
+git switch -q main
+forge_refuses "pr list"
+check "an unanswered read stops the resume" 3 "went unanswered" \
+  -- bash "$TAKE_TASK" task-001 --title "feat(ci): take it" --slug mirror-lag --resume
+if grep -q 'pr create' "$FORGE_LOG"; then
+  echo "FAIL  with nothing pushed and nothing opened"; fail=$((fail + 1))
+elif [ "$(git rev-parse task/0001-mirror-lag)" = "$(git -C "$WORK/origin.git" rev-parse task/0001-mirror-lag)" ]; then
+  echo "ok    with nothing pushed and nothing opened"; pass=$((pass + 1))
+else
+  echo "FAIL  with nothing pushed and nothing opened"; fail=$((fail + 1))
+fi
+
 # A base that cannot be refreshed is not a base: the eligibility read
 # against it would be read against whatever this checkout last saw.
 take_setup

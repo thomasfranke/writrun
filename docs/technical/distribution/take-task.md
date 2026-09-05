@@ -69,12 +69,30 @@ pull request carrying this task refuses the take (resuming is not
 taking), and an open pull request carrying **no** task id that touches one
 of the task's specs suspends it, named. Only then is the branch cut from
 `origin/main`, given its first commit, pushed, and the draft opened. A
-forge failure *after* the cut also exits 3, naming the branch kept local
-and `--resume`, which finishes the act — push and pull request only,
-never a second branch and never a second commit.
-That carve-out is narrow on purpose: a local branch that never reached
-the forge is the leftover of an interrupted take; a branch that exists
-anywhere else is a refusal.
+forge failure *after* the cut also exits 3, naming the branch wherever
+its own evidence puts it — a push that never reached the remote leaves
+it kept local, a push the forge refused proves the forge holds it, and a
+`gh pr create` that failed after a push that did not leaves it on the
+forge with no pull request — and naming `--resume`, which finishes the
+act: push and pull request only, never a second branch and never a
+second commit.
+
+**The carve-out turns on the pull request, not the branch's location.**
+What `--resume` finishes is a take that has no pull request, wherever it
+stopped: the push is idempotent, so how far the interruption let the act
+get does not change what finishing it costs, and the state this act must
+never leave behind — a branch on the forge with no pull request — is
+exactly the one a recovery has to be able to reach. So the forge answers
+it. An open pull request carrying the task refuses the resume as it
+refuses the fresh take; a pull request that ever carried the branch and
+is now closed refuses it too, because that flight ended and is finished
+by a fresh take rather than resumed. Where the forge could not say, the
+resume stops at exit 3 without pushing or opening — an unanswered read
+is not "no pull request", and opening a second pull request over a
+branch that has one is the failure this act exists to avoid. What stays
+local is the requirement that the branch be here: a branch this checkout
+never had would have to be fetched and adopted, which is not finishing a
+take.
 
 Exit codes: **0** taken; **1** a refusal, with nothing created; **2**
 composed and waiting on the word; **3** git or the forge failed. It
