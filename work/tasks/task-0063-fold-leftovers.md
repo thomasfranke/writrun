@@ -11,9 +11,10 @@ depends_on: []
 milestone: null
 created: 2026-09-06T05:30:22Z
 queued: 2026-09-06T05:40:23Z
-completed: null
+completed: 2026-09-06T07:24:13Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-opus-5, login: thomasfranke}
 ---
 
 # The resolver clones fold and the string reader gets its own name

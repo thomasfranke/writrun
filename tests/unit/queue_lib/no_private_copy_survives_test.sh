@@ -25,6 +25,13 @@ survivors() {
       | grep -v '/queue_lib.sh$'
     grep -rln 'merge-base "${left:-HEAD}"' "$SCRIPTS" 2>/dev/null \
       | grep -v '/queue_lib.sh$'
+    # The resolver family (spec-0089): ql_task_num's sed body, and a
+    # task_file-shaped glob loop over the queue — the drifted variant
+    # preflight.sh carried beside the lib it already sourced.
+    grep -rln "s/\^task-//" "$SCRIPTS" 2>/dev/null \
+      | grep -v '/queue_lib.sh$'
+    grep -rln 'in work/tasks/task-\*\.md' "$SCRIPTS" 2>/dev/null \
+      | grep -v '/queue_lib.sh$'
     true
   )
   if [ -n "$hits" ]; then
@@ -34,7 +41,7 @@ survivors() {
   echo clean
 }
 
-check "no private git_read, range parse or fm_field remains" 0 \
+check "no private git_read, range parse, field reader or resolver remains" 0 \
   "clean" -- survivors
 
 finish

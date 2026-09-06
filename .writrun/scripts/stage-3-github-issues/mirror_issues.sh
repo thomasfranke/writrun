@@ -187,7 +187,7 @@ patch_fm() {
   '
 }
 
-fm_field() {   # fm_field <front-matter> <name>
+fm_first() {   # fm_first <front-matter> <name>
   printf '%s\n' "$1" | sed -n "s/^$2: *//p" | head -n1 | sed 's/[[:space:]]*$//'
 }
 first_heading() {
@@ -239,7 +239,7 @@ base_status_of() {
 # because that is the path the base branch holds and this workflow checks
 # out the base and never the pull request's code (writrun-issues.yml).
 # Where the rename also carries a patch, the patch's fields are put
-# first and win, since fm_field reads the first line that names a field.
+# first and win, since fm_first reads the first line that names a field.
 #
 # The patch-only rule keeps its whole meaning for `modified`, which is
 # where it was written for: a status the patch does not carry means
@@ -400,7 +400,7 @@ while IFS="$TAB" read -r fstatus fname fprev fpatch; do
     tid=$(printf '%s' "$fname" | tr '[:upper:]' '[:lower:]' \
       | sed -n 's|^work/tasks/\(task-[0-9][0-9]*\).*|\1|p')
   else
-    tid=$(fm_field "$tfm" id)
+    tid=$(fm_first "$tfm" id)
   fi
   ttitle=$(first_heading "$body")
   [ -n "$ttitle" ] || ttitle=$(file_heading "$prev")
@@ -414,9 +414,9 @@ while IFS="$TAB" read -r fstatus fname fprev fpatch; do
   # runs after the merge, though, and a repository that does not gate on
   # the check can land one anyway. Read it as absent rather than trip
   # over it.
-  torigin=$(fm_field "$tfm" origin)
+  torigin=$(fm_first "$tfm" origin)
   [ -n "$torigin" ] || torigin="-"
-  TASKS="${TASKS}${tid}${TAB}${fname}${TAB}$(fm_field "$tfm" priority)${TAB}$(fm_field "$tfm" milestone)${TAB}${torigin}${TAB}${ttitle}"$'\n'
+  TASKS="${TASKS}${tid}${TAB}${fname}${TAB}$(fm_first "$tfm" priority)${TAB}$(fm_first "$tfm" milestone)${TAB}${torigin}${TAB}${ttitle}"$'\n'
 done <<EOF
 $FILES
 EOF
@@ -466,7 +466,7 @@ while IFS="$TAB" read -r fstatus fname fprev fpatch; do
   # the loop below branches on. The task loop above carries "-" for the
   # same reason, and a report's status is empty far more often than a
   # task's origin: every body-only edit produces one.
-  rstatus=$(fm_field "$rfm" status)
+  rstatus=$(fm_first "$rfm" status)
   [ -n "$rstatus" ] || rstatus="-"
   rtitle=$(first_heading "$rbody")
   [ -n "$rtitle" ] || rtitle=$(file_heading "$rprev")
