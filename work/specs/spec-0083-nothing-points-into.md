@@ -121,8 +121,12 @@ this repository puts a reader more than one script needs.
 
 ## Proposed technical changes
 
-- none — no technical chapter describes either check. Both contracts live
-  in their own headers, which the Steps rewrite.
+- `technical/decisions/pull-requests/0071-a-resolving-promise-can-still-be-refused.md`
+  — the third condition contradicts what `0065` recorded, and the
+  decisions log is append-only, so the correction is the next entry
+  rather than an edit.
+- `technical/decisions/README.md` — the chronology, which is the one
+  part of that folder rewritten, and only by appending a row.
 
 ## Outcome
 
@@ -159,6 +163,15 @@ the typo-hunt this spec's Acceptance criteria forbid, arriving two lines
 below the message that avoided it. Resolution faults and draft faults are
 now counted apart and each trailer is printed only if its kind fired;
 a range faulting both ways gets both.
+
+**The technical promise moved off `none`, under an open pull request.**
+The spec was written believing no technical chapter described either
+check. `0065` does describe one — it names `check_promise_paths.sh`, its
+two conditions, and the claim "shape, never existence" that the third
+condition falsifies. Editing it was not available: the decisions log is
+append-only and a number is identity ([README](../../docs/technical/decisions/README.md)),
+so the correction is `0071`, which extends `0065` rather than superseding
+it, plus the appended chronology row.
 
 Step 4 is met in the headers themselves rather than beside the condition:
 both scripts opened by asserting resolution *was* the whole question —
