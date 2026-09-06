@@ -49,11 +49,12 @@ RANGE="${1:?usage: check_unique_ids.sh <diff-range> <owner/repo> <pr-number>}"
 REPO="${2:?usage: check_unique_ids.sh <diff-range> <owner/repo> <pr-number>}"
 PR="${3:?usage: check_unique_ids.sh <diff-range> <owner/repo> <pr-number>}"
 
-# Sourced for one helper: `ql_row_fields`, the reader every tab-delimited
-# row in this repository goes through. The rows below are assembled here
-# and never leave, which is exactly why a private parse was tempting and
-# why it is refused — the collapse is a property of `read`, not of where
-# the row came from.
+# `ql_row_fields`, the reader every tab-delimited row in this repository
+# goes through — the rows below are assembled here and never leave, which
+# is exactly why a private parse was tempting and why it is refused: the
+# collapse is a property of `read`, not of where the row came from. Also
+# `ql_range_ends` and `ql_git_read`, for the reason the lib's header
+# gives: private copies of these drifted before.
 . "$(dirname "$0")/queue_lib.sh"
 
 TAB=$(printf '\t')
@@ -66,19 +67,8 @@ PR_FETCH_LIMIT=200
 
 # The left end of the range, which is the branch this change is measured
 # against — `A...B`, `A..B`, and a bare ref all name it differently.
-case "$RANGE" in
-  *...*)
-    left="${RANGE%%...*}"
-    right="${RANGE##*...}"
-    if ! BASE=$(git merge-base "${left:-HEAD}" "${right:-HEAD}" 2>&1); then
-      echo "git merge-base ${left:-HEAD} ${right:-HEAD} failed:" >&2
-      printf '%s\n' "$BASE" | head -n 2 >&2
-      exit 3
-    fi
-    ;;
-  *..*) BASE="${RANGE%%..*}" ;;
-  *)    BASE="$RANGE" ;;
-esac
+ql_range_ends "$RANGE"
+BASE="$QL_BASE"
 
 # queue_id <path> — "<kind><TAB><number>" for a queue file, where kind is
 # task, spec or report and number is the id's digits with leading zeros
@@ -109,30 +99,6 @@ queue_id() {
 
 # --- what this change claims ---------------------------------------------
 
-# git_read <label> <git-args...> — runs git and leaves its stdout in
-# GIT_OUT. On failure it prints what git said and exits 3, because a
-# check that could not read its input must never report the empty result
-# as a clean one: `$(git … || true)` yields exactly the same empty string
-# whether nothing matched or nothing ran, and two of these checks are
-# gates (spec-0013).
-#
-# **Never call this inside a command substitution.** The `exit` would end
-# only the subshell, and the caller would go on reading the empty value
-# this exists to prevent — the very shape of the bug being removed.
-GIT_OUT=""
-git_read() {
-  local label="$1" err
-  shift
-  err=$(mktemp "${TMPDIR:-/tmp}/writrun-git.XXXXXX")
-  if ! GIT_OUT=$(git "$@" 2>"$err"); then
-    echo "${label} failed:" >&2
-    head -n 2 "$err" >&2
-    rm -f "$err"
-    exit 3
-  fi
-  rm -f "$err"
-}
-
 # **A rename is a claim, and a release.** A queue filename is an id plus
 # a subject slug, so renumbering a file changes its path and git pairs it
 # as a rename rather than a modification — invisible to `--diff-filter=A`,
@@ -142,7 +108,7 @@ git_read() {
 # source is a release, subtracted from the base below.
 mine=""
 released=""
-git_read "git diff --name-status --diff-filter=AR ${RANGE} -- work/tasks work/specs work/reports" \
+ql_git_read "git diff --name-status --diff-filter=AR ${RANGE} -- 'work/tasks/*.md' 'work/specs/*.md' 'work/reports/*.md'" \
   diff --name-status --diff-filter=AR "$RANGE" -- 'work/tasks/*.md' 'work/specs/*.md' 'work/reports/*.md'
 while IFS= read -r row; do
   [ -n "$row" ] || continue
@@ -170,7 +136,7 @@ while IFS= read -r row; do
   [ -n "$k" ] || continue
   mine="${mine}${k}${TAB}${dst}"$'\n'
 done <<EOF
-$GIT_OUT
+$QL_GIT_OUT
 EOF
 
 if [ -z "$mine" ]; then
@@ -181,7 +147,7 @@ fi
 # --- what the base branch already holds -----------------------------------
 
 held=""
-git_read "git ls-tree -r --name-only ${BASE} -- work/tasks work/specs work/reports" \
+ql_git_read "git ls-tree -r --name-only ${BASE} -- work/tasks work/specs work/reports" \
   ls-tree -r --name-only "$BASE" -- work/tasks work/specs work/reports
 while IFS= read -r f; do
   [ -n "$f" ] || continue
@@ -189,7 +155,7 @@ while IFS= read -r f; do
   [ -n "$k" ] || continue
   held="${held}${k}${TAB}${f}"$'\n'
 done <<EOF
-$GIT_OUT
+$QL_GIT_OUT
 EOF
 
 # An id whose only holder on the base is a file this change renamed away

@@ -1,7 +1,7 @@
 ---
 id: spec-0087
 task_ref: task-0061
-status: approved
+status: implemented
 created: 2026-09-06T03:25:16Z
 ---
 
@@ -155,4 +155,33 @@ the next review does not read the silence as an oversight.
 
 ## Outcome
 
-_(fill after execution)_
+Implemented, with the count larger than planned: the fold reached
+**twenty-three copies across eleven scripts**, not twenty-one across
+nine. The no-survivors test pins the field reader by its awk body
+rather than its name, and the body found what the name never would —
+`preflight.sh` (stage-1) carried a byte-clone of the file-form reader,
+and `rederive_labels.sh` (stage-3) carried the same body as `fm`,
+arguments swapped. Both folded: preflight calls `ql_fm_field`, and
+`fm` became a one-line adapter keeping its call sites' argument order.
+The stages ship as one tree, so both source the stage-2 lib by
+relative path — the first cross-stage sourcing, and decision 0072
+records it as the rule.
+
+Divergences from the plan, and why:
+
+- Step 4 said six `fm_field`s read `ql_fm_field_in`; five do. The
+  sixth (`check_promise_companions.sh`) was the *file* signature, so
+  its call site reads `ql_fm_field` — a smaller change than planned.
+- `check_amendment_reference.sh` had been working around the missing
+  stdin door with `ql_fm_field status /dev/stdin`; the call site now
+  reads `ql_fm_field_in`, retiring the workaround the gap had forced.
+- The label sweep found nine liars, all one shape: labels printing
+  bare directories (`-- work/specs`) over quoted glob pathspecs
+  actually run. All now spell the command run.
+- `mirror_issues.sh`'s same-named string reader — different semantics
+  on purpose, not a clone — stands outside the fold as scoped, and
+  report-0037 records it beside `preflight.sh`'s remaining
+  `task_num`/`task_file` resolver clones, which are the next family.
+
+Decision 0072 and its chronology row written as promised;
+`make template-sync` run; the full suite green.

@@ -11,9 +11,10 @@ depends_on: []
 milestone: null
 created: 2026-09-06T03:24:39Z
 queued: 2026-09-06T03:41:51Z
-completed: null
+completed: 2026-09-06T03:59:55Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-fable-5, login: thomasfranke, input: 176, output: 86563, cache_read: 11044941, cache_write: 125882}
 ---
 
 # The eight remaining scripts stop carrying their own git_read, range parse and fm_field

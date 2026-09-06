@@ -54,44 +54,9 @@ TAB=$(printf '\t')
 # passing precisely where it should fire.
 PR_FETCH_LIMIT=200
 
-# git_read <label> <git-args...> — runs git and leaves its stdout in
-# GIT_OUT. On failure it prints what git said and exits 3, because a
-# check that could not read its input must never report the empty result
-# as a clean one: `$(git … || true)` yields exactly the same empty string
-# whether nothing matched or nothing ran, and this one is a gate
-# (spec-0013).
-#
-# **Never call this inside a command substitution.** The `exit` would end
-# only the subshell, and the caller would go on reading the empty value
-# this exists to prevent — the very shape of the bug being removed.
-GIT_OUT=""
-git_read() {
-  local label="$1" err
-  shift
-  err=$(mktemp "${TMPDIR:-/tmp}/writrun-git.XXXXXX")
-  if ! GIT_OUT=$(git "$@" 2>"$err"); then
-    echo "${label} failed:" >&2
-    head -n 2 "$err" >&2
-    rm -f "$err"
-    exit 3
-  fi
-  rm -f "$err"
-}
-
 # The left end of the range — the branch this change is measured against.
-case "$RANGE" in
-  *...*)
-    left="${RANGE%%...*}"
-    right="${RANGE##*...}"
-    if ! BASE=$(git merge-base "${left:-HEAD}" "${right:-HEAD}" 2>&1); then
-      echo "git merge-base ${left:-HEAD} ${right:-HEAD} failed:" >&2
-      printf '%s\n' "$BASE" | head -n 2 >&2
-      exit 3
-    fi
-    ;;
-  *..*) BASE="${RANGE%%..*}" ;;
-  *)    BASE="$RANGE" ;;
-esac
+ql_range_ends "$RANGE"
+BASE="$QL_BASE"
 
 # --- what this change returns to draft ------------------------------------
 #
@@ -99,14 +64,14 @@ esac
 # the diff text: a spec body quoting `status: draft` at column 0 is prose,
 # not an amendment.
 
-git_read "git diff --name-only ${RANGE} -- work/specs" \
+ql_git_read "git diff --name-only ${RANGE} -- 'work/specs/*.md'" \
   diff --name-only "$RANGE" -- 'work/specs/*.md'
 
-# Read line by line and never with `for s in $GIT_OUT`: word splitting
+# Read line by line and never with `for s in $QL_GIT_OUT`: word splitting
 # turns one path containing a space into two paths that exist nowhere,
 # each skipped by the `-f` test below — an amendment dropped in silence,
 # which for a gate is the same failure as reading nothing at all.
-touched="$GIT_OUT"
+touched="$QL_GIT_OUT"
 
 amended=""
 while IFS= read -r s; do
@@ -125,18 +90,18 @@ while IFS= read -r s; do
   [ -f "$s" ] || continue
   [ "$(ql_fm_field status "$s")" = "draft" ] || continue
 
-  # What the spec was at the base, through git_read for the reason its
+  # What the spec was at the base, through ql_git_read for the reason its
   # own comment gives: `$(git … ) || was=""` cannot tell "this spec is
   # new on the branch" from "git could not be read", and the second one
   # silently becomes "nothing is suspended" — the gate passing exactly
   # where it must fire. `ls-tree` separates the two: absent from a tree
   # it could read is an answer, a tree it could not read is not.
-  git_read "git ls-tree ${BASE} -- ${s}" ls-tree "$BASE" -- "$s"
-  if [ -z "$GIT_OUT" ]; then
+  ql_git_read "git ls-tree ${BASE} -- ${s}" ls-tree "$BASE" -- "$s"
+  if [ -z "$QL_GIT_OUT" ]; then
     continue    # not in the base tree: a new spec, never an amendment
   fi
-  git_read "git show ${BASE}:${s}" show "${BASE}:$s"
-  was=$(printf '%s\n' "$GIT_OUT" | ql_fm_field status /dev/stdin)
+  ql_git_read "git show ${BASE}:${s}" show "${BASE}:$s"
+  was=$(printf '%s\n' "$QL_GIT_OUT" | ql_fm_field_in status)
 
   case "$was" in approved|implemented) ;; *) continue ;; esac
   amended="${amended}$(ql_fm_field id "$s")"$'\n'

@@ -57,13 +57,10 @@ TOP=$(git rev-parse --show-toplevel 2>/dev/null) \
   || own_failure "not a git repository"
 cd "$TOP" || own_failure "cannot enter ${TOP}"
 
-fm_field() {
-  awk -v f="$1" '
-    NR == 1 { if ($0 != "---") exit; next }
-    /^---$/ { exit }
-    sub("^" f ": *", "") { sub(/[[:space:]]*$/, ""); print; exit }
-  ' "$2"
-}
+# The shared front-matter reader — one copy, in the stage-2 lib, for the
+# reason its header gives; the stages ship as one tree, so the path is
+# always there to source.
+. "$(dirname "$0")/../stage-2-pull-requests/queue_lib.sh"
 
 # The zeros are stripped in a step of their own — see ql_task_num, whose
 # rule this is: `0034` is how the queue spells an id, so it is what a
@@ -140,8 +137,8 @@ fi
 WARNING=""
 while IFS= read -r f; do
   [ -n "$f" ] || continue
-  id=$(fm_field id "$f")
-  done_at=$(fm_field completed "$f")
+  id=$(ql_fm_field id "$f")
+  done_at=$(ql_fm_field completed "$f")
   if [ -z "$done_at" ] || [ "$done_at" = null ]; then
     WARNING="${WARNING}${id} has no completed date, so this run precedes the completion edits and does not stand for them; run it again after them."$'\n'
   fi
