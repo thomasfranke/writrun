@@ -1,7 +1,7 @@
 ---
 id: spec-0089
 task_ref: task-0063
-status: approved
+status: implemented
 created: 2026-09-06T05:30:36Z
 ---
 
@@ -100,4 +100,24 @@ is the witness.
 
 ## Outcome
 
-_(fill after execution)_
+Implemented as specified. `preflight.sh` defines no resolver —
+`task_num` and `task_file` are deleted with the comment that excused
+them, the one external call site reads `ql_task_file`, and the source
+line's comment now names the resolvers beside the reader it already
+credited. `mirror_issues.sh` carries no `fm_field`: definition, six
+call occurrences and the first-line-wins comment all read `fm_first`,
+and nothing else in the file spoke the old name.
+
+The no-survivors test grew the two resolver patterns (the `task_num`
+sed body, the queue glob loop), each excluding the lib, and was run
+red against the pre-fold `preflight.sh` before the fold was trusted —
+both patterns fired on it, none after. Its case name widened to say
+what it now refuses. No divergence from the plan; `queue_file` in
+`rederive_labels.sh` untouched, as scoped.
+
+The ledger entry carries no token counts, for task-0062's recorded
+reason: the platform's usage log attributes by a branch this worktree's
+transcript never names, so `read_usage.sh` proposes nothing and the
+entry states what is known.
+
+Full suite green; `make template-sync` run.
