@@ -1,8 +1,8 @@
 ---
 id: task-0060
-status: ready
+status: in-progress
 blocked_reason: null
-taken_by: null
+taken_by: thomasfranke
 spec_ref: [spec-0084, spec-0085, spec-0086]
 doc_ref: null
 origin: report
