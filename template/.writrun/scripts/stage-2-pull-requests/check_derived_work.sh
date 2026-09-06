@@ -9,18 +9,27 @@
 # Exit 0: nothing owed, or the declaration is present.
 # Exit 1: a permanent doc changed with neither derived tasks in the diff
 #         nor "none" declared under "## Derived work" in the PR body.
+# Exit 3: the range could not be read, or a changed path arrived in a
+#         shape this check cannot probe. Never reported as a clean run —
+#         an input that could not be read is not an empty one.
 
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 . "$HERE/queue_lib.sh"
 RANGE="${1:?usage: check_derived_work.sh <diff-range>}"
 
-# Only an authoring change owes a declaration. Permanent is structural —
-# everything under docs/; the queue lives in work/. An implementing change
-# touches permanent docs too — as loop closure — and is identified the
-# same way the deltas check identifies it: some spec reached `implemented`.
+# Only an authoring change owes a declaration. Permanent is where the
+# project has committed itself, and that is no longer structural: it is
+# everything under docs/ less two exemptions, each a different thing.
+# The queue lives in work/ and was never permanent.
 # docs/writrun-instructions.md is process metadata, not project truth —
-# no task derives from it and no declaration is owed for editing it.
+# no task derives from it and no declaration is owed for editing it. And
+# a chapter that declares itself a draft is not a rule yet, so it is not
+# permanent either; that one is the filter below, where its reasoning
+# lives. An implementing change touches permanent docs too — as loop
+# closure — and is identified the same way the deltas check identifies
+# it: some spec reached `implemented`.
+
 # git_read <label> <git-args...> — runs git and leaves its stdout in
 # GIT_OUT. On failure it prints what git said and exits 3, because a
 # check that could not read its input must never report the empty result
@@ -65,8 +74,23 @@ case "$RANGE" in
   *)    BASE="$RANGE"; HEADREF=HEAD ;;
 esac
 
+# Both flags guard the same hazard, and it is this check's worst one: a
+# path the loop below cannot probe drops out of `perm` in silence, and a
+# dropped path turns a refusal into a pass.
+#
+#   - `core.quotePath=false`, because git otherwise renders a chapter
+#     whose name holds non-ASCII bytes as `"docs/caf\303\251.md"` —
+#     quotes and escapes included — and neither `git cat-file` probe can
+#     resolve that literal string, so the chapter is a rule at neither
+#     end and leaves the set.
+#   - `--no-renames`, because a detected rename is reported as its
+#     destination alone. Renaming a rule chapter and adding the marker in
+#     one change would then present a single path that is absent at the
+#     base and a draft at the head — the silent withdrawal the marker is
+#     explicitly not a way out of. Read as an addition and a deletion,
+#     both ends of the rename are asked the question.
 git_read "git diff --name-only ${RANGE} -- docs" \
-  diff --name-only "$RANGE" -- docs
+  -c core.quotePath=false diff --name-only --no-renames "$RANGE" -- docs
 # The `|| true` that stays is grep's, not git's: no match is an answer.
 perm=$(printf '%s\n' "$GIT_OUT" \
   | grep -vxF 'docs/writrun-instructions.md' || true)
@@ -92,6 +116,18 @@ perm=$(printf '%s\n' "$GIT_OUT" \
 kept=""
 while IFS= read -r f; do
   [ -n "$f" ] || continue
+
+  # Quoting off, git still quotes a path holding a quote, a backslash or
+  # a control character. Such a path cannot be probed, and a gate refuses
+  # what it cannot read rather than dropping it — the sibling promise
+  # check draws this line in the same place for the same reason.
+  case "$f" in
+    '"'*)
+      echo "cannot read the changed path ${f} — refusing rather than skipping it" >&2
+      exit 3
+      ;;
+  esac
+
   rule_at_base=false
   if git cat-file -e "${BASE}:$f" 2>/dev/null; then
     ql_doc_is_draft "$f" "$BASE" || rule_at_base=true

@@ -188,6 +188,20 @@ before — while `check_front_matter.sh` is a skill, standalone so it runs
 at every adoption stage, and carries its own four lines with the reason
 written above them.
 
+**The docs read is told not to quote and not to detect renames**, which
+review found after the first implementation and which the Steps did not
+anticipate. Both flags guard the same hazard and it is this check's
+worst: a path the filter cannot probe leaves `perm` in silence, and a
+dropped path is a refusal turned into a pass. Git quotes a chapter whose
+name holds non-ASCII bytes, and neither `git cat-file` probe resolves
+that literal string; git reports a detected rename as its destination
+alone, so renaming a rule chapter while adding the marker presented one
+path absent at the base and a draft at the head — the silent withdrawal
+the table's fourth row exists to refuse, reached by the one route the
+table could not see. A path git still quotes with quoting off is refused
+with exit 3 rather than dropped, the line the sibling promise check
+already drew.
+
 **The blob is captured before its first line is taken.** `git show` into
 a variable, then `${blob%%$'\n'*}`, then a trailing-whitespace trim. Not
 `| head -1`: that closes the pipe, git dies on SIGPIPE and `pipefail`
