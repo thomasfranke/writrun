@@ -279,6 +279,21 @@ check_date() {   # check_date <file> <block> <field> <null-ok>
   return 0
 }
 
+
+# doc_declares_draft <file> — does that chapter's **first line** declare
+# it a draft? Trailing whitespace trimmed, nothing else: a marker
+# indented, on line two, or inside a fence is prose about the marker
+# rather than the marker. A chapter that documents it names it in prose,
+# so presence anywhere in the file is not the question.
+doc_declares_draft() {
+  local blob first
+  [ -f "$1" ] || return 1
+  blob=$(cat "$1")
+  first=${blob%%$'\n'*}
+  first=$(printf '%s' "$first" | sed 's/[[:space:]]*$//')
+  [ "$first" = '/// writrun:draft' ]
+}
+
 check_doc_ref() {   # check_doc_ref <file> <block>
   # Relative to docs/ — a docs/ prefix would double when the machinery
   # prefixes it back (queue impact, the delta check). One rule, one copy:
@@ -302,6 +317,23 @@ check_doc_ref() {   # check_doc_ref <file> <block>
       target="${DOCS_DIR}/${ref%%#*}"
       [ -f "$target" ] \
         || fail "$1" "doc_ref '$ref' names no file — ${target} does not exist"
+      # **Resolving is no longer the whole question.** A chapter that
+      # declares itself a draft is not a rule, and nothing derives from
+      # one — so a doc_ref into it is derivation from a rule the project
+      # has not made
+      # (product/stage-1-tasks-and-specs/authoring.md#a-chapter-that-is-not-a-rule-yet).
+      # The refusal says that rather than "names no file": the file is
+      # right there, and a resolution message would send the reader
+      # looking for a typo that is not there.
+      #
+      # Read here rather than borrowed: this check is a skill, standalone
+      # so it runs at every adoption stage, and the copy in
+      # scripts/stage-2-pull-requests/queue_lib.sh is on the far side of
+      # that boundary. Two copies of four lines, and the boundary is the
+      # reason — the two stage-2 readers share one.
+      if [ -f "$target" ] && doc_declares_draft "$target"; then
+        fail "$1" "doc_ref '$ref' names a draft chapter — nothing derives from a chapter that is not a rule yet"
+      fi
       ;;
     *) fail "$1" "doc_ref '$ref' is not null or a .md path (optionally with #anchor)" ;;
   esac

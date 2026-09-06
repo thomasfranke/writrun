@@ -1,7 +1,7 @@
 ---
 id: spec-0083
 task_ref: task-0059
-status: approved
+status: implemented
 created: 2026-09-05T23:56:07Z
 ---
 
@@ -121,9 +121,61 @@ this repository puts a reader more than one script needs.
 
 ## Proposed technical changes
 
-- none — no technical chapter describes either check. Both contracts live
-  in their own headers, which the Steps rewrite.
+- `technical/decisions/pull-requests/0071-a-resolving-promise-can-still-be-refused.md`
+  — the third condition contradicts what `0065` recorded, and the
+  decisions log is append-only, so the correction is the next entry
+  rather than an edit.
+- `technical/decisions/README.md` — the chronology, which is the one
+  part of that folder rewritten, and only by appending a row.
 
 ## Outcome
 
-_(fill after execution)_
+Implemented as specified.
+
+**The reader is shared where a boundary allows and copied where one does
+not, which is the judgement this spec left to be made against what the
+implementer found.** What was found: none of the three checks sourced
+anything at all. Two of them — `check_derived_work.sh` and
+`check_promise_paths.sh` — sit in the same directory as `queue_lib.sh`,
+so nothing but inertia kept them from sharing; both now source it and
+call `ql_doc_is_draft`. The third is a skill, standalone by an explicit
+rule: it is the one check available at every adoption stage, and reaching
+into `scripts/stage-2-pull-requests/` would break that. It carries four
+lines of its own with the boundary named above them. Two copies rather
+than three, and the second has a reason instead of a shrug.
+
+**`check_promise_paths.sh` reads the checkout, not a ref.** The spec said
+the head end; the script's own condition one already answers existence
+with `[ -e "$first" ]` against the working tree, which in CI *is* the
+head end. Adding a ref read beside a tree read would have put two notions
+of "now" in one loop. The refusal is condition three, after the two that
+are about resolution, and says what is actually wrong — the path resolves
+perfectly, so a resolution message would send the author hunting a typo
+that is not there.
+
+A folder promise is left alone: a trailing slash names no chapter.
+
+**The closing advice is printed per fault kind**, which review found the
+first implementation had not done. The refusal named the draft correctly
+and then printed the standing trailer under it — "write it as the schema
+reads it" — at an author who had written it exactly that way, which is
+the typo-hunt this spec's Acceptance criteria forbid, arriving two lines
+below the message that avoided it. Resolution faults and draft faults are
+now counted apart and each trailer is printed only if its kind fired;
+a range faulting both ways gets both.
+
+**The technical promise moved off `none`, under an open pull request.**
+The spec was written believing no technical chapter described either
+check. `0065` does describe one — it names `check_promise_paths.sh`, its
+two conditions, and the claim "shape, never existence" that the third
+condition falsifies. Editing it was not available: the decisions log is
+append-only and a number is identity ([README](../../docs/technical/decisions/README.md)),
+so the correction is `0071`, which extends `0065` rather than superseding
+it, plus the appended chronology row.
+
+Step 4 is met in the headers themselves rather than beside the condition:
+both scripts opened by asserting resolution *was* the whole question —
+`check_promise_paths.sh` in the words "shape, never existence" and "two
+conditions answer it", `check_derived_work.sh` in "permanent is
+structural — everything under docs/" — and a note further down does not
+unsay a contract stated at the top.
