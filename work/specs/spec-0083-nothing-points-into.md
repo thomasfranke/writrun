@@ -150,3 +150,19 @@ perfectly, so a resolution message would send the author hunting a typo
 that is not there.
 
 A folder promise is left alone: a trailing slash names no chapter.
+
+**The closing advice is printed per fault kind**, which review found the
+first implementation had not done. The refusal named the draft correctly
+and then printed the standing trailer under it — "write it as the schema
+reads it" — at an author who had written it exactly that way, which is
+the typo-hunt this spec's Acceptance criteria forbid, arriving two lines
+below the message that avoided it. Resolution faults and draft faults are
+now counted apart and each trailer is printed only if its kind fired;
+a range faulting both ways gets both.
+
+Step 4 is met in the headers themselves rather than beside the condition:
+both scripts opened by asserting resolution *was* the whole question —
+`check_promise_paths.sh` in the words "shape, never existence" and "two
+conditions answer it", `check_derived_work.sh` in "permanent is
+structural — everything under docs/" — and a note further down does not
+unsay a contract stated at the top.
