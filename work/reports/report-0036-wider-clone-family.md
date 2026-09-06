@@ -1,13 +1,15 @@
 ---
 id: report-0036
-status: open
-task_ref: []
+status: tracked
+task_ref: [task-0061]
 doc_ref: null
 created: 2026-09-06T02:51:22Z
-triaged: null
+triaged: 2026-09-06T03:24:39Z
 ---
 
 # Eight more scripts carry the git_read clone the lib now retires
+
+**References:** [task-0061](../tasks/task-0061-clone-family-retires.md)
 
 While spec-0086 moved `git_read` and the range-ends parse into
 `queue_lib.sh` for the three gates report-0035 named, a grep for the
