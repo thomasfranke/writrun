@@ -39,6 +39,14 @@ six, and a stdin-form helper reshapes no call site at all —
 true is that the signature differs, which is why the lib grows an entry
 point rather than the call sites growing a temp file.
 
+In: the standing rule the folds have been standing in for. The
+one-copy principle lives today in `queue_lib.sh`'s header — a comment
+nothing derives from and no gate reads — and the family was
+under-counted twice because each fold's scope was what a review
+enumerated. This spec promises the decision entry that makes it a rule,
+the same incident-to-rule shape 0005 (POSIX awk) and 0012 (the test
+suite) took.
+
 Out: any behaviour change. Every script answers the existing suite
 identically; this is spec-0086's fold finished, not extended.
 
@@ -69,7 +77,16 @@ the next review does not read the silence as an oversight.
 5. Every label carried into `ql_git_read` is checked against the
    arguments beside it, the sweep spec-0086 ran over three scripts, now
    over eight. A label that names a different command is fixed.
-6. `make template-sync`, so `.writrun/` and `template/` stay byte-identical.
+6. `technical/decisions/pull-requests/0072-a-shared-helper-has-one-copy.md`
+   — a helper two stage-2 scripts need has one copy, in `queue_lib.sh`;
+   the general form is the primitive and wrappers are one line; the
+   `ql_` prefix marks what is shared. Rejected, with the history that
+   rejects them: per-script self-containment (the original state —
+   three incidents: the two the lib's header records, and spec-0084's
+   bug found in one copy of three) and a scripts-wide lib across
+   stages (nothing shares across stages yet; coupling with no client).
+   `decisions/README.md` gains the chronology row.
+7. `make template-sync`, so `.writrun/` and `template/` stay byte-identical.
 
 ## Acceptance criteria (EARS)
 
@@ -110,7 +127,8 @@ the next review does not read the silence as an oversight.
 - A unit case asserting no private `git_read`, range parse or
   `fm_field` definition survives under `.writrun/scripts/` — the
   regression this spec exists to make impossible to reintroduce
-  quietly.
+  quietly. It pins the three known names; a future clone under a new
+  name is what the decision entry exists to refuse.
 - The full existing suite green, unchanged — the fold's whole claim.
 
 ## Definition of Done
@@ -119,6 +137,7 @@ the next review does not read the silence as an oversight.
 - [ ] No `^git_read()`, `^fm_field()` or private range parse remains
       under `.writrun/scripts/`.
 - [ ] Every `ql_git_read` label in the eight matches its arguments.
+- [ ] Decision 0072 recorded, chronology row appended.
 - [ ] The suite's answers are byte-identical to before this spec.
 - [ ] `make template-sync` run; `template/` matches byte for byte.
 
@@ -128,9 +147,11 @@ the next review does not read the silence as an oversight.
 
 ## Proposed technical changes
 
-- none — no technical chapter names `queue_lib.sh` or these scripts'
-  internals; the lib's header is its own record, and `.writrun/`
-  reaches `template/` through `make template-sync`.
+- `technical/decisions/pull-requests/0072-a-shared-helper-has-one-copy.md`
+  — new entry: the one-copy principle leaves `queue_lib.sh`'s header
+  comment and becomes a standing rule, per step 6.
+- `technical/decisions/README.md` — append 0072's row to the
+  chronology.
 
 ## Outcome
 
