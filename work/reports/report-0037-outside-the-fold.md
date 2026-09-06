@@ -1,13 +1,15 @@
 ---
 id: report-0037
-status: open
-task_ref: []
+status: tracked
+task_ref: [task-0063]
 doc_ref: null
 created: 2026-09-06T03:58:52Z
-triaged: null
+triaged: 2026-09-06T05:30:22Z
 ---
 
 # Two readers stand outside the fold, and preflight still clones the resolvers
+
+**References:** [task-0063](../tasks/task-0063-fold-leftovers.md)
 
 While spec-0087 folded the clone family, its body-signature sweep
 surfaced two things it did not touch.
