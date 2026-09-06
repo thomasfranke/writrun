@@ -129,20 +129,13 @@ fi
 # range's two ends, never grepped out of the diff text — a spec body
 # quoting `status: implemented` at column 0 must not turn an authoring
 # change into loop closure.
-fm_field() {
-  awk -v f="$1" '
-    NR == 1 { if ($0 != "---") exit; next }
-    /^---$/ { exit }
-    sub("^" f ": *", "") { sub(/[[:space:]]*$/, ""); print; exit }
-  '
-}
 
 ql_git_read "git diff --name-only ${RANGE} -- 'work/specs/*.md'" \
   diff --name-only "$RANGE" -- 'work/specs/*.md'
 for s in $QL_GIT_OUT; do
   [ -f "$s" ] || continue
-  [ "$(fm_field status < "$s")" = "implemented" ] || continue
-  [ "$(git show "${BASE}:$s" 2>/dev/null | fm_field status)" = "implemented" ] && continue
+  [ "$(ql_fm_field_in status < "$s")" = "implemented" ] || continue
+  [ "$(git show "${BASE}:$s" 2>/dev/null | ql_fm_field_in status)" = "implemented" ] && continue
   echo "Implementing change — permanent doc edits are loop closure."
   exit 0
 done

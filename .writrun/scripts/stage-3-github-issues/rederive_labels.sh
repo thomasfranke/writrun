@@ -160,13 +160,12 @@ fi
 if printf '' | base64 -d >/dev/null 2>&1; then B64_FLAG="-d"; else B64_FLAG="-D"; fi
 b64_decode() { base64 "$B64_FLAG"; }
 
-fm() {   # fm <file> <field>
-  awk -v f="$2" '
-    NR == 1 { if ($0 != "---") exit; next }
-    /^---$/ { exit }
-    sub("^" f ": *", "") { sub(/[[:space:]]*$/, ""); print; exit }
-  ' "$1"
-}
+. "$(dirname "$0")/../stage-2-pull-requests/queue_lib.sh"
+
+# fm <file> <field> — the shared front-matter reader, argument order
+# kept as every call site here already speaks it; one body, in the
+# stage-2 lib, for the reason its header gives.
+fm() { ql_fm_field "$2" "$1"; }
 
 # queue_file <dir> <prefix> <id> — the file whose id is <id>, whatever its
 # subject slug and whatever width its number was written at.

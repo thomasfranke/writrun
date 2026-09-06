@@ -13,14 +13,25 @@
 # Portable bash 3.2, POSIX awk/sed — no gawk extensions. See the
 # standing rule in docs/technical/decisions/.
 
-# ql_fm_field <field> <file> — the field's value from the front-matter
-# block alone; a body line spelling `status:` at column 0 never counts.
-ql_fm_field() {
+# ql_fm_field_in <field> — the field's value from the front-matter block
+# alone, read from stdin; a body line spelling `status:` at column 0
+# never counts. One awk body, two entry points: this is the primitive,
+# and `ql_fm_field` below is its file form. The stdin door exists
+# because `git show REV:path |` is the shape a caller cannot avoid when
+# the blob may legitimately be absent — a file new in the range has
+# nothing at the base, and the pipeline's empty output is the answer,
+# never an error to handle.
+ql_fm_field_in() {
   awk -v f="$1" '
     NR == 1 { if ($0 != "---") exit; next }
     /^---$/ { exit }
     sub("^" f ": *", "") { sub(/[[:space:]]*$/, ""); print; exit }
-  ' "$2"
+  '
+}
+
+# ql_fm_field <field> <file> — the same read from a named file.
+ql_fm_field() {
+  ql_fm_field_in "$1" < "$2"
 }
 
 # ql_set_field <file> <field> <value> — front matter only.
