@@ -92,3 +92,4 @@ appending a row.
 | [0070](tasks-and-specs/0070-the-mirror-is-the-fourth-view.md) | 2026-09-05 | `tasks-and-specs` | an id is minted above the mirror, the only record of it that survives a dropped branch — extending [0013](tasks-and-specs/0013-new-sh-reads-git.md). |
 | [0071](pull-requests/0071-a-resolving-promise-can-still-be-refused.md) | 2026-09-06 | `pull-requests` | a promise that resolves is still refused when the chapter it names is not a rule — extending [0065](pull-requests/0065-a-promise-is-judged-by-shape.md). |
 | [0072](pull-requests/0072-a-shared-helper-has-one-copy.md) | 2026-09-06 | `pull-requests` | a shared helper has one copy, and it lives in `queue_lib.sh`. |
+| [0073](github-issues/0073-one-writer-per-pull-request.md) | 2026-09-06 | `github-issues` | one writer per pull request, and a reconciler that retires duplicates. |

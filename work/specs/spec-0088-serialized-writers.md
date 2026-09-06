@@ -1,7 +1,7 @@
 ---
 id: spec-0088
 task_ref: task-0062
-status: approved
+status: implemented
 created: 2026-09-06T05:16:45Z
 ---
 
@@ -111,4 +111,39 @@ not a constraint the platform does not sell.
 
 ## Outcome
 
-_(fill after execution)_
+Implemented as specified. The three workflows declare `concurrency`,
+grouped per the rule: `writrun-issues.yml` and `writrun-approve.yml`
+share `writrun-mirror-<pr>` — the mirror's writers are one family —
+and `writrun-progress.yml` holds `writrun-progress-<pr>` of its own;
+both of its event kinds (`pull_request_target`, `pull_request_review`)
+carry a `pull_request`, so the key resolves on every trigger.
+`cancel-in-progress: false` is stated explicitly in all three, with
+the why beside it. Decision 0073 records the rule and the rejected
+cancel.
+
+The dedup landed in `mirror_issues.sh` as a pass over the two lists it
+already fetches, before any lookup reads them: `dup_pairs` derives the
+open duplicates (oldest number surviving), `retire_dups` comments
+naming the survivor and closes `not_planned`, and the retired rows are
+filtered from the in-memory lists so the same run's lookups read the
+healed forge. Drafts exit before the lists are fetched, so the pass
+costs a draft nothing.
+
+One divergence, the shape the spec left open: `rederive_labels.sh`'s
+`find_mirror` shares the first-match blindness over the same list
+format, but its writes are labels, not mints — so it got the *rule*
+rather than the retire: the oldest open match wins the label, the
+first match answers as before when none is open. Retiring stays the
+reconciler's alone; the row rederive labels is the row that survives.
+Its `queue_file` reads an extracted tree and was untouched, as scoped.
+
+Three integration cases pin the behaviour: task duplicates (younger
+closed naming the survivor, survivor untouched, no third mint), report
+duplicates the same, and the single-mirror run writing no close at
+all. Full suite green; `make template-sync` run.
+
+The ledger entry carries no token counts: this task was worked in an
+isolated worktree, and the platform's usage log attributes by branch —
+a branch the worktree's transcript never names — so `read_usage.sh`
+proposed nothing and the entry states what is known rather than
+inventing what is not.

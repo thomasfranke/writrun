@@ -380,8 +380,15 @@ refresh_mirrors() {
 
 # find_mirror <kind> <id-number> — the mirror row for one id in the list
 # already in hand, or nothing.
+#
+# The oldest *open* match wins, not the first: the list arrives newest
+# first, and a duplicate pair — two runs racing one mint, report-0038 —
+# would put the younger mirror first and take this pass's label while
+# the reconciler retires it (decision 0073). The survivor there is the
+# oldest open mirror, so the row labelled here is the same one. With
+# one match, or none open, the answer is what it always was.
 find_mirror() {
-  local kind="$1" want="$2" rows n istate labels tb bb t tn
+  local kind="$1" want="$2" rows n istate labels tb bb t tn first="" best="" best_n=""
   case "$kind" in
     report) rows="$REPORT_ISSUES" ;;
     *)      rows="$ISSUES" ;;
@@ -392,12 +399,18 @@ find_mirror() {
     tn=$(num_of_id "$(id_of_title "$t" "$kind")")
     [ -n "$tn" ] || continue
     if [ "$tn" -eq "$want" ] 2>/dev/null; then
-      printf '%s' "${n}${TAB}${istate}${TAB}${labels}"
-      return 0
+      [ -n "$first" ] || first="${n}${TAB}${istate}${TAB}${labels}"
+      if [ "$istate" = "open" ]; then
+        if [ -z "$best_n" ] || [ "$n" -lt "$best_n" ] 2>/dev/null; then
+          best_n="$n"
+          best="${n}${TAB}${istate}${TAB}${labels}"
+        fi
+      fi
     fi
   done <<EOF
 $rows
 EOF
+  printf '%s' "${best:-$first}"
 }
 
 # resolve_mirror <kind> <id-number> — the same lookup, retried against a
