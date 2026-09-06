@@ -1,7 +1,7 @@
 ---
 id: spec-0086
 task_ref: task-0060
-status: approved
+status: implemented
 created: 2026-09-06T02:23:50Z
 ---
 
@@ -122,4 +122,22 @@ not get the same chance.
 
 ## Outcome
 
-_(fill after execution)_
+Implemented as specified. `ql_range_ends` and `ql_git_read` live in
+`queue_lib.sh`, sentinel semantics included; the three gates dropped
+their copies, `check_observance.sh` now sources the lib and replaces
+the sentinel explicitly (`TIP="${QL_HEADREF:-HEAD}"` — it reads
+commits); `fm_field` is deleted from `check_promise_paths.sh` in favour
+of `ql_fm_field`. The unit case pins all six range shapes, the
+merge-base refusal included, and the full suite answers as before.
+
+The label sweep found more liars than the one named: the same script's
+specs and tasks diffs printed `-- work/specs` and `-- work/tasks` while
+running quoted glob pathspecs, and `check_observance.sh`'s log label
+omitted the `--format` value — a command that does not even run as
+printed. All spelled out now.
+
+One thing the review under-counted, recorded rather than chased:
+**eight more** stage-2 scripts carry the same `git_read` clone, several
+with a private `BASE` derivation beside it. This spec's scope named
+three scripts and the change held to it — the wider family is
+report-0036, for triage to size on its own.

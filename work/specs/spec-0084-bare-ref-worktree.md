@@ -1,7 +1,7 @@
 ---
 id: spec-0084
 task_ref: task-0060
-status: approved
+status: implemented
 created: 2026-09-06T02:23:38Z
 ---
 
@@ -145,4 +145,20 @@ end of this diff and silently a third answer.
 
 ## Outcome
 
-_(fill after execution)_
+Implemented as specified. The bare arm sets the empty-`HEADREF`
+sentinel, the head probe branches on it — `git cat-file`/blob read with
+a ref, `[ -f ]`/checkout read without — and the base probe is
+untouched. The deletion scenario now fast-forwards the draft onto main
+and deletes it from a fresh `withdrawal` branch, with an assertion that
+the diff the check is handed really carries the path; the deleted-rule
+case exists and refuses bare, passes declared. Every existing
+derived-work case answers as before.
+
+Two things the Steps did not anticipate. The working-tree cases must
+`git add` the chapters they create: `git diff <ref>` reports a new file
+only once the index knows it, so an untracked chapter is invisible to
+the diff and the probes alike — invisible to both ends equally, which
+is the agreement this spec restores, and the tests say so where they
+stage. And the `case "$RANGE"` arm the Steps edited in place lives in
+`queue_lib.sh` by the end of the same change — spec-0086 lifted it,
+sentinel included, as its own Ordering paragraph said it would.

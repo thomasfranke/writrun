@@ -111,7 +111,10 @@ they are holding. The marker costs one line and removes the guess.
 task's `doc_ref` naming one is refused, and a spec may not list one in
 its **Proposed changes**. Both would be derivation by another name —
 deriving from a rule the project has not made, or promising to change a
-chapter no task was allowed to be born from.
+chapter no task was allowed to be born from. Derives, present tense: a
+finished record — a task completed or dropped, a report triage has
+routed — derives nothing, its `doc_ref` is history, and the refusal
+binds live queue files only.
 
 **The marker is positional because presence is not enough.** It counts on
 the first line, before the heading, and there only. A chapter that

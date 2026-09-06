@@ -1,7 +1,7 @@
 ---
 id: spec-0085
 task_ref: task-0060
-status: approved
+status: implemented
 created: 2026-09-06T02:23:44Z
 ---
 
@@ -135,4 +135,15 @@ on every path that creates one.
 
 ## Outcome
 
-_(fill after execution)_
+Implemented as specified. The guard reads the status from the same
+front-matter block `check_doc_ref` already holds — no second read, no
+new parameter — and one `case` serves both callers because the task and
+report vocabularies are disjoint: the seven finished statuses pass, and
+everything else, unknown statuses included, is judged live — strict by
+default, exactly as the Edge cases chose. The resolution and shape
+checks run for every status, unmoved.
+
+The tests cover both table rows and the demotion scenario end to end;
+the #225 cases pass unchanged, every one creating a live file. The
+product chapter carries the promised sentence — "derives, present
+tense" — beside the rule it sharpens. No divergence.
