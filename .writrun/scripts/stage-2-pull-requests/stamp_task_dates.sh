@@ -56,7 +56,7 @@ BASE="$QL_BASE"
 # stamp <file> <field> — writes STAMP into <field> when it holds null.
 stamp() {
   local f="$1" field="$2" cur
-  cur=$(fm_field "$field" < "$f")
+  cur=$(ql_fm_field_in "$field" < "$f")
   if [ -z "$cur" ]; then
     echo "SKIPPED: ${f} has no '${field}' field — the canonical check will name it" >&2
     return 0
