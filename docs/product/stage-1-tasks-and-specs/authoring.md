@@ -75,6 +75,59 @@ Neither mode is exempt from review: a permanent doc never merges on agent
 approval alone, whichever direction it changed in.
 
 
+## A chapter that is not a rule yet
+
+A permanent doc states what the project is held to. That is why authoring
+moves the doc ahead of the system and records the gap as a task: a rule on
+the authority branch with nothing bringing the code up to it is a rule the
+project is failing, quietly and for as long as nobody notices.
+
+Not all writing is that. A chapter drafted for stakeholders to read and
+argue with, a shape being worked out in the open, a direction nobody has
+agreed to build — that belongs where the people who need to see it early
+will find it, which is `docs/`. Keeping it out to avoid deriving work is
+the same document in a worse place, and the project loses the review it
+was written to get.
+
+So a chapter may declare that it is **not a rule yet**, on its first line
+and nowhere else:
+
+```
+/// writrun:draft
+```
+
+**Nothing derives from a draft chapter.** No task, no spec, no recorded
+gap. It is on the authority branch, it is read, and the queue does not
+know it exists. A change that touches only draft chapters owes no derived
+-work declaration, because there is no work to declare and no rule to
+review it against.
+
+**The declaration is what makes the difference visible.** Without it, a
+chapter the project is committed to and a chapter nobody has agreed to
+are the same file, and every reader — human or agent — has to guess which
+they are holding. The marker costs one line and removes the guess.
+
+**A draft chapter is not half a rule.** Nothing may point into it: a
+task's `doc_ref` naming one is refused, and a spec may not list one in
+its **Proposed changes**. Both would be derivation by another name —
+deriving from a rule the project has not made, or promising to change a
+chapter no task was allowed to be born from.
+
+**The marker is positional because presence is not enough.** It counts on
+the first line, before the heading, and there only. A chapter that
+*documents* this marker names it in its prose — this one does, twice
+above — and a reader that searched the whole file would mark the
+methodology's own docs as drafts. That failure has happened here before,
+in the other direction: a report quoting front matter in its body was
+read as carrying that front matter, and a mirror was closed on it.
+
+**Removing the marker is authoring.** The change that deletes the line is
+the change that makes the chapter a rule, and it derives its work like
+any other authoring change — which is where the tasks the draft never
+made get named, all at once and in front of a reviewer. That deletion is
+the human declaring the rule finished; nothing earlier is.
+
+
 ## Declaring derived work
 
 An authoring change names every task and spec derived from it, in the
@@ -256,7 +309,16 @@ put back exactly the cost the exemption exists to remove.
   until a human has declared the rule finished.
 - When a permanent doc is authored ahead of the system it describes, the
   doc shall state the rule in the present tense, and the gap shall be
-  recorded as a task rather than as prose in the doc.
+  recorded as a task rather than as prose in the doc — unless the chapter
+  declares itself a draft, which is the one way a permanent doc may sit
+  ahead of the system and record no gap.
+- When a chapter's first line declares it a draft, no task and no spec
+  shall derive from that chapter, no `doc_ref` shall resolve into it, and
+  no spec's **Proposed changes** shall name it.
+- When a change touches only draft chapters, it shall owe no derived-work
+  declaration.
+- When a change removes a draft declaration, that change shall be
+  authoring, and shall name every task and spec the chapter derives.
 - When a change authors a rule into a permanent doc, that change shall name
   every task and spec derived from it, or state explicitly that none were.
 - When a change would both close the loop on one rule and author another,
