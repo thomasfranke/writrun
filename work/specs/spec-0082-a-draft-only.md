@@ -1,7 +1,7 @@
 ---
 id: spec-0082
 task_ref: task-0058
-status: approved
+status: implemented
 created: 2026-09-05T23:56:04Z
 ---
 
@@ -164,4 +164,33 @@ into a variable, then take its first line.
 
 ## Outcome
 
-_(fill after execution)_
+Implemented as specified, with one deliberate departure on where the
+reader landed.
+
+The range's two ends are derived once, in the `case "$RANGE"` block the
+implemented-spec read already had — moved above the permanent-doc filter
+and given a `HEADREF` beside the existing `BASE`. No second parse.
+
+The filter asks per path whether the chapter was a rule at either end,
+which is the table's five rows plus the two it left implicit: a deleted
+draft is free, a deleted rule is not. Written as two explicit `if` blocks
+rather than an `&&` chain, because under `set -e` a command failing after
+the final `&&` exits the script.
+
+**The marker reader landed in `queue_lib.sh`, not in this script.** The
+Scope said it lands here and task-0059 decides where it belongs; both
+tasks were worked in one change, so that decision was available at once
+and taking it early avoided writing a helper in order to move it. The
+boundary it revealed is real and is recorded in spec-0083's Outcome:
+`check_derived_work.sh` and `check_promise_paths.sh` are stage-2 scripts
+beside `queue_lib.sh` and now source it — neither sourced anything
+before — while `check_front_matter.sh` is a skill, standalone so it runs
+at every adoption stage, and carries its own four lines with the reason
+written above them.
+
+**The blob is captured before its first line is taken.** `git show` into
+a variable, then `${blob%%$'\n'*}`, then a trailing-whitespace trim. Not
+`| head -1`: that closes the pipe, git dies on SIGPIPE and `pipefail`
+turns a correct read into a failure — the shape this suite has now been
+bitten by twice, once in `queue_lib`'s own cases and once in
+`harness.sh`, where it failed an assertion that had actually matched.

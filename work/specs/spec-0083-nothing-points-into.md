@@ -1,7 +1,7 @@
 ---
 id: spec-0083
 task_ref: task-0059
-status: approved
+status: implemented
 created: 2026-09-05T23:56:07Z
 ---
 
@@ -126,4 +126,27 @@ this repository puts a reader more than one script needs.
 
 ## Outcome
 
-_(fill after execution)_
+Implemented as specified.
+
+**The reader is shared where a boundary allows and copied where one does
+not, which is the judgement this spec left to be made against what the
+implementer found.** What was found: none of the three checks sourced
+anything at all. Two of them — `check_derived_work.sh` and
+`check_promise_paths.sh` — sit in the same directory as `queue_lib.sh`,
+so nothing but inertia kept them from sharing; both now source it and
+call `ql_doc_is_draft`. The third is a skill, standalone by an explicit
+rule: it is the one check available at every adoption stage, and reaching
+into `scripts/stage-2-pull-requests/` would break that. It carries four
+lines of its own with the boundary named above them. Two copies rather
+than three, and the second has a reason instead of a shrug.
+
+**`check_promise_paths.sh` reads the checkout, not a ref.** The spec said
+the head end; the script's own condition one already answers existence
+with `[ -e "$first" ]` against the working tree, which in CI *is* the
+head end. Adding a ref read beside a tree read would have put two notions
+of "now" in one loop. The refusal is condition three, after the two that
+are about resolution, and says what is actually wrong — the path resolves
+perfectly, so a resolution message would send the author hunting a typo
+that is not there.
+
+A folder promise is left alone: a trailing slash names no chapter.

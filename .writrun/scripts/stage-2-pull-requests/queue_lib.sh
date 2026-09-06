@@ -206,6 +206,50 @@ ql_row_fields() {
   return 0
 }
 
+# --- draft chapters -------------------------------------------------------
+#
+# QL_DRAFT_MARKER — the line a chapter puts first to say it is **not a
+# rule yet**. Nothing derives from a chapter carrying it: no task, no
+# spec, no recorded gap
+# (docs/product/stage-1-tasks-and-specs/authoring.md#a-chapter-that-is-not-a-rule-yet).
+QL_DRAFT_MARKER='/// writrun:draft'
+
+# ql_doc_is_draft <path> [ref] — does that chapter declare itself a
+# draft? With a ref, the file as that ref holds it; without one, the file
+# in the checkout. A file that is not there is not a draft, which is the
+# answer that keeps every caller strict: an absent chapter never earns an
+# exemption.
+#
+# **The first line, and no other.** A chapter that *documents* the marker
+# names it in its prose — `authoring.md` does, twice — so a reader that
+# searched the whole file would mark the methodology's own docs as
+# drafts. This repository has been bitten from the other direction
+# already: a report quoting front matter in its body was read as carrying
+# that front matter, and a mirror was closed on it
+# (tests/…/quoted_front_matter_is_not_a_status_test.sh).
+#
+# Trailing whitespace is trimmed — a line an editor touched is the same
+# declaration — and nothing else is: a marker indented, or on line two,
+# or inside a fence, is prose about the marker rather than the marker.
+#
+# **The blob is captured before it is read.** `git show … | sed -n 1p`
+# would be fine, but `| head -1` or an early-exiting awk would not: the
+# reader closes the pipe, git dies on SIGPIPE and `pipefail` turns a
+# correct read into a failure. This suite has been bitten by that shape
+# twice, so the whole blob lands in a variable first.
+ql_doc_is_draft() {
+  local blob first
+  if [ -n "${2:-}" ]; then
+    blob=$(git show "${2}:${1}" 2>/dev/null) || return 1
+  else
+    [ -f "$1" ] || return 1
+    blob=$(cat "$1")
+  fi
+  first=${blob%%$'\n'*}
+  first=$(printf '%s' "$first" | sed 's/[[:space:]]*$//')
+  [ "$first" = "$QL_DRAFT_MARKER" ]
+}
+
 # --- minting ------------------------------------------------------------
 #
 # The id and the filename subject, shared by the two writers that mint

@@ -48,6 +48,8 @@
 # arrays. See the standing rule in docs/technical/decisions/.
 
 set -euo pipefail
+HERE="$(cd "$(dirname "$0")" && pwd)"
+. "$HERE/queue_lib.sh"
 
 # Spelled out rather than `${1:?…}`, which exits 1 — the code this check
 # uses for "a promise cannot resolve". A caller cannot be left reading a
@@ -231,6 +233,25 @@ while IFS= read -r spec; do
     case "$p" in
       */|*.md) ;;
       *) fault "${id} promises \`${p}\`, read as ${as_read} — a promise names a .md file or a folder written with a trailing slash." ;;
+    esac
+
+    # Condition three — not a rule yet. A chapter that declares itself a
+    # draft derives nothing, so promising to change one is a promise
+    # about a chapter no task was allowed to be born from
+    # (docs/product/stage-1-tasks-and-specs/authoring.md#a-chapter-that-is-not-a-rule-yet).
+    #
+    # Unlike the two above, this one is not about resolution — the path
+    # resolves perfectly, and saying otherwise would send the author
+    # hunting a typo. The tree is read the way condition one already
+    # reads it: what is checked out is the version whose promise is being
+    # judged. A folder promise names no chapter and is left alone.
+    case "$p" in
+      */) ;;
+      *.md)
+        if ql_doc_is_draft "$as_read"; then
+          fault "${id} promises \`${p}\`, read as ${as_read} — that chapter declares itself a draft, and nothing derives from a chapter that is not a rule yet."
+        fi
+        ;;
     esac
   done <<PROMISED
 ${promised}

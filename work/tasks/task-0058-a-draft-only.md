@@ -11,9 +11,10 @@ depends_on: []
 milestone: null
 created: 2026-09-05T23:55:44Z
 queued: 2026-09-06T00:06:51Z
-completed: null
+completed: 2026-09-06T01:20:00Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-opus-5, login: thomasfranke, input: 88, output: 55798, cache_read: 16943527, cache_write: 60435}
 ---
 
 # A draft-only change owes no derived work
