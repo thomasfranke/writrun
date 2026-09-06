@@ -11,9 +11,10 @@ depends_on: []
 milestone: null
 created: 2026-09-06T02:23:18Z
 queued: 2026-09-06T02:36:21Z
-completed: null
+completed: 2026-09-06T02:52:18Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-fable-5, login: thomasfranke, input: 238, output: 140420, cache_read: 18083058, cache_write: 180724}
 ---
 
 # The gates read every range shape, and read only what derives today

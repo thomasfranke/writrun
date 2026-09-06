@@ -92,41 +92,12 @@ RANGE="$1"
 # not the one edit this refusal offers. Without it a completion run that
 # merely flips `approved` to `implemented` is refused with a message
 # insisting on a cheap fix that no longer exists.
-case "$RANGE" in
-  *...*)
-    left="${RANGE%%...*}"
-    right="${RANGE##*...}"
-    if ! BASE=$(git merge-base "${left:-HEAD}" "${right:-HEAD}" 2>&1); then
-      echo "git merge-base ${left:-HEAD} ${right:-HEAD} failed:" >&2
-      printf '%s\n' "$BASE" | head -n 2 >&2
-      exit 3
-    fi
-    ;;
-  *..*) BASE="${RANGE%%..*}" ;;
-  *)    BASE="$RANGE" ;;
-esac
-
-# git_read <label> <git-args...> — runs git and leaves its stdout in
-# GIT_OUT. On failure it prints what git said and exits 3, because a
-# check that could not read its input must never report the empty result
-# as a clean one (spec-0013).
-#
-# **Never call this inside a command substitution.** The `exit` would end
-# only the subshell, and the caller would go on reading the empty value
-# this exists to prevent.
-GIT_OUT=""
-git_read() {
-  local label="$1" err
-  shift
-  err=$(mktemp "${TMPDIR:-/tmp}/writrun-git.XXXXXX")
-  if ! GIT_OUT=$(git "$@" 2>"$err"); then
-    echo "${label} failed:" >&2
-    head -n 2 "$err" >&2
-    rm -f "$err"
-    exit 3
-  fi
-  rm -f "$err"
-}
+# The ends come from queue_lib.sh's one parse (spec-0086); this check
+# reads only the base — its spec bodies come from the checkout, a
+# deliberate choice recorded in decision 0071 — so the bare shape's
+# working-tree sentinel in QL_HEADREF is simply never read here.
+ql_range_ends "$RANGE"
+BASE="$QL_BASE"
 
 # promised_written — every path both Proposed-changes sections of the
 # spec on stdin name, anchor stripped, **as the spec wrote it**. The
@@ -146,21 +117,11 @@ promised_written() {
     | sed '/^$/d' | sort -u
 }
 
-# fm_field <field> <file> — the front-matter block alone; a body line
-# spelling `id:` at column 0 never counts.
-fm_field() {
-  awk -v f="$1" '
-    NR == 1 { if ($0 != "---") exit; next }
-    /^---$/ { exit }
-    sub("^" f ": *", "") { sub(/[[:space:]]*$/, ""); print; exit }
-  ' "$2"
-}
-
 # --- the specs this change enters -----------------------------------------
 
-git_read "git diff --name-only ${RANGE} -- work/specs" \
+ql_git_read "git diff --name-only ${RANGE} -- 'work/specs/*.md'" \
   diff --name-only "$RANGE" -- 'work/specs/*.md'
-touched="$GIT_OUT"
+touched="$QL_GIT_OUT"
 
 read_specs=0
 faults=0
@@ -214,7 +175,7 @@ while IFS= read -r spec; do
   [ -n "$promised" ] || continue    # a promise of "none" names no path
   read_specs=$((read_specs + 1))
 
-  id=$(fm_field id "$spec")
+  id=$(ql_fm_field id "$spec")
   [ -n "$id" ] || id="$spec"
 
   # What the same spec already promised at the base. A path in this list

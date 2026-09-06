@@ -250,6 +250,74 @@ ql_doc_is_draft() {
   [ "$first" = "$QL_DRAFT_MARKER" ]
 }
 
+# ql_range_ends <range> — the range's two ends, derived once, into
+# QL_BASE and QL_HEADREF. The three shapes `git diff` accepts at the
+# stage-2 gates:
+#
+#   A...B  QL_BASE is the merge base, QL_HEADREF the right end. A
+#          merge-base that could not be computed is not a base of
+#          "nothing", it is an unanswered question — and the callers
+#          are gates, so it exits 3, loudly.
+#   A..B   the two ends as written; an omitted end is HEAD.
+#   A      QL_BASE is the ref, and the bare shape's diff compares it to
+#          the **working tree** — so QL_HEADREF is empty. A caller that
+#          probes blobs honours the sentinel by reading the checkout
+#          (spec-0084); one that reads commits replaces it:
+#          `TIP="${QL_HEADREF:-HEAD}"`.
+#
+# Lifted from three private copies that had already diverged in more
+# than spelling: the bare-ref bug spec-0084 fixed had to be found in
+# one copy out of three, and the next range-shape bug should not get
+# that chance.
+QL_BASE=""
+QL_HEADREF=""
+ql_range_ends() {
+  local left right
+  case "$1" in
+    *...*)
+      left="${1%%...*}"
+      right="${1##*...}"
+      QL_HEADREF="${right:-HEAD}"
+      if ! QL_BASE=$(git merge-base "${left:-HEAD}" "${right:-HEAD}" 2>&1); then
+        echo "git merge-base ${left:-HEAD} ${right:-HEAD} failed:" >&2
+        printf '%s\n' "$QL_BASE" | head -n 2 >&2
+        exit 3
+      fi
+      ;;
+    *..*) QL_BASE="${1%%..*}"; QL_HEADREF="${1##*..}"; QL_HEADREF="${QL_HEADREF:-HEAD}" ;;
+    *)    QL_BASE="$1"; QL_HEADREF="" ;;
+  esac
+}
+
+# ql_git_read <label> <git-args...> — runs git and leaves its stdout in
+# QL_GIT_OUT. On failure it prints what git said and exits 3, because a
+# check that could not read its input must never report the empty
+# result as a clean one: `$(git … || true)` yields exactly the same
+# empty string whether nothing matched or nothing ran, and the callers
+# are gates (spec-0013).
+#
+# **The label must spell the command actually run, flags included.** A
+# diagnostic naming a different command sends whoever reproduces the
+# failure to a different answer.
+#
+# **Never call this inside a command substitution.** The `exit` would
+# end only the subshell, and the caller would go on reading the empty
+# value this exists to prevent — the very shape of the bug being
+# removed.
+QL_GIT_OUT=""
+ql_git_read() {
+  local label="$1" err
+  shift
+  err=$(mktemp "${TMPDIR:-/tmp}/writrun-git.XXXXXX")
+  if ! QL_GIT_OUT=$(git "$@" 2>"$err"); then
+    echo "${label} failed:" >&2
+    head -n 2 "$err" >&2
+    rm -f "$err"
+    exit 3
+  fi
+  rm -f "$err"
+}
+
 # --- minting ------------------------------------------------------------
 #
 # The id and the filename subject, shared by the two writers that mint

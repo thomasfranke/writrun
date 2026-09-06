@@ -331,9 +331,28 @@ check_doc_ref() {   # check_doc_ref <file> <block>
       # scripts/stage-2-pull-requests/queue_lib.sh is on the far side of
       # that boundary. Two copies of four lines, and the boundary is the
       # reason — the two stage-2 readers share one.
-      if [ -f "$target" ] && doc_declares_draft "$target"; then
-        fail "$1" "doc_ref '$ref' names a draft chapter — nothing derives from a chapter that is not a rule yet"
-      fi
+      # **The refusal binds what still derives.** "Nothing derives from
+      # a draft chapter" is present tense: a done or dropped task, or a
+      # report triage already routed, derives nothing — its doc_ref
+      # records what it derived from, as the chapter stood then. Refusing
+      # those would make the sanctioned demotion (rule to draft, with a
+      # declaration — check_derived_work.sh's fourth row) poison the
+      # queue retroactively: every finished record into the chapter
+      # failing every later sweep, repairable only by editing history,
+      # the one repair this methodology forbids. The line is the one
+      # conflicts.md draws — an edit under docs/ answers to the
+      # *non-completed* tasks pointing into it. Task and report statuses
+      # are disjoint vocabularies, so one case serves both callers; a
+      # status this case does not know is judged live — strict by
+      # default, and it already failed the status check on its own.
+      case "$(get "$2" status)" in
+        done|dropped|tracked|authored|fixed|declined|routed) ;;
+        *)
+          if [ -f "$target" ] && doc_declares_draft "$target"; then
+            fail "$1" "doc_ref '$ref' names a draft chapter — nothing derives from a chapter that is not a rule yet"
+          fi
+          ;;
+      esac
       ;;
     *) fail "$1" "doc_ref '$ref' is not null or a .md path (optionally with #anchor)" ;;
   esac

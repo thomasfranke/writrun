@@ -30,49 +30,16 @@ RANGE="${1:?usage: check_derived_work.sh <diff-range>}"
 # closure — and is identified the same way the deltas check identifies
 # it: some spec reached `implemented`.
 
-# git_read <label> <git-args...> — runs git and leaves its stdout in
-# GIT_OUT. On failure it prints what git said and exits 3, because a
-# check that could not read its input must never report the empty result
-# as a clean one: `$(git … || true)` yields exactly the same empty string
-# whether nothing matched or nothing ran, and two of these checks are
-# gates (spec-0013).
-#
-# **Never call this inside a command substitution.** The `exit` would end
-# only the subshell, and the caller would go on reading the empty value
-# this exists to prevent — the very shape of the bug being removed.
-GIT_OUT=""
-git_read() {
-  local label="$1" err
-  shift
-  err=$(mktemp "${TMPDIR:-/tmp}/writrun-git.XXXXXX")
-  if ! GIT_OUT=$(git "$@" 2>"$err"); then
-    echo "${label} failed:" >&2
-    head -n 2 "$err" >&2
-    rm -f "$err"
-    exit 3
-  fi
-  rm -f "$err"
-}
-
-# The range's two ends, derived once. Both the implemented-spec read
-# below and the draft filter above it need them, and a second parse of
-# $RANGE would be a second thing to keep true.
-case "$RANGE" in
-  *...*)
-    left="${RANGE%%...*}"
-    right="${RANGE##*...}"
-    HEADREF="${right:-HEAD}"
-    # The same rule as the diff below: a merge-base that could not be
-    # computed is not a base of "nothing", it is an unanswered question.
-    if ! BASE=$(git merge-base "${left:-HEAD}" "${right:-HEAD}" 2>&1); then
-      echo "git merge-base ${left:-HEAD} ${right:-HEAD} failed:" >&2
-      printf '%s\n' "$BASE" | head -n 2 >&2
-      exit 3
-    fi
-    ;;
-  *..*) BASE="${RANGE%%..*}"; HEADREF="${RANGE##*..}"; HEADREF="${HEADREF:-HEAD}" ;;
-  *)    BASE="$RANGE"; HEADREF=HEAD ;;
-esac
+# The range's two ends, derived once — in queue_lib.sh, one copy across
+# the stage-2 gates (spec-0086). The bare shape hands back an empty
+# HEADREF: its diff compares the ref to the *working tree*, and a probe
+# against HEAD: would answer a question that diff did not ask — a
+# chapter existing only in the checkout would resolve at neither ref,
+# leave `perm` in silence, and turn a refusal into a pass (spec-0084).
+# The probes below honour the sentinel by reading the checkout.
+ql_range_ends "$RANGE"
+BASE="$QL_BASE"
+HEADREF="$QL_HEADREF"
 
 # Both flags guard the same hazard, and it is this check's worst one: a
 # path the loop below cannot probe drops out of `perm` in silence, and a
@@ -89,10 +56,10 @@ esac
 #     base and a draft at the head — the silent withdrawal the marker is
 #     explicitly not a way out of. Read as an addition and a deletion,
 #     both ends of the rename are asked the question.
-git_read "git diff --name-only ${RANGE} -- docs" \
+ql_git_read "git -c core.quotePath=false diff --name-only --no-renames ${RANGE} -- docs" \
   -c core.quotePath=false diff --name-only --no-renames "$RANGE" -- docs
 # The `|| true` that stays is grep's, not git's: no match is an answer.
-perm=$(printf '%s\n' "$GIT_OUT" \
+perm=$(printf '%s\n' "$QL_GIT_OUT" \
   | grep -vxF 'docs/writrun-instructions.md' || true)
 
 # **A chapter that declares itself a draft is not a rule**, so a change
@@ -132,9 +99,17 @@ while IFS= read -r f; do
   if git cat-file -e "${BASE}:$f" 2>/dev/null; then
     ql_doc_is_draft "$f" "$BASE" || rule_at_base=true
   fi
+  # An empty HEADREF is the working tree, read from the checkout the way
+  # ql_doc_is_draft's no-ref mode already reads it. The sentinel is
+  # never interpolated into a ref:path — `git cat-file -e ":$f"` reads
+  # the *index*, a third state this diff never compared.
   rule_at_head=false
-  if git cat-file -e "${HEADREF}:$f" 2>/dev/null; then
-    ql_doc_is_draft "$f" "$HEADREF" || rule_at_head=true
+  if [ -n "$HEADREF" ]; then
+    if git cat-file -e "${HEADREF}:$f" 2>/dev/null; then
+      ql_doc_is_draft "$f" "$HEADREF" || rule_at_head=true
+    fi
+  elif [ -f "$f" ]; then
+    ql_doc_is_draft "$f" || rule_at_head=true
   fi
   if [ "$rule_at_base" = false ] && [ "$rule_at_head" = false ]; then
     continue
@@ -162,9 +137,9 @@ fm_field() {
   '
 }
 
-git_read "git diff --name-only ${RANGE} -- work/specs" \
+ql_git_read "git diff --name-only ${RANGE} -- 'work/specs/*.md'" \
   diff --name-only "$RANGE" -- 'work/specs/*.md'
-for s in $GIT_OUT; do
+for s in $QL_GIT_OUT; do
   [ -f "$s" ] || continue
   [ "$(fm_field status < "$s")" = "implemented" ] || continue
   [ "$(git show "${BASE}:$s" 2>/dev/null | fm_field status)" = "implemented" ] && continue
@@ -174,9 +149,9 @@ done
 
 # Authoring. The diff is the authority on the first half of the rule; the
 # PR body's Derived-work section carries the second.
-git_read "git diff --name-only --diff-filter=A ${RANGE} -- work/tasks" \
+ql_git_read "git diff --name-only --diff-filter=A ${RANGE} -- 'work/tasks/task-*.md'" \
   diff --name-only --diff-filter=A "$RANGE" -- 'work/tasks/task-*.md'
-added="$GIT_OUT"
+added="$QL_GIT_OUT"
 if [ -n "$added" ]; then
   echo "Derived work present:"
   echo "$added"
