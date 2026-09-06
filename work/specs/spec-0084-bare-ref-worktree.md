@@ -1,7 +1,7 @@
 ---
 id: spec-0084
 task_ref: task-0060
-status: draft
+status: approved
 created: 2026-09-06T02:23:38Z
 ---
 
