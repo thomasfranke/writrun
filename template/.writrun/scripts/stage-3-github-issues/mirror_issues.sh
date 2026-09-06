@@ -498,6 +498,78 @@ REPORT_ISSUES=$(gh api "repos/${REPO}/issues?labels=writrun:report&state=all&per
   --paginate \
   --jq '.[] | [.number, .state, ((.labels // []) | map(.name) | join(",")), (.title | @base64), ((.body // "") | @base64)] | @tsv')
 
+# --- duplicates -----------------------------------------------------------
+#
+# Two runs one second apart minted two mirrors for one record — #234 and
+# #235, report-0038 — and nothing downstream retired the loser: every
+# lookup here stops at its first match, and the list arrives newest
+# first, so the younger duplicate answered every later pass while the
+# elder stood open. The workflow's concurrency group closes that window
+# for one pull request's own events (decision 0073); this pass is the
+# half a group cannot give — duplicates minted across pull requests, or
+# standing from before the group existed, are met here, where the
+# reconciler already holds the whole list.
+#
+# The oldest open mirror survives, because it is the one references had
+# the longest to accumulate; each younger one is closed naming it.
+# Closed rows are left as they lie — a closed duplicate is history, not
+# a lie in the tracker — and the list is filtered afterwards so every
+# lookup below reads the healed forge, not the race's leftovers.
+
+# dup_pairs <kind> — "dup-number<TAB>survivor-number" per open duplicate
+# in the list on stdin, oldest number surviving. Pure derivation: the
+# writes are the caller's, so a run with no duplicates derives nothing
+# and writes nothing.
+dup_pairs() {
+  local kind="$1" num state labels tb bb t idn
+  while IFS="$TAB" read -r num state labels tb bb; do
+    [ -n "$num" ] || continue
+    [ "$state" = "open" ] || continue
+    t=$(printf '%s' "$tb" | b64_decode)
+    idn=$(num_of_id "$(id_of_title "$t" "$kind")")
+    [ -n "$idn" ] || continue
+    printf '%s\t%s\n' "$idn" "$num"
+  done | sort -n -k1,1 -k2,2 | awk -F'\t' '
+    $1 == prev { print $2 "\t" surv; next }
+    { prev = $1; surv = $2 }'
+}
+
+# drop_rows <dup-numbers> — the list on stdin without those issue rows,
+# so the retired duplicates stop answering lookups this same run.
+drop_rows() {
+  awk -F'\t' -v dups="$1" '
+    BEGIN { n = split(dups, a, " "); for (i = 1; i <= n; i++) d[a[i]] = 1 }
+    !($1 in d)'
+}
+
+# retire_dups <kind> <pairs> — the writes: a comment naming the
+# survivor, then the close. Not planned, because a duplicate never was.
+retire_dups() {
+  local kind="$1" pairs="$2" dup surv note
+  while IFS="$TAB" read -r dup surv; do
+    [ -n "$dup" ] || continue
+    note="Duplicate mirror of one record — #${surv} is the mirror. Retired by the reconciliation (report-0038)."
+    [ -n "${GITHUB_RUN_ID:-}" ] && note="${note} Run ${GITHUB_RUN_ID}."
+    gh api -X POST "repos/${REPO}/issues/${dup}/comments" -f body="$note" >/dev/null
+    gh api -X PATCH "repos/${REPO}/issues/${dup}" \
+      -f state=closed -f state_reason=not_planned >/dev/null
+    echo "#${dup} retired as a duplicate ${kind} mirror — #${surv} survives"
+  done <<EOF
+$pairs
+EOF
+}
+
+DUP_TASKS=$(printf '%s\n' "$ISSUES" | dup_pairs task)
+if [ -n "$DUP_TASKS" ]; then
+  retire_dups task "$DUP_TASKS"
+  ISSUES=$(printf '%s\n' "$ISSUES" | drop_rows "$(printf '%s\n' "$DUP_TASKS" | cut -f1 | tr '\n' ' ')")
+fi
+DUP_REPORTS=$(printf '%s\n' "$REPORT_ISSUES" | dup_pairs report)
+if [ -n "$DUP_REPORTS" ]; then
+  retire_dups report "$DUP_REPORTS"
+  REPORT_ISSUES=$(printf '%s\n' "$REPORT_ISSUES" | drop_rows "$(printf '%s\n' "$DUP_REPORTS" | cut -f1 | tr '\n' ' ')")
+fi
+
 issue_row_of() {   # issue_row_of <task-id> — "number<TAB>state<TAB>labels<TAB>body-b64"
   local num state labels tb bb t tn want
   want=$(num_of_id "$1")

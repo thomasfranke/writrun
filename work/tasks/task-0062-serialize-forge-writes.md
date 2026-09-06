@@ -11,9 +11,10 @@ depends_on: []
 milestone: null
 created: 2026-09-06T05:16:31Z
 queued: 2026-09-06T05:28:53Z
-completed: null
+completed: 2026-09-06T05:43:02Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-opus-5, login: thomasfranke}
 ---
 
 # Concurrent forge events stop minting duplicate mirrors

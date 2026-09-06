@@ -48,6 +48,15 @@ on:
   pull_request_target:
     types: [closed]
 
+# Shares writrun-issues.yml's group: both write the same mirrors, and a
+# merge landing while an issues run is mid-write raced it over one
+# artifact (report-0038, decision 0073). Queue, never cancel — this
+# workflow writes the queue itself, and a run cancelled between two
+# writes it meant as one leaves the record half-moved.
+concurrency:
+  group: writrun-mirror-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
 permissions:
   contents: write
   issues: write

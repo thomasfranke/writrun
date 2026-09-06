@@ -52,6 +52,19 @@ on:
   pull_request_review:
     types: [submitted]
 
+# One writer per pull request's recording: two events a second apart are
+# a normal agent flow, and unserialized they race two status writers
+# over one queue (report-0038, decision 0073). A group of its own, not
+# the mirror family's — this workflow's writes are the task's status
+# line and the labels projected from it, and its label pass re-derives
+# from the authority, so it converges where the mirror mint could not.
+# Both event kinds carry a pull_request, so the key resolves on every
+# trigger. Queue, never cancel — a run cancelled between the recording
+# and its projection leaves the two stages telling different stories.
+concurrency:
+  group: writrun-progress-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
 permissions:
   contents: write
   issues: write
