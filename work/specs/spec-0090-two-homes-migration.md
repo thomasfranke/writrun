@@ -111,34 +111,37 @@ created: 2026-09-07T03:49:10Z
 
 ## Proposed product changes
 
-- `docs/product/concepts/spec.md` — the settings address it names moves
+- `product/concepts/spec.md` — the settings address it names moves
   to `writrun/settings.json`.
-- `docs/product/stage-1-tasks-and-specs/gates.md` — the gates file's
+- `product/stage-1-tasks-and-specs/gates.md` — the gates file's
   address moves to `writrun/gates.md`.
-- `docs/product/stage-2-pull-requests/README.md` — same repoint where
+- `product/stage-2-pull-requests/README.md` — same repoint where
   it names the settings file.
-- `docs/product/stage-2-pull-requests/body.md` — the template override
+- `product/stage-2-pull-requests/body.md` — the template override
   address moves with `conventions/`.
 
 ## Proposed technical changes
 
-- `docs/technical/architecture.md` — the tree gains `writrun/`; the
+- `technical/architecture.md` — the tree gains `writrun/`; the
   ownership split is stated as the two homes.
-- `docs/technical/distribution/kit.md` — what the template ships and
+- `technical/distribution/kit.md` — what the template ships and
   what the mirror guards, at the new addresses; the update and removal
   contract per the rule.
-- `docs/technical/distribution/release.md` — the public surface a tag
+- `technical/distribution/release.md` — the public surface a tag
   freezes now includes the `writrun/` seed.
-- `docs/technical/distribution/take-task.md` — repoint where it names
+- `technical/distribution/take-task.md` — repoint where it names
   the settings address.
-- `docs/technical/schemas/front-matter.md`, `docs/technical/schemas/spec.md`
-  — repoint the settings references.
-- `docs/technical/settings/README.md`, `docs/technical/settings/schema.md`,
-  `docs/technical/settings/stage.md` — the file's address is
+- `technical/schemas/front-matter.md` — repoint the settings
+  references.
+- `technical/schemas/spec.md` — repoint the settings references.
+- `technical/settings/README.md` — the file's address is
   `writrun/settings.json`.
-- `docs/technical/decisions/tasks-and-specs/` — new dated entry:
-  the adopter's files leave `.writrun/`, superseding 0053's address
-  choice.
+- `technical/settings/schema.md` — same repoint.
+- `technical/settings/stage.md` — same repoint.
+- `technical/decisions/tasks-and-specs/0074-the-adopters-files-leave-the-kit.md`
+  — new dated entry superseding 0053's address choice.
+- `technical/decisions/README.md` — append 0074's row to the
+  chronology.
 
 ## Outcome
 

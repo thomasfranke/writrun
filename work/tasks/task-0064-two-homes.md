@@ -4,7 +4,7 @@ status: backlog
 blocked_reason: null
 taken_by: null
 spec_ref: [spec-0090]
-doc_ref: docs/product/adoption.md#two-homes
+doc_ref: product/adoption.md#two-homes
 origin: rule
 priority: high
 depends_on: []
@@ -18,7 +18,7 @@ provenance: []
 
 # Move the adopter's files out of the kit's home
 
-**References:** [docs/product/adoption.md#two-homes](../../docs/docs/product/adoption.md#two-homes) · [spec-0090](../specs/spec-0090-two-homes-migration.md)
+**References:** [product/adoption.md#two-homes](../../docs/product/adoption.md#two-homes) · [spec-0090](../specs/spec-0090-two-homes-migration.md)
 
 Give the adopter's answers a home of their own. Today the project's
 files — `settings.json`, `gates.md`, `conventions/` — live inside
