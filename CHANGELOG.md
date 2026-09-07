@@ -4,6 +4,19 @@ Written by `make release` at every cut, from the commit subjects
 the range carries. Never edited by hand — the subject is where a
 wrong line is fixed, on the next tag.
 
+## v0.0.05 — 2026-09-07
+
+### chore
+
+- chore(queue): record what the forge just did
+- chore(queue): record what the forge just did
+- chore(queue): record what the merge decided
+
+### other
+
+- [TASK-0064][Refactor][Setup] The adopter's files leave the kit's home (#245)
+- [Docs][Product] Two homes — the kit's and the project's (#243)
+
 ## v0.0.04 — 2026-09-06
 
 ### docs
