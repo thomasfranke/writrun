@@ -3,7 +3,7 @@
 Four checkpoints are named, not implied. An adopting project states who
 operates each one at the address its entry point carries or links ([the
 entry point is the project's](../adoption.md#the-entry-point-is-the-projects))
-— the kit's address is `.writrun/gates.md`, and a project that names them
+— the kit's address is `writrun/gates.md`, in the project's own home, and a project that names them
 in its own `AGENTS.md` instead satisfies this the same way. Every
 adopting project must name all four somewhere, even if the answer for one
 of them is "an agent, autonomously":
@@ -58,7 +58,7 @@ cheap bar expensive again at the far end.
 ## What a project's own table has to carry
 
 The four gates above are the methodology's. An adopting project answers
-them at its stated address — `.writrun/gates.md` in the kit — as a table
+them at its stated address — `writrun/gates.md` in the kit — as a table
 of transitions and who operates each. The address is the adopter's file
 either way: an update never touches it, because the answers are the
 project's and nothing WritRun ships can hold them. The table is a

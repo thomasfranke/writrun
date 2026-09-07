@@ -8,11 +8,10 @@
 #
 # Except where the kit differs on purpose. tests/template_exceptions.txt
 # is the single source of that — the same file the sync reads — and the
-# comparison drops those paths from both sides before diffing. Dropping
-# them by path and never by name is deliberate: a name-based exclusion
-# (`diff -x settings.json`) would also stop comparing
-# .writrun/conventions/settings.json, the legacy address the reader still
-# honours, and drift there would go unseen.
+# comparison drops those paths from both sides before diffing, by path
+# and never by name. Since the two homes split the list is empty: the
+# adopter's files live in writrun/, outside every mirrored path, and
+# template/writrun/ is a hand-written seed this guard never compares.
 EXCEPTIONS="$REPO_ROOT/tests/template_exceptions.txt"
 
 ok=1

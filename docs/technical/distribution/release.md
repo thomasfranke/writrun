@@ -11,7 +11,10 @@ the methodology *depending* on one. A CLI lives in a separate repository (`writr
 same scripts and files, and everything here keeps working without it —
 agents use skills, CI uses scripts, files stay the authority. What tooling
 like that builds on is this file's **public contract**: the task and spec
-front-matter schemas, the `docs/` + `work/` split, each script's arguments
+front-matter schemas, the `docs/` + `work/` split, the two homes —
+`.writrun/` the kit's to replace, `writrun/` the project's to keep, with
+`settings.json` and `gates.md` at their stated addresses inside it —
+each script's arguments
 and exit codes, and the handful of grep-level markers the machinery reads
 — the `## Derived work` heading in a PR body, the two Proposed-changes
 headings in a spec, a task file's `# ` title line, a `task-nnn` /
@@ -24,7 +27,7 @@ and the `origin:*` values (`rule`, `report`)
 no task derives from it and every check ignores it. **Everything else about
 commits, pull requests, and task/spec style is the adopter's convention,
 not the methodology's**, and it lives in one editable folder at the
-repository root — `.writrun/conventions/`: commit types and scopes, branch naming,
+repository root — `writrun/conventions/`, in the project's own home: commit types and scopes, branch naming,
 the PR title rule, the merge policy, task and spec taste. The one commit
 the machinery makes has its title as a variable at the top of
 `writrun-approve.yml`, and the PR template ships as an editable default

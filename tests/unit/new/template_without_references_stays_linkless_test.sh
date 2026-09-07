@@ -6,8 +6,8 @@
 # first spec, or it is not an opt-out: the `spec_ref` append writes the
 # front matter, which is the machine contract, and leaves the body alone.
 setup
-mkdir -p .writrun/conventions/templates
-printf '# {{title}}\n\nTODO: what to do, and why.\n' > .writrun/conventions/templates/task.md
+mkdir -p writrun/conventions/templates
+printf '# {{title}}\n\nTODO: what to do, and why.\n' > writrun/conventions/templates/task.md
 bash "$NEW_SH" task "Linkless" --origin rule --slug linkless \
   --doc-ref product/chapter.md#scope >/dev/null 2>&1
 bash "$NEW_SH" spec task-0001 "First" --slug first >/dev/null 2>&1

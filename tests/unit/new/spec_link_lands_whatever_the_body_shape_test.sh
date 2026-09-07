@@ -9,8 +9,8 @@
 
 # Opens at `##` — the link goes under that heading.
 setup
-mkdir -p .writrun/conventions/templates
-printf '## {{title}}\n\n{{references}}\n\nTODO.\n' > .writrun/conventions/templates/task.md
+mkdir -p writrun/conventions/templates
+printf '## {{title}}\n\n{{references}}\n\nTODO.\n' > writrun/conventions/templates/task.md
 bash "$NEW_SH" task "Deep" --origin rule --slug deep >/dev/null 2>&1
 bash "$NEW_SH" spec task-0001 "Only" --slug only >/dev/null 2>&1
 f=work/tasks/task-0001-deep.md
@@ -29,8 +29,8 @@ setup
 # The tracked route travels on its own reporting change, and both
 # the generator and check_state read the branch name to hold it there.
 git branch -m report/something-seen
-mkdir -p .writrun/conventions/templates
-printf '{{references}}\n\nTODO, and no heading anywhere.\n' > .writrun/conventions/templates/task.md
+mkdir -p writrun/conventions/templates
+printf '{{references}}\n\nTODO, and no heading anywhere.\n' > writrun/conventions/templates/task.md
 bash "$NEW_SH" task "Flat" --origin report --slug flat >/dev/null 2>&1
 bash "$NEW_SH" spec task-0001 "Sole" --slug sole >/dev/null 2>&1
 g=work/tasks/task-0001-flat.md

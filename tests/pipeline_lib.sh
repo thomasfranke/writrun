@@ -68,13 +68,22 @@ WORKFLOWS="$REPO_ROOT/.github/workflows"
 # lives at today. Written verbatim, because half of what the check exists
 # for is the shapes a generator would never produce.
 settings_file() {
+  mkdir -p writrun
+  cat > writrun/settings.json
+}
+
+# kit_home_settings_file — the same, at the address the file had before
+# the two homes split, when it lived in the kit's folder. The reader
+# honours one left there as-is — same shape, old home; the check is what
+# names the move
+# (docs/technical/decisions/tasks-and-specs/0074-the-adopters-files-leave-the-kit.md).
+kit_home_settings_file() {
   mkdir -p .writrun
   cat > .writrun/settings.json
 }
 
-# legacy_settings_file — the same, at the address the file had before it
-# moved to WritRun's root. The reader honours one left there, flat, under
-# the contract frozen at the move; the check is what names the move
+# legacy_settings_file — the pre-0053 address. The reader honours one
+# left there, flat, under the contract frozen at that move
 # (docs/technical/decisions/tasks-and-specs/0053-settings-at-the-root.md).
 legacy_settings_file() {
   mkdir -p .writrun/conventions

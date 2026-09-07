@@ -159,7 +159,7 @@ keeping that responsibility in one place is the simplest way to honour it.
 
 **Trunk-based.** `main` is the only long-lived branch and is always green
 — this repository's choice, per
-[`.writrun/conventions/branches.md`](.writrun/conventions/branches.md); the methodology
+[`writrun/conventions/branches.md`](writrun/conventions/branches.md); the methodology
 itself only requires one authority branch, whatever the strategy around
 it.
 
@@ -169,7 +169,7 @@ it.
    working**: until it reaches the forge nothing says the task is taken,
    and the draft is what moves its mirror to `status:in-progress`. Mark
    it ready for review when the work is done.
-2. Commit, branch, and title per [`.writrun/conventions/`](.writrun/conventions/README.md)
+2. Commit, branch, and title per [`writrun/conventions/`](writrun/conventions/README.md)
    — Conventional Commits with this repo's types and scopes, and
    squash-only merges. **That folder is this repository's own convention,
    not the methodology's**: an adopting project rewrites it to its own

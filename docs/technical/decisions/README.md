@@ -93,3 +93,4 @@ appending a row.
 | [0071](pull-requests/0071-a-resolving-promise-can-still-be-refused.md) | 2026-09-06 | `pull-requests` | a promise that resolves is still refused when the chapter it names is not a rule — extending [0065](pull-requests/0065-a-promise-is-judged-by-shape.md). |
 | [0072](pull-requests/0072-a-shared-helper-has-one-copy.md) | 2026-09-06 | `pull-requests` | a shared helper has one copy, and it lives in `queue_lib.sh`. |
 | [0073](github-issues/0073-one-writer-per-pull-request.md) | 2026-09-06 | `github-issues` | one writer per pull request, and a reconciler that retires duplicates. |
+| [0074](tasks-and-specs/0074-the-adopters-files-leave-the-kit.md) | 2026-09-07 | `tasks-and-specs` | the adopter's files leave the kit for `writrun/` — ownership is per home, not per file (supersedes [0053](tasks-and-specs/0053-settings-at-the-root.md)'s address). |

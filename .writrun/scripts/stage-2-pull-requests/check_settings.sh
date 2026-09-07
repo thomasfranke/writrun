@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# check_settings.sh — .writrun/settings.json holds the shape a line-based
+# check_settings.sh — writrun/settings.json holds the shape a line-based
 # reader can see, and only the choices Adoption leaves open.
 #
 # Usage: check_settings.sh
@@ -38,8 +38,9 @@
 
 set -euo pipefail
 
-SETTINGS=".writrun/settings.json"
-LEGACY=".writrun/conventions/settings.json"
+SETTINGS="writrun/settings.json"
+LEGACY=".writrun/settings.json"
+OLDER=".writrun/conventions/settings.json"
 
 faults=0
 fault() { echo "REJECTED: $*" >&2; faults=$((faults + 1)); }
@@ -54,16 +55,21 @@ close() {
 
 if [ ! -f "$SETTINGS" ]; then
   if [ -f "$LEGACY" ]; then
-    fault "the settings file is still at ${LEGACY} — it moved to ${SETTINGS}, WritRun's root, and its keys are now sectioned by stage; the reader honours the old file flat meanwhile, but only this check will tell you"
+    fault "the settings file is still at ${LEGACY} — it moved to ${SETTINGS}, the project's own home (the two homes split); the reader honours the old file meanwhile, but only this check will tell you"
+    close
+  fi
+  if [ -f "$OLDER" ]; then
+    fault "the settings file is still at ${OLDER} — it moved to ${SETTINGS}, the project's own home, and its keys are now sectioned by stage; the reader honours the old file flat meanwhile, but only this check will tell you"
     close
   fi
   echo "No ${SETTINGS} — the documented defaults apply."
   exit 0
 fi
 
-if [ -f "$LEGACY" ]; then
-  fault "${LEGACY} is left over — ${SETTINGS} is the one address, and it wins; delete the old file rather than leaving two that are free to disagree"
-fi
+for old in "$LEGACY" "$OLDER"; do
+  [ -f "$old" ] || continue
+  fault "${old} is left over — ${SETTINGS} is the one address, and it wins; delete the old file rather than leaving two that are free to disagree"
+done
 
 # The vocabularies, as the schema spells them.
 STAGES="1 2 3"

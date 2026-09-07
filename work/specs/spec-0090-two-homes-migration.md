@@ -1,7 +1,7 @@
 ---
 id: spec-0090
 task_ref: task-0064
-status: approved
+status: implemented
 created: 2026-09-07T03:49:10Z
 ---
 
@@ -100,14 +100,14 @@ created: 2026-09-07T03:49:10Z
 
 ## Definition of Done
 
-- [ ] `writrun/` exists here and in `template/`; the three adopter
+- [x] `writrun/` exists here and in `template/`; the three adopter
       files live only there.
-- [ ] Every script, workflow, skill and seeded doc names the new
+- [x] Every script, workflow, skill and seeded doc names the new
       addresses; grep for the old ones hits only dated decisions.
-- [ ] `tests/template_mirrors.txt` and the mirror are in sync; suite
+- [x] `tests/template_mirrors.txt` and the mirror are in sync; suite
       green.
-- [ ] The permanent docs below are updated in this same change.
-- [ ] The superseding decision entry is appended.
+- [x] The permanent docs below are updated in this same change.
+- [x] The superseding decision entry is appended.
 
 ## Proposed product changes
 
@@ -145,4 +145,28 @@ created: 2026-09-07T03:49:10Z
 
 ## Outcome
 
-_(fill after execution)_
+Built as planned: `settings.json`, `gates.md` and `conventions/` moved
+to `writrun/` in the root and in `template/`; the six readers and the
+approve workflow repointed; the kit's prose (`.writrun/AGENTS.md`,
+`.writrun/README.md`, `template/WRITRUN.md`, the seeded docs) states
+the two homes; the mirror resynced; decision 0074 appended with its
+chronology row. The reader keeps two bridges — `.writrun/settings.json`
+read as-is, the pre-0053 file read flat — and `check_settings.sh` names
+each move.
+
+Divergences:
+
+- The mirror-exception machinery stays, empty, rather than being
+  deleted: `tests/template_exceptions.txt` is blank and the stash logic
+  in `sync_template.sh` stands ready for the next deliberate
+  difference. Removing it was more change than the rule asked for.
+- The old-address guard is structural, not textual:
+  `tests/unit/template/two_homes_test.sh` fails when an adopter file
+  exists under `.writrun/` (root or template) or is missing from
+  `writrun/`. A grep-based guard would fault the migration bridges,
+  which legitimately name the old addresses.
+- `tests/template_mirrors.txt` needed no edit — `.writrun`, the
+  mirrored path, is unchanged; what changed is that nothing under it is
+  excepted any more.
+- `template/writrun/` was seeded by moving the kit's existing cautious
+  files, not written fresh — same content, new home.

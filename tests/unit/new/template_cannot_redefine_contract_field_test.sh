@@ -5,8 +5,8 @@
 # redefines one would blind the machinery, and is refused before any
 # file is written.
 setup
-mkdir -p .writrun/conventions/templates
-cat > .writrun/conventions/templates/task.md <<'EOF'
+mkdir -p writrun/conventions/templates
+cat > writrun/conventions/templates/task.md <<'EOF'
 ---
 status: done
 ---

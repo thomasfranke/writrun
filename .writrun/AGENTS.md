@@ -2,7 +2,8 @@
 
 This file is WritRun's: `writ update` replaces it whole, and hand edits
 here do not survive a refresh. The project's own answers — who approves
-what — live in [`gates.md`](gates.md), which no update touches. Humans:
+what — live in [`writrun/gates.md`](../writrun/gates.md), in the
+project's home, which no update touches. Humans:
 this file is written for agents; the guide written for you travels with
 the kit as `WRITRUN.md`.
 
@@ -122,17 +123,18 @@ is upstream's; otherwise it is a local report like any other.
 ## Human gates
 
 Who operates each gate is the project's own answer, and it lives in
-[`gates.md`](gates.md) — read it before any transition it names:
+[`writrun/gates.md`](../writrun/gates.md) — read it before any
+transition it names:
 approving a spec, touching `docs/`, deriving work, changing forge
-settings, or acting on a task whose brief is insufficient. A gate
-`gates.md` leaves unnamed is a question for the human, never a default
-to assume.
+settings, or acting on a task whose brief is insufficient. A gate that
+file leaves unnamed is a question for the human, never a default to
+assume.
 
 ## Deriving work
 
 When derivation runs (a rule authored, or work discovered), whether the
 derived tasks and specs are presented in the session before the PR opens
-is [`gates.md`](gates.md)'s to say.
+is [`writrun/gates.md`](../writrun/gates.md)'s to say.
 
 ## Completing a task
 
@@ -159,14 +161,15 @@ deliberately and says so in `gates.md`.
 
 ## The settings
 
-[`settings.json`](settings.json) is the adopter's file and the first
-edit after adoption: the stage, the conduct flags that say who presses
-commit, push and open, and the title style everything else here obeys.
-It ships cautious — `stage: 1` and all three flags `false` — so a fresh
-copy does nothing on its own until the project says otherwise. It is
-adopter-owned like [`gates.md`](gates.md), and `writ update` touches
-neither. The schema is in the WritRun repository's
+[`writrun/settings.json`](../writrun/settings.json) is the adopter's
+file and the first edit after adoption: the stage, the conduct flags
+that say who presses commit, push and open, and the title style
+everything else here obeys. It ships cautious — `stage: 1` and all
+three flags `false` — so a fresh copy does nothing on its own until the
+project says otherwise. It lives in `writrun/`, the project's home,
+like [`gates.md`](../writrun/gates.md) — `writ update` touches nothing
+there. The schema is in the WritRun repository's
 `docs/technical/settings/`.
 
 Commit messages, branch names, PR titles, and task/spec style:
-[`conventions/`](conventions/README.md).
+[`writrun/conventions/`](../writrun/conventions/README.md).

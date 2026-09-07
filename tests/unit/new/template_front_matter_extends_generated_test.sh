@@ -6,8 +6,8 @@
 # generator writes them, the agent fills them, and the canonical check
 # accepts them as unknown keys in canonical shape.
 setup
-mkdir -p .writrun/conventions/templates
-cat > .writrun/conventions/templates/task.md <<'EOF'
+mkdir -p writrun/conventions/templates
+cat > writrun/conventions/templates/task.md <<'EOF'
 ---
 owner: TODO — the team that answers for this
 estimate: TODO

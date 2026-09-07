@@ -21,15 +21,16 @@
 # "synced" after destroying the only remaining copy is the silent lie
 # the old inline Makefile recipe told.
 #
-# **The exceptions list is where the kit differs on purpose.**
-# `.writrun/settings.json` is the adopter's file, and the kit's copy
-# ships cautious — Stage 1, every conduct flag `false` — so a fresh copy
-# does nothing on its own. Preserving it is not a matter of skipping a
-# write: the mirror list names `.writrun`, a whole directory, and a
-# directory is refreshed by removing it and copying it back, so the
-# exception is deleted before any copy happens. It is stashed before the
-# mirror runs and restored after, and every kept path is named in the
-# output — an exception nobody can see is drift with a rationale.
+# **The exceptions list is where the kit differs on purpose.** Since
+# the two homes split it is empty: the adopter's files — settings,
+# gates, conventions — live in `writrun/`, outside every mirrored path,
+# and the kit's cautious seed of them ships as `template/writrun/`,
+# which this script never touches. The mechanism stays for the next
+# exception that earns it: a listed path is stashed before the mirror
+# runs and restored after (the mirror list names `.writrun`, a whole
+# directory, refreshed by removing and copying back), and every kept
+# path is named in the output — an exception nobody can see is drift
+# with a rationale.
 #
 # An exception the kit does not carry yet is not stashed, so it arrives
 # from the root like any other path, reported as adopted. Writing the

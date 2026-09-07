@@ -66,12 +66,12 @@ check "for both events" 0 "chore(queue): record what the forge just did" \
 # The key is not read, so neither is the file it lives in. A settings
 # file the reader could not parse is the evidence: under the old script
 # this line ran `read_setting.sh`, and here nothing looks.
-printf 'not json at all\n' > .writrun/settings.json
+printf 'not json at all\n' > writrun/settings.json
 check "an unreadable settings file is not even opened" 0 \
   "chore(queue): record what the merge decided" \
   -- bash "$SUBJECT" merge
 
-rm -f .writrun/settings.json
+rm -f writrun/settings.json
 check "and neither is a settings file that is absent" 0 \
   "chore(queue): record what the forge just did" \
   -- bash "$SUBJECT" forge

@@ -5,8 +5,8 @@
 # where it is born — generating a file check_front_matter would fail is
 # handing the failure forward.
 setup
-mkdir -p .writrun/conventions/templates
-cat > .writrun/conventions/templates/task.md <<'EOF'
+mkdir -p writrun/conventions/templates
+cat > writrun/conventions/templates/task.md <<'EOF'
 ---
 owner: "quoted value"
 ---
