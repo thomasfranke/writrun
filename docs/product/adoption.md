@@ -8,7 +8,7 @@ counting as non-compliance.
 
 Adoption is progressive. Each stage adds machinery on top of the one before
 it and changes nothing beneath, and a project declares which it is at in
-[`settings.json`](../../.writrun/settings.json): `stage: 1`,
+`writrun/settings.json`: `stage: 1`,
 `2` or `3`.
 
 | Stage | Name | Adds | Needs | Its chapter |
@@ -76,8 +76,8 @@ All of the following, or the project is *adopting*, not *adopted*:
   carries or links: who approves a doc change, who declares an authored
   rule finished, who approves a spec, and what an agent does when a
   task's brief is insufficient. The kit's address is
-  `.writrun/gates.md`, the adopter's file
-  ([The entry point is the project's](#the-entry-point-is-the-projects));
+  `writrun/gates.md`, in the project's own home
+  ([Two homes](#two-homes));
   a project that names them in its own `AGENTS.md` instead satisfies the
   gate the same way. Naming an agent as the operator of a gate is a
   valid answer — leaving the gate unnamed is not.
@@ -112,8 +112,7 @@ they are not judged the same way:
   these — the requirement is that the choice is **stated, not left to be
   reverse-engineered from the file tree**.
 
-  **Where it is stated is
-  [`settings.json`](../../.writrun/settings.json).** "Somewhere a
+  **Where it is stated is `writrun/settings.json`.** "Somewhere a
   reader would look" was honest about the obligation and vague about the
   address. One known path ends the hunt, and the machinery reads the same
   statement the reader does — so a choice cannot be declared in one place and
@@ -159,13 +158,9 @@ before touching `work/`, `docs/`, or anything in the queue. Everything
 WritRun has to tell an agent lives behind that pointer, in a file the
 kit owns and `writ update` replaces whole.
 
-The split is ownership, not length. A file under `.writrun/` is either
-the kit's — replaced entire on update, never edited by the adopter — or
-the adopter's — never touched by an update. No file is part both, which
-is what lets an update run without merging anyone's prose. The
-adopter's files are [`settings.json`](../../.writrun/settings.json) for
-values and `gates.md` for the four human gates; the kit's is
-`AGENTS.md`, carrying the flow.
+The split is ownership, not length: every file is exactly one side's,
+which is what lets an update run without merging anyone's prose
+([Two homes](#two-homes)).
 
 **The pointer is prose, never an import.** An entry file that
 hard-includes the flow loads it into every session, including the ones
@@ -173,6 +168,45 @@ that never touch the queue; a link is read at the moment its condition
 names. A vendor whose agent reads a different entry file gets a shim
 that imports `AGENTS.md` — Claude Code's `CLAUDE.md` is the known
 case — and the kit creates a shim only where the project has none.
+
+## Two homes
+
+WritRun's files and the project's answers never share a folder.
+
+| Home | Owner | An update |
+|---|---|---|
+| `.writrun/` | the kit's, whole — the flow, the skills, the scripts, the templates | replaces every file entire |
+| `writrun/` | the project's, whole — `settings.json` for values, `gates.md` for the four human gates, `conventions/` for its taste | never touches it |
+
+Outside the two homes the kit owns two things, both wearing its name:
+the workflow and issue-template files the platform forces into
+`.github/`, every one carrying the `writrun-` prefix, and `WRITRUN.md`
+at the root — the guide written for humans, kept at the top where they
+browse.
+
+**Every other file the kit ships is a seed.** The `AGENTS.md` skeleton,
+the `CLAUDE.md` shim, the `docs/` and `work/` skeletons are written
+where the project has none, and are the project's from that moment —
+never rewritten, never removed. `docs/writrun-instructions.md` is one
+of them, the kit's name on it notwithstanding.
+
+**No kit file is edited by hand.** The next update overwrites the edit,
+by design. A kit change worth having is an issue on the WritRun
+repository — recorded first as a report in the project's
+`work/reports/`, routed per the flow's own rule
+([`.writrun/AGENTS.md`](../../.writrun/AGENTS.md)).
+
+**The project couples to the contract, never to the kit's insides.** A
+project file calls a kit script or links a kit rule; it restates
+neither. What the contract is —
+[the public surface a tag freezes](../technical/distribution/release.md)
+— is the only thing an adopter may build against.
+
+**Removing the kit is three deletions.** Delete `.writrun/`, delete
+`WRITRUN.md` and the `writrun-`-prefixed files under `.github/`, cut
+the pointer section from `AGENTS.md`. Nothing else changes:
+`writrun/`, `work/`, `docs/` and every seeded file are the project's,
+and stay.
 
 ## Skills namespacing
 
@@ -210,3 +244,12 @@ the `writrun-` prefix besides — provenance is unmissable at the path
   add the pointer and nothing else; what WritRun owns shall live in
   files an update replaces whole, and the adopter's answers in files an
   update never touches.
+- When an update runs, it shall write only under `.writrun/`,
+  `WRITRUN.md` at the root, and the `writrun-`-prefixed files under
+  `.github/`, and shall touch nothing in `writrun/` and no seeded
+  file.
+- When the kit is removed, `writrun/`, `work/`, `docs/`, and every
+  seeded file shall stand untouched, and no kit-owned file shall
+  remain.
+- When a project file needs a kit behaviour, it shall call the script
+  or link the rule, never restate it, and never edit the kit's copy.
