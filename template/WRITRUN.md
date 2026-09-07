@@ -77,7 +77,8 @@ Three things happen off this line:
 | `docs/` | What is true. Product rules for people, technical detail for builders. |
 | `work/tasks/`, `work/specs/` | The queue and its plans. Statuses live in the file, never in the folder. |
 | `work/reports/` | What was noticed. Commits to nothing. |
-| `.writrun/` | The machinery: skills, scripts, conventions, settings. Its [README](.writrun/README.md) says which of them are WritRun's and which are yours. |
+| `.writrun/` | The machinery: skills, scripts, templates, the flow. WritRun's, whole — an update replaces it entire. |
+| `writrun/` | Your answers: `settings.json`, `gates.md`, `conventions/`. Yours, whole — no update touches it. |
 | `.github/workflows/writrun-*.yml` | The checks, the recording, and the intake that turns a labelled issue into a report. The two mirror workflows and the intake are optional. |
 | `AGENTS.md` | Where an agent starts. WritRun claims four lines of it — a pointer to `.writrun/AGENTS.md`, where the whole flow lives; the rest is yours. |
 | `CLAUDE.md` | One line, `@AGENTS.md` — Claude Code reads this file, not `AGENTS.md`, so the shim points it at the shared entry. |
@@ -86,15 +87,15 @@ Three things happen off this line:
 
 WritRun ships opinions, not a straitjacket.
 
-`.writrun/settings.json` is yours: the **stage** (1 files only, 2 pull
+`writrun/settings.json` is yours: the **stage** (1 files only, 2 pull
 requests, 3 GitHub Issues), and whether an agent may commit, push and
 open pull requests on its own. It ships cautious — Stage 1, every flag
 off — so a fresh copy does nothing you did not ask for.
 
-`.writrun/conventions/` is yours too: commit grammar, branch names, pull
+`writrun/conventions/` is yours too: commit grammar, branch names, pull
 request titles, how a task reads. Rewrite it to your taste on day one.
 Body shapes layer the same way — a template you drop in
-`.writrun/conventions/templates/` beats the one WritRun ships, and the
+`writrun/conventions/templates/` beats the one WritRun ships, and the
 pull request body template lives in `.writrun/templates/`, which is
 where agents read it from.
 
@@ -104,15 +105,15 @@ lifecycle, and the file shapes. An agent runs them; you never have to.
 
 ## Adopting — you just copied `template/` here
 
-1. `.writrun/` and the workflows work as copied. Make the conventions
-   yours.
+1. `.writrun/` and the workflows work as copied — never edit them.
+   `writrun/` is yours: make the conventions your own.
 2. **`AGENTS.md`** — no previous one? Fill the TODO. Already had one?
    Add the four-line WritRun pointer section to it; never overwrite,
    and add nothing else — the flow lives in `.writrun/AGENTS.md`, which
    is WritRun's and gets replaced whole on update. Keep the pointer a
    link, never an `@` reference: Claude Code imports recursively, and an
    `@` would load the whole flow into every session. Fill
-   **`.writrun/gates.md`** with the project's answers — it is yours,
+   **`writrun/gates.md`** with the project's answers — it is yours,
    like `settings.json`, and no update touches it; naming an agent as a
    gate's operator is an answer, leaving a gate unnamed is not.
    Vendors: Codex and Antigravity read `AGENTS.md` at the root natively
@@ -132,7 +133,7 @@ lifecycle, and the file shapes. An agent runs them; you never have to.
    blocked. The owner approves those settings in session: they live
    outside the repository, so no review will ever catch a wrong one.
 
-Then declare your stage in `.writrun/settings.json` and delete this
+Then declare your stage in `writrun/settings.json` and delete this
 section. The rest of this file is your reference card.
 
 The kit is MIT-0: no attribution, no notice to keep.

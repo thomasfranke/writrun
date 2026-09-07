@@ -175,7 +175,7 @@ for review is the end of the work, not the start; that is what moves the
 task to `in-review`.
 
 **The push and the opening are one act**
-([`conventions/prs.md`](../../../.writrun/conventions/prs.md)). With
+([`conventions/prs.md`](../../../writrun/conventions/prs.md)). With
 `auto_push` and `auto_pr` both `true` an agent does both without asking.
 With either at `false` it composes the branch, the title and the body,
 presents them together, and puts nothing on the forge before the word —

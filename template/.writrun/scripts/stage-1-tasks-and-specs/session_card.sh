@@ -71,7 +71,7 @@ esac
 read_key stage_2.pr_title_style
 STYLE="$VAL"; STYLE_ORIGIN="$ORIGIN"
 
-echo "WritRun — the settings this session obeys (.writrun/settings.json)"
+echo "WritRun — the settings this session obeys (writrun/settings.json)"
 echo
 printf 'stage: %s (%s) — %s\n' "$STAGE" "$STAGE_ORIGIN" "$STAGE_MEANING"
 echo

@@ -17,7 +17,7 @@ Read in order, stopping as soon as you have what the task needs:
 
    Open a conventions file for a *why* the card leaves open, and for what
    is no value at all:
-   [`prose.md`](.writrun/conventions/prose.md) is how this project writes
+   [`prose.md`](writrun/conventions/prose.md) is how this project writes
    docs, skills and comments. Never for a value, and never against one.
 1. [`docs/about.md`](docs/about.md) — what this project is. Always read.
 2. [`docs/product/README.md`](docs/product/README.md) — the rules this
@@ -96,7 +96,7 @@ commit sits in the pull request's range like any other, and
 
 ## Human gates — per principle 7
 
-This repo's answers live in [`.writrun/gates.md`](.writrun/gates.md) —
+This repo's answers live in [`writrun/gates.md`](writrun/gates.md) —
 the adopter-owned file every project fills with its own. Read it before
 any transition it names.
 

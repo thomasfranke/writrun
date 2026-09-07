@@ -33,6 +33,6 @@ generator (`new.sh`) writes it. What is taste, and this file's to state:
   (`v0.1-core`); `null` is normal, not an omission.
 
 To reshape the generated body itself, create
-`.writrun/conventions/templates/task.md` — it wins over the shipped default in
+`writrun/conventions/templates/task.md` — it wins over the shipped default in
 `.writrun/templates/`. `{{id}}` and `{{title}}` are substituted;
 front-matter is contract and never templated.

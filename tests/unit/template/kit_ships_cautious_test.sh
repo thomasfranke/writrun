@@ -5,8 +5,9 @@
 # 3 with every conduct flag open. Copied whole, that file would start an
 # adopter with four workflows armed and an Issues mirror opening issues on
 # their first pull request — while the guide is still telling them to
-# declare a stage. So the kit's settings file leaves the byte mirror, and
-# ships closed: nothing happens until the project says it should.
+# declare a stage. So the kit's settings file ships closed — a seed in
+# template/writrun/, outside every mirrored path: nothing happens until
+# the project says it should.
 READ_SETTING="$REPO_ROOT/.writrun/scripts/stage-2-pull-requests/read_setting.sh"
 CHECK_SETTINGS="$REPO_ROOT/.writrun/scripts/stage-2-pull-requests/check_settings.sh"
 
@@ -20,9 +21,9 @@ done
 check "and the kit's own file is canonical" 0 "is canonical" \
   -- bash "$CHECK_SETTINGS"
 
-# The root's file is the opposite choice, deliberately — the difference is
-# what tests/template_exceptions.txt exists for, and a kit that had drifted
-# into agreement would mean the exception stopped working.
+# The root's file is the opposite choice, deliberately — the seed is
+# written by hand, never synced, and a kit that had drifted into
+# agreement would mean someone copied the root over it.
 cd "$REPO_ROOT" || exit 1
 check "the root runs at Stage 3, which is why the two differ" 0 "^3$" \
   -- bash "$READ_SETTING" stage
@@ -44,7 +45,7 @@ ordered() {   # ordered <file> — every section's keys, in order
     END { exit bad ? 1 : 0 }
   ' "$1"
 }
-for f in .writrun/settings.json template/.writrun/settings.json; do
+for f in writrun/settings.json template/writrun/settings.json; do
   if out=$(ordered "$f"); then
     echo "ok    $f keeps its keys alphabetical inside each section"
     pass=$((pass + 1))

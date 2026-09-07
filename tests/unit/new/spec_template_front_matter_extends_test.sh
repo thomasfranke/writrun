@@ -4,8 +4,8 @@
 # The same extension mechanics on the spec side — with the template's
 # placeholders substituted in extension values too.
 setup
-mkdir -p .writrun/conventions/templates
-cat > .writrun/conventions/templates/spec.md <<'EOF'
+mkdir -p writrun/conventions/templates
+cat > writrun/conventions/templates/spec.md <<'EOF'
 ---
 origin: {{task_ref}}
 ---

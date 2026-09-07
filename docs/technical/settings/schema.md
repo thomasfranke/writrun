@@ -1,6 +1,6 @@
 # The settings file
 
-**What `.writrun/settings.json` is, the keys it holds, and the shape contract it is checked against.** One chapter of [`settings/`](README.md).
+**What `writrun/settings.json` is, the keys it holds, and the shape contract it is checked against.** One chapter of [`settings/`](README.md).
 
 ## Settings
 
@@ -13,18 +13,19 @@ key exists. `read_setting.sh` is the one reader
 prints `declared` or `default` beside the value, which is what lets a
 renderer tell a project's choice from a default nobody made.
 
-`.writrun/settings.json` holds the choices
+`writrun/settings.json` holds the choices
 [Adoption](../../product/adoption.md#three-stages) leaves open — values only, no
-prose — read by both the machinery and the agents. It sits at the root of
-WritRun's own home because it is the first file a reader or a tool goes
-looking for: the one address ends the hunt. The file is the project's from
-adoption onward and `writ update` never touches it — the same exemption
-`conventions/` carries, stated for this file by name now that it no longer
-lives there. A file left at the old address, `.writrun/conventions/settings.json`,
-is still honoured flat by the reader under the contract frozen at the
-move, and `check_settings.sh` is what names the move — the bridge
-outlives the migration it covered, because an adopter may still be
-carrying one.
+prose — read by both the machinery and the agents. It sits at the root
+of the project's own home ([Two homes](../../product/adoption.md#two-homes))
+because it is the first file a reader or a tool goes looking for: the
+one address ends the hunt, and everything under `writrun/` is the
+project's, which `writ update` never touches. Two old addresses stay
+honoured by the reader: a file still at `.writrun/settings.json` — the
+kit's home, where it lived before the split — is read as-is, and a file
+at `.writrun/conventions/settings.json` is read flat, under the
+contract frozen at that earlier move. `check_settings.sh` is what names
+each move — a bridge outlives the migration it covered, because an
+adopter may still be carrying one.
 
 **The choices are sectioned by stage** — the same rule that put the stage
 on folder names ([Adoption](../../product/adoption.md#three-stages)): one
@@ -112,7 +113,7 @@ reads prose.
 
 Two things the file may never do: carry a key that switches off anything in
 Adoption's **core** list, and carry reasoning — that stays in
-`.writrun/conventions/*.md`, and nothing is stated in both.
+`writrun/conventions/*.md`, and nothing is stated in both.
 
 **A setting controls; it never merely describes.** `stage: 1` means the
 workflows stop, not that a reader is told they were deleted. The alternative

@@ -4,7 +4,7 @@ What a pull request declares, and how a reader gets from a declaration to
 the file it names. The shape ships as
 [`templates/pull_request_template.md`](../../../.writrun/templates/pull_request_template.md)
 and the conventions it obeys are
-[`conventions/prs.md`](../../../.writrun/conventions/prs.md); this chapter
+[`conventions/prs.md`](../../../writrun/conventions/prs.md); this chapter
 is the rule behind both.
 
 ## Every reference is a bullet, and every bullet opens

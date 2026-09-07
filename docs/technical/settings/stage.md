@@ -17,7 +17,7 @@ stops the machinery the one below it does not need:
 decision, recorded*, never for a pull request specifically
 ([gates](../../product/stage-1-tasks-and-specs/gates.md)). At Stage 1 a person performs each
 directly and names how at the address their entry point carries or links
-— `.writrun/gates.md` in the kit — which Adoption already requires.
+— `writrun/gates.md` in the kit — which Adoption already requires.
 No check can verify that, which is why it is stated here: `stage: 1` is
 not permission to drop them.
 

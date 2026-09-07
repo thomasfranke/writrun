@@ -12,7 +12,7 @@
 
 ENTRY="$REPO_ROOT/template/AGENTS.md"
 FLOW="$REPO_ROOT/template/.writrun/AGENTS.md"
-GATES="$REPO_ROOT/template/.writrun/gates.md"
+GATES="$REPO_ROOT/template/writrun/gates.md"
 SHIM="$REPO_ROOT/template/CLAUDE.md"
 
 # writrun_section <entry-file> — the lines WritRun claims: from the

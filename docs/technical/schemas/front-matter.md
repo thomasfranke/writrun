@@ -30,7 +30,7 @@ project's instruction for what belongs in each
 (`writrun-create-task-and-spec`'s SKILL.md says so explicitly).
 
 **Body shapes resolve in layers, and the project's wins.** The generated
-body comes from the project's own `.writrun/conventions/templates/task.md`
+body comes from the project's own `writrun/conventions/templates/task.md`
 (or `spec.md`) where it defined one; otherwise from the shipped default in
 `.writrun/templates/`; otherwise from the generator's built-in skeleton.
 A file written by hand honours the same order. The *contract* front matter

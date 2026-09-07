@@ -10,7 +10,7 @@ exists ([`schema.md`](schema.md) says so first).
 
 | Chapter | Holds |
 |---|---|
-| [`schema.md`](schema.md) | what `.writrun/settings.json` is, every key, the checked shape |
+| [`schema.md`](schema.md) | what `writrun/settings.json` is, every key, the checked shape |
 | [`stage.md`](stage.md) | the single global switch, and what each value stops |
 | [`titles.md`](titles.md) | `pr_title_style`, and the two parts of a title that are not settable |
 | [`conduct.md`](conduct.md) | the three conduct flags and `agent_coauthor` |

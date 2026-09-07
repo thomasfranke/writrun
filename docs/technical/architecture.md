@@ -32,7 +32,8 @@ silently misread is refused at the door.
 | The skills | five markdown instructions in `.writrun/skills/`, each backed by one deterministic script | [`distribution/skills.md`](distribution/skills.md) |
 | The scripts | testable bash in `.writrun/scripts/`, one folder per adoption stage | [`distribution/checks.md`](distribution/checks.md) |
 | The workflows | four `writrun-*.yml` — `check` at the door, `approve` and `progress` recording, `issues` mirroring | [`settings/stage.md`](settings/stage.md) |
-| The settings | one file, `.writrun/settings.json`, read by machinery and agents alike | [`settings/`](settings/README.md) |
+| The settings | one file, `writrun/settings.json`, read by machinery and agents alike | [`settings/`](settings/README.md) |
+| The adopter's home | `writrun/` — settings, gates, conventions; the project's, whole, per the two homes | [`adoption`](../product/adoption.md#two-homes) |
 | The kit | `template/`, shaped like the destination root, mirrored from this repository | [`distribution/kit.md`](distribution/kit.md) |
 
 ## One session, end to end

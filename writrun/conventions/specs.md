@@ -18,7 +18,7 @@ taste, and this file's to state:
   changes sections to match what actually happened.
 
 To reshape the generated body itself, create
-`.writrun/conventions/templates/spec.md` — it wins over the shipped default in
+`writrun/conventions/templates/spec.md` — it wins over the shipped default in
 `.writrun/templates/`. `{{id}}`, `{{title}}`, `{{task_ref}}` are
 substituted; front-matter is contract, and the template must keep the two
 Proposed-changes headings and Outcome or the generator refuses it.

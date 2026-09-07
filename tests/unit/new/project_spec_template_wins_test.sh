@@ -2,8 +2,8 @@
 . "$(dirname "$0")/../../pipeline_lib.sh"
 
 setup
-mkdir -p .writrun/conventions/templates
-cat > .writrun/conventions/templates/spec.md <<'T'
+mkdir -p writrun/conventions/templates
+cat > writrun/conventions/templates/spec.md <<'T'
 # {{id}} — {{title}} (for {{task_ref}})
 
 Our sections.

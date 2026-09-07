@@ -170,7 +170,7 @@ reserved — same gates, drawn separately in
 
 Adoption is progressive: three stages, each adding machinery on top of
 the one before and changing nothing beneath. A project declares its
-stage in `.writrun/settings.json` (`stage: 1`, `2` or `3`);
+stage in `writrun/settings.json` (`stage: 1`, `2` or `3`);
 everything that belongs to exactly one stage carries a `stage-N-`
 prefix in its name. The full rules live in
 [Adoption](docs/product/adoption.md).
@@ -227,7 +227,7 @@ Local tooling — the scripts' only dependencies:
 6. **Trivial work stays out of the system.** A typo is a commit, not a task.
 7. **Human gates are explicit, not implied.** Every point where a human must
    approve is named at the address your entry point carries or links —
-   `.writrun/gates.md` in the kit — never assumed.
+   `writrun/gates.md`, the project's own home — never assumed.
 
 Full pitch, personas, and non-goals in [`docs/about.md`](docs/about.md).
 
@@ -245,7 +245,7 @@ Everything relevant lives in [`docs/`](docs):
 | [Specs](work/specs/README.md) | The detail of each change made to this repo |
 | [Skills](.writrun/skills) | `writrun-select-next-task`, `writrun-create-task-and-spec`, `writrun-check-spec-deltas`, `writrun-check-task-state`, `writrun-check-front-matter` — installed into an adopting project's own `.writrun/skills/` |
 | [Contributing](CONTRIBUTING.md) | How work is defined in tasks and specs, and what a PR is checked against |
-| [Conventions](.writrun/conventions/README.md) | Commit, branch, PR, task, and spec conventions — shipped as defaults, the project's to edit |
+| [Conventions](writrun/conventions/README.md) | Commit, branch, PR, task, and spec conventions — shipped as defaults, the project's to edit |
 | [Template](template/WRITRUN.md) | The adoption kit, shaped like the destination root — its guide travels with the copy as `WRITRUN.md` |
 
 ## Status
