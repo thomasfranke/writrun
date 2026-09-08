@@ -13,6 +13,7 @@
 ENTRY="$REPO_ROOT/kit/AGENTS.md"
 FLOW="$REPO_ROOT/kit/.writrun/AGENTS.md"
 GATES="$REPO_ROOT/kit/writrun/gates.md"
+GATES_DEFAULT="$REPO_ROOT/kit/.writrun/defaults/gates.md"
 SHIM="$REPO_ROOT/kit/CLAUDE.md"
 
 # writrun_section <entry-file> — the lines WritRun claims: from the
@@ -70,25 +71,30 @@ else
   fail=$((fail + 1))
 fi
 
-if [ -f "$GATES" ] && grep -q 'TODO' "$GATES"; then
-  echo "ok    the gates file ships as the TODO skeleton, not somebody's answers"; pass=$((pass + 1))
+# The adopter's gates.md ships deferring, not carrying answers — the
+# TODO skeleton it replaced was a file no update could correct and no
+# reader was obliged to fill, so a project that never opened it had, by
+# the kit's own terms, no gate answered
+# (product/adoption.md#two-homes).
+if [ -f "$GATES" ] && [ "$(sed -n '1p' "$GATES")" = "/// writrun:default" ]; then
+  echo "ok    the gates file ships deferring, not carrying somebody's answers"; pass=$((pass + 1))
 else
-  echo "FAIL  the gates file ships as the TODO skeleton, not somebody's answers"
+  echo "FAIL  the gates file ships deferring, not carrying somebody's answers"
   fail=$((fail + 1))
 fi
 
 # Every gate the flow routes through gates.md has a row in the shipped
-# skeleton: a gate the kit never asks about is one the adopter answers
-# by accident. report-0019's `tracked` row shipped missing, and the
-# flow's own rule makes an unnamed gate a stall.
+# default: a gate the kit never answers is one the adopter operates by
+# accident. report-0019's `tracked` row shipped missing, and the flow's
+# own rule makes an unnamed gate a stall.
 missing=""
 for gate in 'docs/' 'approved' 'spec_ref' 'Derived work' 'settings' 'tracked'; do
-  grep -qF "$gate" "$GATES" || missing="$missing$gate "
+  grep -qF "$gate" "$GATES_DEFAULT" || missing="$missing$gate "
 done
 if [ -z "$missing" ]; then
-  echo "ok    every gate the flow routes through gates.md has a row to fill"; pass=$((pass + 1))
+  echo "ok    every gate the flow routes through gates.md is answered by the default"; pass=$((pass + 1))
 else
-  echo "FAIL  every gate the flow routes through gates.md has a row to fill"
+  echo "FAIL  every gate the flow routes through gates.md is answered by the default"
   echo "      no row for: $missing"
   fail=$((fail + 1))
 fi
