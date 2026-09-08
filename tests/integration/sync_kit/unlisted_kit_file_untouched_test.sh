@@ -15,10 +15,10 @@ printf 'root content\n' > a-file.txt
 printf 'kit-only guide\n' > kit/WRITRUN.md
 
 check "the sync runs clean" 0 "synced a-file.txt" -- bash "$SYNC" mirrors.txt
-if [ "$(cat kit/WRITRUN.md)" = "template-only guide" ]; then
-  echo "ok    an unlisted template file is untouched"; pass=$((pass + 1))
+if [ "$(cat kit/WRITRUN.md)" = "kit-only guide" ]; then
+  echo "ok    an unlisted kit file is untouched"; pass=$((pass + 1))
 else
-  echo "FAIL  an unlisted template file is untouched"; fail=$((fail + 1))
+  echo "FAIL  an unlisted kit file is untouched"; fail=$((fail + 1))
 fi
 
 finish
