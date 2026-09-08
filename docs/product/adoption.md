@@ -76,11 +76,13 @@ All of the following, or the project is *adopting*, not *adopted*:
   carries or links: who approves a doc change, who declares an authored
   rule finished, who approves a spec, and what an agent does when a
   task's brief is insufficient. The kit's address is
-  `writrun/gates.md`, in the project's own home
+  `writrun/gates.md`, in the project's own home, resolving to the
+  kit's own conservative answers while the project defers
   ([Two homes](#two-homes));
   a project that names them in its own `AGENTS.md` instead satisfies the
   gate the same way. Naming an agent as the operator of a gate is a
-  valid answer — leaving the gate unnamed is not.
+  valid answer — and no gate is ever unnamed: the defaults stand until
+  the project overrides them.
 
 A project missing any one of these is not yet an adopter, regardless of how
 much of the spirit it otherwise follows. [TOM](#worked-example-tom) is the
@@ -175,8 +177,38 @@ WritRun's files and the project's answers never share a folder.
 
 | Home | Owner | An update |
 |---|---|---|
-| `.writrun/` | the kit's, whole — the flow, the skills, the scripts, the templates | replaces every file entire |
-| `writrun/` | the project's, whole — `settings.json` for values, `gates.md` for the four human gates, `conventions/` for its taste | never touches it |
+| `.writrun/` | the kit's, whole — the flow, the skills, the scripts, the templates, and `defaults/`: the answers in force until the project overrides them | replaces every file entire |
+| `writrun/` | the project's, whole — `settings.json` for values, and one file per answer, deferring or overridden | never touches it |
+
+**A default is read through the project's home, never around it.** For
+every text the kit answers on a project's behalf — `gates.md`, each
+file under `conventions/` — the address is the project's and the text
+in force starts as the kit's: `writrun/<path>` resolves to
+`.writrun/defaults/<path>` while the project's file defers, and to the
+project's file the moment it stops. Deferring is positional, the way a
+draft chapter declares itself
+([authoring](stage-1-tasks-and-specs/authoring.md#a-chapter-that-is-not-a-rule-yet)):
+a first line of `/// writrun:default`, and there only. A file carrying
+it — or absent altogether — is the kit's answer; anything else is the
+project's, whole. Nothing merges in either direction, which is what
+keeps the update rule above: the kit corrects its defaults by
+replacing its own home, and never needs a line of anyone's prose —
+while a correction to a default now *reaches* every project that
+defers, which a text seeded once into the untouchable home never
+could.
+
+**The stub carries no address.** A deferring file is the marker plus
+prose saying how to override — never the path it resolves to, which is
+computed from the file's own name. A written address would be kit
+knowledge in the project's home, frozen at the version that seeded it:
+the exact drift the split exists to prevent.
+
+**Values live in `settings.json`, never in a default's prose.** The
+commit vocabulary — `commit_types` and `commit_scopes` — is the
+settings file's ([schema](../technical/settings/schema.md#settings)),
+and the checks read it there alone. A convention explains a
+vocabulary; it never carries a second copy for a check to disagree
+with.
 
 Outside the two homes the kit owns two things, both wearing its name:
 the workflow and issue-template files the platform forces into
@@ -248,6 +280,16 @@ the `writrun-` prefix besides — provenance is unmissable at the path
   `WRITRUN.md` at the root, and the `writrun-`-prefixed files under
   `.github/`, and shall touch nothing in `writrun/` and no seeded
   file.
+- When a file in the project's home carries `/// writrun:default` as
+  its first line, or does not exist, the text in force shall be the
+  kit's default of the same name under `.writrun/defaults/`; any other
+  content shall stand whole, and nothing shall merge in either
+  direction.
+- When the kit seeds a deferring file, the file shall carry the marker
+  and how to override, and never the address it resolves to.
+- When a check reads a vocabulary the project may set, it shall read
+  `writrun/settings.json`, never a copy held in prose or in a kit
+  script.
 - When the kit is removed, `writrun/`, `work/`, `docs/`, and every
   seeded file shall stand untouched, and no kit-owned file shall
   remain.

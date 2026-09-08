@@ -48,6 +48,8 @@ only when it holds a documented key — no empty placeholder objects.
     "auto_commit": true,
     "auto_pr": true,
     "auto_push": true,
+    "commit_scopes": "about product technical tasks specs skills ci tests agents readme setup queue conventions",
+    "commit_types": "docs feat fix refactor chore",
     "pr_title_style": "conventional"
   }
 }
@@ -71,16 +73,31 @@ check.
 | `auto_commit` | `stage_2` | `true` / `false` | agents only |
 | `auto_pr` | `stage_2` | `true` / `false` | agents only |
 | `auto_push` | `stage_2` | `true` / `false` | agents only |
+| `commit_scopes` | `stage_2` | lower-case words, space-separated | the workflows, and agents |
+| `commit_types` | `stage_2` | lower-case words, space-separated | the workflows, and agents |
 | `pr_title_style` | `stage_2` | `conventional` / `bracketed` | agents only |
+
+**The commit vocabulary is a value, so it lives here.** `commit_types`
+and `commit_scopes` are the two lists a title and a subject are checked
+against — the project's own words, written where the machinery and the
+reader find one statement
+([Two homes](../../product/adoption.md#two-homes)). The convention
+prose explains what a type or a scope *is* and how the project uses
+them; it never spells the lists a second time, which is this file's
+"values, never reasoning" rule read in the other direction. A scope
+list is the one key whose value grows with the project — adding a word
+is editing one line here, and every check sees it at once.
 
 **Every key is present, always** — the same reason the front matter carries
 `null` fields rather than omitting them: a reader sees the whole
 configuration without knowing the defaults. Each key's documented default
 is the behaviour from before the key existed, so a project without the
 file, or without the key, behaves exactly as it did: `stage` defaults to
-`3`, `pr_title_style` to `conventional`, and the three conduct flags —
+`3`, `pr_title_style` to `conventional`, the three conduct flags —
 `auto_commit`, `auto_pr`, `auto_push` — to `true`, `agent_coauthor` with
-them. `provenance_ledger` defaults to `false` by the same rule and lands
+them, and `commit_types` and `commit_scopes` to the lists the
+observance check carried embedded before the keys existed — the ones
+the example above spells. `provenance_ledger` defaults to `false` by the same rule and lands
 on the opposite side of it: no ledger existed before the key, so recording
 nothing is the behaviour it preserves.
 

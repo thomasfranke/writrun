@@ -20,9 +20,12 @@ diff can show a question that wasn't asked, and no check infers one.
 
 `check_observance.sh` is where both live. The title check strips the
 `[TASK-NNNN]` tags — not the settable part — and reads what is left
-against the declared style: the type against the vocabulary
-`conventions/commits.md` carries, the scope against it too when one is
-present, and nothing about the summary. Case inside a bracketed label
+against the declared style: the type against `commit_types` and the
+scope, when one is present, against `commit_scopes` — both read from
+`writrun/settings.json` through `read_setting.sh`
+([schema](schema.md#settings)), so the words the check refuses are
+the words the project declared, at every version — and nothing about
+the summary. Case inside a bracketed label
 is not judged, because the convention writes both `[Fix]` and `[DOCS]`.
 The credit check reads the pull request's own commits and body — never
 `main`'s past, since nothing rewrites history — and skips the
