@@ -4,9 +4,11 @@ Four checkpoints are named, not implied. An adopting project states who
 operates each one at the address its entry point carries or links ([the
 entry point is the project's](../adoption.md#the-entry-point-is-the-projects))
 — the kit's address is `writrun/gates.md`, in the project's own home, and a project that names them
-in its own `AGENTS.md` instead satisfies this the same way. Every
-adopting project must name all four somewhere, even if the answer for one
-of them is "an agent, autonomously":
+in its own `AGENTS.md` instead satisfies this the same way. All four
+are named from the first day: the kit's defaults answer them
+conservatively — a human at every one — until the project overrides
+its file ([Two homes](../adoption.md#two-homes)), and "an agent,
+autonomously" is an answer a project may write:
 
 - **Changing a permanent doc** — About, any product chapter, any technical
   section, authored or closing the loop. A human writes it or reviews it
@@ -59,9 +61,14 @@ cheap bar expensive again at the far end.
 
 The four gates above are the methodology's. An adopting project answers
 them at its stated address — `writrun/gates.md` in the kit — as a table
-of transitions and who operates each. The address is the adopter's file
-either way: an update never touches it, because the answers are the
-project's and nothing WritRun ships can hold them. The table is a
+of transitions and who operates each. The address is the adopter's
+file, and the text in force starts as the kit's: the file ships
+deferring to `.writrun/defaults/gates.md`, whose table names a human
+at every gate, and the project that wants different answers overwrites
+its own file whole ([Two homes](../adoption.md#two-homes)). A default
+this conservative is what makes deferring safe for the project that
+never opens the file — the cost of not reading it is asking a human
+too often, never an agent acting where nobody assented. The table is a
 **naming**, not an argument: each cell names
 the who and links the why, because the reasoning belongs to a chapter
 every session does not read, while the table is read by every session
