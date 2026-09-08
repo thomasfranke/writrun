@@ -57,13 +57,13 @@
   file in the tree, so a relative path resolves under the pull request's
   own address, and a link to the head branch dies when a squash merge
   deletes it. The reasoning is
-  [`body.md`](../../../docs/product/stage-2-pull-requests/body.md).
+  [`body.md`](https://github.com/thomasfranke/writrun/blob/main/docs/product/stage-2-pull-requests/body.md).
 - **The body answers two questions, not one**: `## How to verify` is the
   methodology's — the gates' result, and anything to re-read by hand;
   `## How to test` is the reviewer's — what to run and what to expect
   back. A change with nothing runnable says so in a line, because a
   deleted section and a forgotten one look the same
-  ([`body.md`](../../../docs/product/stage-2-pull-requests/body.md#the-body-says-how-to-test)).
+  ([`body.md`](https://github.com/thomasfranke/writrun/blob/main/docs/product/stage-2-pull-requests/body.md#the-body-says-how-to-test)).
 - **Opening state**: an implementing PR opens as a **draft**, at the
   moment its task is taken and before the work starts — that is what puts
   the task's mirror on `status:in-progress`. Ready for review is the end

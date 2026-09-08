@@ -94,9 +94,10 @@ off — so a fresh copy does nothing you did not ask for.
 
 `writrun/gates.md` and `writrun/conventions/` are yours too — who
 approves what, commit grammar, branch names, pull request titles, how a
-task reads. **They arrive answered.** Each ships as a one-line stub
-deferring to WritRun's default of the same name, so nothing is unset on
-day one and every gate already names a human. Replace a file's contents
+task reads. **They arrive answered.** Each ships as a stub whose first
+line defers to WritRun's default of the same name — the prose under it
+only says how to make the file yours — so nothing is unset on day one
+and every gate already names a human. Replace a file's contents
 when you want it different: yours then stands whole, the files beside it
 go on deferring, and a correction WritRun ships still reaches them.
 

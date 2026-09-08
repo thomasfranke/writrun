@@ -52,7 +52,7 @@ it.
 
 **Nothing under `.writrun/defaults/` is edited by hand.** It is the
 kit's home, replaced entire by an update
-([kit](kit.md#the-adopters-home-leaves-the-mirror-whole-kitwritrun-is-a-seed-not-a-copy)) —
+([kit](kit.md#the-kit)) —
 which is exactly what makes a correction to a default reach every
 project that defers, and what a text seeded once into the untouchable
 home could never do.

@@ -56,4 +56,24 @@ done <<EOF
 $(find "$SEED" -type f | sort)
 EOF
 
+# This repository's own home carries the same stubs, hand-seeded: it
+# sits outside the mirror list, so nothing else compares the two copies,
+# and two hand-kept copies of one boilerplate drift silently — the
+# report-0039 failure the two-homes split exists to remove. A root file
+# that defers is the seed's stub, byte for byte; one that declared its
+# own answer (no marker) is the project's and is skipped.
+while IFS= read -r s; do
+  rel="${s#"$SEED"/}"
+  root="$REPO_ROOT/writrun/$rel"
+  [ -f "$root" ] || continue
+  [ "$(sed -n '1p' "$root")" = "$MARKER" ] || continue
+  if diff -q "$root" "$s" >/dev/null 2>&1; then
+    echo "ok    $rel — the root's deferring stub is the seed's, byte for byte"; pass=$((pass + 1))
+  else
+    echo "FAIL  $rel — the root's deferring stub drifted from the seed's"; fail=$((fail + 1))
+  fi
+done <<EOF
+$(find "$SEED" -type f | sort)
+EOF
+
 finish
