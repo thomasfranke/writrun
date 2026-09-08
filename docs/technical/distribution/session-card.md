@@ -27,6 +27,9 @@ happens to say, which is not the same claim, and the drift it was meant
 to make visible is the one the settings address removed.
 
 Exit 0 always, including with no settings file — pre-adoption is a state,
-not an error. The card replaces reading, so its length is
-part of its contract: growing is regressing.
+not an error. The one exception is 3, when `read_setting.sh` itself
+cannot answer: that is a broken kit, not a missing declaration, and a
+card rendered around it would look complete while stating nothing. The
+card replaces reading, so its length is part of its contract: growing is
+regressing.
 

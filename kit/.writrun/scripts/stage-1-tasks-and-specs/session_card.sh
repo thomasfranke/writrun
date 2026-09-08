@@ -18,8 +18,8 @@
 # It replaces reading, so growing is regressing: the card is ~30 lines.
 #
 # Exit codes: 0 always — a project with no settings file is pre-adoption,
-# which is a state and not an error — except 3 when the vocabularies
-# cannot be read, because a card missing them must not look complete.
+# which is a state and not an error — except 3 when the reader itself
+# cannot answer, because a card missing values must not look complete.
 #
 # Portable bash 3.2, POSIX awk/sed. See the standing rule in
 # docs/technical/decisions/.
@@ -32,11 +32,17 @@ READ_SETTING="$HERE/../stage-2-pull-requests/read_setting.sh"
 TOP=$(git rev-parse --show-toplevel 2>/dev/null) && cd "$TOP"
 
 # value/origin, from the one reader. A key nobody declared prints its
-# documented default, marked as one.
+# documented default, marked as one. The reader itself failing is a
+# different state — a missing or broken kit, not a missing declaration —
+# and rendering it as '(default)' would make an empty card look
+# complete, so it is the loud exit the header promises.
 VAL=""; ORIGIN=""
 read_key() {
   local out
-  out=$(bash "$READ_SETTING" "$1" --origin 2>/dev/null)
+  if ! out=$(bash "$READ_SETTING" "$1" --origin); then
+    echo "session_card: read_setting.sh could not answer '$1' — a card missing it must not look complete" >&2
+    exit 3
+  fi
   VAL=$(printf '%s' "$out" | cut -f1)
   ORIGIN=$(printf '%s' "$out" | cut -f2)
   [ -n "$ORIGIN" ] || ORIGIN=default

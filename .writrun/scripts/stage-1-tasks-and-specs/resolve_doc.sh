@@ -78,8 +78,11 @@ emit() {
   if [ -n "$WITH_ORIGIN" ]; then printf '%s\t%s\n' "$1" "$2"; else printf '%s\n' "$1"; fi
 }
 
-# Present and not deferring: the project's answer, whole.
-if [ -f "$ADDR" ] && [ "$(sed -n '1p' "$ADDR")" != "$MARKER" ]; then
+# Present and not deferring: the project's answer, whole. The first
+# line is read with any trailing carriage return stripped: a checkout
+# under core.autocrlf rewrites every line ending, and a stub must not
+# stop deferring because of how it was checked out.
+if [ -f "$ADDR" ] && [ "$(sed -n '1p' "$ADDR" | tr -d '\r')" != "$MARKER" ]; then
   emit "$ADDR" declared
   exit 0
 fi
