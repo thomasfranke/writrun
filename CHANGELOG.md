@@ -4,6 +4,24 @@ Written by `make release` at every cut, from the commit subjects
 the range carries. Never edited by hand — the subject is where a
 wrong line is fixed, on the next tag.
 
+## v0.0.07 — 2026-09-08
+
+### docs
+
+- docs(technical): the prose catches up with the kit's rename (#251)
+- docs(product): the kit's texts become defaults the project overrides (#246)
+
+### chore
+
+- chore(queue): record what the merge decided
+- chore(queue): record what the forge just did
+- chore(queue): record what the forge just did
+- chore(queue): record what the merge decided
+
+### other
+
+- [TASK-0065][Refactor][Setup] The kit's texts become defaults the project overrides (#250)
+
 ## v0.0.06 — 2026-09-08
 
 ### chore
