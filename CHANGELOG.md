@@ -4,6 +4,13 @@ Written by `make release` at every cut, from the commit subjects
 the range carries. Never edited by hand — the subject is where a
 wrong line is fixed, on the next tag.
 
+## v0.0.06 — 2026-09-08
+
+### chore
+
+- chore(release): v0.0.05
+- chore(queue): record what the merge decided
+
 ## v0.0.05 — 2026-09-07
 
 ### chore
