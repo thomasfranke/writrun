@@ -6,7 +6,7 @@
 SYNC="$REPO_ROOT/scripts/sync_kit.sh"
 
 WORK=$(mktemp -d); cd "$WORK" || exit 1
-mkdir -p template
+mkdir -p kit
 printf 'a-file.txt\n' > mirrors.txt
 printf 'root content\n' > a-file.txt
 

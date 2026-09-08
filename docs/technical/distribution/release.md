@@ -40,7 +40,7 @@ vocabulary that is deliberately WritRun's own rather than SemVer's —
 `epoch` the first, reserved for historic milestones. The target derives
 the next number from the latest tag, stamps it into `.writrun/VERSION` —
 the kit carries the stamp, so an adopter, and the future `writ update`,
-knows which tag a copy came from — syncs the template, runs the suite,
+knows which tag a copy came from — syncs the kit, runs the suite,
 and only then commits, tags, pushes, and publishes the GitHub Release
 with notes generated from the conventional commits. While the methodology
 is alpha (0.x), the contract itself moves without notice; a client or an

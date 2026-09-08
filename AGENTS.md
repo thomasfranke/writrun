@@ -2,7 +2,7 @@
 
 This repository is the methodology itself, and follows it. This file
 governs work here. [`.writrun/AGENTS.md`](.writrun/AGENTS.md) is the flow
-the kit ships to adopting projects, held byte-identical to `template/` by
+the kit ships to adopting projects, held byte-identical to `kit/` by
 the mirror — read it as the artifact this repository maintains, never as
 instructions for this repository.
 

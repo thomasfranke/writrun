@@ -1,7 +1,7 @@
 name: tests
 
 # This repository's own CI — never shipped to adopters. The adoption kit
-# is template/, and only the writrun-*.yml workflows are part of it; an
+# is kit/, and only the writrun-*.yml workflows are part of it; an
 # adopting project has no tests/run.sh for this job to run.
 #
 # Pull requests only — main has a pipeline of its own
