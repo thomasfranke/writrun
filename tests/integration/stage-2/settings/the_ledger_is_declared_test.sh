@@ -27,6 +27,8 @@ settings_file <<'JSON'
     "auto_commit": true,
     "auto_pr": true,
     "auto_push": true,
+    "commit_scopes": "about product technical tasks specs skills ci tests agents readme setup queue conventions",
+    "commit_types": "docs feat fix refactor chore",
     "pr_title_style": "conventional"
   }
 }
@@ -51,6 +53,8 @@ settings_file <<'JSON'
     "auto_commit": true,
     "auto_pr": true,
     "auto_push": true,
+    "commit_scopes": "about product technical tasks specs skills ci tests agents readme setup queue conventions",
+    "commit_types": "docs feat fix refactor chore",
     "pr_title_style": "conventional"
   }
 }
@@ -76,6 +80,8 @@ settings_file <<'JSON'
     "auto_commit": true,
     "auto_pr": true,
     "auto_push": true,
+    "commit_scopes": "about product technical tasks specs skills ci tests agents readme setup queue conventions",
+    "commit_types": "docs feat fix refactor chore",
     "pr_title_style": "conventional",
     "provenance_ledger": false
   }
@@ -99,6 +105,8 @@ settings_file <<'JSON'
     "auto_commit": true,
     "auto_pr": true,
     "auto_push": true,
+    "commit_scopes": "about product technical tasks specs skills ci tests agents readme setup queue conventions",
+    "commit_types": "docs feat fix refactor chore",
     "pr_title_style": "conventional"
   }
 }

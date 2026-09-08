@@ -246,7 +246,7 @@ Everything relevant lives in [`docs/`](docs):
 | [Skills](.writrun/skills) | `writrun-select-next-task`, `writrun-create-task-and-spec`, `writrun-check-spec-deltas`, `writrun-check-task-state`, `writrun-check-front-matter` — installed into an adopting project's own `.writrun/skills/` |
 | [Contributing](CONTRIBUTING.md) | How work is defined in tasks and specs, and what a PR is checked against |
 | [Conventions](writrun/conventions/README.md) | Commit, branch, PR, task, and spec conventions — shipped as defaults, the project's to edit |
-| [Template](template/WRITRUN.md) | The adoption kit, shaped like the destination root — its guide travels with the copy as `WRITRUN.md` |
+| [Kit](kit/WRITRUN.md) | The adoption kit, shaped like the destination root — its guide travels with the copy as `WRITRUN.md` |
 
 ## Status
 

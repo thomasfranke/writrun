@@ -2,7 +2,7 @@
 
 This repository is the methodology itself, and follows it. This file
 governs work here. [`.writrun/AGENTS.md`](.writrun/AGENTS.md) is the flow
-the kit ships to adopting projects, held byte-identical to `template/` by
+the kit ships to adopting projects, held byte-identical to `kit/` by
 the mirror — read it as the artifact this repository maintains, never as
 instructions for this repository.
 
@@ -16,9 +16,16 @@ Read in order, stopping as soon as you have what the task needs:
    ```
 
    Open a conventions file for a *why* the card leaves open, and for what
-   is no value at all:
-   [`prose.md`](writrun/conventions/prose.md) is how this project writes
-   docs, skills and comments. Never for a value, and never against one.
+   is no value at all — `writrun/conventions/prose.md` is how this
+   project writes docs, skills and comments. Never for a value, and
+   never against one. Resolve it rather than opening a path: this
+   repository defers every convention to the kit's default, and the
+   script says which file answers.
+
+   ```bash
+   bash .writrun/scripts/stage-1-tasks-and-specs/resolve_doc.sh \
+     writrun/conventions/prose.md --origin
+   ```
 1. [`docs/about.md`](docs/about.md) — what this project is. Always read.
 2. [`docs/product/README.md`](docs/product/README.md) — the rules this
    repo is checked against. Read the chapter you are touching before

@@ -28,13 +28,13 @@ check "the offending path the base already carried is not re-judged" 0 "every pa
 # A path the change itself introduces is still refused, in the very same
 # spec — the base read is a boundary, never an amnesty.
 sed -i.bak 's|^- `tests/unit/whatever/` — test promise.$|- `tests/unit/whatever/` — test promise.\
-- `template/newly/` — test promise.|' work/specs/spec-0038.md
+- `kit/newly/` — test promise.|' work/specs/spec-0038.md
 rm -f work/specs/spec-0038.md.bak
-mkdir -p template
-: > template/keep.txt
+mkdir -p kit
+: > kit/keep.txt
 commit_all
 
-check "and a path the same change adds is still refused" 1 "template/newly/" \
+check "and a path the same change adds is still refused" 1 "kit/newly/" \
   -- bash "$CI_SCRIPTS/stage-2-pull-requests/check_promise_paths.sh" main...HEAD
 
 finish

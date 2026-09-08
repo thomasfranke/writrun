@@ -7,7 +7,7 @@
 # HEAD either way, which is what this case exists to hold.
 release_setup
 printf 'v0.0.01\n' > .writrun/VERSION
-printf 'v0.0.01\n' > template/.writrun/VERSION
+printf 'v0.0.01\n' > kit/.writrun/VERSION
 git add -A >/dev/null
 git commit -qm "pre-stamped"
 before=$(git rev-list --count HEAD)

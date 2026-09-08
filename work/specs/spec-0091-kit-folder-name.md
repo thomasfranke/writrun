@@ -1,7 +1,7 @@
 ---
 id: spec-0091
 task_ref: task-0065
-status: approved
+status: implemented
 created: 2026-09-08T16:48:56Z
 ---
 
@@ -86,4 +86,25 @@ machinery and green; no new cases — the rename changes no behaviour.
 
 ## Outcome
 
-_(fill after execution)_
+Done as planned. `template/` is `kit/`; the machinery renamed with it
+(`sync_kit.sh`, `make kit-sync`, `tests/kit_mirrors.txt`,
+`tests/kit_exceptions.txt`), and the suites that test it moved to
+`tests/integration/sync_kit/` and `tests/unit/kit/`.
+
+**One file the spec's step list missed:** `.github/scripts/readiness_heal.sh`,
+this repository's own CI. It guarded on `git status --porcelain -- template`
+and announced `healed — template sync committed`, so after the rename it
+saw no drift and healed nothing while reporting success — the exact
+silent-pass shape the readiness pipeline exists to avoid. Its e2e case
+caught it. Its commit subject was `chore(template)`, a scope no
+vocabulary has ever carried; it is now `chore(setup)`, the scope the
+kit's own tasks use.
+
+**What was deliberately not renamed:** `.writrun/templates/` and the
+body-template tests under `tests/unit/new/`. Those hold real templates —
+skeletons `new.sh` instantiates per task — and the collision the rename
+set out to end was between the *kit folder* and them. Renaming both
+would have kept it.
+
+Historical records keep the old name: `docs/technical/decisions/` and
+the CHANGELOG describe what was true when they were written.

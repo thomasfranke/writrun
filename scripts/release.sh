@@ -8,7 +8,7 @@
 # (historic milestones only). The next number is computed from the
 # latest tag — the very first release is v0.0.01, and the third field
 # stays two digits — then: stamp
-# .writrun/VERSION, sync the template, run the suite, write the
+# .writrun/VERSION, sync the kit, run the suite, write the
 # CHANGELOG.md section for the number being cut, and only after that
 # commit, tag, push, and publish the GitHub Release with notes generated
 # from the conventional commits.
@@ -20,9 +20,9 @@
 # somebody forgets.
 #
 # Every guard aborts before anything is mutated. A failed suite — or a
-# template the sync had to change beyond the version stamp — aborts
+# kit the sync had to change beyond the version stamp — aborts
 # before the commit, leaving only the stamp (and any sync output) dirty
-# in the tree (`git checkout .writrun template` undoes it).
+# in the tree (`git checkout .writrun kit` undoes it).
 set -euo pipefail
 
 [ "$#" -le 1 ] || { echo "release: pick one of minor|major|epoch" >&2; exit 1; }
@@ -55,19 +55,19 @@ fi
 echo "release: ${last:-none} -> $next ($bump)"
 
 printf '%s\n' "$next" > .writrun/VERSION
-"${MAKE:-make}" template-sync
+"${MAKE:-make}" kit-sync
 
 # The sync must have produced nothing but the stamp. A release records;
 # it does not fix: the commit below stages only the two VERSION files,
 # so any other sync output would be left behind and the tag would carry
-# a template disagreeing with its own root — while looking green,
+# a kit disagreeing with its own root — while looking green,
 # because the suite runs against the synced working tree. Drift reaching
 # main means a mirror-test failure was merged past; it gets its own
 # reviewed change, not a ride on a release.
 drift=$(git status --porcelain \
-  | awk '$2 != ".writrun/VERSION" && $2 != "template/.writrun/VERSION"')
+  | awk '$2 != ".writrun/VERSION" && $2 != "kit/.writrun/VERSION"')
 if [ -n "$drift" ]; then
-  echo "release: the template sync changed more than the version stamp:" >&2
+  echo "release: the kit sync changed more than the version stamp:" >&2
   printf '%s\n' "$drift" >&2
   echo "release: merge that sync through the normal flow, then release" >&2
   exit 1
@@ -169,7 +169,7 @@ fi
 # The changelog joins the stamps, so one commit carries the number and
 # what earned it. It always changes, which is why a re-cut that finds the
 # stamp already correct still commits — the tag lands on HEAD either way.
-git add .writrun/VERSION template/.writrun/VERSION CHANGELOG.md
+git add .writrun/VERSION kit/.writrun/VERSION CHANGELOG.md
 git diff --cached --quiet || git commit -m "chore(release): $next"
 git tag -a "$next" -m "$next"
 git push origin main --follow-tags

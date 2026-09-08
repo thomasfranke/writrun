@@ -143,6 +143,8 @@ settings_file <<'JSON'
     "auto_pr": true,
     "auto_push": false,
     "agent_coauthor": true,
+    "commit_scopes": "about product technical tasks specs skills ci tests agents readme setup queue conventions",
+    "commit_types": "docs feat fix refactor chore",
     "pr_title_style": "conventional"
   }
 }

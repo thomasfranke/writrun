@@ -50,7 +50,7 @@ face: a reader copies it and the first check refuses what it taught. This
 repository's own concept chapters printed a task with no `origin` and a
 bare `created` date, and the adoption kit shipped that for weeks with
 nothing noticing. `check_doc_shapes.sh` reads every fenced `yaml` block
-under `docs/`, `template/`, `.writrun/` and the root's three documents,
+under `docs/`, `kit/`, `.writrun/` and the root's three documents,
 and hands the whole ones to the same checker. **The language tag is the
 declaration of intent**: a block that is deliberately not canonical — a
 shape that is history, or one shown to say what the checker refuses — is

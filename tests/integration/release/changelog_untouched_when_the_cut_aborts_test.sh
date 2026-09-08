@@ -17,7 +17,7 @@ before=$(git log -1 --format=%H)
 # The whole file, hashed: the assertion is every byte, not one string a
 # rewrite could leave standing.
 before_file=$(git hash-object CHANGELOG.md)
-printf '#!/usr/bin/env bash\necho "make $*" >> "%s/calls.log"\ntouch "%s/repo/template/stray.md"\n' "$WORK" "$WORK" > "$WORK/stub-bin/make"
+printf '#!/usr/bin/env bash\necho "make $*" >> "%s/calls.log"\ntouch "%s/repo/kit/stray.md"\n' "$WORK" "$WORK" > "$WORK/stub-bin/make"
 chmod +x "$WORK/stub-bin/make"
 out=$(bash "$RELEASE_SH" 2>&1); code=$?
 drift_ok=false
@@ -28,8 +28,8 @@ if [ "$code" -ne 0 ] &&
   drift_ok=true
 fi
 
-rm -f "$WORK/repo/template/stray.md"
-git checkout -q -- .writrun/VERSION template/.writrun/VERSION 2>/dev/null || true
+rm -f "$WORK/repo/kit/stray.md"
+git checkout -q -- .writrun/VERSION kit/.writrun/VERSION 2>/dev/null || true
 printf '#!/usr/bin/env bash\necho "make $*" >> "%s/calls.log"\n[ "$1" = "tests" ] && exit 1\nexit 0\n' "$WORK" > "$WORK/stub-bin/make"
 chmod +x "$WORK/stub-bin/make"
 out2=$(bash "$RELEASE_SH" 2>&1); code2=$?

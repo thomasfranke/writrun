@@ -1,7 +1,7 @@
 ---
 id: spec-0093
 task_ref: task-0065
-status: approved
+status: implemented
 created: 2026-09-08T16:49:02Z
 ---
 
@@ -87,4 +87,28 @@ independent of spec-0091.
 
 ## Outcome
 
-_(fill after execution)_
+Done as planned: `commit_types` and `commit_scopes` are `stage_2` keys,
+read through `read_setting.sh`, shape-checked by `check_settings.sh`,
+rendered with their origin on the session card, and declared in both
+this repository's settings and the seed's. The embedded
+`TYPES=`/`SCOPES=` lines are gone.
+
+**Two readers the spec did not name, both scraping the same lines.**
+`take_task.sh` read all three vocabularies out of `check_observance.sh`
+with `sed`, and `session_card.sh` did the same for two — so the check
+was a de-facto data file for scripts that never said so. Both now read
+the settings. `CATEGORIES` stays where it is and is still scraped: it is
+the kit's tripwire against `Co-Authored-By: AI`, not a project's choice,
+so it has no setting to move to.
+
+**A locale bug the first shape check walked into.** `*[!a-z\ ]*` accepts
+`docs Feat` under `en_US.UTF-8`, because a bracket *range* is collated
+in the locale's order and every upper-case letter falls inside `a-z`
+there. The test caught it — the case exists precisely to refuse that
+shape. It reads `*[![:lower:]\ ]*` now, and the reason is a comment in
+place, since the working version looks like the broken one.
+
+The card's exit-3 path is gone with the scraping: it existed because a
+card that could not find the vocabulary lines would look complete while
+saying nothing. Absence is now a documented default like any other
+value, marked `default` on the card.

@@ -1,0 +1,18 @@
+{
+  "stage": 1,
+  "stage_1": {
+    "decisions_style": "per-subsystem",
+    "product_layout": "by-concept",
+    "provenance_ledger": false,
+    "spec_required": "when-warranted"
+  },
+  "stage_2": {
+    "agent_coauthor": true,
+    "auto_commit": false,
+    "auto_pr": false,
+    "auto_push": false,
+    "commit_scopes": "about product technical tasks specs skills ci tests agents readme setup queue conventions",
+    "commit_types": "docs feat fix refactor chore",
+    "pr_title_style": "conventional"
+  }
+}

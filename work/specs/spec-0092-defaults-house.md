@@ -1,7 +1,7 @@
 ---
 id: spec-0092
 task_ref: task-0065
-status: approved
+status: implemented
 created: 2026-09-08T16:48:59Z
 ---
 
@@ -113,4 +113,36 @@ them.
 
 ## Outcome
 
-_(fill after execution)_
+Built as planned: `.writrun/defaults/` holds `gates.md` and the seven
+conventions, `resolve_doc.sh` answers an address with the file in force
+and its origin, and the seed ships `settings.json` plus stubs.
+
+**One divergence, and it is the whole point of the change.** Step 7 said
+this repository would keep its own `writrun/conventions/` as whole
+overrides. It does not: all seven were byte-identical to the seed's
+copies — two hand-maintained copies of one text, no mirror covering
+either, which is the structural cause report-0039 describes. So the
+seven moved into `.writrun/defaults/conventions/` as the single copy,
+and this repository defers to them like any adopter. Its `writrun/gates.md`
+stays a real override: its gate answers are genuinely its own.
+
+**The stub carries one path after all — its own.** The no-address rule
+holds (no stub names `.writrun/defaults/`), but a stub with no way
+onward is a dead end for a person who followed a doc link into it, and
+several product chapters link to `writrun/conventions/*.md`. Each stub
+now shows the `resolve_doc.sh` invocation for **its own address**, which
+cannot drift relative to itself and still never names where the default
+lives.
+
+**Relative links had to move with the files.** Two were already broken
+in the seed before this change — `prs.md` pointed at
+`../templates/pull_request_template.md` and `commits.md` at
+`../scripts/…/commit_subject.sh`, both resolving into `writrun/` where
+neither exists. From the new home they are correct, and a check in this
+spec's test run verifies every relative link under
+`.writrun/defaults/conventions/` resolves.
+
+Not built: the integration case asserting the sync carries `defaults/`.
+`.writrun` is mirrored whole by `tests/kit_mirrors.txt`, so the existing
+mirror test already covers it byte-for-byte; a second case would assert
+the same bytes twice.

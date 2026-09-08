@@ -23,9 +23,9 @@ release_setup() {
   git symbolic-ref HEAD refs/heads/main
   git config user.email t@example.com
   git config user.name Test
-  mkdir -p .writrun template/.writrun
+  mkdir -p .writrun kit/.writrun
   printf 'v0.0.0\n' > .writrun/VERSION
-  printf 'v0.0.0\n' > template/.writrun/VERSION
+  printf 'v0.0.0\n' > kit/.writrun/VERSION
   git add -A >/dev/null
   git commit -qm baseline
   git init -q --bare "$WORK/origin.git"
