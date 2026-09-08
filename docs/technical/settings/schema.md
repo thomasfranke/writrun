@@ -73,7 +73,7 @@ check.
 | `auto_commit` | `stage_2` | `true` / `false` | agents only |
 | `auto_pr` | `stage_2` | `true` / `false` | agents only |
 | `auto_push` | `stage_2` | `true` / `false` | agents only |
-| `commit_scopes` | `stage_2` | lower-case words, space-separated | the workflows, and agents |
+| `commit_scopes` | `stage_2` | lower-case words, hyphens allowed, space-separated | the workflows, and agents |
 | `commit_types` | `stage_2` | lower-case words, space-separated | the workflows, and agents |
 | `pr_title_style` | `stage_2` | `conventional` / `bracketed` | agents only |
 
