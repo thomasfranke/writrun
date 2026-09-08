@@ -69,5 +69,15 @@ check "a double space is refused — it would read as an empty word" 1 "double s
 settings "docs,feat" "api web"
 check "a comma-separated list is refused" 1 "lower-case words" -- bash "$C"
 
+# The hyphen follows the parsers: the title grammar reads a scope as
+# [a-z-]+ and a type as [a-z]+, so this gate accepts exactly what the
+# door does — refusing the hyphen here would make 'ci-cd' a scope no
+# project could ever declare for titles that already parse it.
+settings "docs feat" "ci-cd web"
+check "a hyphenated scope is declarable — the title grammar reads it" 0 "canonical" -- bash "$C"
+
+settings "docs-feat fix" "api web"
+check "a hyphenated type is refused — the title grammar never reads one" 1 "lower-case words" -- bash "$C"
+
 cd "$REPO_ROOT"
 finish

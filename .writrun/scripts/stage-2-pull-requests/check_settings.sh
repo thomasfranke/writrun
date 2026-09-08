@@ -275,14 +275,21 @@ while IFS= read -r line || [ -n "$line" ]; do
       # The words are the project's — nothing here judges which they are.
       # The shape is the contract: lower-case words separated by single
       # spaces, because that is what the checks reading them split on.
+      # A scope may carry a hyphen — the title grammar reads a scope as
+      # [a-z-]+ — and a type may not, because it reads a type as [a-z]+;
+      # this gate accepts exactly what those parsers do, or a project
+      # could never declare a word its own titles are checked against.
       case "$val" in
         "") fault "${key} is empty — a project wanting fewer words lists the ones it keeps; nothing declares no vocabulary at all" ;;
-        # [:lower:] and not a-z: a range is collated in the locale's
-        # order, where en_US puts every upper-case letter inside a-z, and
-        # the check would pass the one shape it exists to refuse.
-        *[![:lower:]\ ]*) fault "${key} '${val}' holds something other than lower-case words and single spaces — the subject spells them exactly as declared" ;;
         " "*|*" ") fault "${key} '${val}' opens or closes on a space — the reader splits on single spaces and would see an empty word" ;;
         *"  "*) fault "${key} '${val}' has a double space — the reader splits on single spaces and would see an empty word" ;;
+      esac
+      # [:lower:] and not a-z: a range is collated in the locale's
+      # order, where en_US puts every upper-case letter inside a-z, and
+      # the check would pass the one shape it exists to refuse.
+      case "${key}:${val}" in
+        commit_types:*[![:lower:]\ ]*) fault "${key} '${val}' holds something other than lower-case words and single spaces — the subject spells them exactly as declared" ;;
+        commit_scopes:*[![:lower:]\ -]*) fault "${key} '${val}' holds something other than lower-case words, hyphens and single spaces — the subject spells them exactly as declared" ;;
       esac ;;
     spec_required)
       case " $SPEC_REQUIRED " in
