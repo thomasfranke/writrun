@@ -45,7 +45,7 @@ unnamed() {
   [ "$count" -gt 0 ] || printf '!no-directories-under:%s ' "$parent"
 }
 
-out=$(unnamed "$REPO_ROOT/template/work" "$REPO_ROOT/template/work/README.md")
+out=$(unnamed "$REPO_ROOT/kit/work" "$REPO_ROOT/kit/work/README.md")
 if [ -z "$out" ]; then
   echo "ok    every directory the kit ships under work/ is named in its README"; pass=$((pass + 1))
 else
@@ -56,8 +56,8 @@ fi
 
 # Both sides of this comparison are the kit's: the skills it ships,
 # against the two files an adopter reads them in once the copy is theirs.
-out=$(unnamed "$REPO_ROOT/template/.writrun/skills" \
-      "$REPO_ROOT/template/.writrun/README.md" "$REPO_ROOT/template/.writrun/AGENTS.md")
+out=$(unnamed "$REPO_ROOT/kit/.writrun/skills" \
+      "$REPO_ROOT/kit/.writrun/README.md" "$REPO_ROOT/kit/.writrun/AGENTS.md")
 if [ -z "$out" ]; then
   echo "ok    every skill the kit ships is named where an adopter reads"; pass=$((pass + 1))
 else

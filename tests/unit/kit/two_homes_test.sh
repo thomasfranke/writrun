@@ -7,7 +7,7 @@
 # update touches. This guard is what fails when an adopter file creeps
 # back into the kit's folder, in the root or in the kit it ships.
 
-for root in "$REPO_ROOT" "$REPO_ROOT/template"; do
+for root in "$REPO_ROOT" "$REPO_ROOT/kit"; do
   side=${root#"$REPO_ROOT"}; side=${side:-.}
   for f in settings.json gates.md conventions; do
     if [ -e "$root/.writrun/$f" ]; then

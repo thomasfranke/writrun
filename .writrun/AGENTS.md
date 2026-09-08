@@ -7,6 +7,27 @@ project's home, which no update touches. Humans:
 this file is written for agents; the guide written for you travels with
 the kit as `WRITRUN.md`.
 
+## Reading an answer — the project's home first, the kit's default behind it
+
+Every text WritRun answers on a project's behalf — `gates.md`, each
+file under `conventions/` — is addressed at `writrun/<name>` and read
+from there. A file whose **first line** is exactly
+`/// writrun:default` defers, and so does one that is absent: the
+answer is then WritRun's own, at the same name under
+`.writrun/defaults/`. Anything else is the project's answer, whole —
+nothing merges, and no update ever touches it.
+
+**Ask, never guess which home won:**
+
+```bash
+bash .writrun/scripts/stage-1-tasks-and-specs/resolve_doc.sh writrun/conventions/commits.md
+```
+
+It prints the file in force; `--origin` adds `declared` or `default`
+beside it. Read what it prints. Never read `.writrun/defaults/`
+directly — a project that overrode the file would be read past — and
+never hand-edit anything under it, because the next update replaces it.
+
 ## Picking work
 
 Use the [`writrun-select-next-task`](skills/writrun-select-next-task/SKILL.md)
@@ -122,13 +143,13 @@ is upstream's; otherwise it is a local report like any other.
 
 ## Human gates
 
-Who operates each gate is the project's own answer, and it lives in
-[`writrun/gates.md`](../writrun/gates.md) — read it before any
-transition it names:
-approving a spec, touching `docs/`, deriving work, changing forge
-settings, or acting on a task whose brief is insufficient. A gate that
-file leaves unnamed is a question for the human, never a default to
-assume.
+Who operates each gate is the project's own answer, addressed at
+[`writrun/gates.md`](../writrun/gates.md) — resolve it (above) and read
+what answers, before any transition it names: approving a spec,
+touching `docs/`, deriving work, changing forge settings, or acting on
+a task whose brief is insufficient. No gate is unnamed: while that file
+defers, WritRun's default answers every one of them with a human, which
+is the cautious side to be on and never a licence to assume the other.
 
 ## Deriving work
 
@@ -172,4 +193,8 @@ there. The schema is in the WritRun repository's
 `docs/technical/settings/`.
 
 Commit messages, branch names, PR titles, and task/spec style:
-[`writrun/conventions/`](../writrun/conventions/README.md).
+[`writrun/conventions/`](../writrun/conventions/README.md) — one file
+per subject, each resolved the same way, so a project that overrode one
+of them still reads WritRun's default for the six beside it. The two
+commit vocabularies are not prose: `stage_2.commit_types` and
+`stage_2.commit_scopes` are settings, read with `read_setting.sh`.

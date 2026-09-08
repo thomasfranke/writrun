@@ -11,9 +11,10 @@ depends_on: []
 milestone: null
 created: 2026-09-08T16:48:47Z
 queued: 2026-09-08T17:00:56Z
-completed: null
+completed: 2026-09-08T17:30:11Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-opus-5, login: thomasfranke, input: 428, output: 119997, cache_read: 39731854, cache_write: 201160}
 ---
 
 # The kit's texts become defaults the project overrides

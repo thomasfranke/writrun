@@ -10,7 +10,7 @@ out=$(bash "$RELEASE_SH" 2>&1); code=$?
 if [ "$code" -eq 0 ] &&
    [ "$(cat .writrun/VERSION)" = "v0.0.01" ] &&
    [ "$(sed -n 1p "$WORK/calls.log")" = "gh auth status" ] &&
-   [ "$(sed -n 2p "$WORK/calls.log")" = "make template-sync" ] &&
+   [ "$(sed -n 2p "$WORK/calls.log")" = "make kit-sync" ] &&
    [ "$(sed -n 3p "$WORK/calls.log")" = "make tests" ] &&
    git log -1 --format=%s | grep -q 'chore(release): v0.0.01' &&
    git tag --list | grep -qx 'v0.0.01' &&

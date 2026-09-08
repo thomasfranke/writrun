@@ -34,8 +34,8 @@ Two rules keep the layers honest:
   change worth having is an issue on the WritRun repository, per the
   flow in [`AGENTS.md`](AGENTS.md).
 
-Adopting a project? The kit ships as `template/` in WritRun's repository,
+Adopting a project? The kit ships as `kit/` in WritRun's repository,
 shaped exactly like the destination root, and its guide travels with the
-copy as `WRITRUN.md`. In WritRun's own repository, `template/` is held
+copy as `WRITRUN.md`. In WritRun's own repository, `kit/` is held
 byte-identical to the root by a unit test; maintainers refresh it with
-`make template-sync`.
+`make kit-sync`.

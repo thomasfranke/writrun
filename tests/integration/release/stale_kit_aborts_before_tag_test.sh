@@ -7,12 +7,12 @@
 # — while the suite looks green, because it runs on the synced tree.
 release_setup
 
-# A make whose template-sync actually finds drift to fix — the situation
+# A make whose kit-sync actually finds drift to fix — the situation
 # a mirror-test failure merged past main would produce.
 cat > "$WORK/stub-bin/make" <<EOF
 #!/usr/bin/env bash
 echo "make \$*" >> "$WORK/calls.log"
-[ "\$1" = "template-sync" ] && printf 'drifted\n' > template/drifted.txt
+[ "\$1" = "kit-sync" ] && printf 'drifted\n' > kit/drifted.txt
 exit 0
 EOF
 chmod +x "$WORK/stub-bin/make"

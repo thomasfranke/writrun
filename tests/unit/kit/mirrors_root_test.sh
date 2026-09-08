@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 . "$(dirname "$0")/../../harness.sh"
 
-# The template is a deliberate full copy — one folder an adopter pastes.
+# The kit is a deliberate full copy — one folder an adopter pastes.
 # A copy is a second source of truth, so this case is the guard: every
 # mirrored path must stay byte-identical to the root. A failure is fixed
-# with `make template-sync`, never by editing template/ by hand.
+# with `make kit-sync`, never by editing kit/ by hand.
 #
-# Except where the kit differs on purpose. tests/template_exceptions.txt
+# Except where the kit differs on purpose. tests/kit_exceptions.txt
 # is the single source of that — the same file the sync reads — and the
 # comparison drops those paths from both sides before diffing, by path
 # and never by name. Since the two homes split the list is empty: the
 # adopter's files live in writrun/, outside every mirrored path, and
-# template/writrun/ is a hand-written seed this guard never compares.
-EXCEPTIONS="$REPO_ROOT/tests/template_exceptions.txt"
+# kit/writrun/ is a hand-written seed this guard never compares.
+EXCEPTIONS="$REPO_ROOT/tests/kit_exceptions.txt"
 
 ok=1
 while IFS= read -r p; do
@@ -20,7 +20,7 @@ while IFS= read -r p; do
 
   a=$(mktemp -d); b=$(mktemp -d)
   cp -R "$REPO_ROOT/$p" "$a/side"
-  cp -R "$REPO_ROOT/template/$p" "$b/side" 2>/dev/null || true
+  cp -R "$REPO_ROOT/kit/$p" "$b/side" 2>/dev/null || true
 
   if [ -f "$EXCEPTIONS" ]; then
     while IFS= read -r x; do
@@ -33,15 +33,15 @@ while IFS= read -r p; do
   fi
 
   if ! diff -r -q "$a/side" "$b/side" >/dev/null 2>&1; then
-    [ "$ok" = "1" ] && echo "FAIL  template drifted from the root — run 'make template-sync'"
-    diff -r -q "$a/side" "$b/side" 2>&1 | sed "s|$a/side|$p|g; s|$b/side|template/$p|g; s/^/      | /"
+    [ "$ok" = "1" ] && echo "FAIL  kit drifted from the root — run 'make kit-sync'"
+    diff -r -q "$a/side" "$b/side" 2>&1 | sed "s|$a/side|$p|g; s|$b/side|kit/$p|g; s/^/      | /"
     ok=0
   fi
   rm -rf "$a" "$b"
-done < "$REPO_ROOT/tests/template_mirrors.txt"
+done < "$REPO_ROOT/tests/kit_mirrors.txt"
 
 if [ "$ok" = "1" ]; then
-  echo "ok    template mirrors the root byte for byte, but for the exceptions"; pass=$((pass + 1))
+  echo "ok    kit mirrors the root byte for byte, but for the exceptions"; pass=$((pass + 1))
 else
   fail=$((fail + 1))
 fi

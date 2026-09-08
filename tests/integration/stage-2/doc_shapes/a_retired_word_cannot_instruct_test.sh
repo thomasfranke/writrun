@@ -95,7 +95,7 @@ check "and the summary counts what it read" 0 "0 retired word(s) read" \
 # that reads it, inside the mirrored tree — a script shipped to an adopter
 # without its data file is a check that passes by knowing nothing.
 unset RETIRED_VOCABULARY
-for root in "$REPO_ROOT" "$REPO_ROOT/template"; do
+for root in "$REPO_ROOT" "$REPO_ROOT/kit"; do
   v="$root/.writrun/scripts/stage-2-pull-requests/retired_vocabulary.txt"
   if [ -f "$v" ] && grep -q '^pending ready' "$v" && grep -q '^level stage' "$v"; then
     echo "ok    ${v#$REPO_ROOT/} carries both seeded words"

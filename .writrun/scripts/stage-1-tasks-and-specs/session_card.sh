@@ -11,11 +11,9 @@
 #
 # **It computes nothing and decides nothing.** Every line is read from
 # `settings.json` (through read_setting.sh, defaults included — its
-# --origin flag is what lets a default be marked as one), from
-# check_observance.sh's TYPES=/SCOPES= lines (the machine half of the
-# vocabulary, and its single source), or is a methodology constant the
-# contract already fixes. A second parser of either file would be a
-# second answer.
+# --origin flag is what lets a default be marked as one), or is a
+# methodology constant the contract already fixes. A second parser of
+# that file would be a second answer.
 #
 # It replaces reading, so growing is regressing: the card is ~30 lines.
 #
@@ -30,7 +28,6 @@ set -uo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 READ_SETTING="$HERE/../stage-2-pull-requests/read_setting.sh"
-OBSERVANCE="$HERE/../stage-2-pull-requests/check_observance.sh"
 
 TOP=$(git rev-parse --show-toplevel 2>/dev/null) && cd "$TOP"
 
@@ -50,14 +47,13 @@ show() {   # show <label> <address> <meaning>
   printf '  %-18s %s (%s)%s\n' "${1}:" "$VAL" "$ORIGIN" "${3:+  — $3}"
 }
 
-TYPES=$(sed -n 's/^TYPES="\(.*\)"$/\1/p' "$OBSERVANCE" | head -n1)
-SCOPES=$(sed -n 's/^SCOPES="\(.*\)"$/\1/p' "$OBSERVANCE" | head -n1)
-if [ -z "$TYPES" ] || [ -z "$SCOPES" ]; then
-  echo "Could not read the TYPES/SCOPES lines from ${OBSERVANCE}." >&2
-  echo "They are the machine half of the vocabulary, and a card without them" >&2
-  echo "would look complete while stating nothing about what a title may say." >&2
-  exit 3
-fi
+# The two vocabularies are settings like any other value on this card —
+# read through the one reader, and marked when nobody declared them.
+# They were scraped out of check_observance.sh while the check carried
+# them embedded; a card built by reading a script's source states what
+# that script happens to say, not what the project declared.
+read_key stage_2.commit_types;  TYPES="$VAL";  TYPES_ORIGIN="$ORIGIN"
+read_key stage_2.commit_scopes; SCOPES="$VAL"; SCOPES_ORIGIN="$ORIGIN"
 
 read_key stage
 STAGE="$VAL"; STAGE_ORIGIN="$ORIGIN"
@@ -101,8 +97,8 @@ esac
 echo
 echo 'commit subject — a constant, whatever the title style:'
 echo '  type(scope): imperative summary'
-printf '  types:   %s\n' "$TYPES"
-printf '  scopes:  %s\n' "$SCOPES"
+printf '  types:   %s (%s)\n' "$TYPES" "$TYPES_ORIGIN"
+printf '  scopes:  %s (%s)\n' "$SCOPES" "$SCOPES_ORIGIN"
 echo
 echo 'branches and the tag — constants:'
 echo '  docs/<short-name>        authoring       title carries no task tag'

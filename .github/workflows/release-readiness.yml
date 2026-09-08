@@ -6,7 +6,7 @@ name: release readiness
 #
 # **A red main that a script can fix is the bot's to fix**
 # (docs/technical/README.md#distribution). Three phases, one job:
-# regenerate (the template sync), heal (commit the regeneration when it
+# regenerate (the kit sync), heal (commit the regeneration when it
 # changed anything, with the same token and the same rebase-not-force
 # push, unretried — readiness_heal.sh's header says why), verdict (the
 # full suite, on the tree as pushed). A GITHUB_TOKEN push triggers no
@@ -40,7 +40,7 @@ jobs:
           fetch-depth: 0
 
       - name: Regenerate what a script owns
-        run: make template-sync
+        run: make kit-sync
 
       - name: Heal — commit the regeneration, if it changed anything
         run: bash .github/scripts/readiness_heal.sh main

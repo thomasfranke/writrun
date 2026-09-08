@@ -10,10 +10,10 @@
 # and the CLAUDE.md shim growing beyond the one import line Claude Code
 # needs.
 
-ENTRY="$REPO_ROOT/template/AGENTS.md"
-FLOW="$REPO_ROOT/template/.writrun/AGENTS.md"
-GATES="$REPO_ROOT/template/writrun/gates.md"
-SHIM="$REPO_ROOT/template/CLAUDE.md"
+ENTRY="$REPO_ROOT/kit/AGENTS.md"
+FLOW="$REPO_ROOT/kit/.writrun/AGENTS.md"
+GATES="$REPO_ROOT/kit/writrun/gates.md"
+SHIM="$REPO_ROOT/kit/CLAUDE.md"
 
 # writrun_section <entry-file> — the lines WritRun claims: from the
 # `## WritRun` heading to the next top-level heading, or the end.

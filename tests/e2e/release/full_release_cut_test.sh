@@ -3,7 +3,7 @@
 
 # The whole cut, for real: this repository's working tree copied whole,
 # `make release minor` run with the real make — so the real
-# template-sync and the real suite execute inside — and the commit, the
+# kit-sync and the real suite execute inside — and the commit, the
 # tag, and the push land on a local bare origin. The forge is the one
 # fake: `gh` is a PATH stub. The env guard below is what stops the
 # nested suite from cutting a release of its own.
@@ -39,7 +39,7 @@ unset MAKE
 out=$(make release minor 2>&1); code=$?
 if [ "$code" -eq 0 ] &&
    [ "$(cat .writrun/VERSION)" = "v0.0.11" ] &&
-   [ "$(cat template/.writrun/VERSION)" = "v0.0.11" ] &&
+   [ "$(cat kit/.writrun/VERSION)" = "v0.0.11" ] &&
    git log -1 --format=%s | grep -q 'chore(release): v0.0.11' &&
    git tag --list | grep -qx 'v0.0.11' &&
    git ls-remote --tags origin | grep -q 'refs/tags/v0.0.11' &&

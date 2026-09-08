@@ -34,12 +34,12 @@ test-integration:
 	done; \
 	exit $$fail
 
-# Refresh template/ from the root — the mirror list is the single source
-# (tests/template_mirrors.txt); a unit test keeps the copy honest. The
-# logic lives in scripts/sync_template.sh, where the suite executes it.
-.PHONY: template-sync
-template-sync:
-	@bash scripts/sync_template.sh
+# Refresh kit/ from the root — the mirror list is the single source
+# (tests/kit_mirrors.txt); a unit test keeps the copy honest. The
+# logic lives in scripts/sync_kit.sh, where the suite executes it.
+.PHONY: kit-sync
+kit-sync:
+	@bash scripts/sync_kit.sh
 
 # Cut a release: `make release` (= minor), or `make release minor|major|epoch`.
 # The whole path — compute, stamp, sync, test, commit, tag, push, publish —

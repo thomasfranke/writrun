@@ -86,6 +86,11 @@ default_for() {
     stage_2.auto_pr)         printf 'true' ;;
     stage_2.auto_push)       printf 'true' ;;
     stage_2.pr_title_style)  printf 'conventional' ;;
+    # The two vocabularies check_observance.sh carried embedded before
+    # they became settings. Same words, so a project that declares
+    # neither is judged exactly as it was.
+    stage_2.commit_types)    printf 'docs feat fix refactor chore' ;;
+    stage_2.commit_scopes)   printf 'about product technical tasks specs skills ci tests agents readme setup queue conventions' ;;
   esac
 }
 

@@ -3,11 +3,11 @@
 # git repository.
 . "$(dirname "$0")/../../harness.sh"
 
-SYNC="$REPO_ROOT/scripts/sync_template.sh"
+SYNC="$REPO_ROOT/scripts/sync_kit.sh"
 
 # Blank lines in the mirror list are formatting, not paths.
 WORK=$(mktemp -d); cd "$WORK" || exit 1
-mkdir -p template
+mkdir -p kit
 printf 'a-file.txt\n\n\n' > mirrors.txt
 printf 'root content\n' > a-file.txt
 

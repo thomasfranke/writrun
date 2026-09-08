@@ -94,7 +94,8 @@ HOMES=":stage \
 stage_1:decisions_style stage_1:product_layout stage_1:provenance_ledger \
 stage_1:spec_required \
 stage_2:agent_coauthor stage_2:auto_commit stage_2:auto_pr \
-stage_2:auto_push stage_2:pr_title_style"
+stage_2:auto_push stage_2:commit_scopes stage_2:commit_types \
+stage_2:pr_title_style"
 
 home_of() {   # home_of <name> — the section the schema gives that key
   for h in $HOMES; do
@@ -270,6 +271,19 @@ while IFS= read -r line || [ -n "$line" ]; do
         *" $val "*) ;;
         *) fault "${key} '${val}' is outside its vocabulary: ${BOOLEANS}" ;;
       esac ;;
+    commit_types|commit_scopes)
+      # The words are the project's — nothing here judges which they are.
+      # The shape is the contract: lower-case words separated by single
+      # spaces, because that is what the checks reading them split on.
+      case "$val" in
+        "") fault "${key} is empty — a project wanting fewer words lists the ones it keeps; nothing declares no vocabulary at all" ;;
+        # [:lower:] and not a-z: a range is collated in the locale's
+        # order, where en_US puts every upper-case letter inside a-z, and
+        # the check would pass the one shape it exists to refuse.
+        *[![:lower:]\ ]*) fault "${key} '${val}' holds something other than lower-case words and single spaces — the subject spells them exactly as declared" ;;
+        " "*|*" ") fault "${key} '${val}' opens or closes on a space — the reader splits on single spaces and would see an empty word" ;;
+        *"  "*) fault "${key} '${val}' has a double space — the reader splits on single spaces and would see an empty word" ;;
+      esac ;;
     spec_required)
       case " $SPEC_REQUIRED " in
         *" $val "*) ;;
@@ -312,3 +326,5 @@ echo "  stage_1.decisions_style=$(bash "$R" stage_1.decisions_style) stage_1.pro
 echo "  stage_1.provenance_ledger=$(bash "$R" stage_1.provenance_ledger) stage_1.spec_required=$(bash "$R" stage_1.spec_required)"
 echo "  stage_2.agent_coauthor=$(bash "$R" stage_2.agent_coauthor) stage_2.auto_commit=$(bash "$R" stage_2.auto_commit)"
 echo "  stage_2.auto_pr=$(bash "$R" stage_2.auto_pr) stage_2.auto_push=$(bash "$R" stage_2.auto_push) stage_2.pr_title_style=$(bash "$R" stage_2.pr_title_style)"
+echo "  stage_2.commit_types=$(bash "$R" stage_2.commit_types)"
+echo "  stage_2.commit_scopes=$(bash "$R" stage_2.commit_scopes)"

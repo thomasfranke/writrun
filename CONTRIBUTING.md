@@ -203,9 +203,9 @@ generated from commit messages. Cut one with `make release` — the number
 is computed from the latest tag, never typed: `minor` (the default) bumps
 the third digit, `major` the middle one, `epoch` the first (historic
 milestones only). The target stamps `.writrun/VERSION`, syncs the
-template, runs the suite, then commits, tags, pushes, and publishes the
+kit, runs the suite, then commits, tags, pushes, and publishes the
 GitHub Release. While alpha (0.x), a tag may move any part of the
-contract without notice — adopters pin the tag they copied `template/`
+contract without notice — adopters pin the tag they copied `kit/`
 from.
 
 **What CI does, and what it deliberately doesn't.**

@@ -1,30 +1,30 @@
 #!/usr/bin/env bash
-# sync_template.sh — refreshes template/'s mirrored paths from the root.
+# sync_kit.sh — refreshes kit/'s mirrored paths from the root.
 #
-# Usage: sync_template.sh [mirror-list [exceptions-list]]
-#   Default lists: tests/template_mirrors.txt and
-#   tests/template_exceptions.txt. Run from the repository root —
-#   template/ and every listed path are resolved relative to it.
+# Usage: sync_kit.sh [mirror-list [exceptions-list]]
+#   Default lists: tests/kit_mirrors.txt and
+#   tests/kit_exceptions.txt. Run from the repository root —
+#   kit/ and every listed path are resolved relative to it.
 #
 # Home-repository automation, never shipped to adopters — which is why
 # it lives here and not in .writrun/scripts/: an adopter has no
-# template/ to sync.
+# kit/ to sync.
 #
 # The adoption kit is a deliberate full copy, and a copy is a second
 # source of truth — legal only because it is mechanical: the mirror list
 # is the single source of what ships, this script is the single writer,
 # and a unit test holds every mirrored path byte-identical to the root.
-# Hand-editing template/ is never the fix.
+# Hand-editing kit/ is never the fix.
 #
 # A listed path missing at the root is a named error, and its stale
-# template copy is left in place rather than deleted — reporting
+# kit copy is left in place rather than deleted — reporting
 # "synced" after destroying the only remaining copy is the silent lie
 # the old inline Makefile recipe told.
 #
 # **The exceptions list is where the kit differs on purpose.** Since
 # the two homes split it is empty: the adopter's files — settings,
 # gates, conventions — live in `writrun/`, outside every mirrored path,
-# and the kit's cautious seed of them ships as `template/writrun/`,
+# and the kit's cautious seed of them ships as `kit/writrun/`,
 # which this script never touches. The mechanism stays for the next
 # exception that earns it: a listed path is stashed before the mirror
 # runs and restored after (the mirror list names `.writrun`, a whole
@@ -42,8 +42,8 @@
 
 set -euo pipefail
 
-LIST="${1:-tests/template_mirrors.txt}"
-EXCEPTIONS="${2:-tests/template_exceptions.txt}"
+LIST="${1:-tests/kit_mirrors.txt}"
+EXCEPTIONS="${2:-tests/kit_exceptions.txt}"
 [ -f "$LIST" ] || { echo "No mirror list: $LIST" >&2; exit 3; }
 
 # Stash the kit's own versions before the mirror removes the trees they
@@ -53,10 +53,10 @@ STASH=""
 if [ -f "$EXCEPTIONS" ]; then
   while IFS= read -r x; do
     [ -n "$x" ] || continue
-    [ -e "template/$x" ] || continue
+    [ -e "kit/$x" ] || continue
     [ -n "$STASH" ] || STASH=$(mktemp -d)
     mkdir -p "$STASH/$(dirname "$x")"
-    cp -R "template/$x" "$STASH/$x"
+    cp -R "kit/$x" "$STASH/$x"
   done < "$EXCEPTIONS"
 fi
 
@@ -68,9 +68,9 @@ while IFS= read -r p; do
     status=1
     continue
   fi
-  rm -rf "template/$p"
-  mkdir -p "template/$(dirname "$p")"
-  cp -R "$p" "template/$p"
+  rm -rf "kit/$p"
+  mkdir -p "kit/$(dirname "$p")"
+  cp -R "$p" "kit/$p"
   echo "synced $p"
 done < "$LIST"
 
@@ -80,11 +80,11 @@ if [ -f "$EXCEPTIONS" ]; then
   while IFS= read -r x; do
     [ -n "$x" ] || continue
     if [ -n "$STASH" ] && [ -e "$STASH/$x" ]; then
-      mkdir -p "template/$(dirname "$x")"
-      rm -rf "template/$x"
-      cp -R "$STASH/$x" "template/$x"
+      mkdir -p "kit/$(dirname "$x")"
+      rm -rf "kit/$x"
+      cp -R "$STASH/$x" "kit/$x"
       echo "kept    $x — the kit's own, not the root's"
-    elif [ -e "template/$x" ]; then
+    elif [ -e "kit/$x" ]; then
       echo "adopted $x — the kit had none, so the root's was copied; write the kit's when it should differ"
     fi
   done < "$EXCEPTIONS"

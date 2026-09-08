@@ -6,12 +6,12 @@
 # adopter with four workflows armed and an Issues mirror opening issues on
 # their first pull request — while the guide is still telling them to
 # declare a stage. So the kit's settings file ships closed — a seed in
-# template/writrun/, outside every mirrored path: nothing happens until
+# kit/writrun/, outside every mirrored path: nothing happens until
 # the project says it should.
 READ_SETTING="$REPO_ROOT/.writrun/scripts/stage-2-pull-requests/read_setting.sh"
 CHECK_SETTINGS="$REPO_ROOT/.writrun/scripts/stage-2-pull-requests/check_settings.sh"
 
-cd "$REPO_ROOT/template" || exit 1
+cd "$REPO_ROOT/kit" || exit 1
 
 check "the kit adopts at Stage 1" 0 "^1$" -- bash "$READ_SETTING" stage
 for flag in auto_commit auto_pr auto_push; do
@@ -45,7 +45,7 @@ ordered() {   # ordered <file> — every section's keys, in order
     END { exit bad ? 1 : 0 }
   ' "$1"
 }
-for f in writrun/settings.json template/writrun/settings.json; do
+for f in writrun/settings.json kit/writrun/settings.json; do
   if out=$(ordered "$f"); then
     echo "ok    $f keeps its keys alphabetical inside each section"
     pass=$((pass + 1))
