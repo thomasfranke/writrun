@@ -1,13 +1,15 @@
 ---
 id: report-0041
-status: open
-task_ref: []
-doc_ref: null
+status: tracked
+task_ref: [task-0066]
+doc_ref: technical/schemas/task.md#task-schema
 created: 2026-09-13T23:23:53Z
-triaged: null
+triaged: 2026-09-13T23:40:57Z
 ---
 
 # Documentation is not a file format, but doc_ref and promises accept only .md
+
+**References:** [task-0066](../tasks/task-0066-documents-not-markdown.md)
 
 Issue #252, opened by @thomasfranke.
 
@@ -78,3 +80,14 @@ Recorded locally as
 
 v0.0.07
 
+
+**Triage:** tracked → task-0066. A defect against a rule already
+written: `schemas/task.md` annotates `doc_ref` as *"any path under
+`docs/`"*, and `check_front_matter.sh:357` refuses everything but `.md`.
+The two stage-2 gates disagree with each other as well — a non-Markdown
+file under `docs/` is `UNDECLARED` at the completion gate
+(`check_deltas.sh:131` reads `docs/*` whole) and unpromisable at spec
+entry (`check_promise_paths.sh:238` accepts only `*/` and `*.md`), so it
+can be neither touched nor declared. Nothing here needs a new rule; the
+kit already states the one being broken — `kit/docs/product/README.md`:
+*"everything under `docs/` counts as permanent input."*
