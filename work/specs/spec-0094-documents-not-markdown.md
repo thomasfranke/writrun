@@ -152,6 +152,9 @@ both are addressed as edge cases below rather than as work.
   root-relative half is untouched, and what replaced the extension half.
   It sits beside 0065 because it refines that decision; the `doc_ref`
   half is cross-referenced there rather than given a second record.
+- `technical/decisions/README.md` — the index gains the new record's
+  line. A record that is not indexed is one the router cannot reach, so
+  the two never change apart.
 
 ## Outcome
 
