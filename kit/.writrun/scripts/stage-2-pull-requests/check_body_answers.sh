@@ -46,11 +46,14 @@
 # body is even fetched — the one read it needs is `isDraft`.
 #
 # Exit codes: 0 nothing owed, or every section answered; 1 a section the
-# body carries is unanswered; 3 usage error, or the forge did not
-# answer. Never best-effort: a check that reported "every section
-# answered" without having read the body would be asserting the one
-# thing it failed to look at. The lie is the verdict, not the exit code
-# — the reasoning check_queue_impact.sh states for its own advisory.
+# body carries is unanswered; 3 the forge did not answer. A call with the
+# arguments missing dies on the `${…:?}` below, with bash's own 1 — the
+# shape every gate here uses.
+#
+# Never best-effort: a check that reported "every section answered"
+# without having read the body would be asserting the one thing it
+# failed to look at. The lie is the verdict, not the exit code — the
+# reasoning check_queue_impact.sh states for its own advisory.
 #
 # Portable bash 3.2, POSIX awk/sed — no gawk extensions, no associative
 # arrays. See the standing rule in docs/technical/decisions/.
