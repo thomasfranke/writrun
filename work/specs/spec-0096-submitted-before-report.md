@@ -1,7 +1,7 @@
 ---
 id: spec-0096
 task_ref: task-0068
-status: approved
+status: implemented
 created: 2026-09-14T00:31:03Z
 ---
 
@@ -145,4 +145,56 @@ issue.
 
 ## Outcome
 
-_(fill after execution)_
+Built as planned, in the four places named. The report form carries
+`labels: ["writrun:submitted"]` and its header comment is amended rather
+than replaced; the kit's routing instruction passes
+`--label writrun:submitted` to `gh issue create` with one clause saying
+it is a marker and not the gate; `list_tasks.sh` prints a `Submitted`
+section above `Open reports`; and `intake_report.sh` removes the marker
+in the same step that applies `status:open`. `make kit-sync` carried all
+of it, with no new entry in `tests/kit_exceptions.txt`.
+
+**Step 1 landed unconditionally, because the pass it named does not
+exist.** No workflow runs `mirror_issues.sh` on a push to the authority
+branch: `writrun-issues.yml` runs it on a pull request's events and
+`writrun-approve.yml` on the merged close. Declaring the label on the
+open pass alone would leave a repository whose merges all arrive by
+some other route without it, and a form referencing an absent label
+drops it in silence — the one failure the step exists to prevent. So
+`ensure_label "writrun:submitted"` sits outside the `open` guard, and a
+comment says why it is the exception to the "only what this script
+writes" rule the block above it states.
+
+**The lister's mirror filter asks two questions, not one.** The spec's
+edge case named the `[REPORT-NNNN]` title, which is the forge's own word
+for a mirror and the read `intake_report.sh` makes before it mints. The
+queue is asked too — the `Issue #N` line every minted report opens
+with — because the retitle is the intake's *last* write: a run that died
+between the push and the retitle leaves the file recorded, the issue
+untagged and the marker still on it, and the section would ask for a
+file that exists. That is the same reasoning the intake's own no-op
+guard rests on.
+
+**The degraded note prints with the other notes, at the end.** The
+requirement is that the run say the section could not be answered rather
+than print it empty, and this file already collects every such note
+after the sections. It is its own `if` and not an arm of the pull
+request chain: the two are separate calls, and one answering says
+nothing about the other.
+
+The forge seam is `WRITRUN_SUBMITTED_LIST`, spelled and degrading
+exactly like `WRITRUN_PR_LIST` beside it; the unreachable-forge case is
+driven through the existing `stub_forge` / `forge_unavailable` pair
+instead, so the degradation is produced rather than declared.
+
+**One test beyond the four groups, and one fewer file than the list
+implies.** The form's YAML case also reads the kit's routing
+instruction, and then that one spelling across the three machinery sites
+that declare, read and remove the label — both routes have the same
+problem the group was written for, which is no runtime signal at all, so
+they are one case. And `mirror_issues.sh`'s declaration gained a case of
+its own: step 1 is the half whose failure is silent everywhere else.
+
+`intake_report.sh`'s header enumerates what the intake does to the
+issue, so it gained the marker's removal; that is documentation of the
+change, not an addition to it.
