@@ -1,8 +1,8 @@
 ---
 id: task-0069
-status: ready
+status: in-progress
 blocked_reason: null
-taken_by: null
+taken_by: thomasfranke
 spec_ref: [spec-0097]
 doc_ref: product/stage-2-pull-requests/body.md#a-section-the-body-carries-is-a-section-it-answered
 origin: rule

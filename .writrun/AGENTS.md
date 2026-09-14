@@ -130,12 +130,15 @@ assumed from the conduct flags: opening an issue on another repository
 is an outward-facing act. On an explicit yes, open the issue on the
 repository this kit came from —
 <https://github.com/thomasfranke/writrun>, the provenance pointer
-`WRITRUN.md` carries — with `gh issue create`, or the repository's
-report form by hand: the title states the observation, the body carries
-the evidence and the tag in `.writrun/VERSION`. End the local report
-`routed`, its body naming the issue it became. A refused or
-unanswerable ask — no `gh`, no network, no user to answer — leaves the
-report `open`, where a person can route it by hand.
+`WRITRUN.md` carries — with
+`gh issue create --label writrun:submitted`, or the repository's report
+form by hand: the title states the observation, the body carries the
+evidence and the tag in `.writrun/VERSION`. That label is a marker and
+not the gate: it makes the submission addressable where work is picked,
+and it mints nothing. End the local report `routed`, its body naming
+the issue it became. A refused or unanswerable ask — no `gh`, no
+network, no user to answer — leaves the report `open`, where a person
+can route it by hand.
 
 **`routed` records a submission, not an entry in the upstream queue.**
 The issue writes nothing into the upstream `work/` on arrival: a

@@ -1,6 +1,6 @@
 ---
 id: task-0068
-status: in-review
+status: done
 blocked_reason: null
 taken_by: thomasfranke
 spec_ref: [spec-0096]
@@ -11,8 +11,8 @@ depends_on: []
 milestone: null
 created: 2026-09-14T00:30:49Z
 queued: 2026-09-14T00:41:35Z
-completed: null
-merged: null
+completed: 2026-09-14T01:05:00Z
+merged: 2026-09-14T11:51:00Z
 provenance: []
 ---
 
