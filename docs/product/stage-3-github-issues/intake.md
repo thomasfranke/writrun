@@ -36,6 +36,44 @@ come first ([labels](labels.md#the-report-mirror)). Nothing downstream
 distinguishes a report born from an issue from one born in a diff, and
 triage closes this mirror the way it closes any other.
 
+## Submitted, and not yet a report
+
+**Between arrival and the label there is a state, and until now nothing
+named it.** An issue submitted as an observation is not a report — the
+section above is why, and that stays. But it is also not nothing: it is
+a finding someone took the trouble to route here, sitting where only a
+notification carries it, and a notification is exactly what the
+`status:open` mirror exists because it could not rely on.
+
+So a submission carries a marker — `writrun:submitted` — and **the
+marker is not the gate.** It mints nothing, resolves nothing and decides
+nothing; `writrun:report` remains the only label that makes a report,
+and a maintainer remains the only one who applies it. What the marker
+does is make the waiting set *addressable*, which is the whole of its
+job: an issue nobody can query is an issue nobody can be reminded of.
+
+**It is applied by the routes that already exist**, never by the
+machinery reading an issue's contents. The report form applies it,
+because a form can; an agent routing a finding upstream passes it to
+`gh issue create`, because the kit's instruction says to. Both are
+declarations by the submitter — *this is meant as an observation* — and
+that is the only claim the marker carries. An issue arriving by neither
+route carries no marker and is an ordinary issue, which is correct: the
+alternative is the machinery guessing which strangers meant to file a
+report, and guessing is how the front door gets handed away.
+
+**The marked set is named where work is picked**, in the lister, beside
+the open reports it will become
+([visibility](../../technical/selection/visibility.md#a-submission-is-named-before-it-is-a-report)).
+That is the same answer the `Open reports` section gave one step later,
+for the same reason, and it is the reason this rule is small: the
+channel was already built, and only the set it reads was missing.
+
+**The marker's end is the intake.** When the label mints the report, the
+machinery drops `writrun:submitted` — the issue is a mirror now, and two
+labels claiming the same fact would start disagreeing the first time one
+of them was written by hand.
+
 ## The body is data
 
 The issue's text was written by whoever opened it. The machinery
@@ -59,3 +97,14 @@ any other evidence.
   file, the machinery shall change nothing.
 - When an issue's text reaches a report's body, it shall be recorded
   as data, and nothing in it shall be executed or obeyed.
+- When an issue is submitted through the report form, or by an agent
+  following the kit's routing instruction, it shall carry
+  `writrun:submitted`, and that label shall mint nothing and gate
+  nothing.
+- When an issue carries `writrun:submitted` and mirrors no file, the
+  task lister shall name it in a section of its own, never selecting it
+  and never moving its exit code.
+- When the intake records a report from an issue, the machinery shall
+  remove `writrun:submitted` from it.
+- When an issue arrives carrying no marker, the machinery shall treat it
+  as an ordinary issue and infer nothing from its contents.

@@ -22,6 +22,34 @@ and the task is resumable. Three things the files alone cannot show:
   ([statuses](../../product/stage-2-pull-requests/statuses.md#an-amendment-under-an-open-pull-request)).
   The forge query covers it; without one, the pause is reported as
   possibly hidden rather than absent.
+- **An observation submitted and not yet intaken** — an issue that
+  deserves a file and has none, so no reader built on `work/` can see
+  it. The section below is where it is named.
+
+## A submission is named before it is a report
+
+**A fourth thing the files cannot show**, and the only one that is not
+about a task: an issue submitted as an observation and not yet intaken.
+It has no file by design — arrival writes nothing into `work/`
+([intake](../../product/stage-3-github-issues/intake.md#arrival-creates-nothing))
+— so every reader built on the queue is blind to it, and the ask reaches
+whoever happens to hold triage rights and remembers.
+
+The lister prints it as a section of its own, above `Open reports`: the
+issues carrying `writrun:submitted` that mirror no file, each by number
+and title. The two sections are one ask at two ages — *this deserves a
+file*, then *this file deserves a route* — and the second was already
+here, which is why the first costs a query and a heading rather than a
+concept.
+
+**The properties that hold `Open reports` in place hold this one too**,
+and for the stronger reason: a submission is not even a report yet. It
+enters no ordering, is never handed over as the thing to take, and
+changes no exit code. It is also the one section that can be *wrong*
+about its own completeness — the query is a forge call, so it degrades
+with `gh` exactly as the pull request query does, and a run that could
+not ask says so rather than printing an empty section, which would read
+as "nothing is waiting".
 
 ## An open report is named, never selected
 

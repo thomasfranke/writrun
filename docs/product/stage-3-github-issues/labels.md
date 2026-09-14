@@ -64,7 +64,11 @@ from the one that was not.
 **A report's mirror can precede its file.** An observation from outside
 the repository arrives as an issue first; the maintainer's label mints
 the file, and the issue becomes its mirror from then on
-([intake](intake.md)).
+([intake](intake.md)). Before that it carries `writrun:submitted` —
+the one WritRun label that mirrors nothing and gates nothing, marking
+an issue that was *offered* as an observation so the waiting set can be
+queried and named. The intake removes it when it mints the file
+([intake](intake.md#submitted-and-not-yet-a-report)).
 
 **A report's mirror carries no `origin:` label.** Origin is a fact about
 how a *task* came to exist, and a report is one of the two answers to
