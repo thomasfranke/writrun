@@ -137,6 +137,20 @@ the evidence and the tag in `.writrun/VERSION`. End the local report
 unanswerable ask — no `gh`, no network, no user to answer — leaves the
 report `open`, where a person can route it by hand.
 
+**`routed` records a submission, not an entry in the upstream queue.**
+The issue writes nothing into the upstream `work/` on arrival: a
+maintainer applying `writrun:report` is the gate, and until that label
+lands the observation is an issue and not a report. The local report is
+complete at that meaning and no other —
+[`concepts/report.md`](https://github.com/thomasfranke/writrun/blob/main/docs/product/concepts/report.md#routing-upstream)
+carries the whole of it.
+
+**Nothing is owed locally once the issue is open.** The ask is the
+maintainer's, and this project has no waiting, polling or following up
+to do against a queue it cannot see. A routed finding that goes
+unanswered is raised again by a second report, never by reopening the
+first.
+
 When the doubt is whether the defect is WritRun's or this project's use
 of it, point it at the evidence: reproduced against a clean kit copy it
 is upstream's; otherwise it is a local report like any other.

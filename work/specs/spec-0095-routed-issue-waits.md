@@ -1,7 +1,7 @@
 ---
 id: spec-0095
 task_ref: task-0067
-status: approved
+status: implemented
 created: 2026-09-13T23:42:57Z
 ---
 
@@ -116,4 +116,29 @@ the blindness `check_doc_shapes.sh` was built to end, one layer up.
 
 ## Outcome
 
-_(fill after execution)_
+Done as planned. *When the defect is WritRun's* in `.writrun/AGENTS.md`
+gains two paragraphs after the one that ends the local report `routed`:
+the first says the issue writes nothing into the upstream `work/` until
+a maintainer applies `writrun:report`, so `routed` records a submission
+and not an entry in the upstream queue, and points at
+`concepts/report.md#routing-upstream` for the whole of it; the second
+says nothing is owed locally — no waiting, polling or following up — and
+that a routed finding that goes unanswered is raised again by a second
+report, never by reopening the first. `make kit-sync` produced
+`kit/.writrun/AGENTS.md` byte-identical, with no new entry in
+`tests/kit_exceptions.txt`. `technical/distribution/kit.md` gains the
+second instance in the omission-drift passage, which is what turns its
+argument into a pattern.
+
+**The pointer is a URL, not a relative link.** The spec says to point at
+`concepts/report.md#routing-upstream`, and the kit ships no such file —
+`kit/docs/` carries only the two README skeletons and
+`writrun-instructions.md`, so a relative path would resolve to nothing
+in an adopting project. It is written as a link to the chapter in this
+repository, the form `conventions/prose.md` already uses for the same
+reason.
+
+**No test was added,** as the spec required: the mirror unit test holds
+the bytes, and the absence this change fixes is the blind spot `kit.md`
+now documents twice.
+

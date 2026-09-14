@@ -82,6 +82,18 @@ named where an adopter reads — matched on a word boundary, so `reports/`
 never accounts for a `report/`, and reported by name when the tree the
 test reads has moved rather than passing on having read nothing.
 
+**A second instance is what makes the omission a pattern.** The kit's
+routing instruction ended at `routed` and never said the upstream issue
+writes nothing until a maintainer applies `writrun:report` — a rule the
+chapter that owns it states correctly, and that no shipped file carried
+across the mirror boundary. Nothing could have flagged it: a missing
+sentence uses no retired word, shows no wrong shape and has no shipped
+counterpart to compare against. It was found because a routed finding
+sat unlabelled until a person opened the link by hand (report-0042) —
+which is how the first instance was found too, and the reason the guard
+stays built from the side that has a signature instead of reaching for
+the side that has none.
+
 **What they hold is names, and only names.** A sentence that *counts* —
 "the five `writrun-*` skills" — is still held by hand, and it is half of
 what report-0012 found: three files said four. The pair is what the kit
