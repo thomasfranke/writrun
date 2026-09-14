@@ -54,7 +54,9 @@ finding that is a scan of `work/reports/`, which costs a grep and
 touches no contract.
 
 `doc_ref` is a path relative to `docs/` with an anchor, exactly as a
-task's is. One fact under both routes — **the doc this observation is
+task's is — including that it is a path and not a file format, and is
+held to the same three refusals
+([task](task.md#task-schema)). One fact under both routes — **the doc this observation is
 answered by** — which reads as the violated rule for `tracked`, and as
 the rule that had to be written for `authored`. Those are the same
 sentence read before and after the rule existed, not two fields sharing

@@ -1,7 +1,7 @@
 ---
 id: spec-0094
 task_ref: task-0066
-status: approved
+status: implemented
 created: 2026-09-13T23:42:51Z
 ---
 
@@ -158,4 +158,55 @@ both are addressed as edge cases below rather than as work.
 
 ## Outcome
 
-_(fill after execution)_
+Both gates stopped testing the extension. `check_doc_ref` reads any path
+under `docs/` with an optional anchor; `check_promise_paths.sh`'s
+condition two reads a trailing `/` as the folder promise and everything
+else as a file path. Condition one is byte-for-byte what it was, which is
+the half that was ever load bearing — `tests/harness.sh` is still refused
+by the segment that names it. `check_deltas.sh` and `check_doc_shapes.sh`
+were not touched, as scoped.
+
+**Three divergences, all in the same direction: the widening exposed
+refusals the extension had been hiding.**
+
+1. **A leading-slash `doc_ref` is now refused explicitly.** Not in the
+   plan. With `*.md|*.md#*` replaced by a catch-all `*)`, a `doc_ref` of
+   `/product/thing.md` would have fallen through to resolution and been
+   read as `docs//product/thing.md` — which most filesystems collapse, so
+   it would have *passed*. `check_promise_paths.sh` already refuses a
+   leading slash in its own condition; `doc_ref` now matches it.
+
+2. **A `doc_ref` naming a folder is refused for being a folder**, with
+   its own message. The plan put this refusal only on the promise side.
+   It was needed here too, and it ended a wrong that predates this
+   change: a folder written `product/chapter` was caught by the shape
+   rule, while one written `product/chapter.md` was reported *absent* —
+   two messages for one mistake, and the second sending the author to
+   hunt a typo in a path that is right there. Both now say the same
+   thing. Folded in rather than reported, per the standing instruction.
+
+3. **A second test needed updating.** "Tests required" named only
+   `a_path_that_is_not_a_document_is_refused_test.sh` as needing a
+   rewrite. `doc_ref_naming_nothing_rejected_test.sh` also asserted the
+   old behaviour in two cases, both of which were about folders and both
+   of which now assert the message from (2). Its new negative case uses
+   the harness's `refute`, because the claim is that the word "does not
+   exist" is *absent* from a refusal about a directory that does.
+
+**The rewritten test keeps what survived and gains what the rule now
+allows**: the folder-without-slash refusal, a `.excalidraw` promise
+resolving, an unwritten `.json` promise resolving (shape, never
+existence — 0065 untouched), and the repository-root refusal. That last
+case needed the fixture to actually hold a `tests/` entry: condition one
+reads the segment off the tree, so in a fixture without one the question
+is never asked and the case would have passed for the wrong reason.
+
+`the_five_paths_of_spec_0044_are_refused_test.sh` passes unchanged — all
+five are root-relative, so they were being refused by condition one all
+along and never by the extension.
+
+**A non-Markdown document is never a draft**, as anticipated, and that is
+left standing rather than solved: the marker is the first line, which a
+JSON or binary document cannot carry, so the reader answers false. The
+comment in `check_front_matter.sh` says so, and decision 0075 records
+that widening the marker is a different question nobody has asked.

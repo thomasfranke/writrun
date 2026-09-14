@@ -90,6 +90,19 @@ provenance:
 - `doc_ref` and any path inside `spec_ref`/`depends_on` point at a section
   anchor, resolved relative to `docs/`, never just a filename — this is what
   makes reverse traceability a grep, not a manual search.
+- **`doc_ref` is a path, not a file format.** Any path under `docs/` that
+  resolves to a file is one, whatever it ends in. A drawing that states
+  what a screen must render, a `.json` stating the shape of a payload, a
+  fixture a rule is written against — each is read by a person, states
+  what the implementation must satisfy, and is touched by the diff that
+  changes it, which is the whole of what this field asks. The checker
+  refuses three things and no others: a `docs/` prefix, which would
+  double when the machinery prefixes it back; a path that resolves to
+  nothing; and a path that names a folder, because a `doc_ref` names the
+  document and not the directory holding it. The anchor is never
+  verified — matching one means parsing the document, which no reader
+  here does — so it costs nothing on a format that has no headings
+  ([0075](../decisions/pull-requests/0075-a-document-is-not-a-file-format.md)).
 - `provenance` is the ledger [Provenance](../../product/concepts/provenance.md)
   describes, and it exists only where `provenance_ledger` is `true` —
   everywhere else it stays `[]`, which is a complete statement and not a
