@@ -94,3 +94,4 @@ appending a row.
 | [0072](pull-requests/0072-a-shared-helper-has-one-copy.md) | 2026-09-06 | `pull-requests` | a shared helper has one copy, and it lives in `queue_lib.sh`. |
 | [0073](github-issues/0073-one-writer-per-pull-request.md) | 2026-09-06 | `github-issues` | one writer per pull request, and a reconciler that retires duplicates. |
 | [0074](tasks-and-specs/0074-the-adopters-files-leave-the-kit.md) | 2026-09-07 | `tasks-and-specs` | the adopter's files leave the kit for `writrun/` — ownership is per home, not per file (supersedes [0053](tasks-and-specs/0053-settings-at-the-root.md)'s address). |
+| [0075](pull-requests/0075-a-document-is-not-a-file-format.md) | 2026-09-14 | `pull-requests` | a document is not a file format, so neither gate tests the extension — narrowing [0065](pull-requests/0065-a-promise-is-judged-by-shape.md). |

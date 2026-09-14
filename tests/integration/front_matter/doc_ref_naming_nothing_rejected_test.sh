@@ -19,18 +19,43 @@ sed -i.bak 's|^doc_ref: null$|doc_ref: product/moved-away.md#anchor|' work/tasks
 check "an anchor does not rescue a missing file" 1 "names no file" \
   -- bash "$CHECK_FRONT_MATTER"
 
-# A directory is not a file, and the message reads the same.
+# A folder is refused for being a folder. Both spellings are one
+# mistake, so both get one message — the extension used to split them,
+# reporting the `.md` one as absent when it is right there.
 task_file task-001 ready ""
 mkdir -p docs/product/chapter
 sed -i.bak 's|^doc_ref: null$|doc_ref: product/chapter|' work/tasks/task-001.md && rm -f work/tasks/*.bak
-check "a directory is caught by the shape rule first" 1 "is not null or a .md path" \
+check "a folder is refused for being a folder" 1 "names a folder" \
+  -- bash "$CHECK_FRONT_MATTER"
+refute "and is not reported absent, because it is there" "does not exist" \
   -- bash "$CHECK_FRONT_MATTER"
 
-# A .md path that is really a directory reaches the new rule.
+# A folder spelled like a chapter is the same mistake.
 task_file task-001 ready ""
 mkdir -p docs/product/folder.md
 sed -i.bak 's|^doc_ref: null$|doc_ref: product/folder.md|' work/tasks/task-001.md && rm -f work/tasks/*.bak
-check "a directory named like a file is not a file" 1 "names no file" \
+check "a folder spelled .md is refused the same way" 1 "names a folder" \
+  -- bash "$CHECK_FRONT_MATTER"
+
+# A document is not a file format: a path under docs/ that resolves is a
+# doc_ref whatever its extension (report-0041).
+task_file task-001 ready ""
+mkdir -p docs/product/screens
+printf '{"type":"excalidraw"}\n' > docs/product/screens/first-run.excalidraw
+sed -i.bak 's|^doc_ref: null$|doc_ref: product/screens/first-run.excalidraw|' work/tasks/task-001.md && rm -f work/tasks/*.bak
+check "a drawing that resolves is a doc_ref" 0 "" \
+  -- bash "$CHECK_FRONT_MATTER"
+
+# The anchor is unverified on any path, so it is unverified on this one.
+task_file task-001 ready ""
+sed -i.bak 's|^doc_ref: null$|doc_ref: product/screens/first-run.excalidraw#layout|' work/tasks/task-001.md && rm -f work/tasks/*.bak
+check "and an anchor on it changes nothing" 0 "" \
+  -- bash "$CHECK_FRONT_MATTER"
+
+# Resolution is still the question it always was.
+task_file task-001 ready ""
+sed -i.bak 's|^doc_ref: null$|doc_ref: product/screens/never-drawn.excalidraw|' work/tasks/task-001.md && rm -f work/tasks/*.bak
+check "a drawing that is not there is still refused" 1 "names no file" \
   -- bash "$CHECK_FRONT_MATTER"
 
 # The docs/ prefix keeps failing for its own reason, not this one.
