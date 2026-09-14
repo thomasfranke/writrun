@@ -197,4 +197,7 @@ its own: step 1 is the half whose failure is silent everywhere else.
 
 `intake_report.sh`'s header enumerates what the intake does to the
 issue, so it gained the marker's removal; that is documentation of the
-change, not an addition to it.
+change, not an addition to it. The same holds for
+`writrun-select-next-task/SKILL.md`, which enumerates the sections the
+lister prints and said "five" — a skill that does not name a section is
+a section the session never acts on.
