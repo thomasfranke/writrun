@@ -178,10 +178,18 @@ is [`writrun/gates.md`](../writrun/gates.md)'s to say.
    the brief.
 2. Update every permanent doc listed in the spec's **Proposed changes** —
    in the same change; touch nothing permanent that isn't listed.
-3. Fill the spec's **Outcome**, set the spec to `implemented`, then run
-   preflight — `writrun-check-front-matter`, `writrun-check-spec-deltas`
-   and `writrun-check-task-state`, in the one order they must run, which
-   is CI's own — and mark the pull request ready on nothing else:
+3. Fill the spec's **Outcome** and set the spec to `implemented`.
+4. Fill the pull request's **body**: every section it carries answered,
+   the instructional comment the template seeded replaced by the answer
+   and no heading left standing over nothing
+   ([`stage-2-pull-requests/body.md`](https://github.com/thomasfranke/writrun/blob/main/docs/product/stage-2-pull-requests/body.md#a-section-the-body-carries-is-a-section-it-answered)).
+   The taking wrote those headings before the work existed, which is why
+   none of them belongs to the taking. Delete a section this change has
+   no use for — a body owes nothing for a heading it does not carry.
+5. Then run preflight — `writrun-check-front-matter`,
+   `writrun-check-spec-deltas` and `writrun-check-task-state`, in the one
+   order they must run, which is CI's own — and mark the pull request
+   ready on nothing else:
 
    ```bash
    bash .writrun/scripts/stage-1-tasks-and-specs/preflight.sh
