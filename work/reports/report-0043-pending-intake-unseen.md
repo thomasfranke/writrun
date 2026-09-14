@@ -53,6 +53,22 @@ Open reports — waiting to be triaged, never selected:
 The ask the section exists to raise was raised by a person reading a URL,
 which is the channel `visibility.md` was written to replace.
 
+It has happened before, and that time nothing caught it. Issue #155,
+opened 2026-09-04 — a routed finding from `writrun-cli` at kit `v0.0.03`,
+`take_task.sh` unable to open a draft on a commit-less branch — never
+carried a `writrun:` label of any kind. It was closed `COMPLETED` by
+hand. No report was ever born from it, and its evidence lives on the
+issue and nowhere else; the defect reached the queue only because the
+same thing was observed *locally* the same morning and recorded as
+`report-0019`, whose body describes a different take on a different
+task.
+
+The intake is not broken, which is what makes this worth a file: issue
+#161 the same day became `report-0021` correctly. What separates #161
+from #155 is that somebody remembered, and the methodology treats "a
+file nobody is prompted to open" as exactly the thing not to leave to
+memory.
+
 **Not investigated:** whether the answer is the lister reading the forge,
 the intake workflow announcing itself, or something that belongs to
 neither. That choice decides new behaviour, and no rule states it yet.
