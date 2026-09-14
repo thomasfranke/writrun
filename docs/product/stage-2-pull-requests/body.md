@@ -75,6 +75,37 @@ and a forgotten one look identical, which is the reasoning that already
 makes an authoring change declare "none" rather than leave Derived work
 blank ([authoring](../stage-1-tasks-and-specs/authoring.md#declaring-derived-work)).
 
+## A section the body carries is a section it answered
+
+The sentence above was written about two headings and is true of every
+one of them, and for ten days the criteria below said it about only one.
+That is how two pull requests reached `ready` here — #261 and #262 —
+with `## What`, `## Why` and `## How to test` holding nothing but the
+comments the template seeded, and every completion gate green over them.
+
+So the rule binds **whatever headings the body carries**, and it is
+deliberately not a list of them. The template ships three
+kind-specific sections and instructs a change to keep the one that
+applies and delete the others; a project may shape the rest to suit its
+reviewers. A fixed list of required headings would be a second copy of
+the template — wrong the first time anyone edits theirs, and judging an
+adopter by this repository's habits. What the body carries is read off
+the body, the way a promise's first segment is read off the tree
+([0065](../../technical/decisions/pull-requests/0065-a-promise-is-judged-by-shape.md)).
+
+**Unanswered has a signature, which is what makes this checkable at
+all.** A section nobody filled still holds the instructional comment the
+template put there, verbatim; failing that, it is a heading with nothing
+under it but the next heading. Both are readable without understanding a
+word of the prose — the distinction WritRun draws everywhere between a
+guard and a review.
+
+**The moment is `ready`, never the taking.** Taking a task opens the
+draft before the work starts, and a body that had to be complete then
+would be a body written before its own change. A draft answers nothing
+and owes nothing; marking it ready is the claim that a reviewer can now
+read it.
+
 ## Criteria
 
 - When a pull request body names a task, a spec or a report, it shall
@@ -89,3 +120,9 @@ blank ([authoring](../stage-1-tasks-and-specs/authoring.md#declaring-derived-wor
 - When a pull request is marked ready for review, its body shall state
   what a reviewer runs to test the change, or state that there is nothing
   to run.
+- When a pull request is marked ready for review, every section its body
+  carries shall be answered — the template's instructional comment
+  replaced by the answer, and no heading left standing over nothing.
+- When a body omits a section the template ships, nothing shall require
+  it: what the rule reads is the headings that are there, never a list of
+  the headings that could be.
