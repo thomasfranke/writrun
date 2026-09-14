@@ -92,8 +92,10 @@ for f in tests/integration/stage-2/body_answers/*_test.sh; do bash "$f"; done
 bash tests/run.sh
 ```
 
-Expect every line `ok`, and the whole suite `509 case files passed, 0
-failed`.
+Expect every line `ok`, and the whole suite `503 case files passed, 0
+failed` — 492 before this change, plus the eleven new cases. Budget the
+usual six or seven minutes: `tests/e2e/release` runs `make release` for
+real, and that runs the whole suite a second time inside itself.
 
 Against the real forge, which is what CI will do. This pull request is
 still a draft, so the first run proves the draft arm and the second
@@ -134,6 +136,10 @@ binds at `ready` rather than at the taking.
 
 This body is the rule it implements: every section it carries is
 answered, every link absolute and on `main`.
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+https://claude.ai/code/session_011JcQXJ78Q6cKEzgKPaF6a1
 MD
 
 check "a body that answers every section it carries passes" 0 "6 sections" \
