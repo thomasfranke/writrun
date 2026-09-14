@@ -1,10 +1,10 @@
 ---
 id: report-0043
-status: open
+status: authored
 task_ref: []
-doc_ref: technical/selection/visibility.md#an-open-report-is-named-never-selected
+doc_ref: product/stage-3-github-issues/intake.md#submitted-and-not-yet-a-report
 created: 2026-09-13T23:40:04Z
-triaged: null
+triaged: 2026-09-14T00:32:19Z
 ---
 
 # Nothing names an issue awaiting intake, so a routed finding is visible to no one
@@ -57,9 +57,18 @@ which is the channel `visibility.md` was written to replace.
 the intake workflow announcing itself, or something that belongs to
 neither. That choice decides new behaviour, and no rule states it yet.
 
-**Not triaged.** Left `open` deliberately. No rule states that this
-project shall surface an issue awaiting intake, and `intake.md`'s
-criteria say the opposite about arrival — so choosing the channel is
-authoring, not a defect against anything, and the second row of
-`authoring.md`'s triage table hands the pen back rather than letting an
-agent decide it.
+**Triage:** authored. No rule stated that this project shall surface an
+issue awaiting intake, and `intake.md`'s criteria said the opposite
+about arrival — so this was never a defect against anything, and the
+second row of `authoring.md`'s triage table handed the pen back. The
+rule was written rather than the behaviour guessed:
+`intake.md#submitted-and-not-yet-a-report` names the state between
+arrival and the label, and `visibility.md#a-submission-is-named-before-it-is-a-report`
+names where it is read. The gate did not move — `writrun:report` is
+still the only label that mints anything.
+
+Four channels were weighed. The marker is applied by whoever submits,
+never inferred by the machinery from an issue's contents, because the
+alternative is guessing which strangers meant to file a report — which
+is how the front door gets handed away, the thing *Arrival creates
+nothing* was written to prevent.
