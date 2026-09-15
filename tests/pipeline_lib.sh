@@ -132,7 +132,12 @@ stub_forge() {
   : > "$FORGE_LOG"
   # GitHub's own page size for a pull request's file list.
   FORGE_PAGE=100
-  export FORGE_DIR FORGE_LOG FORGE_PAGE
+  # The name harness.sh's forge_told / forge_not_told read. This fixture
+  # kept its own and so could not use either of them — the log is the
+  # same log, and a case asserting which calls a run made should not have
+  # to know which fixture stubbed gh.
+  FAKE_GH_LOG="$FORGE_LOG"
+  export FORGE_DIR FORGE_LOG FORGE_PAGE FAKE_GH_LOG
 
   mkdir -p "$WORK/stub-bin"
   cat > "$WORK/stub-bin/gh" <<'GH'
@@ -164,6 +169,26 @@ case "${1:-}" in
       else
         [ -e "$FORGE_DIR/refuse_pr_list_open" ] && exit 1
       fi
+    fi
+    # `gh pr view <n> --repo R --json isDraft --jq .isDraft`, and the
+    # same for `body` — the body check's two reads, served post-jq like
+    # every other read here. They are two calls rather than one because
+    # the check answers a draft before fetching its body at all, and a
+    # case can only prove that by what the log does *not* hold. Each has
+    # its own seam: a forge that answers the draft state and then goes
+    # quiet on the body is a middle view `unavailable` cannot produce.
+    if [ "${2:-}" = view ]; then
+      case "$field" in
+        isDraft)
+          [ -e "$FORGE_DIR/refuse_pr_view_draft" ] && exit 1
+          cat "$FORGE_DIR/pr_${3:-}_draft" 2>/dev/null
+          ;;
+        body)
+          [ -e "$FORGE_DIR/refuse_pr_view_body" ] && exit 1
+          cat "$FORGE_DIR/pr_${3:-}_body" 2>/dev/null
+          ;;
+      esac
+      exit 0
     fi
     case "$field" in
       number)         cat "$FORGE_DIR/pr_numbers" 2>/dev/null ;;
@@ -260,6 +285,21 @@ forge_open_pr() {
   grep -qxF "$1" "$FORGE_DIR/pr_numbers" 2>/dev/null \
     || printf '%s\n' "$1" >> "$FORGE_DIR/pr_numbers"
   return 0
+}
+
+# forge_pr_body <number> [draft] — one pull request as `gh pr view`
+# answers for it: the body arrives on stdin, and the draft flag is
+# `false` unless a case passes `draft`.
+#
+# The body comes in verbatim from a heredoc, the way settings_file takes
+# a settings file, because half of what the body check exists for is
+# shapes no generator would produce — a heading over a seeded comment, a
+# fence holding a `## ` line, a section that is only whitespace.
+forge_pr_body() {
+  local draft=false
+  [ "${2:-}" = draft ] && draft=true
+  printf '%s\n' "$draft" > "$FORGE_DIR/pr_${1}_draft"
+  cat > "$FORGE_DIR/pr_${1}_body"
 }
 
 # forge_mirror <task|report> <title> — one mirror Issue on the forge, in

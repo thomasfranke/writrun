@@ -1,7 +1,7 @@
 ---
 id: spec-0097
 task_ref: task-0069
-status: approved
+status: implemented
 created: 2026-09-14T01:11:53Z
 ---
 
@@ -128,4 +128,48 @@ performing review.
 
 ## Outcome
 
-_(fill after execution)_
+`check_body_answers.sh` reads `isDraft` and then, only if the pull
+request is not a draft, the body — two `gh pr view` calls, each captured
+into a variable before anything looks at it. One awk pass strips HTML
+comments across line boundaries, tracks fences, splits at `^## ` outside
+them and reports two record kinds: the section count, and one line per
+section whose visible text is empty. The shell prints every empty
+section at once and exits 1, prints the count and exits 0, or says the
+body carries no section at all. `ready_for_review` joined the trigger
+list and the `body` job joined the workflow; both `AGENTS.md` texts gain
+the body as a step before "mark the PR ready".
+
+Eleven integration cases under `tests/integration/stage-2/body_answers/`
+— one per criterion, plus the unedited template, this pull request's own
+body, and the fence, comment and forge-silence edges.
+
+**Divergences, all recorded rather than reconciled:**
+
+1. **The unedited template refuses five sections, not all eight.**
+   "Tests required" says the template case must refuse every section it
+   seeds; `## Derived work`, `## Spec` and `## Report` ship a
+   *placeholder bullet* under them, and a bullet is visible text. Under
+   the one definition this spec pins — empty once comments and
+   whitespace are removed — those three are answered. Telling a
+   placeholder bullet from a real one means reading the prose, which
+   Scope rules out in the same breath, so the definition was kept and the
+   case asserts the five the template really leaves empty. The
+   regression that mattered is intact: `## What`, `## Why` and
+   `## How to test` are three of the five.
+2. **A draft state that is neither `true` nor `false` exits 3.** Not in
+   the plan. It is the forge-read edge one step in: a value this check
+   cannot act on decides whether the body is judged at all, and guessing
+   at it would be the same unread pass the exit code exists to prevent.
+3. **`checks.md`'s opening sentence lost its count.** It said "five
+   rules about *how* they are called" and this change adds two. A
+   promised file, and a number that would have been wrong on arrival.
+4. **`tests/pipeline_lib.sh` gained more than a seam.** `stub_forge`
+   answers `gh pr view` for `isDraft` and `body` separately — two arms,
+   so a case can prove the body was never fetched for a draft — with
+   `forge_pr_body` writing both. It also exports `FAKE_GH_LOG`, the name
+   `harness.sh`'s `forge_told` / `forge_not_told` read: this fixture kept
+   a private `FORGE_LOG` and so could not use either helper, against the
+   contract harness.sh states for any fixture that fakes `gh`.
+5. **The branch merged `origin/main` mid-flight.** `0076` landed while
+   this was open, so the index row appends after it rather than after
+   `0075`, and the decisions table stays the chronology it claims to be.

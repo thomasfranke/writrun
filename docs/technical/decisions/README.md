@@ -96,3 +96,4 @@ appending a row.
 | [0074](tasks-and-specs/0074-the-adopters-files-leave-the-kit.md) | 2026-09-07 | `tasks-and-specs` | the adopter's files leave the kit for `writrun/` — ownership is per home, not per file (supersedes [0053](tasks-and-specs/0053-settings-at-the-root.md)'s address). |
 | [0075](pull-requests/0075-a-document-is-not-a-file-format.md) | 2026-09-14 | `pull-requests` | a document is not a file format, so neither gate tests the extension — narrowing [0065](pull-requests/0065-a-promise-is-judged-by-shape.md). |
 | [0076](github-issues/0076-a-marker-is-not-a-gate.md) | 2026-09-14 | `github-issues` | a marker is not a gate, and the submitter is the only one who applies it. |
+| [0077](pull-requests/0077-unanswered-has-a-signature.md) | 2026-09-14 | `pull-requests` | unanswered has a signature, so the body is guardable — and the gate binds at `ready`, never at the taking. |

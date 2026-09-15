@@ -95,7 +95,12 @@ commit sits in the pull request's range like any other, and
    change, and nothing permanent it does not.
 3. Fill the spec's **Outcome**, set it `implemented`, write the task's
    `completed` date — never its status.
-4. Run preflight to exit 0; mark the PR ready on nothing else:
+4. Fill the pull request's **body** — every section it carries answered,
+   the seeded comments replaced rather than left standing
+   ([body](docs/product/stage-2-pull-requests/body.md#a-section-the-body-carries-is-a-section-it-answered)).
+   The take wrote those headings before the work existed, so none of
+   them can have been answered then; this is where they are.
+5. Run preflight to exit 0; mark the PR ready on nothing else:
 
    ```bash
    bash .writrun/scripts/stage-1-tasks-and-specs/preflight.sh

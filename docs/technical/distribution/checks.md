@@ -4,10 +4,11 @@
 
 ## Running the checks
 
-Three of the skills are gates, and five rules about *how* they are
+Three of the skills are gates, and the rules about *how* they are
 called belong to the caller rather than to any script — a wrong call
 passes, which is why they are stated here and not left to whoever
-remembers.
+remembers. The list grows with the gates; a count in this sentence would
+be one more thing to forget.
 
 **`check_front_matter.sh` takes all four directories or none.** It
 defaults to `work/tasks`, `work/specs`, `docs` and `work/reports`, and a
@@ -75,6 +76,26 @@ file or calling the forge. A step that omits the name makes every
 `edited` event look like a body edit, and the retitle it was added for
 goes unrecorded — silently, and green
 ([spec-0077](../../../work/specs/spec-0077-retitle-window.md)).
+
+**`check_body_answers.sh` takes `<owner/repo> <pr-number>` and reads
+both halves from the forge.** Unlike its siblings it gets no `PR_BODY`,
+because it needs the draft state with the body and an event payload's
+`draft` is the flag at the moment the event fired, not what the pull
+request is now; one source for both means they cannot disagree. It reads
+no git, so the job wants no `fetch-depth`, and it wants `GH_TOKEN` — the
+one thing it cannot do without. A forge that does not answer makes it
+exit 3, where every other forge-reading gate here degrades: for those the
+forge is the second half of a question git has already half-answered,
+and here it is the whole question.
+
+**The workflow listens for `ready_for_review`, or that check never runs
+at the moment it names.** A draft owes its body nothing and the check
+says so and stands down, so on `opened` and `synchronize` it is a
+formality; the transition it exists for is the one where a draft becomes
+readable. A trigger list carrying every other type would leave the job
+green on every event and absent from the only one that matters — the
+same obligation `edited` carries for the body-reading jobs above
+([body](../../product/stage-2-pull-requests/body.md#a-section-the-body-carries-is-a-section-it-answered)).
 
 **`check_state.sh` gets the pull request body, or one of its rules
 cannot run.** The owed-spec rule asks whether the change declares that a
