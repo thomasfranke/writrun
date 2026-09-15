@@ -4,6 +4,44 @@ Written by `make release` at every cut, from the commit subjects
 the range carries. Never edited by hand — the subject is where a
 wrong line is fixed, on the next tag.
 
+## v0.0.08 — 2026-09-15
+
+### docs
+
+- docs(product): a ready body has answered the sections it carries (#264)
+- docs(product): an observation is named before it is a report (#259)
+
+### fix
+
+- fix(ci): the promise checks count specs, and now say so (#258)
+
+### chore
+
+- chore(queue): record what the merge decided
+- chore(queue): record what the forge just did
+- chore(queue): record what the merge decided
+- chore(queue): record what the forge just did
+- chore(queue): record what the merge decided
+- chore(queue): record what the merge decided
+- chore(queue): record what the merge decided
+- chore(queue): record what the forge just did
+- chore(queue): record what the forge just did
+- chore(queue): record what the forge just did
+- chore(queue): record what the forge just did
+- chore(queue): record what the forge just did
+- chore(queue): record what the forge just did
+- chore(queue): record what the merge decided
+- chore(queue): record what the merge decided
+- chore(queue): record what the label let in
+
+### other
+
+- [TASK-0069][Feat][Ci] A section left unanswered refuses the ready pull request (#266)
+- [TASK-0068][Feat][Ci] A submitted observation is marked and named (#263)
+- [TASK-0067][Docs][Agents] The kit names the label a routed issue waits for (#262)
+- [TASK-0066][Fix][Ci] Both promise gates stop reading an extension as a document (#261)
+- [Chore][Queue] The routed finding, and the two the route hid (#253)
+
 ## v0.0.07 — 2026-09-08
 
 ### docs
