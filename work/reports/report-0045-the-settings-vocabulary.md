@@ -1,10 +1,10 @@
 ---
 id: report-0045
-status: open
+status: authored
 task_ref: []
-doc_ref: null
+doc_ref: technical/settings/schema.md#the-vocabulary-is-readable
 created: 2026-09-17T12:15:28Z
-triaged: null
+triaged: 2026-09-17T19:46:12Z
 ---
 
 # The settings vocabulary is not readable, so a porcelain can write a value but never offer the choices
@@ -38,3 +38,11 @@ Observed while building this client's config screen. Its own drawing carries a n
 
 What would settle it is the schema being readable — a script beside `read_setting.sh` that prints a key's allowed values, or the checker gaining a mode that lists them. Any shape works as long as the vocabulary has exactly one home and it is the kit's. Reading it out of `check_settings.sh` by grep from the adopter's side would be a second parser of the kit's internals, which is the thing this client's own rules refuse.
 
+**Triage:** authored. No rule stated that a key's allowed values are
+readable from the kit — `schema.md` named `read_setting.sh` the one
+reader and listed the values in a table the checker alone knew — so
+choosing a shape was deciding new behaviour, and the second row of
+`authoring.md`'s triage table handed the pen back. The rule is written
+in `schema.md#the-vocabulary-is-readable`: the reader that reads a
+value reads its vocabulary too, from the one home the checker reads,
+and the table is held to that home by the suite. task-0071 derives from it.
