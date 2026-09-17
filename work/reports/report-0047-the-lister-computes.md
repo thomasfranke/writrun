@@ -1,10 +1,10 @@
 ---
 id: report-0047
-status: open
+status: authored
 task_ref: []
-doc_ref: null
+doc_ref: technical/selection/visibility.md#a-row-carries-what-the-lister-read-to-place-it
 created: 2026-09-17T19:32:28Z
-triaged: null
+triaged: 2026-09-17T19:53:21Z
 ---
 
 # The lister computes each task's spec and its status to decide ready, and prints neither
@@ -38,3 +38,11 @@ The row carrying what the lister already knows. Shape is upstream's to pick — 
 
 Related, and the same shape one level down: [#268](https://github.com/thomasfranke/writrun/issues/268) — the settings vocabulary is computed by the kit and not readable by a porcelain either.
 
+**Triage:** authored. No rule stated what a lister row carries — the
+selection chapters define the sections and the exit code, and the row's
+three fields exist only in the script's printf — so adding fields was
+deciding new behaviour, and the report itself left the shape upstream.
+That is the second row of `authoring.md`'s triage table. The rule is
+written in `visibility.md#a-row-carries-what-the-lister-read-to-place-it`:
+one token, the specs and their statuses the lister already resolved,
+before the row's free text. task-0073 derives from it.
