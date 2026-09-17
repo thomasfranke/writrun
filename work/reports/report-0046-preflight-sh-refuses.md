@@ -1,10 +1,10 @@
 ---
 id: report-0046
-status: open
+status: authored
 task_ref: []
-doc_ref: null
+doc_ref: technical/distribution/preflight.md#a-bare-ref-reaches-the-working-tree
 created: 2026-09-17T19:32:08Z
-triaged: null
+triaged: 2026-09-17T19:50:00Z
 ---
 
 # preflight.sh refuses the only range shape that reaches the working tree, so finish's later gates never see the completion edits
@@ -52,3 +52,13 @@ Any of these, and the shape is upstream's to choose:
 
 The first is the smallest; the last needs no caller to change at all.
 
+**Triage:** authored. `preflight.md` documented the argument grammar as
+`[task-id[,task-id…]] [diff-range]` and the default range, and said
+nothing about a bare ref — so accepting one was a grammar choice, and
+the report itself offered three shapes and left the choice upstream.
+That is the second row of `authoring.md`'s triage table. The rule is
+written in `preflight.md#a-bare-ref-reaches-the-working-tree`: the
+arguments are told apart by what a task list looks like, so a bare ref
+is a range and reaches the working tree; and the completion warning
+reads `completed` at the range's head, which is the half that turned a
+missing input into a green run. task-0072 derives from it.

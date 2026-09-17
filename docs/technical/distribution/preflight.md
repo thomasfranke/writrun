@@ -52,3 +52,32 @@ still print `PREFLIGHT OK` on a commit CI judges by that half — the diff
 half needs no name and runs there too, so a change carrying code outside
 `work/` is refused either way.
 
+
+## A bare ref reaches the working tree
+
+**The two arguments are told apart by what a task list looks like,
+never by the range's punctuation.** An argument whose every
+comma-separated entry is a task id — `task-0034`, `0034`,
+`task/0034-…` — is the task list; anything else is the range. So a
+bare `origin/main` is a range, and it means what it means to every
+stage-2 gate already: the ref against the **working tree**, the one
+shape whose head end is the checkout rather than a commit.
+`origin/main..` and `origin/main...` keep meaning `HEAD`, and two
+ranges or two task lists are still refused as preflight's own failure.
+
+The shape exists for the moment the completion edits are written and
+not yet committed — the spec's `implemented`, the task's `completed`
+date. A flow that writes them and then asks preflight over a two-ended
+range hands stages 2 and 3 a range those edits are not in, and reads
+`PREFLIGHT OK` over the very change the gates exist to judge. The bare
+shape is how such a run sees them.
+
+**The completion warning reads the end the stages read.** `completed`
+is read at the range's head — the checkout for the bare shape, the head
+commit for the two-ended ones — never from the working tree regardless
+of range. A two-ended run over uncommitted completion edits therefore
+says the task has no completed date in what it read and does not stand
+for the edits, which is the vacuous pass named above, said out loud.
+Read from the checkout instead, the same file would silence the warning
+while the stages read nothing, and the run would be green on the one
+input it never saw.
