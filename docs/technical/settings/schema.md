@@ -137,3 +137,26 @@ workflows stop, not that a reader is told they were deleted. The alternative
 is the failure [`0041`](../decisions/github-issues/0041-the-issues-mirror-is.md) named when it
 rejected a flag: two ways to say one thing, free to disagree.
 
+
+### The vocabulary is readable
+
+**Every documented key's allowed values are readable from the kit, by
+the reader that reads its value.** `read_setting.sh <address> --vocabulary`
+prints the values the table above lists for a closed key — `conventional`
+and `bracketed` for `pr_title_style`, `1`, `2` and `3` for `stage`,
+`true` and `false` for a flag — one per line, in the table's order. A
+key whose values are a shape rather than a list — `commit_types`,
+`commit_scopes` — prints nothing, and that empty answer means
+*free-form*, the same way an undocumented address prints nothing
+without the flag: the reader reads, it never judges, and
+`check_settings.sh` stays the one that does.
+
+The reason is where a choice is offered. A tool that presents the
+options before the write — a config screen, a porcelain's prompt — has
+to hold them, and a copy held anywhere but the kit is a second
+authority that drifts on the next update. `check_settings.sh` refuses a
+value outside its vocabulary, which is the right sentence one step too
+late: it teaches the vocabulary by refusal. So the vocabulary has
+exactly one home in the kit, the checker and the reader both read it
+there, and the table above is held to that home by the suite — a value
+added to one and not the other fails a test rather than a reader.
