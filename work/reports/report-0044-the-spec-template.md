@@ -1,13 +1,15 @@
 ---
 id: report-0044
-status: open
-task_ref: []
-doc_ref: null
+status: tracked
+task_ref: [task-0070]
+doc_ref: product/concepts/spec.md#the-doc-delta-contract
 created: 2026-09-17T12:15:08Z
-triaged: null
+triaged: 2026-09-17T19:41:34Z
 ---
 
 # The spec template calls the technical section machinery, and the promise gate only accepts a document under docs/
+
+**References:** [task-0070](../tasks/task-0070-technical-section-doc.md)
 
 Issue #267, opened by @thomasfranke.
 
@@ -49,3 +51,12 @@ That one is arguably the adopter's own mistake, and it was fixed there. It is in
 
 The fix to the first is a wording decision rather than a code one: either the template and the schema stop calling the section *machinery*, or its meaning is stated where an author meets it — the template's own fallback line and the skill's example are the two places that currently teach the wrong reading.
 
+**Triage:** tracked → task-0070. A defect against a rule already
+written: `concepts/spec.md#the-doc-delta-contract` states that both
+sections list documents the completing diff touches, read relative to
+`docs/`, and that an incomplete promise is refused where the spec
+enters. The template's fallback line and the skill's example teach the
+word *machinery* against that rule, and a bullet the gates cannot read
+is currently an absent promise rather than a refused one. Nothing here
+needs a new rule; the contract already says what the three texts and
+the promise gate fail to.
