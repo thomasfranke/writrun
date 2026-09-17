@@ -38,7 +38,7 @@ sections that close the loop between ephemeral and permanent docs:
 ## Proposed technical changes
 - `technical/engine/adapter.md` — document the new extension point.
 - `technical/engine/decisions.md` — new dated entry: why warning over error.
-(or: "none — no machinery change")
+(or: "none — no technical chapter changes")
 
 ## Outcome
 (filled when the task completes: what was actually built, anything that
@@ -50,4 +50,10 @@ against before merge — every listed path+anchor should appear touched in the
 diff, and the diff shouldn't quietly touch a permanent doc that wasn't listed.
 This turns "update the docs in the same PR" from a prose reminder into
 something a script or a reviewing agent can verify mechanically.
+Every path is read relative to `docs/` — `product/…`, `technical/…`,
+`about.md` — and the technical section names chapters under
+`docs/technical/`, never the machinery the change touches: what the
+diff changes is code, what it promises is documents. A bullet opens
+with the path in backticks, or neither gate can read it
+([contract](../../product/concepts/spec.md#the-doc-delta-contract)).
 

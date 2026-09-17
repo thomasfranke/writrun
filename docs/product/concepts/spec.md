@@ -40,7 +40,7 @@ work it describes and the permanent docs it will change:
 
 ## Proposed technical changes
 - `technical/<section>.md#<anchor>` — one line on what changes and why.
-(or: "none — no machinery change")
+(or: "none — no technical chapter changes")
 ```
 
 This list is the **merge contract**: the diff that completes the task must
@@ -51,7 +51,7 @@ contributors remember into something checked mechanically — see
 of trusted to whoever happens to be finishing the task.
 
 **A promise names a document or a folder.** The per-path form names one
-`.md` file, because what it points at is a rule under an anchor; the
+document, because what it points at is a rule under an anchor; the
 folder form ends in a slash, is honoured by any change under it, and
 declares everything under it. A file under `docs/` that is not a
 document — a diagram, an image — carries neither a rule nor an anchor,
@@ -60,6 +60,15 @@ folder that holds it. **Keep those files in a folder of their own.**
 Loose beside the chapters, the only folder that declares one is the
 chapter's own, and a promise reaching that far declares every rule
 beside it — the coarse form the per-path promise exists to avoid.
+
+**A promise is read off the backtick that follows the dash**, and the
+technical section names chapters under `docs/technical/` — the
+machinery is what the completing diff changes, never what a spec
+promises. A bullet under either heading that opens any other way — a
+link around the path, bold before it, prose — is a promise the gates
+cannot read, and it is refused where the spec enters, never read as no
+promise: read as none, it would pass there and leave every document the
+change touches undeclared at the completion gate.
 
 **A promise includes its mandatory companions.** Some documents never
 change alone: a rule elsewhere makes touching one imply touching another,

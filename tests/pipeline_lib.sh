@@ -508,7 +508,7 @@ spec_file() {
     esac
   done
   [ -n "$product" ]   || product="- none — no behaviour change"$'\n'
-  [ -n "$technical" ] || technical="- none — no machinery change"$'\n'
+  [ -n "$technical" ] || technical="- none — no technical chapter changes"$'\n'
 
   cat > "work/specs/${id}.md" <<EOF
 ---
