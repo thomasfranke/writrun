@@ -1,8 +1,8 @@
 ---
 id: task-0072
-status: ready
+status: in-progress
 blocked_reason: null
-taken_by: null
+taken_by: thomasfranke
 spec_ref: [spec-0100]
 doc_ref: technical/distribution/preflight.md#a-bare-ref-reaches-the-working-tree
 origin: rule
