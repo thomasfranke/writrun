@@ -81,3 +81,32 @@ list, has nothing to do with it, and stops.
 that pressure is the design — a queue asking to be triaged, not a
 display problem to solve by truncating.
 
+
+## A row carries what the lister read to place it
+
+**Every task row the lister prints carries the specs it resolved to
+place that task, each with its status, immediately before the row's
+free text** — the title, or the reason a task is held back. The field
+is one token: `spec-0002:approved`, comma-joined when a task references
+several (`spec-0003:draft,spec-0004:approved`), and `no-spec` for an
+empty `spec_ref`. The fields before it stay as each section defines
+them — id, then priority for an available task or the owner for one in
+flight — so a reader takes the id, the section's own fields, the spec
+token, and the rest as free text.
+
+The lister has to compute this: `ready` *is* "every `spec_ref`
+approved or implemented", and steps 2 to 4 of the
+[algorithm](algorithm.md#task-selection-algorithm) read every spec of
+every task they consider. Dropping it at the printf leaves a reader
+built on the lister able to say a task's id, priority and section, and
+unable to say what authorized it — which is the one fact the section
+placement was derived from. A porcelain that wants it then reads the
+queue's front matter itself, per row, which is a second reader of the
+same files and drifts on the next update; the objection is the one
+`read_setting.sh` answers for settings, and the answer is the same: the
+kit prints what the kit read.
+
+**The field is one token on purpose.** A title carries spaces and
+sits last; a field between the id and the title has to be readable
+without counting, so it holds no space, and `no-spec` is a word rather
+than an absence — an empty column and a missing one look the same.
