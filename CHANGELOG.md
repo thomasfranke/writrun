@@ -4,6 +4,55 @@ Written by `make release` at every cut, from the commit subjects
 the range carries. Never edited by hand — the subject is where a
 wrong line is fixed, on the next tag.
 
+## v0.0.09 — 2026-09-18
+
+### docs
+
+- docs(technical): preflight takes a bare ref, and its warning reads the range's head (#275)
+- docs(technical): every task row carries the specs the lister read to place it (#277)
+- docs(technical): the settings vocabulary is readable where the value is (#273)
+
+### fix
+
+- fix(ci): the cut refuses a main that is not what origin has (#287)
+
+### chore
+
+- chore(queue): record what the merge decided
+- chore(queue): record what the forge just did
+- chore(queue): record what the forge just did
+- chore(queue): record what the merge decided
+- chore(queue): triage report-0048 to the queue (#284)
+- chore(queue): record what the merge decided
+- chore(queue): record what the merge decided
+- chore(queue): record what the merge decided
+- chore(queue): record what the merge decided
+- chore(queue): record what the forge just did
+- chore(queue): record what the forge just did
+- chore(queue): record what the forge just did
+- chore(queue): record what the forge just did
+- chore(queue): record what the forge just did
+- chore(queue): record what the forge just did
+- chore(queue): record what the forge just did
+- chore(queue): record what the merge decided
+- chore(queue): record what the merge decided
+- chore(queue): record what the forge just did
+- chore(queue): record what the merge decided
+- chore(queue): record what the merge decided
+- chore(queue): triage report-0044 to the queue (#271)
+- chore(queue): record what the label let in
+- chore(queue): record what the label let in
+- chore(queue): record what the label let in
+- chore(queue): record what the label let in
+
+### other
+
+- [TASK-0074][Fix][Ci] A proposed triage is not a triage, so the mirror waits for the merge (#286)
+- [TASK-0072][Fix][Ci] Preflight takes a bare ref, and its warning reads the range's head (#281)
+- [TASK-0071][Feat][Ci] The settings vocabulary is readable where the value is (#280)
+- [TASK-0073][Feat][Skills] Every task row carries the specs the lister read to place it (#283)
+- [TASK-0070][Fix][Skills] The technical section names a document, and an unreadable promise is refused (#279)
+
 ## v0.0.08 — 2026-09-15
 
 ### docs
