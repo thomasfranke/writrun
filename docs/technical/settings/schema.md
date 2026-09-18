@@ -11,7 +11,10 @@ one card. Read the card for the values; read this chapter for why each
 key exists. `read_setting.sh` is the one reader
 ([contract](schema.md#the-shape-is-a-checked-contract)); its `--origin` flag
 prints `declared` or `default` beside the value, which is what lets a
-renderer tell a project's choice from a default nobody made.
+renderer tell a project's choice from a default nobody made, and its
+`--vocabulary` flag prints the values a closed key accepts, which is
+what lets it offer the choice before the write
+([the vocabulary is readable](schema.md#the-vocabulary-is-readable)).
 
 `writrun/settings.json` holds the choices
 [Adoption](../../product/adoption.md#three-stages) leaves open — values only, no

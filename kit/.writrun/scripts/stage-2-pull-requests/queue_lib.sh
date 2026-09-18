@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # queue_lib.sh — the helpers both halves of the transition machine share:
 # front-matter reads and writes, the resting derivation, the task-file
-# resolver, the carried-ids parser, and the tab-delimited row reader.
+# resolver, the carried-ids parser, the tab-delimited row reader, and
+# the settings vocabulary the checker and the reader both read.
 # Sourced, never executed; the sourcing script owes `set -euo pipefail`
 # itself.
 #
@@ -608,4 +609,40 @@ ql_slugify() {
         }
         print s
       }'
+}
+
+# --- settings -----------------------------------------------------------
+#
+# ql_vocabulary <address> — the values a documented settings key accepts,
+# space-separated on one line, in the order the schema's table lists
+# them (docs/technical/settings/schema.md#settings). Addressed the way
+# read_setting.sh's default_for addresses defaults: a top-level key
+# bare, a sectioned key through its section — the address, not the
+# name, is a key's identity.
+#
+# **One home, two readers.** check_settings.sh refuses a value outside
+# this list and read_setting.sh --vocabulary prints it, so a porcelain
+# offering the choice before the write holds no copy of its own — a
+# copy anywhere but the kit is a second authority that drifts on the
+# next update (decisions/tasks-and-specs/0079). The schema's table is
+# held to this function by the suite, key by key.
+#
+# **Empty means free-form, never unknown.** `commit_types` and
+# `commit_scopes` are shapes — lower-case words, space-separated — and
+# a shape is not a list, so they answer nothing; an address the schema
+# does not document answers nothing for the same reason a value read
+# from it prints nothing. The reader reads, it never judges.
+ql_vocabulary() {
+  case "$1" in
+    stage)                     printf '1 2 3' ;;
+    stage_1.decisions_style)   printf 'per-subsystem chronological' ;;
+    stage_1.product_layout)    printf 'by-concept by-feature' ;;
+    stage_1.provenance_ledger) printf 'true false' ;;
+    stage_1.spec_required)     printf 'always when-warranted' ;;
+    stage_2.agent_coauthor)    printf 'true false' ;;
+    stage_2.auto_commit)       printf 'true false' ;;
+    stage_2.auto_pr)           printf 'true false' ;;
+    stage_2.auto_push)         printf 'true false' ;;
+    stage_2.pr_title_style)    printf 'conventional bracketed' ;;
+  esac
 }

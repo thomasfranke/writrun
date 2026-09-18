@@ -11,9 +11,11 @@ depends_on: []
 milestone: null
 created: 2026-09-17T19:46:08Z
 queued: 2026-09-17T19:55:31Z
-completed: null
+completed: 2026-09-18T00:40:53Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-fable-5-1, login: thomasfranke}
+  - {by: agent, model: claude-opus-5, login: thomasfranke}
 ---
 
 # The settings vocabulary is readable where the value is
