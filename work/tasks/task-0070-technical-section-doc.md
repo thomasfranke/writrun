@@ -11,9 +11,11 @@ depends_on: []
 milestone: null
 created: 2026-09-17T19:41:34Z
 queued: 2026-09-17T19:54:38Z
-completed: null
+completed: 2026-09-17T20:02:10Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-fable-5-1, login: thomasfranke, input: 2406, output: 112282, cache_read: 18039465, cache_write: 171884}
+  - {by: agent, model: claude-opus-5, login: thomasfranke, input: 2, output: 235, cache_read: 226528, cache_write: 697}
 ---
 
 # The technical section names a chapter under docs/, wherever an author meets it

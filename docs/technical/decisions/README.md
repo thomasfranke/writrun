@@ -97,3 +97,4 @@ appending a row.
 | [0075](pull-requests/0075-a-document-is-not-a-file-format.md) | 2026-09-14 | `pull-requests` | a document is not a file format, so neither gate tests the extension — narrowing [0065](pull-requests/0065-a-promise-is-judged-by-shape.md). |
 | [0076](github-issues/0076-a-marker-is-not-a-gate.md) | 2026-09-14 | `github-issues` | a marker is not a gate, and the submitter is the only one who applies it. |
 | [0077](pull-requests/0077-unanswered-has-a-signature.md) | 2026-09-14 | `pull-requests` | unanswered has a signature, so the body is guardable — and the gate binds at `ready`, never at the taking. |
+| [0078](pull-requests/0078-a-promise-the-gate-cannot-read-is-refused.md) | 2026-09-17 | `pull-requests` | a promise the gate cannot read is refused, never read as none — and the bullet reader has one copy. |

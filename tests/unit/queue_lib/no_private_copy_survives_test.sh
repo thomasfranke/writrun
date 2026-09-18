@@ -32,6 +32,12 @@ survivors() {
       | grep -v '/queue_lib.sh$'
     grep -rln 'in work/tasks/task-\*\.md' "$SCRIPTS" 2>/dev/null \
       | grep -v '/queue_lib.sh$'
+    # The Proposed-changes bullet reader (decision 0078): the awk
+    # fragment both gates carried, read only when a backtick followed
+    # the dash. Pinned across the skills too — check_deltas.sh was the
+    # second copy.
+    grep -rlnF '/^- `/ { print }' "$REPO_ROOT/.writrun" 2>/dev/null \
+      | grep -v '/queue_lib.sh$'
     true
   )
   if [ -n "$hits" ]; then
