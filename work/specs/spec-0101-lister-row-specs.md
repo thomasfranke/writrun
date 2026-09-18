@@ -1,7 +1,7 @@
 ---
 id: spec-0101
 task_ref: task-0073
-status: approved
+status: implemented
 created: 2026-09-17T19:53:21Z
 ---
 
@@ -110,4 +110,31 @@ is a column, not a filter.
 
 ## Outcome
 
-_(fill after execution)_
+Built as planned, on all four rows, and the new case found a packer the
+plan had not counted.
+
+**A held-back record is built in two places.** A status that is neither
+`ready` nor `backlog` — `blocked`, and every other non-terminal one —
+takes an early path of its own, and only the later packer had gained the
+field. So a `blocked` task printed `blocked: null` where the token
+belongs, its reason slid one field left into the column a reader reads
+as a spec. That is the exact failure an existing case guards for the
+in-flight record; it was found because the new case asserts the token's
+*position* on every row rather than its presence somewhere in the
+output. Both packers carry it now, and the early one carries a comment
+saying it is the second.
+
+**The width is 21 characters**, which is the longest single-spec token
+(`spec-NNNN:implemented`). A shorter minimum would leave single-spec
+rows ragged against multi-spec ones, and truncating was never on the
+table — a token cut in half names a spec that does not exist.
+
+**`spec_token` reads `spec_ref` and `spec_status`, the two the placement
+already calls**, so the row and the section cannot disagree: a spec the
+queue lacks comes back `missing` here because that is what the placement
+judged it by.
+
+The existing row-shape case was updated to the five-field record rather
+than weakened — it asserts the author, the token and the title in that
+order, and it is what makes a sixth field findable the next time one is
+added.
