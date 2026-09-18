@@ -1,7 +1,7 @@
 ---
 id: spec-0098
 task_ref: task-0070
-status: approved
+status: implemented
 created: 2026-09-17T19:41:37Z
 ---
 
@@ -144,4 +144,33 @@ technical one is, for symmetry of wording, never of meaning.
 
 ## Outcome
 
-_(fill after execution)_
+Built as planned, with one copy more than the plan counted and one
+sentence of the plan not kept.
+
+**Three readers, not two.** The pin the private-copy test gained found
+the awk fragment in `check_promise_companions.sh` as well — a copy its
+own comment defended as deliberate, on the argument that the completion
+gate is a Stage 1 skill and must not couple to workflow machinery. The
+lib is what every skill already sources, so the argument had lapsed;
+that gate now calls `ql_promised_paths` too, and the pin covers
+`.writrun/` whole rather than `scripts/` alone.
+
+**"Nothing to judge" still prints for a skeleton of `none`.** Step 4
+said the line prints only when no section carried any bullet at all,
+which would have made the `none` bullet a read spec. The acceptance
+criterion says a section carrying only its `none` line is read as no
+promise, as today, and the existing case asserts the line for exactly
+that spec; the criterion won. What changed is narrower: a spec whose
+only bullets are unreadable is counted as read and refused, where it
+used to print that line and pass.
+
+The unreadable reader recognises `none` by its leading word, so an
+adopter's own wording after the dash keeps passing — the edge case as
+written. The refusal names the spec, the section and quotes the bullet,
+and its closing advice states the form both gates read.
+
+`concepts/spec.md#the-doc-delta-contract` also drops *"one `.md`
+file"* for *"one document"* — the sentence task-0066 outgrew, named in
+the reporting pull request as a leftover and sitting in the section
+this spec already promised.
+
