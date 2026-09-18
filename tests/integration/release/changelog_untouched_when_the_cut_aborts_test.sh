@@ -13,6 +13,7 @@ git commit -qm "chore: changelog"
 # Tagged, so the cut under test is a second one and the number it would
 # write is v0.0.02 — a string the seeded file cannot already hold.
 git tag -a v0.0.01 -m v0.0.01
+release_publish
 before=$(git log -1 --format=%H)
 # The whole file, hashed: the assertion is every byte, not one string a
 # rewrite could leave standing.

@@ -17,6 +17,7 @@ git add CHANGELOG.md >/dev/null
 git commit -qm "docs(technical): the changelog opens"
 git tag -a v0.0.01 -m v0.0.01
 git commit -q --allow-empty -m "fix(ci): the thing this tag carries"
+release_publish
 out=$(bash "$RELEASE_SH" 2>&1); code=$?
 title_line=$(grep -n '^# Changelog$' CHANGELOG.md | cut -d: -f1)
 new_line=$(grep -n '^## v0.0.02 ' CHANGELOG.md | cut -d: -f1)

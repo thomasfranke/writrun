@@ -12,6 +12,7 @@ git commit -q --allow-empty -m "feat(ci): debounce the mirror updates (#42)"
 git commit -q --allow-empty -m "fix(skills): rule K reads the diff"
 git commit -q --allow-empty -m "docs(product): the merge is the assenting act"
 git commit -q --allow-empty -m "WIP nonsense that never passed a title check"
+release_publish
 out=$(bash "$RELEASE_SH" 2>&1); code=$?
 if [ "$code" -eq 0 ] &&
    [ -f CHANGELOG.md ] &&

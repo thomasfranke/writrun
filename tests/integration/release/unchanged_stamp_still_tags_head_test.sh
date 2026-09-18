@@ -10,6 +10,7 @@ printf 'v0.0.01\n' > .writrun/VERSION
 printf 'v0.0.01\n' > kit/.writrun/VERSION
 git add -A >/dev/null
 git commit -qm "pre-stamped"
+release_publish
 before=$(git rev-list --count HEAD)
 out=$(bash "$RELEASE_SH" 2>&1); code=$?
 if [ "$code" -eq 0 ] &&
