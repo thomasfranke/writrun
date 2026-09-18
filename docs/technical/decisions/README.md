@@ -101,3 +101,4 @@ appending a row.
 | [0079](tasks-and-specs/0079-the-vocabulary-is-read-where-the-value-is.md) | 2026-09-17 | `tasks-and-specs` | the vocabulary is read where the value is — one home in the kit for the checker and the reader, and a free-form key answers empty. |
 | [0080](pull-requests/0080-preflight-tells-its-arguments-apart-by-shape.md) | 2026-09-17 | `pull-requests` | preflight tells its arguments apart by the task list's shape, and its warning reads the end the stages read. |
 | [0081](tasks-and-specs/0081-the-row-carries-what-the-lister-read.md) | 2026-09-17 | `tasks-and-specs` | the row carries what the lister read to place it — one token in the human row, never a second output. |
+| [0082](github-issues/0082-a-proposed-triage-is-not-a-triage.md) | 2026-09-18 | `github-issues` | a proposed triage is not a triage, so a report mirror's close waits for the merge — narrowing [0060](github-issues/0060-the-merged-close-has-one-owner.md) for reports. |

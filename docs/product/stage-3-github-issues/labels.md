@@ -53,13 +53,26 @@ the same lookup finds it and the two never meet in one filter.
 |---|---|
 | `status:proposed` | proposed by an open pull request — not on the authority branch yet. The same structural reason a task's mirror has one. |
 | `status:open` | recorded, awaiting triage. **This is the state the mirror exists for**: a report nobody is prompted to read is a report that rots, and rotting is the failure the concept exists to end. What the open Issue asks for is the evaluation — choose the route — never the fix itself; work enters the queue only through the `tracked` route's own reporting pull request ([report](../concepts/report.md#recording-rides-any-change--routing-to-the-queue-does-not)). |
-| *(none — the mirror is closed)* | triaged, and out of the pipeline: closed **completed** for `tracked`, `authored`, `fixed` and `routed`, closed **not planned** for `declined`. |
+| *(none — the mirror is closed)* | triaged **on the authority branch**, and out of the pipeline: closed **completed** for `tracked`, `authored`, `fixed` and `routed`, closed **not planned** for `declined`. |
 
 The five ends collapse into two closes on purpose. A `route:` label
 would carry the remaining distinction, and it is not worth a fifth
 thing for the machinery to keep true — the file says which route was
 taken, and the close already separates the report that was acted on
 from the one that was not.
+
+**The close is the merge's.** A pull request carrying a triage only
+proposes it: until it merges the report is still `open` where the
+mirror projects from, so the mirror says what the authority branch
+says — `status:open` for a report the branch holds, `status:proposed`
+for one this pull request is still offering. The row above is the same
+window a task's `status:proposed` covers, one kind over.
+
+Closing on the diff instead retires the Issue during exactly the review
+that has not yet agreed to the triage — the one state the report mirror
+exists for, gone while the queue still holds the report open. A pull
+request that closes unmerged is reconciled against the branch; one that
+never closes is reconciled by nothing.
 
 **A report's mirror can precede its file.** An observation from outside
 the repository arrives as an issue first; the maintainer's label mints
@@ -112,3 +125,6 @@ nobody is working.
 - When a report is triaged, the machinery shall close its mirror — as
   completed for `tracked`, `authored`, `fixed` and `routed`; as not
   planned for `declined`.
+- When a pull request proposes a report's triage and has not merged, the
+  machinery shall leave that report's mirror at the state the authority
+  branch holds.
