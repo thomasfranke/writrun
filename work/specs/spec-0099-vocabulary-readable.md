@@ -1,7 +1,7 @@
 ---
 id: spec-0099
 task_ref: task-0071
-status: approved
+status: implemented
 created: 2026-09-17T19:46:12Z
 ---
 
@@ -122,4 +122,35 @@ posture is that it reads.
 
 ## Outcome
 
-_(fill after execution)_
+Built as planned, in the four places the scope named, with one shape
+decided inside the plan rather than by it.
+
+**The home answers on one line; the reader prints one per line.** The
+rule asks for one value per line, and the checker's refusals are `case`
+patterns over a space-separated list — `case " $vocab " in *" $val "*`.
+`ql_vocabulary` therefore returns the space-separated form both the
+checker and a `case` want, and `read_setting.sh --vocabulary` is what
+turns it into lines. One home, one transformation, and neither side
+carries the other's shape.
+
+**The checker's per-key vocabulary cases are gone, not rewritten.**
+`stage`, `pr_title_style`, the five booleans and the three stage-1
+declarations each had a `case` arm doing the same four lines; the value
+is now judged once, before the `case`, by the key's documented address.
+What stays in the `case` is what is not a vocabulary: the two rename
+refusals and the shape check the two free-form keys get.
+
+**The address is the documented one, even for a homeless key.** A key
+found in the wrong section is refused for its address and, if its value
+is also outside its vocabulary, for that too — the same two refusals it
+drew before, because the vocabulary is looked up by where the schema
+says the key lives rather than by where the file put it.
+
+**The table test reads a cell as a vocabulary only when every
+alternative is a backticked literal.** That is what separates
+`` `true` / `false` `` from *"lower-case words, space-separated"*
+without a list of free-form keys to keep in step. Two guards sit beside
+the comparison: the row count, so a parser that silently matched
+nothing cannot agree with an empty home, and an assertion that
+`commit_types` is read as free-form — the half of the parse with no
+other signal.
