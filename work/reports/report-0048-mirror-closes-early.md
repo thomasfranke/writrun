@@ -1,15 +1,15 @@
 ---
 id: report-0048
-status: open
-task_ref: []
+status: tracked
+task_ref: [task-0074]
 doc_ref: product/stage-3-github-issues/labels.md#the-report-mirror
 created: 2026-09-17T20:03:55Z
-triaged: null
+triaged: 2026-09-18T17:12:19Z
 ---
 
 # A report's mirror closes on the pull request's copy of the file, before the merge
 
-**References:** [product/stage-3-github-issues/labels.md#the-report-mirror](../../docs/product/stage-3-github-issues/labels.md#the-report-mirror)
+**References:** [product/stage-3-github-issues/labels.md#the-report-mirror](../../docs/product/stage-3-github-issues/labels.md#the-report-mirror) · [task-0074](../tasks/task-0074-mirror-waits-for-merge.md)
 
 Issues #268 and #269 — the mirrors of report-0045 and report-0046 —
 closed *completed* on 2026-09-17, twenty-two seconds after the pull
