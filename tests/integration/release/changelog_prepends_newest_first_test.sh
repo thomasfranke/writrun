@@ -24,6 +24,7 @@ git commit -qm "chore(release): v0.0.01"
 # previous release's own commit is behind the range, not inside it.
 git tag -a v0.0.01 -m v0.0.01
 git commit -q --allow-empty -m "fix(ci): the second thing"
+release_publish
 # 0640, not the mode a fresh file lands on, so the assertion below reads
 # the mode this file had and not one the cut got for free.
 chmod 0640 CHANGELOG.md
