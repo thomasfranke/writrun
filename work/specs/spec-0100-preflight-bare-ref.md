@@ -1,7 +1,7 @@
 ---
 id: spec-0100
 task_ref: task-0072
-status: approved
+status: implemented
 created: 2026-09-17T19:50:00Z
 ---
 
@@ -115,4 +115,39 @@ stages' own reading of the bare shape is not re-specified here.
 
 ## Outcome
 
-_(fill after execution)_
+Built as planned, in one script and its cases, with the classification
+split in two where the spec wrote it as one.
+
+**`is_task_id` and `is_task_list`.** The rule is per-entry — *every*
+comma-separated entry is a task id — so the per-entry question is its
+own function and the per-argument one calls it. The three spellings it
+accepts are the three the queue uses: `task-NNNN`, the branch form
+`task/NNNN-…`, and the bare number that every `[TASK-NNNN]` tag and
+every filename prints. One entry that is not an id makes the whole
+argument a range, because a task list with a ref in it is not a list
+this run could honour.
+
+**An empty argument is skipped rather than classified.** It used to land
+harmlessly in the task list; under the new rule it would have landed in
+the range and silently occupied the slot a real range wanted.
+
+**The warning's wording names the end it read**, which the spec asked
+for as a clause and is here a phrase in the sentence itself — *"has no
+completed date in HEAD"*, *"in the working tree"*. A warning that says a
+date is missing without saying where it looked is the same silence one
+step quieter.
+
+**The two cases that reproduce the finding are one file.** The spec
+listed them as three fixtures; they share one setup — a queue held
+mid-flight at the base, the implementation committed, the completion
+edits written and not committed — and reading them apart would hide that
+the bare shape and the two-ended one are two readings of *one* tree.
+Getting that fixture right took two attempts: a range whose ends are the
+same commit is refused by the state gate for selecting nothing, and a
+spec committed inside the range is read as implemented there — neither
+is the reported flow, and both had to be excluded for the case to be
+about this rule rather than about the gates it calls.
+
+The chapter's usage block gained the bare shape as a second example
+rather than a sentence, since what a reader needs there is the command
+they can paste.
