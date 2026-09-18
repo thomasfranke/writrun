@@ -11,9 +11,11 @@ depends_on: []
 milestone: null
 created: 2026-09-17T19:49:54Z
 queued: 2026-09-17T20:07:59Z
-completed: null
+completed: 2026-09-18T00:46:18Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-fable-5-1, login: thomasfranke}
+  - {by: agent, model: claude-opus-5, login: thomasfranke}
 ---
 
 # Preflight takes a bare ref, and its warning reads what the stages read

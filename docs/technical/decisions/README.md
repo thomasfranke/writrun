@@ -99,4 +99,5 @@ appending a row.
 | [0077](pull-requests/0077-unanswered-has-a-signature.md) | 2026-09-14 | `pull-requests` | unanswered has a signature, so the body is guardable — and the gate binds at `ready`, never at the taking. |
 | [0078](pull-requests/0078-a-promise-the-gate-cannot-read-is-refused.md) | 2026-09-17 | `pull-requests` | a promise the gate cannot read is refused, never read as none — and the bullet reader has one copy. |
 | [0079](tasks-and-specs/0079-the-vocabulary-is-read-where-the-value-is.md) | 2026-09-17 | `tasks-and-specs` | the vocabulary is read where the value is — one home in the kit for the checker and the reader, and a free-form key answers empty. |
+| [0080](pull-requests/0080-preflight-tells-its-arguments-apart-by-shape.md) | 2026-09-17 | `pull-requests` | preflight tells its arguments apart by the task list's shape, and its warning reads the end the stages read. |
 | [0081](tasks-and-specs/0081-the-row-carries-what-the-lister-read.md) | 2026-09-17 | `tasks-and-specs` | the row carries what the lister read to place it — one token in the human row, never a second output. |

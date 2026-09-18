@@ -16,7 +16,14 @@ Task ids default to the `task-NNNN` marker in the branch name, and none
 resolving is not an error — a reporting or docs branch carries none. The
 range defaults to `origin/main...HEAD` after a `git fetch origin main`;
 offline, the stale base is named out loud and the run continues, because
-a gate nobody can run offline is a gate that does not run.
+a gate nobody can run offline is a gate that does not run. Written out,
+the range takes any shape git does, the bare ref included — that one
+reaches the working tree, and [the section below](#a-bare-ref-reaches-the-working-tree)
+is which argument is which:
+
+```bash
+bash .writrun/scripts/stage-1-tasks-and-specs/preflight.sh 0034 origin/main
+```
 
 Then, stopping at the first failure and reprinting that check's own
 output under a line naming the stage: **1/3** `check_front_matter.sh`,
