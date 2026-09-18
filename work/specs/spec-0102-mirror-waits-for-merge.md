@@ -1,7 +1,7 @@
 ---
 id: spec-0102
 task_ref: task-0074
-status: approved
+status: implemented
 created: 2026-09-18T17:14:57Z
 ---
 
@@ -145,4 +145,36 @@ whether it writes.
 
 ## Outcome
 
-_(fill after execution)_
+Built as planned, with one sentence more to narrow than the plan counted
+and one test case it did not name.
+
+**A rule stated in three places had to be narrowed in all three.**
+Step 3 asked for the *why* at the `want_close` line. Two texts above it
+said something that this change makes false for reports: the script's
+own header — *past the open event, `status:proposed` is the one state no
+file can hold* — and, one level up, decision
+[0060](../../docs/technical/decisions/github-issues/0060-the-merged-close-has-one-owner.md),
+where that sentence comes from. A report's mirror in the open window can
+now read `status:open`, which a file does hold, because the question that
+window asks is what the branch says rather than what the diff proposes.
+The header carries the narrowing and 0082 records it; 0060 keeps its
+file and its number, as the folder's rule requires.
+
+The comment marking the "triaged while still proposed" path also had to
+be rewritten rather than left: its first claim — that the case runs
+through there *to a close* — stopped being true, while the reason it
+gives for updating existing mirrors at all stands unchanged.
+
+**One case the plan folded and the tests had not.** The acceptance
+criteria cover a report the branch does not carry, but the suite only
+covered that report's *create* path at the merge
+(`a_born_terminal_report_is_created_closed_test.sh`). A report born
+already triaged in an **open** pull request is now created open at
+`status:proposed`, and that is the visible cost named in the pull
+request and in 0082, so it is asserted where the rule is:
+`a_triage_in_flight_waits_for_the_merge_test.sh`.
+
+The renamed test file lost nothing. Its two merged cases — a triage that
+arrives as an edit, and an edit that says nothing — are the merge path,
+which does not move, and they sit beside the four open-window cases in
+the file whose name now says what it asserts.

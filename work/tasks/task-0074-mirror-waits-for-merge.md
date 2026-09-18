@@ -11,9 +11,10 @@ depends_on: []
 milestone: null
 created: 2026-09-18T17:12:19Z
 queued: 2026-09-18T17:29:05Z
-completed: null
+completed: 2026-09-18T18:02:02Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-opus-5, login: thomasfranke, input: 134, output: 44548, cache_read: 11029561, cache_write: 64627}
 ---
 
 # A report's mirror closes on the merge that lands its triage, never on the diff that proposes it
