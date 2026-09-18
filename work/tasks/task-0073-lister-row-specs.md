@@ -11,9 +11,10 @@ depends_on: []
 milestone: null
 created: 2026-09-17T19:53:15Z
 queued: 2026-09-17T20:07:52Z
-completed: null
+completed: 2026-09-18T00:49:42Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-opus-5, login: thomasfranke}
 ---
 
 # Every task row carries its specs and their status
