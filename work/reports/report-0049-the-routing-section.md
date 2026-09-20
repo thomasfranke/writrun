@@ -1,13 +1,15 @@
 ---
 id: report-0049
-status: open
-task_ref: []
+status: tracked
+task_ref: [task-0075]
 doc_ref: null
 created: 2026-09-19T21:55:29Z
-triaged: null
+triaged: 2026-09-19T23:27:44Z
 ---
 
 # The routing section names one destination, and a defect in the binary has another
+
+**References:** [task-0075](../tasks/task-0075-routing-names-owner.md)
 
 Issue #288, opened by @thomasfranke.
 
