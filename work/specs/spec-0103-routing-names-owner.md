@@ -154,5 +154,6 @@ landed as planned in `kit/work/reports/README.md` and `kit/WRITRUN.md`.
 
 The report's third finding — the evidence discipline a routed
 submission owes — is not here, as the task said it would not be.
-`check_doc_shapes.sh` exits 0 over the edited prose and the suite is
-green.
+`check_doc_shapes.sh` exits 0 over the edited prose, the kit unit tests
+pass — the byte mirror over `tests/kit_mirrors.txt` among them — and
+preflight exits 0 with spec-0103's promised deltas matched.

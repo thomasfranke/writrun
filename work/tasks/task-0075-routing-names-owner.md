@@ -13,7 +13,8 @@ created: 2026-09-19T23:27:44Z
 queued: 2026-09-20T00:12:16Z
 completed: 2026-09-20T00:16:13Z
 merged: null
-provenance: []
+provenance:
+  - {by: agent, model: claude-opus-5, login: thomasfranke, input: 74, output: 29789, cache_read: 5193720, cache_write: 41553}
 ---
 
 # The kit names the repository that owns the defect, not the one the kit came from
