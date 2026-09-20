@@ -59,8 +59,9 @@ Three things happen off this line:
   Write a report — one file, one paragraph, no commitment. Later someone
   triages it: it becomes a task, becomes a rule, gets fixed on the spot,
   is declined with the reason kept, or is routed to the repository that
-  owns the defect — a defect of WritRun itself is reported to WritRun,
-  whose intake receives it. Recording one is cheap on purpose,
+  owns the defect — a defect of the methodology goes to WritRun, whose
+  intake receives it, and a defect of the `writ` binary goes to
+  `writrun-cli`. Recording one is cheap on purpose,
   and it rides whatever change you already had open. Only the route that
   turns it into a task is different: that one takes a `report/` branch of
   its own, and from Stage 2 the generator refuses it anywhere else.

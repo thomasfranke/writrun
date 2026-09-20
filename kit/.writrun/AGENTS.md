@@ -120,25 +120,42 @@ the branch name reads as the task being worked, and would flip it
 the spec, appends its id to `spec_ref`, and releases the task from
 `blocked`.
 
-### When the defect is WritRun's
+### When the defect is upstream's
 
 A kit script that misbehaves, a rule two shipped documents state
-differently — a methodology defect recorded only here is a finding the
-maintainers who can fix it never see. Record the report locally first,
-exactly as for any observation. Then ask the user, per report and never
-assumed from the conduct flags: opening an issue on another repository
-is an outward-facing act. On an explicit yes, open the issue on the
-repository this kit came from —
-<https://github.com/thomasfranke/writrun>, the provenance pointer
-`WRITRUN.md` carries — with
-`gh issue create --label writrun:submitted`, or the repository's report
-form by hand: the title states the observation, the body carries the
-evidence and the tag in `.writrun/VERSION`. That label is a marker and
-not the gate: it makes the submission addressable where work is picked,
-and it mints nothing. End the local report `routed`, its body naming
-the issue it became. A refused or unanswerable ask — no `gh`, no
-network, no user to answer — leaves the report `open`, where a person
-can route it by hand.
+differently, a `writ` subcommand that reports the wrong thing — a defect
+recorded only here is a finding the maintainers who can fix it never
+see. Record the report locally first, exactly as for any observation.
+Then ask the user, per report and never assumed from the conduct flags:
+opening an issue on another repository is an outward-facing act.
+
+**On an explicit yes, open the issue on the repository that owns the
+defect.** That is not always the one this kit came from: an adopter
+consumes two things, and each has a home of its own.
+
+| The defect is in | It goes to |
+|---|---|
+| the methodology — the kit, its scripts, its rules, its shipped prose | <https://github.com/thomasfranke/writrun> |
+| the `writ` binary — anything `writrun-cli` installs or prints | <https://github.com/thomasfranke/writrun-cli> |
+
+The provenance pointer `WRITRUN.md` carries the first address. Where it
+is unclear which of the two owns a defect, the evidence decides: reached
+only through the binary it is the binary's; reproduced against a clean
+kit copy with no `writ` in the path it is the methodology's.
+
+Compose the submission the way
+`.github/ISSUE_TEMPLATE/writrun-report.yml` asks — the report form this
+kit shipped into this repository, whose fields are the ones the
+receiving side reads. Where a project no longer ships that file, the
+fields are three: the title states the observation, the body carries the
+evidence, and the version consumed is the tag in `.writrun/VERSION`.
+
+Open it with `gh issue create --label writrun:submitted`. That label is
+a marker and not the gate: it makes the submission addressable where
+work is picked, and it mints nothing. End the local report `routed`, its
+body naming the issue it became. A refused or unanswerable ask — no
+`gh`, no network, no user to answer — leaves the report `open`, where a
+person can route it by hand.
 
 **`routed` records a submission, not an entry in the upstream queue.**
 The issue writes nothing into the upstream `work/` on arrival: a
@@ -154,7 +171,7 @@ to do against a queue it cannot see. A routed finding that goes
 unanswered is raised again by a second report, never by reopening the
 first.
 
-When the doubt is whether the defect is WritRun's or this project's use
+When the doubt is whether the defect is upstream's or this project's use
 of it, point it at the evidence: reproduced against a clean kit copy it
 is upstream's; otherwise it is a local report like any other.
 

@@ -1,7 +1,7 @@
 ---
 id: spec-0103
 task_ref: task-0075
-status: approved
+status: implemented
 created: 2026-09-19T23:29:00Z
 ---
 
@@ -115,4 +115,45 @@ ships a single hardcoded address instead.
 
 ## Outcome
 
-_(fill after execution)_
+Built as the five steps and the product bullet planned, with three
+divergences worth the record.
+
+**The two homes landed as a table, and the heading moved with them.**
+Step 1 said "names both homes with what each owns"; prose carrying two
+addresses and two ownership tests in one paragraph read as a list
+pretending not to be one, so it is a two-row table: the methodology —
+the kit, its scripts, its rules, its shipped prose — at `writrun`, and
+the `writ` binary — anything `writrun-cli` installs or prints — at
+`writrun-cli`. The heading is now *When the defect is upstream's*.
+"WritRun's" named one of the two owners, so it could not head a section
+about both. No document links that anchor, so nothing broke.
+
+**The doubt sentence at the section's end was widened too, and the
+steps did not say so.** It asked whether the defect is "WritRun's or
+this project's use of it" — the narrower question, left standing it
+would have contradicted the heading above it. It now asks whether the
+defect is upstream's. The owner-between-the-two doubt is answered
+separately, beside the table, as the spec's first edge case required:
+reached only through the binary it is the binary's; reproduced against
+a clean kit copy with no `writ` in the path it is the methodology's.
+
+**The product change is two edits, not one sentence.** The bullet
+promised the instructing sentence; the paragraph above it also named
+what an adopter consumes as "the methodology itself", which would have
+left the rule saying one thing in its second paragraph and another in
+its first. Both now say the owner, and a closing clause assigns the
+naming of the homes to the kit — the rule is the owner, never a fixed
+address — so a third consumer is a kit edit and not a rule change.
+
+Step 2 landed as planned: the routing section names
+`.github/ISSUE_TEMPLATE/writrun-report.yml` first, as the form the kit
+shipped into the adopter's own repository, and keeps the three fields
+after it for a project that no longer ships the file. Steps 3 and 4
+landed as planned in `kit/work/reports/README.md` and `kit/WRITRUN.md`.
+`make kit-sync` carried `.writrun/AGENTS.md` into `kit/.writrun/`.
+
+The report's third finding — the evidence discipline a routed
+submission owes — is not here, as the task said it would not be.
+`check_doc_shapes.sh` exits 0 over the edited prose, the kit unit tests
+pass — the byte mirror over `tests/kit_mirrors.txt` among them — and
+preflight exits 0 with spec-0103's promised deltas matched.
