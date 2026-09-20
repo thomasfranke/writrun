@@ -75,19 +75,23 @@ disagreement legible later.
 ### Routing upstream
 
 Some defects are not this project's to act on. An adopter hits one in
-what it consumes — the methodology itself: a kit script that
-misbehaves, a rule two documents state differently — and the local
-queue is the wrong destination: the maintainers who can fix it never
-read it. A finding recorded downstream of the repository that owns the
-defect is a finding lost with extra steps.
+what it consumes, and what it consumes is more than one thing: the
+methodology — a kit script that misbehaves, a rule two documents state
+differently — and the optional binary that wraps it. Either way the
+local queue is the wrong destination: the maintainers who can fix it
+never read it. A finding recorded downstream of the repository that
+owns the defect is a finding lost with extra steps.
 
 Recording still happens here first, exactly as for any observation —
 capture costs nothing, and what follows may be refused. Routing is
-then triage's fifth route: the agent opens an issue on the upstream
-repository stating the observation — the title says what was seen, the
-body carries the evidence and the kit version — and the report ends
-`routed`, its body naming the issue it became. What arrives upstream
-is the other half of the
+then triage's fifth route: the agent opens an issue on the repository
+that **owns** the defect, which is not always the one the kit came
+from, stating the observation — the title says what was seen, the body
+carries the evidence and the kit version — and the report ends
+`routed`, its body naming the issue it became. Naming those homes, and
+which defect belongs to which, is the kit's instruction to give: the
+rule is the owner, never a fixed address. What arrives upstream is the
+other half of the
 [intake](../stage-3-github-issues/intake.md): the issue waits for a
 maintainer's label, becomes a report there, and is triaged by the
 project that can merge the fix. The local queue gains nothing, which

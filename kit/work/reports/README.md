@@ -57,10 +57,11 @@ stamps the date. The other four ends are written by hand, status and
 [`writrun-check-front-matter`](../../.writrun/skills/writrun-check-front-matter/SKILL.md)
 before the commit.
 
-A defect in WritRun itself — the kit, its scripts, its rules — is not
-this queue's to act on: it goes upstream, on the user's explicit
-authorization, and the local report ends `routed`. The route, the ask
-and both outcomes are in the recording section of
+A defect in what this project consumes — the methodology's kit, scripts
+and rules, or the `writ` binary — is not this queue's to act on: it goes
+upstream, to the repository that owns it, on the user's explicit
+authorization, and the local report ends `routed`. The route, the two
+homes, the ask and both outcomes are in the recording section of
 [`.writrun/AGENTS.md`](../../.writrun/AGENTS.md).
 
 Do not select work from this directory. Reports are not queued work; the
